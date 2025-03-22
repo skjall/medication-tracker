@@ -1,0 +1,9 @@
+version: '3'
+services:
+  medication-tracker:
+    build: .
+    ports:
+      - "8087:8080"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
