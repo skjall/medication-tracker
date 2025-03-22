@@ -117,10 +117,4 @@ The application uses SQLite for data storage with the following structure:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Flask web framework
-- Bootstrap for the responsive UI
-- SQLAlchemy for database operations
+This project is propritary

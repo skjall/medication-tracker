@@ -38,10 +38,10 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
     # Default configuration
     app.config.update(
-        SECRET_KEY="dev",
+        SECRET_KEY=os.environ.get("SECRET_KEY", "dev"),
         SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(app.root_path, 'data', 'medication_tracker.db')}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        DEBUG=True,
+        DEBUG=os.environ.get("FLASK_ENV", "development") == "development",
     )
 
     # Override config with test config if provided
@@ -54,12 +54,6 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     # Create tables if they don't exist
     with app.app_context():
         db.create_all()
-
-        # Initialize sample data if no medications exist
-        from init_data import initialize_sample_data
-
-        if Medication.query.count() == 0:
-            initialize_sample_data()
 
     # Register blueprints (routes)
     from routes.medications import medication_bp
