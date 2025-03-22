@@ -1,0 +1,255 @@
+{% extends "layout.html" %}
+
+{% block title %}Inventory - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-boxes me-2"></i>Inventory
+    </h1>
+    <div>
+        <a href="{{ url_for('inventory.low') }}" class="btn btn-warning">
+            <i class="fas fa-exclamation-triangle me-1"></i>Low Stock
+        </a>
+        <a href="{{ url_for('inventory.depletion') }}" class="btn btn-info ms-2">
+            <i class="fas fa-chart-line me-1"></i>Depletion Forecast
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Inventory Overview</h5>
+            <input type="text" id="inventorySearch" class="form-control form-control-sm w-auto" placeholder="Search medications...">
+        </div>
+    </div>
+    <div class="card-body">
+        {% if medications %}
+            <div class="table-responsive">
+                <table class="table table-hover" id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>Medication</th>
+                            <th>Daily Usage</th>
+                            <th>Current Stock</th>
+                            <th>Package Counts</th>
+                            <th>Days Left</th>
+                            <th>Depletion Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for med in medications %}
+                            {% set color_class = 'text-danger' if med.inventory and med.inventory.is_low else ('text-warning' if med.days_remaining and med.days_remaining < 30 else 'text-success') %}
+                            <tr>
+                                <td>
+                                    <strong>{{ med.name }}</strong>
+                                    <div class="small text-muted">{{ med.dosage }} units × {{ med.frequency }}/day</div>
+                                </td>
+                                <td>{{ med.daily_usage|round(1) }} units</td>
+                                <td class="{{ color_class }}">
+                                    {% if med.inventory %}
+                                        <strong>{{ med.inventory.current_count }}</strong> units
+                                    {% else %}
+                                        <span class="text-muted">No inventory</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if med.inventory %}
+                                        <small>
+                                            {% if med.package_size_n1 and med.inventory.packages_n1 > 0 %}
+                                                N1: {{ med.inventory.packages_n1 }}{% if med.inventory.packages_n2 > 0 or med.inventory.packages_n3 > 0 %}<br>{% endif %}
+                                            {% endif %}
+                                            {% if med.package_size_n2 and med.inventory.packages_n2 > 0 %}
+                                                N2: {{ med.inventory.packages_n2 }}{% if med.inventory.packages_n3 > 0 %}<br>{% endif %}
+                                            {% endif %}
+                                            {% if med.package_size_n3 and med.inventory.packages_n3 > 0 %}
+                                                N3: {{ med.inventory.packages_n3 }}
+                                            {% endif %}
+                                            {% if not med.inventory.packages_n1 and not med.inventory.packages_n2 and not med.inventory.packages_n3 %}
+                                                <span class="text-muted">None</span>
+                                            {% endif %}
+                                        </small>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if med.days_remaining %}
+                                        <span class="{{ color_class }}">{{ med.days_remaining|round(1) }} days</span>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if med.depletion_date %}
+                                        <span class="{{ color_class }}">
+                                            {{ med.depletion_date.strftime('%Y-%m-%d') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not med.inventory %}
+                                        <span class="badge bg-secondary">No Data</span>
+                                    {% elif med.inventory.is_low %}
+                                        <span class="badge bg-danger">Low Stock</span>
+                                    {% elif med.days_remaining and med.days_remaining < 30 %}
+                                        <span class="badge bg-warning text-dark">Running Low</span>
+                                    {% else %}
+                                        <span class="badge bg-success">OK</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if med.inventory %}
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-success quick-adjust-btn" data-bs-toggle="modal" data-bs-target="#quickAdjustModal" data-medication-id="{{ med.id }}" data-inventory-id="{{ med.inventory.id }}" data-medication-name="{{ med.name }}" title="Quick Adjust">
+                                                <i class="fas fa-plus-minus"></i>
+                                            </button>
+                                        </div>
+                                    {% else %}
+                                        <button type="button" class="btn btn-sm btn-primary" disabled>
+                                            <i class="fas fa-plus me-1"></i>Create
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                No medications found in the system. Please add medications first.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Adjustment Modal -->
+<div class="modal fade" id="quickAdjustModal" tabindex="-1" aria-labelledby="quickAdjustModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickAdjustModalLabel">Adjust Inventory</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="quickAdjustForm" method="POST">
+                <div class="modal-body">
+                    <p>Adjust inventory for <strong id="adjustMedicationName"></strong></p>
+
+                    <div class="mb-3">
+                        <label for="quickAdjustment" class="form-label">Adjustment (+ to add, - to subtract)</label>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" id="quickAdjustMinus">-</button>
+                            <input type="number" class="form-control text-center" id="quickAdjustment" name="adjustment" value="0">
+                            <button class="btn btn-outline-secondary" type="button" id="quickAdjustPlus">+</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="quickAdjustNotes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="quickAdjustNotes" name="notes" rows="2" placeholder="Optional notes about this adjustment"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-center my-3 gap-2">
+                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="-10">-10</button>
+                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="-5">-5</button>
+                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="-1">-1</button>
+                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="1">+1</button>
+                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="5">+5</button>
+                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="10">+10</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('inventorySearch');
+        const table = document.getElementById('inventoryTable');
+
+        if (searchInput && table) {
+            searchInput.addEventListener('keyup', function() {
+                const searchText = this.value.toLowerCase();
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    const name = row.cells[0].textContent.toLowerCase();
+                    if (name.includes(searchText)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Quick adjust modal functionality
+        const quickAdjustModal = document.getElementById('quickAdjustModal');
+        if (quickAdjustModal) {
+            quickAdjustModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const medicationId = button.getAttribute('data-medication-id');
+                const inventoryId = button.getAttribute('data-inventory-id');
+                const medicationName = button.getAttribute('data-medication-name');
+
+                const adjustMedicationName = document.getElementById('adjustMedicationName');
+                const quickAdjustForm = document.getElementById('quickAdjustForm');
+
+                if (adjustMedicationName && quickAdjustForm) {
+                    adjustMedicationName.textContent = medicationName;
+                    quickAdjustForm.action = `/inventory/${inventoryId}/adjust`;
+
+                    // Reset the form
+                    document.getElementById('quickAdjustment').value = 0;
+                    document.getElementById('quickAdjustNotes').value = '';
+                }
+            });
+
+            // Handle +/- buttons
+            const minusBtn = document.getElementById('quickAdjustMinus');
+            const plusBtn = document.getElementById('quickAdjustPlus');
+            const adjustmentInput = document.getElementById('quickAdjustment');
+
+            if (minusBtn && plusBtn && adjustmentInput) {
+                minusBtn.addEventListener('click', function() {
+                    let value = parseInt(adjustmentInput.value) || 0;
+                    adjustmentInput.value = value - 1;
+                });
+
+                plusBtn.addEventListener('click', function() {
+                    let value = parseInt(adjustmentInput.value) || 0;
+                    adjustmentInput.value = value + 1;
+                });
+            }
+
+            // Handle preset buttons
+            const presetButtons = document.querySelectorAll('.quick-adjust-preset');
+            presetButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const value = parseInt(this.getAttribute('data-value'));
+                    if (adjustmentInput && !isNaN(value)) {
+                        adjustmentInput.value = value;
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

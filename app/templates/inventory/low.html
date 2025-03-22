@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+
+{% block title %}Low Inventory - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-exclamation-triangle me-2 text-danger"></i>Low Inventory
+    </h1>
+    <div>
+        <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Inventory
+        </a>
+    </div>
+</div>
+
+<!-- Low Inventory Card -->
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Medications Below Threshold</h5>
+    </div>
+    <div class="card-body">
+        {% if medications %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                The following medications have inventory levels below their minimum thresholds.
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Medication</th>
+                            <th>Daily Usage</th>
+                            <th>Min Threshold</th>
+                            <th>Current Stock</th>
+                            <th>Days Left</th>
+                            <th>Depletion Date</th>
+                            <th>Needed Units</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for med in medications %}
+                            <tr>
+                                <td>
+                                    <strong>{{ med.name }}</strong>
+                                    <div class="small text-muted">{{ med.dosage }} units × {{ med.frequency }}/day</div>
+                                </td>
+                                <td>{{ med.daily_usage|round(1) }} units</td>
+                                <td>{{ med.min_threshold }}</td>
+                                <td class="text-danger">
+                                    <strong>{{ med.inventory.current_count }}</strong> units
+                                </td>
+                                <td class="{% if med.days_remaining and med.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}">
+                                    {% if med.days_remaining %}
+                                        {{ med.days_remaining|round(1) }} days
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td class="{% if med.depletion_date and (med.depletion_date - now).days < 14 %}text-danger{% else %}text-warning{% endif %}">
+                                    {% if med.depletion_date %}
+                                        {{ med.depletion_date.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set needed = (med.min_threshold + (med.safety_margin_days * med.daily_usage)) - med.inventory.current_count %}
+                                    <strong>{{ needed|round(0)|int }}</strong> units
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary" title="Manage Inventory">
+                                            <i class="fas fa-boxes"></i>
+                                        </a>
+                                        <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-secondary" title="View Medication">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                <a href="{{ url_for('orders.new') }}" class="btn btn-primary">
+                    <i class="fas fa-clipboard-list me-1"></i>Create Order for Low Inventory Items
+                </a>
+            </div>
+        {% else %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Good news!</strong> All medications are above their minimum thresholds.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

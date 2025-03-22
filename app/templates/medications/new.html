@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+
+{% block title %}Add Medication - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-plus-circle me-2"></i>Add New Medication
+    </h1>
+    <a href="{{ url_for('medications.index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to List
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Medication Information</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('medications.new') }}">
+            <div class="row">
+                <!-- Basic Information -->
+                <div class="col-md-6">
+                    <h5 class="mb-3">Basic Information</h5>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Medication Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="dosage" class="form-label">Dosage (units) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="dosage" name="dosage" step="0.1" min="0.1" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="frequency" class="form-label">Frequency (per day) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="frequency" name="frequency" step="0.1" min="0.1" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        <div class="form-text">Optional information about this medication</div>
+                    </div>
+                </div>
+
+                <!-- Package Sizes & Thresholds -->
+                <div class="col-md-6">
+                    <h5 class="mb-3">Package Sizes</h5>
+                    <p class="text-muted small">Enter the number of units/pills in each package size (N1, N2, N3)</p>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="package_size_n1" class="form-label">N1 Package</label>
+                                <input type="number" class="form-control" id="package_size_n1" name="package_size_n1" min="1">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="package_size_n2" class="form-label">N2 Package</label>
+                                <input type="number" class="form-control" id="package_size_n2" name="package_size_n2" min="1">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="package_size_n3" class="form-label">N3 Package</label>
+                                <input type="number" class="form-control" id="package_size_n3" name="package_size_n3" min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4 mb-3">Inventory Settings</h5>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="min_threshold" class="form-label">Minimum Threshold</label>
+                                <input type="number" class="form-control" id="min_threshold" name="min_threshold" min="0" value="30">
+                                <div class="form-text">Alert when stock falls below this level</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="safety_margin_days" class="form-label">Safety Margin (days)</label>
+                                <input type="number" class="form-control" id="safety_margin_days" name="safety_margin_days" min="0" value="14">
+                                <div class="form-text">Extra days to add when calculating needs</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="daily-usage-calculator alert alert-info mt-3 d-none">
+                <h6>Daily Usage:</h6>
+                <p class="mb-0">
+                    <span id="calculated-usage">0</span> units per day
+                    <small class="text-muted">(based on dosage × frequency)</small>
+                </p>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+                <button type="reset" class="btn btn-outline-secondary">
+                    <i class="fas fa-undo me-1"></i>Reset
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>Save Medication
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dosageInput = document.getElementById('dosage');
+        const frequencyInput = document.getElementById('frequency');
+        const usageCalculator = document.querySelector('.daily-usage-calculator');
+        const calculatedUsage = document.getElementById('calculated-usage');
+
+        function updateDailyUsage() {
+            const dosage = parseFloat(dosageInput.value) || 0;
+            const frequency = parseFloat(frequencyInput.value) || 0;
+
+            if (dosage > 0 && frequency > 0) {
+                const dailyUsage = (dosage * frequency).toFixed(1);
+                calculatedUsage.textContent = dailyUsage;
+                usageCalculator.classList.remove('d-none');
+            } else {
+                usageCalculator.classList.add('d-none');
+            }
+        }
+
+        if (dosageInput && frequencyInput) {
+            dosageInput.addEventListener('input', updateDailyUsage);
+            frequencyInput.addEventListener('input', updateDailyUsage);
+        }
+    });
+</script>
+{% endblock %}

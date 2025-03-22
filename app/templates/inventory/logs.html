@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+
+{% block title %}Inventory History: {{ medication.name }} - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-history me-2"></i>Inventory History: {{ medication.name }}
+    </h1>
+    <div>
+        <a href="{{ url_for('inventory.show', id=inventory.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Inventory
+        </a>
+        <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-pills me-1"></i>Medication Details
+        </a>
+    </div>
+</div>
+
+<!-- Inventory History Card -->
+<div class="card">
+    <div class="card-header bg-secondary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Complete Inventory History</h5>
+            <div>
+                <span class="me-2">Current Inventory: <strong>{{ inventory.current_count }} units</strong></span>
+                <span>Last Updated: <strong>{{ inventory.last_updated.strftime('%Y-%m-%d %H:%M') }}</strong></span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if logs.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Previous Count</th>
+                            <th>Adjustment</th>
+                            <th>New Count</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs.items %}
+                            <tr>
+                                <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ log.previous_count }}</td>
+                                <td class="{% if log.adjustment < 0 %}text-danger{% elif log.adjustment > 0 %}text-success{% endif %}">
+                                    {% if log.adjustment > 0 %}+{% endif %}{{ log.adjustment }}
+                                </td>
+                                <td>{{ log.new_count }}</td>
+                                <td>{{ log.notes or '' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Inventory history pages">
+                <ul class="pagination justify-content-center">
+                    {% if logs.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('inventory.logs', id=inventory.id, page=logs.prev_num) }}">Previous</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                    {% endif %}
+
+                    {% for page_num in logs.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                        {% if page_num %}
+                            {% if page_num == logs.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('inventory.logs', id=inventory.id, page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if logs.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('inventory.logs', id=inventory.id, page=logs.next_num) }}">Next</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">No inventory adjustments recorded yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

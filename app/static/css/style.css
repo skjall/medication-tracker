@@ -1,0 +1,240 @@
+/* Custom styles for Medication Tracker */
+
+/* Make footer stick to bottom */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+footer {
+  margin-top: auto;
+}
+
+/* Card hover effects */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Add spacing between icon and text in buttons */
+.btn i {
+  margin-right: 0.25rem;
+}
+
+/* Style for card link buttons */
+.card-link-btn {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+  transition: all 0.2s ease;
+}
+
+.card-link-btn:hover {
+  transform: translateY(-3px);
+}
+
+/* Custom color for low inventory */
+.bg-low-inventory {
+  background-color: #fff4f4;
+}
+
+/* Customize badges */
+.badge {
+  font-weight: 500;
+  padding: 0.5em 0.75em;
+}
+
+/* Add a bit more spacing to table cells */
+.table td,
+.table th {
+  padding: 0.75rem;
+  vertical-align: middle;
+}
+
+/* Make form labels bolder */
+label.form-label {
+  font-weight: 500;
+}
+
+/* Focus styles for form controls */
+.form-control:focus,
+.form-select:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Show text-overflow as ellipsis for longer notes in tables */
+.notes-ellipsis {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Print styles for printable order page */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    padding: 0;
+    background: white !important;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .table {
+    width: 100% !important;
+  }
+}
+
+/* Add highlighting for depletion dates that are soon */
+.depletion-soon {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.depletion-warning {
+  color: #fd7e14;
+  font-weight: 500;
+}
+
+/* Additional status indicators */
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.status-low {
+  background-color: #dc3545;
+}
+
+.status-warning {
+  background-color: #ffc107;
+}
+
+.status-good {
+  background-color: #28a745;
+}
+
+/* Special styling for package boxes */
+.package-box {
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background-color: #f8f9fa;
+}
+
+.package-box.n1 {
+  border-left: 5px solid #28a745;
+}
+
+.package-box.n2 {
+  border-left: 5px solid #fd7e14;
+}
+
+.package-box.n3 {
+  border-left: 5px solid #dc3545;
+}
+
+/* For the dashboard tiles */
+.dashboard-tile {
+  padding: 1.5rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.dashboard-tile .icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-tile .title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-tile .value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* Inventory adjustment section */
+.inventory-adjust {
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.inventory-adjust .btn-lg {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pills in different sizes */
+.pill-icon-sm,
+.pill-icon-md,
+.pill-icon-lg {
+  background-color: #4c9be8;
+  border-radius: 50%;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pill-icon-sm {
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+}
+
+.pill-icon-md {
+  width: 30px;
+  height: 30px;
+  font-size: 15px;
+}
+
+.pill-icon-lg {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+}

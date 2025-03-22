@@ -1,0 +1,215 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Order #{{ order.id }} - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-edit me-2"></i>Edit Order #{{ order.id }}
+    </h1>
+    <div>
+        <a href="{{ url_for('orders.show', id=order.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Order
+        </a>
+        <a href="{{ url_for('orders.index') }}" class="btn btn-outline-secondary ms-2">
+            <i class="fas fa-list me-1"></i>All Orders
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Edit Order for Hospital Visit on {{ visit.visit_date.strftime('%Y-%m-%d') }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle me-3 fa-2x"></i>
+                <div>
+                    <p class="mb-0">
+                        This order is for your hospital visit in
+                        <strong>{{ visit.days_until }} days</strong>
+                        on <strong>{{ visit.visit_date.strftime('%Y-%m-%d') }}</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('orders.edit', id=order.id) }}">
+            <!-- Order Status -->
+            <div class="mb-4">
+                <label for="status" class="form-label">Order Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="planned" {% if order.status == 'planned' %}selected{% endif %}>Planned</option>
+                    <option value="printed" {% if order.status == 'printed' %}selected{% endif %}>Printed</option>
+                    <option value="fulfilled" {% if order.status == 'fulfilled' %}selected{% endif %}>Fulfilled</option>
+                </select>
+            </div>
+
+            <!-- Medication Selection -->
+            <div class="mt-4">
+                <h5>Select Medications</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 3%"></th>
+                                <th>Medication</th>
+                                <th>Current Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for med in medications %}
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input medication-checkbox" type="checkbox"
+                                                   id="include_{{ med.id }}" name="include_{{ med.id }}"
+                                                   data-medication-id="{{ med.id }}"
+                                                   {% if med.id in order_items_map %}checked{% endif %}>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <label for="include_{{ med.id }}" class="form-check-label">
+                                            <strong>{{ med.name }}</strong>
+                                            <div class="small text-muted">{{ med.dosage }} units × {{ med.frequency }}/day</div>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        {% if med.inventory %}
+                                            {{ med.inventory.current_count }} units
+                                        {% else %}
+                                            <span class="text-muted">No inventory</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-info calculate-packages-btn" data-medication-id="{{ med.id }}">
+                                            <i class="fas fa-calculator me-1"></i>Calculate Needs
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Per-medication details (hidden by default) -->
+                                <tr id="medication_details_{{ med.id }}" class="{% if med.id not in order_items_map %}d-none{% endif %} bg-light">
+                                    <td colspan="4">
+                                        <div class="row mx-2 my-3">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="quantity_{{ med.id }}" class="form-label">Quantity Needed</label>
+                                                    <input type="number" class="form-control" id="quantity_{{ med.id }}" name="quantity_{{ med.id }}" min="0"
+                                                           value="{{ order_items_map[med.id].quantity_needed if med.id in order_items_map else 0 }}">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-8">
+                                                <div class="mb-3">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <label class="form-label">Package Quantities</label>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary calculate-packages-btn" data-medication-id="{{ med.id }}">
+                                                            <i class="fas fa-calculator me-1"></i>Calculate
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="row">
+                                                        {% if med.package_size_n1 %}
+                                                            <div class="col-md-4">
+                                                                <div class="input-group mb-2">
+                                                                    <span class="input-group-text">N1</span>
+                                                                    <input type="number" class="form-control" id="packages_n1_{{ med.id }}" name="packages_n1_{{ med.id }}" min="0"
+                                                                           value="{{ order_items_map[med.id].packages_n1 if med.id in order_items_map else 0 }}">
+                                                                </div>
+                                                                <small class="text-muted">{{ med.package_size_n1 }} units each</small>
+                                                            </div>
+                                                        {% endif %}
+
+                                                        {% if med.package_size_n2 %}
+                                                            <div class="col-md-4">
+                                                                <div class="input-group mb-2">
+                                                                    <span class="input-group-text">N2</span>
+                                                                    <input type="number" class="form-control" id="packages_n2_{{ med.id }}" name="packages_n2_{{ med.id }}" min="0"
+                                                                           value="{{ order_items_map[med.id].packages_n2 if med.id in order_items_map else 0 }}">
+                                                                </div>
+                                                                <small class="text-muted">{{ med.package_size_n2 }} units each</small>
+                                                            </div>
+                                                        {% endif %}
+
+                                                        {% if med.package_size_n3 %}
+                                                            <div class="col-md-4">
+                                                                <div class="input-group mb-2">
+                                                                    <span class="input-group-text">N3</span>
+                                                                    <input type="number" class="form-control" id="packages_n3_{{ med.id }}" name="packages_n3_{{ med.id }}" min="0"
+                                                                           value="{{ order_items_map[med.id].packages_n3 if med.id in order_items_map else 0 }}">
+                                                                </div>
+                                                                <small class="text-muted">{{ med.package_size_n3 }} units each</small>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{{ url_for('orders.show', id=order.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>Update Order
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup checkboxes for medication selection
+        setupOrderItemSelection();
+
+        // Setup calculate buttons
+        setupPackageCalculation();
+
+        // Prevent setting status to 'fulfilled' in the form (should be done via the fulfill button)
+        const statusSelect = document.getElementById('status');
+        const originalStatus = statusSelect.value;
+
+        if (statusSelect && originalStatus === 'fulfilled') {
+            statusSelect.disabled = true;
+
+            // Add a hidden input to ensure the status is still submitted
+            const hiddenStatus = document.createElement('input');
+            hiddenStatus.type = 'hidden';
+            hiddenStatus.name = 'status';
+            hiddenStatus.value = originalStatus;
+            statusSelect.parentNode.appendChild(hiddenStatus);
+
+            // Disable all medication inputs if fulfilled
+            const inputs = document.querySelectorAll('input[type="checkbox"], input[type="number"]');
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+
+            const buttons = document.querySelectorAll('button.calculate-packages-btn');
+            buttons.forEach(button => {
+                button.disabled = true;
+            });
+
+            // Add warning
+            const form = document.querySelector('form');
+            const warning = document.createElement('div');
+            warning.className = 'alert alert-warning mt-3';
+            warning.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>This order has been fulfilled and cannot be edited.';
+            form.prepend(warning);
+        }
+    });
+</script>
+{% endblock %}

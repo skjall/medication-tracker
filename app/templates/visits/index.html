@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+
+{% block title %}Hospital Visits - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-hospital me-2"></i>Hospital Visits
+    </h1>
+    <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
+        <i class="fas fa-calendar-plus me-1"></i>Schedule Visit
+    </a>
+</div>
+
+<!-- Upcoming Visits Card -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Upcoming Visits</h5>
+    </div>
+    <div class="card-body">
+        {% if upcoming_visits %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Days Until</th>
+                            <th>Notes</th>
+                            <th>Orders</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in upcoming_visits %}
+                            <tr>
+                                <td>
+                                    <strong>{{ visit.visit_date.strftime('%Y-%m-%d') }}</strong>
+                                    {% if loop.first %}
+                                        <span class="badge bg-primary ms-2">Next</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill {% if visit.days_until < 7 %}bg-danger{% elif visit.days_until < 14 %}bg-warning{% else %}bg-success{% endif %}">
+                                        {{ visit.days_until }} days
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="notes-ellipsis">
+                                        {{ visit.notes or '' }}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% set order_count = visit.orders|length %}
+                                    {% if order_count > 0 %}
+                                        <span class="badge bg-success">{{ order_count }} order{% if order_count != 1 %}s{% endif %}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">No orders</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('visits.edit', id=visit.id) }}" class="btn btn-outline-secondary" title="Edit Visit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-outline-success" title="Create Order">
+                                            <i class="fas fa-clipboard-list"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>No upcoming hospital visits scheduled.
+            </div>
+            <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
+                <i class="fas fa-calendar-plus me-1"></i>Schedule a Visit
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Past Visits Card -->
+<div class="card">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">Past Visits</h5>
+    </div>
+    <div class="card-body">
+        {% if past_visits %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Notes</th>
+                            <th>Orders</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in past_visits %}
+                            <tr>
+                                <td>{{ visit.visit_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <div class="notes-ellipsis">
+                                        {{ visit.notes or '' }}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% set order_count = visit.orders|length %}
+                                    {% if order_count > 0 %}
+                                        <span class="badge bg-success">{{ order_count }} order{% if order_count != 1 %}s{% endif %}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">No orders</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>No past hospital visits recorded.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
