@@ -1,40 +1,60 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "packageRules": [
     {
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "matchCurrentVersion": "!/^0/",
       "automerge": true
     },
     {
-      "matchDepTypes": ["devDependencies"],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
       "automerge": true
     },
     {
-      "matchPackagePatterns": ["^Flask"],
-      "groupName": "Flask packages"
+      "groupName": "Flask packages",
+      "matchPackageNames": [
+        "/^Flask/"
+      ]
     },
     {
-      "matchPackagePatterns": ["^python"],
-      "allowedVersions": "<4.0.0"
+      "allowedVersions": "<4.0.0",
+      "matchPackageNames": [
+        "/^python/"
+      ]
     }
   ],
   "dockerfile": {
-    "fileMatch": ["Dockerfile"],
+    "fileMatch": [
+      "Dockerfile"
+    ],
     "pinDigests": true
   },
   "pip_requirements": {
-    "fileMatch": ["requirements.txt"]
+    "fileMatch": [
+      "requirements.txt"
+    ]
   },
   "docker-compose": {
-    "fileMatch": ["docker-compose.yml", "docker-compose.yaml"]
+    "fileMatch": [
+      "docker-compose.yml",
+      "docker-compose.yaml"
+    ]
   },
   "prConcurrentLimit": 5,
   "prHourlyLimit": 2,
-  "schedule": ["every weekend"],
+  "schedule": [
+    "every weekend"
+  ],
   "timezone": "Europe/Berlin",
-  "labels": ["dependencies"]
+  "labels": [
+    "dependencies"
+  ]
 }
