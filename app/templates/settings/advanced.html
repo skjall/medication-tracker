@@ -24,7 +24,7 @@
                 <p>The application currently uses timezone: <strong>{{ settings.timezone_name }}</strong></p>
                 <p>Current time in this timezone: <strong>{{ now.strftime('%H:%M:%S %d.%m.%Y') }}</strong></p>
 
-                <form action="{{ url_for('advanced.update_timezone') }}" method="POST">
+                <form action="{{ url_for('settings.update_timezone') }}" method="POST">
                     <div class="mb-3">
                         <label for="timezone_name" class="form-label">Application Timezone</label>
                         <select class="form-select" id="timezone_name" name="timezone_name">
@@ -113,16 +113,16 @@
                     <h6>Export Data</h6>
                     <p>Export your data to CSV files for backup or analysis:</p>
                     <div class="btn-group">
-                        <a href="{{ url_for('advanced.export_data', data_type='medications') }}" class="btn btn-outline-primary">
+                        <a href="{{ url_for('settings.export_data', data_type='medications') }}" class="btn btn-outline-primary">
                             <i class="fas fa-file-export me-1"></i>Export Medications
                         </a>
-                        <a href="{{ url_for('advanced.export_data', data_type='inventory') }}" class="btn btn-outline-primary">
+                        <a href="{{ url_for('settings.export_data', data_type='inventory') }}" class="btn btn-outline-primary">
                             <i class="fas fa-file-export me-1"></i>Export Inventory
                         </a>
-                        <a href="{{ url_for('advanced.export_data', data_type='orders') }}" class="btn btn-outline-primary">
+                        <a href="{{ url_for('settings.export_data', data_type='orders') }}" class="btn btn-outline-primary">
                             <i class="fas fa-file-export me-1"></i>Export Orders
                         </a>
-                        <a href="{{ url_for('advanced.export_data', data_type='visits') }}" class="btn btn-outline-primary">
+                        <a href="{{ url_for('settings.export_data', data_type='visits') }}" class="btn btn-outline-primary">
                             <i class="fas fa-file-export me-1"></i>Export Visits
                         </a>
                     </div>
@@ -205,7 +205,7 @@
                 <div class="mb-3">
                     <h6>Database Backup</h6>
                     <p>Create a backup of your database file:</p>
-                    <a href="{{ url_for('advanced.backup_database') }}" class="btn btn-outline-primary">
+                    <a href="{{ url_for('settings.backup_database') }}" class="btn btn-outline-primary">
                         <i class="fas fa-download me-1"></i>Backup Database
                     </a>
                 </div>
@@ -213,7 +213,7 @@
                 <div class="mb-3">
                     <h6>Database Optimization</h6>
                     <p>Optimize the database to improve performance:</p>
-                    <form action="{{ url_for('advanced.optimize_db') }}" method="POST">
+                    <form action="{{ url_for('settings.optimize_db') }}" method="POST">
                         <button type="submit" class="btn btn-outline-warning">
                             <i class="fas fa-bolt me-1"></i>Optimize Database
                         </button>
@@ -241,7 +241,7 @@
                 <h5 class="modal-title" id="importModalLabel">Import Data</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url_for('advanced.import_data') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ url_for('settings.import_data') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle me-2"></i>
@@ -285,7 +285,7 @@
                 <h5 class="modal-title" id="clearLogsModalLabel">Clear Old Inventory Logs</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url_for('advanced.clear_logs') }}" method="POST">
+            <form action="{{ url_for('settings.clear_logs') }}" method="POST">
                 <div class="modal-body">
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle me-2"></i>
@@ -320,7 +320,7 @@
                 <h5 class="modal-title" id="resetDataModalLabel">⚠️ Reset All Data</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url_for('advanced.reset_data') }}" method="POST">
+            <form action="{{ url_for('settings.reset_data') }}" method="POST">
                 <div class="modal-body">
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle me-2"></i>
