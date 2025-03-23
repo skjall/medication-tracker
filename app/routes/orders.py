@@ -104,13 +104,28 @@ def new():
         flash("Order created successfully", "success")
         return redirect(url_for("orders.show", id=order.id))
 
+    # Get settings to check if next-but-one is enabled globally
+    from hospital_visit_utils import HospitalVisitSettings
+
+    settings = HospitalVisitSettings.get_settings()
+
+    # Determine if we should calculate for next-but-one visit
+    consider_next_but_one = (
+        visit.order_for_next_but_one or settings.default_order_for_next_but_one
+    )
+
     # Calculate medication needs for the visit
     medications = Medication.query.all()
     medication_needs = {}
 
     for med in medications:
         if med.inventory:
-            needed = med.calculate_needed_until_visit(visit.visit_date)
+            # Use the enhanced calculation that considers next-but-one setting
+            needed = med.calculate_needed_until_visit(
+                visit.visit_date,
+                include_safety_margin=True,
+                consider_next_but_one=consider_next_but_one,
+            )
             current = med.inventory.current_count
             additional = max(0, needed - current)
             packages = med.calculate_packages_needed(additional)
@@ -128,6 +143,7 @@ def new():
         visit=visit,
         medications=medications,
         medication_needs=medication_needs,
+        consider_next_but_one=consider_next_but_one,
     )
 
 

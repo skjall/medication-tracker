@@ -32,6 +32,15 @@
                         on <strong>{{ visit.visit_date.strftime('%Y-%m-%d') }}</strong>.
                     </p>
                     <p class="mb-0 mt-2">
+                        {% if consider_next_but_one %}
+                            <span class="badge bg-info">Next-But-One Planning</span>
+                            <span class="ms-2">Medication needs are calculated to last until your <strong>next-but-one</strong> visit</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Standard Planning</span>
+                            <span class="ms-2">Medication needs are calculated to last until your next visit only</span>
+                        {% endif %}
+                    </p>
+                    <p class="mt-2 mb-0">
                         Select the medications you need and adjust quantities as necessary.
                     </p>
                 </div>
@@ -51,7 +60,7 @@
                                 <th style="width: 3%"></th>
                                 <th>Medication</th>
                                 <th>Current Stock</th>
-                                <th>Needed Until Visit</th>
+                                <th>Needed Until {% if consider_next_but_one %}Next-But-One{% else %}Next{% endif %} Visit</th>
                                 <th>Additional Needed</th>
                             </tr>
                         </thead>
@@ -71,7 +80,7 @@
                                         <td>
                                             <label for="include_{{ med.id }}" class="form-check-label">
                                                 <strong>{{ med.name }}</strong>
-                                                <div class="small text-muted">{{ med.dosage }} units × {{ med.frequency }}/day</div>
+                                                <div class="small text-muted">{{ med.daily_usage|round(1) }} units/day</div>
                                             </label>
                                         </td>
                                         <td>
@@ -82,7 +91,7 @@
                                             {% endif %}
                                         </td>
                                         <td>{{ med_need.needed_units }} units</td>
-                                        <td>
+                                        <td class="{% if med_need.additional_needed > 0 %}text-danger{% endif %}">
                                             {% if med_need.additional_needed > 0 %}
                                                 <span class="text-danger">+{{ med_need.additional_needed }} units</span>
                                             {% else %}

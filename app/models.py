@@ -169,7 +169,10 @@ class Medication(db.Model):
         return deduction_made, total_deducted
 
     def calculate_needed_until_visit(
-        self, visit_date: datetime, include_safety_margin: bool = True
+        self,
+        visit_date: datetime,
+        include_safety_margin: bool = True,
+        consider_next_but_one: bool = None,
     ) -> int:
         """
         Calculate how many units of medication are needed until the next hospital visit.
@@ -177,17 +180,40 @@ class Medication(db.Model):
         Args:
             visit_date: The date of the next hospital visit
             include_safety_margin: Whether to include the safety margin days in the calculation
+            consider_next_but_one: Override to consider next-but-one visit (uses default from settings if None)
 
         Returns:
             The number of units needed
         """
         # Ensure visit_date is timezone-aware
+        from hospital_visit_utils import HospitalVisitSettings
+
         visit_date = ensure_timezone_utc(visit_date)
         now = utcnow()
 
         days_until_visit = (visit_date - now).days
         if days_until_visit < 0:
             days_until_visit = 0
+
+        # Get next-but-one setting if not explicitly provided
+        if consider_next_but_one is None:
+            # Check if the visit has a specific setting
+            from models import HospitalVisit
+
+            visit = HospitalVisit.query.filter_by(visit_date=visit_date).first()
+            if visit and visit.order_for_next_but_one:
+                consider_next_but_one = True
+            else:
+                # Fall back to global setting
+                settings = HospitalVisitSettings.get_settings()
+                consider_next_but_one = settings.default_order_for_next_but_one
+
+        # If next-but-one is enabled, double the visit interval
+        if consider_next_but_one:
+            # Get the default interval between visits
+            settings = HospitalVisitSettings.get_settings()
+            # Add another visit interval to the calculation
+            days_until_visit += settings.default_visit_interval
 
         total_days = days_until_visit
         if include_safety_margin:
@@ -216,6 +242,8 @@ class Medication(db.Model):
     def calculate_packages_needed(self, units_needed: int) -> Dict[str, int]:
         """
         Convert required units into package quantities, optimizing for package sizes.
+        Uses a greedy algorithm to minimize the number of packages while ensuring
+        we have enough units.
 
         Args:
             units_needed: Total number of units/pills needed
@@ -223,23 +251,46 @@ class Medication(db.Model):
         Returns:
             Dictionary with keys 'N1', 'N2', 'N3' and corresponding package counts
         """
+        import math
+
         packages = {"N1": 0, "N2": 0, "N3": 0}
+
+        # If no units needed, return empty packages
+        if units_needed <= 0:
+            return packages
+
+        # Store available package sizes and their identifiers
+        available_packages = []
+        if self.package_size_n3 and self.package_size_n3 > 0:
+            available_packages.append(("N3", self.package_size_n3))
+        if self.package_size_n2 and self.package_size_n2 > 0:
+            available_packages.append(("N2", self.package_size_n2))
+        if self.package_size_n1 and self.package_size_n1 > 0:
+            available_packages.append(("N1", self.package_size_n1))
+
+        # Sort by package size in descending order (largest first)
+        available_packages.sort(key=lambda x: x[1], reverse=True)
+
+        # If no package sizes defined, return empty
+        if not available_packages:
+            return packages
+
         remaining = units_needed
 
-        # Try to use larger packages first if more efficient
-        if self.package_size_n3 and self.package_size_n3 > 0:
-            packages["N3"] = remaining // self.package_size_n3
-            remaining %= self.package_size_n3
+        # Use larger packages as much as possible
+        for package_key, package_size in available_packages:
+            if package_size <= 0:
+                continue
 
-        if self.package_size_n2 and self.package_size_n2 > 0 and remaining > 0:
-            packages["N2"] = remaining // self.package_size_n2
-            remaining %= self.package_size_n2
+            # Calculate how many of this package we need
+            count = remaining // package_size
+            packages[package_key] = count
+            remaining -= count * package_size
 
-        if self.package_size_n1 and self.package_size_n1 > 0 and remaining > 0:
-            # Round up to ensure we have enough
-            packages["N1"] = (
-                remaining + self.package_size_n1 - 1
-            ) // self.package_size_n1
+        # If there's still a remainder, add one more of the smallest package
+        if remaining > 0:
+            smallest_package = available_packages[-1]
+            packages[smallest_package[0]] += 1
 
         return packages
 
