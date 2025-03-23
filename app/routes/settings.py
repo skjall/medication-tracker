@@ -36,6 +36,8 @@ from models import (
     HospitalVisit,
     HospitalVisitSettings,
     MedicationSchedule,
+    Order,
+    OrderItem,
 )
 from data_utils import (
     export_medications_to_csv,
@@ -424,3 +426,173 @@ def update_timezone():
 
     flash(f"Application timezone updated to {timezone_name}", "success")
     return redirect(url_for("settings.advanced"))
+
+
+@settings_bp.route("/data_management")
+def data_management():
+    """
+    Data management page with import/export/reset options for all data classes.
+    """
+    logger.info("Loading data management page")
+
+    # Get database statistics
+    med_count = Medication.query.count()
+    inventory_count = Inventory.query.count()
+    visit_count = HospitalVisit.query.count()
+    order_count = Order.query.count()
+    order_item_count = OrderItem.query.count()
+
+    # Get database path for display
+    db_path = os.path.join("data", "medication_tracker.db")
+
+    # Get database size
+    db_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), db_path)
+    db_size_mb = (
+        round(os.path.getsize(db_file_path) / (1024 * 1024), 2)
+        if os.path.exists(db_file_path)
+        else 0
+    )
+
+    return render_template(
+        "settings/data_management.html",
+        med_count=med_count,
+        inventory_count=inventory_count,
+        visit_count=visit_count,
+        order_count=order_count,
+        order_item_count=order_item_count,
+        db_path=db_path,
+        db_size_mb=db_size_mb,
+    )
+
+
+@settings_bp.route("/import/<data_type>", methods=["POST"])
+def import_data_type(data_type: str):
+    """
+    Import data from an uploaded CSV file for a specific data type.
+
+    Args:
+        data_type: Type of data to import (medications, inventory, orders, visits)
+    """
+    logger.info(f"Handling data import for type: {data_type}")
+
+    if "file" not in request.files:
+        flash("No file part", "error")
+        return redirect(url_for("settings.data_management"))
+
+    file = request.files["file"]
+    if file.filename == "":
+        flash("No file selected", "error")
+        return redirect(url_for("settings.data_management"))
+
+    # Save the file to a temporary location
+    temp_dir = tempfile.mkdtemp()
+    file_path = os.path.join(temp_dir, secure_filename(file.filename))
+    file.save(file_path)
+
+    # Check if override option is selected
+    override = "override" in request.form
+
+    try:
+        # Import based on data type
+        if data_type == "medications":
+            success_count, errors = import_medications_from_csv(file_path, override)
+        elif data_type == "inventory":
+            from data_utils import import_inventory_from_csv
+
+            success_count, errors = import_inventory_from_csv(file_path, override)
+        elif data_type == "orders":
+            from data_utils import import_orders_from_csv
+
+            success_count, errors = import_orders_from_csv(file_path, override)
+        elif data_type == "visits":
+            from data_utils import import_visits_from_csv
+
+            success_count, errors = import_visits_from_csv(file_path, override)
+        else:
+            flash(f"Unknown import type: {data_type}", "error")
+            return redirect(url_for("settings.data_management"))
+
+        if errors:
+            for error in errors[:5]:  # Show first 5 errors
+                flash(error, "warning")
+            if len(errors) > 5:
+                flash(f"...and {len(errors) - 5} more errors", "warning")
+
+        if success_count > 0:
+            flash(
+                f"Successfully imported {success_count} {data_type} records", "success"
+            )
+        else:
+            flash(f"No {data_type} were imported", "warning")
+    except Exception as e:
+        logger.error(f"Error during import: {str(e)}")
+        flash(f"Error during import: {str(e)}", "error")
+    finally:
+        # Clean up temporary file
+        os.unlink(file_path)
+        os.rmdir(temp_dir)
+
+    return redirect(url_for("settings.data_management"))
+
+
+@settings_bp.route("/reset/<data_type>", methods=["POST"])
+def reset_data_type(data_type: str):
+    """
+    Reset data for a specific data type.
+
+    Args:
+        data_type: Type of data to reset (medications, inventory, orders, visits)
+    """
+    logger.warning(f"Resetting data for type: {data_type}")
+
+    verification = request.form.get("verification_text", "")
+    expected_text = f"reset {data_type}"
+
+    if verification.lower() != expected_text:
+        flash(
+            f"Verification text doesn't match. Expected '{expected_text}'. Data was not reset.",
+            "warning",
+        )
+        return redirect(url_for("settings.data_management"))
+
+    try:
+        if data_type == "medications":
+            # For medications we first need to delete related data
+            from data_utils import reset_inventory_data, reset_orders_data
+
+            reset_orders_data()  # Delete orders first
+            reset_inventory_data()  # Then inventory
+
+            # Then delete medications and recreate empty db
+            Medication.query.delete()
+            db.session.commit()
+
+            flash("All medication data has been reset", "success")
+
+        elif data_type == "inventory":
+            from data_utils import reset_inventory_data
+
+            count = reset_inventory_data()
+            flash(f"All inventory data has been reset ({count} records)", "success")
+
+        elif data_type == "orders":
+            from data_utils import reset_orders_data
+
+            count = reset_orders_data()
+            flash(f"All order data has been reset ({count} records)", "success")
+
+        elif data_type == "visits":
+            from data_utils import reset_visits_data
+
+            count = reset_visits_data()
+            flash(f"All visit data has been reset ({count} records)", "success")
+
+        else:
+            flash(f"Unknown data type: {data_type}", "error")
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error resetting {data_type}: {str(e)}")
+        flash(f"Error resetting {data_type}: {str(e)}", "error")
+
+    return redirect(url_for("settings.data_management"))

@@ -8,13 +8,13 @@ import csv
 import shutil
 from io import StringIO
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Tuple, List, Dict, Any, Optional
 
 from flask import Response, current_app
 from sqlalchemy import text
 
-from models import db
-from utils import format_date, format_datetime, ensure_timezone_utc
+from models import db, Inventory, Order, OrderItem, HospitalVisit, Medication
+from utils import format_date, format_datetime, ensure_timezone_utc, from_local_timezone
 
 
 def export_medications_to_csv() -> Response:
@@ -283,12 +283,15 @@ def create_database_backup() -> str:
     return backup_path
 
 
-def import_medications_from_csv(file_path: str) -> Tuple[int, List[str]]:
+def import_medications_from_csv(
+    file_path: str, override: bool = False
+) -> Tuple[int, List[str]]:
     """
     Import medications from a CSV file.
 
     Args:
         file_path: Path to the CSV file
+        override: If True, update existing medications with the same name
 
     Returns:
         Tuple of (number of records imported, list of error messages)
@@ -307,57 +310,91 @@ def import_medications_from_csv(file_path: str) -> Tuple[int, List[str]]:
                     # Check if medication with same name exists
                     existing_med = Medication.query.filter_by(name=row["Name"]).first()
 
-                    if existing_med:
+                    if existing_med and not override:
                         errors.append(
                             f"Medication '{row['Name']}' already exists (ID: {existing_med.id})"
                         )
                         continue
 
-                    # Create new medication
-                    med = Medication(
-                        name=row["Name"],
-                        dosage=float(row["Dosage"]) if row["Dosage"] else 1.0,
-                        frequency=float(row["Frequency"]) if row["Frequency"] else 1.0,
-                        notes=row.get("Notes", ""),
-                        package_size_n1=(
+                    # Update existing medication if override is True
+                    if existing_med and override:
+                        med = existing_med
+                        # Update fields
+                        med.dosage = float(row["Dosage"]) if row.get("Dosage") else 1.0
+                        med.frequency = (
+                            float(row["Frequency"]) if row.get("Frequency") else 1.0
+                        )
+                        med.notes = row.get("Notes", "")
+                        med.package_size_n1 = (
                             int(row["Package Size N1"])
                             if row.get("Package Size N1")
                             else None
-                        ),
-                        package_size_n2=(
+                        )
+                        med.package_size_n2 = (
                             int(row["Package Size N2"])
                             if row.get("Package Size N2")
                             else None
-                        ),
-                        package_size_n3=(
+                        )
+                        med.package_size_n3 = (
                             int(row["Package Size N3"])
                             if row.get("Package Size N3")
                             else None
-                        ),
-                        min_threshold=(
+                        )
+                        med.min_threshold = (
                             int(row["Min Threshold"]) if row.get("Min Threshold") else 0
-                        ),
-                        safety_margin_days=(
+                        )
+                        med.safety_margin_days = (
                             int(row["Safety Margin Days"])
                             if row.get("Safety Margin Days")
                             else 30
-                        ),
-                    )
+                        )
+                    else:
+                        # Create new medication
+                        med = Medication(
+                            name=row["Name"],
+                            dosage=float(row["Dosage"]) if row.get("Dosage") else 1.0,
+                            frequency=(
+                                float(row["Frequency"]) if row.get("Frequency") else 1.0
+                            ),
+                            notes=row.get("Notes", ""),
+                            package_size_n1=(
+                                int(row["Package Size N1"])
+                                if row.get("Package Size N1")
+                                else None
+                            ),
+                            package_size_n2=(
+                                int(row["Package Size N2"])
+                                if row.get("Package Size N2")
+                                else None
+                            ),
+                            package_size_n3=(
+                                int(row["Package Size N3"])
+                                if row.get("Package Size N3")
+                                else None
+                            ),
+                            min_threshold=(
+                                int(row["Min Threshold"])
+                                if row.get("Min Threshold")
+                                else 0
+                            ),
+                            safety_margin_days=(
+                                int(row["Safety Margin Days"])
+                                if row.get("Safety Margin Days")
+                                else 30
+                            ),
+                        )
+                        db.session.add(med)
+                        db.session.flush()  # Get the ID without committing
 
-                    db.session.add(med)
-                    db.session.flush()  # Get the ID without committing
+                    # Create or update inventory record
+                    inventory = Inventory.query.filter_by(medication_id=med.id).first()
+                    if not inventory:
+                        inventory = Inventory(
+                            medication_id=med.id,
+                            current_count=0,
+                        )
+                        db.session.add(inventory)
 
-                    # Create inventory record
-                    inventory = Inventory(
-                        medication_id=med.id,
-                        current_count=(
-                            int(row["Current Inventory"])
-                            if row.get("Current Inventory")
-                            else 0
-                        ),
-                    )
-
-                    db.session.add(inventory)
                     success_count += 1
 
                 except Exception as e:
@@ -439,3 +476,427 @@ def clear_old_inventory_logs(days: int = 90) -> int:
     db.session.commit()
 
     return result
+
+
+def import_inventory_from_csv(
+    file_path: str, override: bool = False
+) -> Tuple[int, List[str]]:
+    """
+    Import inventory data from a CSV file.
+
+    Args:
+        file_path: Path to the CSV file
+        override: If True, overwrite existing inventory records
+
+    Returns:
+        Tuple of (number of records imported/updated, list of error messages)
+    """
+    success_count = 0
+    errors = []
+    logger = logging.getLogger(__name__)
+
+    try:
+        with open(file_path, "r", newline="") as csvfile:
+            reader = csv.DictReader(csvfile)
+
+            for row in reader:
+                try:
+                    # Check if medication exists
+                    med_id = row.get("Medication ID")
+                    med_name = row.get("Medication Name")
+
+                    if med_id:
+                        medication = Medication.query.get(med_id)
+                    elif med_name:
+                        medication = Medication.query.filter_by(name=med_name).first()
+                    else:
+                        errors.append(f"Row without medication ID or name: {row}")
+                        continue
+
+                    if not medication:
+                        errors.append(
+                            f"Medication not found: ID={med_id}, Name={med_name}"
+                        )
+                        continue
+
+                    # Check if inventory exists
+                    inventory = Inventory.query.filter_by(
+                        medication_id=medication.id
+                    ).first()
+
+                    if inventory and not override:
+                        errors.append(
+                            f"Inventory for '{medication.name}' already exists. Use override to update."
+                        )
+                        continue
+
+                    # Create or update inventory
+                    if not inventory:
+                        inventory = Inventory(medication_id=medication.id)
+                        db.session.add(inventory)
+
+                    # Update fields
+                    inventory.current_count = int(row.get("Current Count", 0) or 0)
+                    inventory.packages_n1 = int(row.get("Packages N1", 0) or 0)
+                    inventory.packages_n2 = int(row.get("Packages N2", 0) or 0)
+                    inventory.packages_n3 = int(row.get("Packages N3", 0) or 0)
+
+                    # Parse last updated if available
+                    last_updated_str = row.get("Last Updated")
+                    if last_updated_str:
+                        try:
+                            # Try to parse datetime in various formats
+                            formats = [
+                                "%d.%m.%Y %H:%M",  # 01.02.2023 15:30
+                                "%Y-%m-%d %H:%M:%S",  # 2023-02-01 15:30:00
+                                "%Y-%m-%d",  # 2023-02-01
+                            ]
+
+                            for fmt in formats:
+                                try:
+                                    dt = datetime.strptime(last_updated_str, fmt)
+                                    inventory.last_updated = from_local_timezone(dt)
+                                    break
+                                except ValueError:
+                                    continue
+                        except Exception as e:
+                            logger.warning(
+                                f"Could not parse date '{last_updated_str}': {e}"
+                            )
+
+                    success_count += 1
+
+                except Exception as e:
+                    errors.append(
+                        f"Error importing inventory for '{row.get('Medication Name', 'unknown')}': {str(e)}"
+                    )
+
+            # Commit all changes
+            if success_count > 0:
+                db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        errors.append(f"Global import error: {str(e)}")
+
+    return success_count, errors
+
+
+def import_visits_from_csv(
+    file_path: str, override: bool = False
+) -> Tuple[int, List[str]]:
+    """
+    Import hospital visits from a CSV file.
+
+    Args:
+        file_path: Path to the CSV file
+        override: If True, update existing visits with the same date
+
+    Returns:
+        Tuple of (number of records imported/updated, list of error messages)
+    """
+    success_count = 0
+    errors = []
+
+    try:
+        with open(file_path, "r", newline="") as csvfile:
+            reader = csv.DictReader(csvfile)
+
+            for row in reader:
+                try:
+                    # Parse visit date
+                    visit_date_str = row.get("Visit Date")
+                    if not visit_date_str:
+                        errors.append(f"Missing visit date in row: {row}")
+                        continue
+
+                    # Try to parse date in various formats
+                    visit_date = None
+                    formats = [
+                        "%d.%m.%Y",  # 01.02.2023
+                        "%Y-%m-%d",  # 2023-02-01
+                    ]
+
+                    for fmt in formats:
+                        try:
+                            dt = datetime.strptime(visit_date_str, fmt)
+                            visit_date = from_local_timezone(dt)
+                            break
+                        except ValueError:
+                            continue
+
+                    if not visit_date:
+                        errors.append(f"Could not parse visit date: {visit_date_str}")
+                        continue
+
+                    # Check if visit exists with same date
+                    existing_visit = HospitalVisit.query.filter(
+                        func.date(HospitalVisit.visit_date) == func.date(visit_date)
+                    ).first()
+
+                    if existing_visit and not override:
+                        errors.append(
+                            f"Visit on {visit_date_str} already exists. Use override to update."
+                        )
+                        continue
+
+                    # Create or update visit
+                    if existing_visit and override:
+                        visit = existing_visit
+                    else:
+                        visit = HospitalVisit(visit_date=visit_date)
+                        db.session.add(visit)
+
+                    # Update fields
+                    visit.notes = row.get("Notes", "")
+                    visit.order_for_next_but_one = row.get(
+                        "Order For Next-But-One", ""
+                    ).lower() in ["yes", "true", "1"]
+
+                    success_count += 1
+
+                except Exception as e:
+                    errors.append(
+                        f"Error importing visit on '{row.get('Visit Date', 'unknown')}': {str(e)}"
+                    )
+
+            # Commit all changes
+            if success_count > 0:
+                db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        errors.append(f"Global import error: {str(e)}")
+
+    return success_count, errors
+
+
+def import_orders_from_csv(
+    file_path: str, override: bool = False
+) -> Tuple[int, List[str]]:
+    """
+    Import orders from a CSV file.
+
+    Args:
+        file_path: Path to the CSV file
+        override: If True, update existing orders with the same ID or create new ones
+
+    Returns:
+        Tuple of (number of records imported/updated, list of error messages)
+    """
+    success_count = 0
+    errors = []
+
+    # Keep track of processed orders to handle multiple items per order
+    processed_orders = {}
+
+    try:
+        with open(file_path, "r", newline="") as csvfile:
+            reader = csv.DictReader(csvfile)
+
+            for row in reader:
+                try:
+                    # Get order ID and visit date
+                    order_id = row.get("Order ID")
+                    visit_date_str = row.get("Visit Date")
+
+                    if not visit_date_str:
+                        errors.append(f"Missing visit date in row: {row}")
+                        continue
+
+                    # Parse visit date
+                    visit_date = None
+                    formats = [
+                        "%d.%m.%Y",  # 01.02.2023
+                        "%Y-%m-%d",  # 2023-02-01
+                    ]
+
+                    for fmt in formats:
+                        try:
+                            dt = datetime.strptime(visit_date_str, fmt)
+                            visit_date = from_local_timezone(dt)
+                            break
+                        except ValueError:
+                            continue
+
+                    if not visit_date:
+                        errors.append(f"Could not parse visit date: {visit_date_str}")
+                        continue
+
+                    # Find corresponding hospital visit
+                    visit = HospitalVisit.query.filter(
+                        func.date(HospitalVisit.visit_date) == func.date(visit_date)
+                    ).first()
+
+                    if not visit:
+                        # Create the visit if it doesn't exist
+                        visit = HospitalVisit(visit_date=visit_date)
+                        db.session.add(visit)
+                        db.session.flush()  # Get ID without committing
+
+                    # Check if we've seen this order before in the current import
+                    if order_id in processed_orders:
+                        order = processed_orders[order_id]
+                    else:
+                        # Check if order exists
+                        if order_id and order_id.isdigit():
+                            existing_order = Order.query.get(int(order_id))
+
+                            if existing_order and not override:
+                                errors.append(
+                                    f"Order #{order_id} already exists. Use override to update."
+                                )
+                                continue
+
+                            if existing_order and override:
+                                order = existing_order
+                            else:
+                                order = Order(hospital_visit_id=visit.id)
+                                db.session.add(order)
+                        else:
+                            # Create new order
+                            order = Order(hospital_visit_id=visit.id)
+                            db.session.add(order)
+
+                        # Update order fields
+                        order.status = row.get("Status", "planned")
+
+                        # Parse created date if available
+                        created_date_str = row.get("Created Date")
+                        if created_date_str:
+                            try:
+                                formats = [
+                                    "%d.%m.%Y %H:%M",
+                                    "%Y-%m-%d %H:%M:%S",
+                                    "%Y-%m-%d",
+                                ]
+                                for fmt in formats:
+                                    try:
+                                        dt = datetime.strptime(created_date_str, fmt)
+                                        order.created_date = from_local_timezone(dt)
+                                        break
+                                    except ValueError:
+                                        continue
+                            except Exception as e:
+                                pass  # Use default date if parsing fails
+
+                        processed_orders[order_id] = order
+
+                    # Process medication item
+                    med_name = row.get("Medication")
+                    if not med_name:
+                        continue  # Skip if no medication specified
+
+                    medication = Medication.query.filter_by(name=med_name).first()
+                    if not medication:
+                        errors.append(f"Medication not found: {med_name}")
+                        continue
+
+                    # Check if item already exists
+                    existing_item = None
+                    for item in order.order_items:
+                        if item.medication_id == medication.id:
+                            existing_item = item
+                            break
+
+                    if existing_item:
+                        item = existing_item
+                    else:
+                        item = OrderItem(order=order, medication_id=medication.id)
+                        db.session.add(item)
+                        order.order_items.append(item)
+
+                    # Update item fields
+                    item.quantity_needed = int(row.get("Quantity Needed", 0) or 0)
+                    item.packages_n1 = int(row.get("Packages N1", 0) or 0)
+                    item.packages_n2 = int(row.get("Packages N2", 0) or 0)
+                    item.packages_n3 = int(row.get("Packages N3", 0) or 0)
+
+                    success_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error importing order item: {str(e)}")
+
+            # Commit all changes
+            if success_count > 0:
+                db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        errors.append(f"Global import error: {str(e)}")
+
+    return success_count, errors
+
+
+def reset_inventory_data() -> int:
+    """
+    Reset inventory data by deleting all inventory records.
+
+    Returns:
+        Number of records deleted
+    """
+    try:
+        # Delete inventory logs first
+        from models import InventoryLog
+
+        log_count = InventoryLog.query.delete()
+
+        # Delete inventory records
+        count = Inventory.query.delete()
+
+        db.session.commit()
+
+        # Recreate empty inventory for each medication
+        medications = Medication.query.all()
+        for med in medications:
+            inventory = Inventory(medication_id=med.id, current_count=0)
+            db.session.add(inventory)
+
+        db.session.commit()
+
+        return count
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def reset_visits_data() -> int:
+    """
+    Reset hospital visit data by deleting all visit records.
+
+    Returns:
+        Number of records deleted
+    """
+    try:
+        # Delete orders first (they depend on visits)
+        orders_deleted = reset_orders_data()
+
+        # Delete visits
+        count = HospitalVisit.query.delete()
+        db.session.commit()
+
+        return count
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def reset_orders_data() -> int:
+    """
+    Reset order data by deleting all order records.
+
+    Returns:
+        Number of records deleted
+    """
+    try:
+        # Delete order items first
+        OrderItem.query.delete()
+
+        # Delete orders
+        count = Order.query.delete()
+        db.session.commit()
+
+        return count
+    except Exception as e:
+        db.session.rollback()
+        raise e
