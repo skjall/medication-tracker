@@ -23,8 +23,10 @@ def new():
     if request.method == "POST":
         # Extract form data
         name = request.form.get("name", "")
-        dosage = float(request.form.get("dosage", 0))
-        frequency = float(request.form.get("frequency", 0))
+        dosage = float(request.form.get("dosage", 1))  # Default to 1 for compatibility
+        frequency = float(
+            request.form.get("frequency", 1)
+        )  # Default to 1 for compatibility
         notes = request.form.get("notes", "")
 
         package_size_n1 = int(request.form.get("package_size_n1", 0) or 0)
@@ -55,7 +57,9 @@ def new():
         db.session.commit()
 
         flash(f"Medication '{name}' added successfully", "success")
-        return redirect(url_for("medications.index"))
+
+        # Redirect to scheduling page instead of index
+        return redirect(url_for("schedules.new", medication_id=medication.id))
 
     return render_template("medications/new.html")
 
@@ -101,7 +105,12 @@ def edit(id: int):
         db.session.commit()
 
         flash(f"Medication '{medication.name}' updated successfully", "success")
-        return redirect(url_for("medications.show", id=medication.id))
+
+        # If medication has no schedules, redirect to scheduling page
+        if not medication.schedules:
+            return redirect(url_for("schedules.new", medication_id=medication.id))
+        else:
+            return redirect(url_for("medications.show", id=medication.id))
 
     return render_template("medications/edit.html", medication=medication)
 

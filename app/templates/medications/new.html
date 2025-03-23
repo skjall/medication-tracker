@@ -28,28 +28,15 @@
                         <input type="text" class="form-control" id="name" name="name" required>
                     </div>
 
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Basic dosage settings:</strong> After creating the medication, you can set up advanced scheduling
-                        (daily, every X days, specific weekdays) using the Medication Schedule feature.
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Important:</strong> After creating the medication, you'll need to set up the medication schedule
+                        to define when and how much to take.
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="dosage" class="form-label">Dosage (units) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="dosage" name="dosage" step="0.1" min="0.1" required>
-                                <div class="form-text">Units per dose (use advanced scheduling for multiple doses)</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="frequency" class="form-label">Frequency (per day) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="frequency" name="frequency" step="0.1" min="0.1" required>
-                                <div class="form-text">Default doses per day (can be refined later)</div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Hidden fields for backward compatibility -->
+                    <input type="hidden" name="dosage" value="1">
+                    <input type="hidden" name="frequency" value="1">
 
                     <div class="mb-3">
                         <label for="notes" class="form-label">Notes</label>
@@ -105,15 +92,17 @@
                 </div>
             </div>
 
-            <div class="daily-usage-calculator alert alert-info mt-3 d-none">
-                <h6>Daily Usage:</h6>
-                <p class="mb-0">
-                    <span id="calculated-usage">0</span> units per day
-                    <small class="text-muted">(based on simple dosage × frequency)</small>
-                </p>
-                <p class="mt-2">
-                    <span class="text-info">After creating the medication, you'll be able to set up advanced scheduling.</span>
-                </p>
+            <div class="alert alert-warning mt-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-3 fa-2x"></i>
+                    <div>
+                        <p class="mb-0">
+                            <strong>Next Step: Create Medication Schedule</strong><br>
+                            After saving this medication, you'll need to define when and how much to take using the
+                            advanced scheduling system. This will determine the daily usage and enable automatic inventory tracking.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <div class="mt-4 d-flex justify-content-between">
@@ -121,39 +110,10 @@
                     <i class="fas fa-undo me-1"></i>Reset
                 </button>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i>Save Medication
+                    <i class="fas fa-save me-1"></i>Save & Continue to Scheduling
                 </button>
             </div>
         </form>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const dosageInput = document.getElementById('dosage');
-        const frequencyInput = document.getElementById('frequency');
-        const usageCalculator = document.querySelector('.daily-usage-calculator');
-        const calculatedUsage = document.getElementById('calculated-usage');
-
-        function updateDailyUsage() {
-            const dosage = parseFloat(dosageInput.value) || 0;
-            const frequency = parseFloat(frequencyInput.value) || 0;
-
-            if (dosage > 0 && frequency > 0) {
-                const dailyUsage = (dosage * frequency).toFixed(1);
-                calculatedUsage.textContent = dailyUsage;
-                usageCalculator.classList.remove('d-none');
-            } else {
-                usageCalculator.classList.add('d-none');
-            }
-        }
-
-        if (dosageInput && frequencyInput) {
-            dosageInput.addEventListener('input', updateDailyUsage);
-            frequencyInput.addEventListener('input', updateDailyUsage);
-        }
-    });
-</script>
 {% endblock %}
