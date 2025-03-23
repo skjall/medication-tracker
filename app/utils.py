@@ -8,8 +8,7 @@ import os
 import csv
 from io import StringIO
 
-from flask import current_app, Response
-from models import Medication, Inventory, HospitalVisit, Order, OrderItem
+from flask import current_app, Response, send_file
 
 # Generic type for min_value function
 T = TypeVar("T")
@@ -70,6 +69,21 @@ def make_aware(dt: datetime) -> datetime:
     return dt
 
 
+def ensure_timezone_utc(dt: datetime) -> datetime:
+    """
+    Make sure datetime has timezone info, defaulting to UTC if none.
+
+    Args:
+        dt: The datetime object to ensure has timezone info
+
+    Returns:
+        Timezone-aware datetime object (with UTC timezone)
+    """
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
 def calculate_days_until(target_date: datetime) -> int:
     """
     Calculate days until a target date.
@@ -78,42 +92,60 @@ def calculate_days_until(target_date: datetime) -> int:
         target_date: The target date
 
     Returns:
-        Number of days until the target date (0 if in the past)
+        Number of days until the target date (minimum 1 for tomorrow)
     """
     # Ensure both datetimes are timezone-aware before comparison
     target_date = make_aware(target_date)
     now = datetime.now(timezone.utc)
 
-    delta = target_date - now
-    return max(0, delta.days)
+    # Reset time component to get accurate day difference
+    target_date_day = datetime(
+        target_date.year, target_date.month, target_date.day, tzinfo=timezone.utc
+    )
+    now_day = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
+
+    # Calculate the difference in days
+    delta = target_date_day - now_day
+    days_diff = delta.days
+
+    # Return at least 1 for tomorrow (instead of 0)
+    return max(1, days_diff) if days_diff >= 0 else 0
 
 
-def get_color_for_inventory_level(medication: Medication) -> str:
+def get_color_for_inventory_level(
+    current_count: int, min_threshold: int, days_remaining: Optional[float]
+) -> str:
     """
     Get a color code based on inventory level.
 
     Args:
-        medication: The medication to check
+        current_count: Current inventory count
+        min_threshold: Minimum threshold
+        days_remaining: Days of medication remaining
 
     Returns:
         CSS color class (text-danger, text-warning, text-success)
     """
-    if not medication.inventory:
-        return "text-danger"
-
-    if medication.inventory.is_low:
+    if current_count < min_threshold:
         return "text-danger"
 
     # If we have less than 30 days supply
-    if medication.days_remaining and medication.days_remaining < 30:
+    if days_remaining and days_remaining < 30:
         return "text-warning"
 
     return "text-success"
 
 
-def export_medications_to_csv() -> Response:
+def export_data_to_csv(
+    data_list: List[Dict], headers: List[str], filename: str
+) -> Response:
     """
-    Export all medications to a CSV file.
+    Generic function to export data to CSV.
+
+    Args:
+        data_list: List of dictionaries containing data to export
+        headers: List of header names
+        filename: Name of the CSV file
 
     Returns:
         Flask Response object with CSV data
@@ -122,46 +154,11 @@ def export_medications_to_csv() -> Response:
     writer = csv.writer(si)
 
     # Write header
-    writer.writerow(
-        [
-            "ID",
-            "Name",
-            "Dosage",
-            "Frequency",
-            "Daily Usage",
-            "Package Size N1",
-            "Package Size N2",
-            "Package Size N3",
-            "Min Threshold",
-            "Safety Margin Days",
-            "Current Inventory",
-            "Days Remaining",
-            "Created At",
-            "Updated At",
-        ]
-    )
+    writer.writerow(headers)
 
     # Write data
-    medications = Medication.query.all()
-    for med in medications:
-        writer.writerow(
-            [
-                med.id,
-                med.name,
-                med.dosage,
-                med.frequency,
-                med.daily_usage,
-                med.package_size_n1,
-                med.package_size_n2,
-                med.package_size_n3,
-                med.min_threshold,
-                med.safety_margin_days,
-                med.inventory.current_count if med.inventory else 0,
-                round(med.days_remaining, 1) if med.days_remaining else "N/A",
-                format_datetime(med.created_at),
-                format_datetime(med.updated_at),
-            ]
-        )
+    for row in data_list:
+        writer.writerow([row.get(header, "") for header in headers])
 
     output = si.getvalue()
 
@@ -169,121 +166,75 @@ def export_medications_to_csv() -> Response:
     response = Response(
         output,
         mimetype="text/csv",
-        headers={"Content-disposition": "attachment; filename=medications.csv"},
+        headers={"Content-disposition": f"attachment; filename={filename}"},
     )
 
     return response
 
 
-def export_inventory_to_csv() -> Response:
+def create_database_backup() -> str:
     """
-    Export current inventory to a CSV file.
+    Create a backup of the SQLite database file.
 
     Returns:
-        Flask Response object with CSV data
+        Path to the backup file
     """
-    si = StringIO()
-    writer = csv.writer(si)
+    import shutil
+    from datetime import datetime
 
-    # Write header
-    writer.writerow(
-        [
-            "Medication ID",
-            "Medication Name",
-            "Current Count",
-            "Packages N1",
-            "Packages N2",
-            "Packages N3",
-            "Days Remaining",
-            "Depletion Date",
-            "Last Updated",
-        ]
-    )
+    # Get the database path from app config
+    db_path = os.path.join(current_app.root_path, "data", "medication_tracker.db")
 
-    # Write data
-    inventories = Inventory.query.all()
-    for inv in inventories:
-        depletion_date = inv.medication.depletion_date
-        writer.writerow(
-            [
-                inv.medication_id,
-                inv.medication.name,
-                inv.current_count,
-                inv.packages_n1,
-                inv.packages_n2,
-                inv.packages_n3,
-                (
-                    round(inv.medication.days_remaining, 1)
-                    if inv.medication.days_remaining
-                    else "N/A"
-                ),
-                format_date(depletion_date) if depletion_date else "N/A",
-                format_datetime(inv.last_updated),
-            ]
-        )
+    # Create backup filename with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_dir = os.path.join(current_app.root_path, "data", "backups")
 
-    output = si.getvalue()
+    # Ensure backup directory exists
+    os.makedirs(backup_dir, exist_ok=True)
 
-    # Create response
-    response = Response(
-        output,
-        mimetype="text/csv",
-        headers={"Content-disposition": "attachment; filename=inventory.csv"},
-    )
+    backup_path = os.path.join(backup_dir, f"medication_tracker_backup_{timestamp}.db")
 
-    return response
+    # Create backup
+    shutil.copy2(db_path, backup_path)
+
+    return backup_path
 
 
-def export_orders_to_csv() -> Response:
+def optimize_database() -> Tuple[bool, str]:
     """
-    Export all orders to a CSV file.
+    Optimize the SQLite database.
 
     Returns:
-        Flask Response object with CSV data
+        Tuple of (success boolean, message)
     """
-    si = StringIO()
-    writer = csv.writer(si)
+    import sqlite3
 
-    # Write header
-    writer.writerow(
-        [
-            "Order ID",
-            "Visit Date",
-            "Status",
-            "Created Date",
-            "Medication",
-            "Quantity Needed",
-            "Packages N1",
-            "Packages N2",
-            "Packages N3",
-        ]
-    )
+    db_path = os.path.join(current_app.root_path, "data", "medication_tracker.db")
 
-    # Write data
-    orders = Order.query.all()
-    for order in orders:
-        for item in order.order_items:
-            writer.writerow(
-                [
-                    order.id,
-                    format_date(order.hospital_visit.visit_date),
-                    order.status,
-                    format_datetime(order.created_date),
-                    item.medication.name,
-                    item.quantity_needed,
-                    item.packages_n1,
-                    item.packages_n2,
-                    item.packages_n3,
-                ]
+    try:
+        # Connect to the database
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        # Execute VACUUM to rebuild the database file
+        cursor.execute("VACUUM")
+
+        # Execute ANALYZE to update statistics
+        cursor.execute("ANALYZE")
+
+        # Run integrity check
+        cursor.execute("PRAGMA integrity_check")
+        integrity_result = cursor.fetchone()[0]
+
+        conn.close()
+
+        if integrity_result == "ok":
+            return True, "Database optimized successfully"
+        else:
+            return (
+                False,
+                f"Database optimization completed but integrity check returned: {integrity_result}",
             )
 
-    output = si.getvalue()
-
-    # Create response
-    response = Response(
-        output,
-        mimetype="text/csv",
-        headers={"Content-disposition": "attachment; filename=orders.csv"},
-    )
-
-    return response
+    except Exception as e:
+        return False, f"Error optimizing database: {str(e)}"

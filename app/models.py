@@ -1,14 +1,3 @@
-"""
-Database models for the Medication Tracker application.
-
-This module defines SQLAlchemy ORM models for:
-- Medications
-- Inventory
-- Hospital visits
-- Orders and order items
-- Hospital visit settings
-"""
-
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, List, Tuple, Any
@@ -30,6 +19,7 @@ from sqlalchemy import (
     JSON,
     Enum,
 )
+from utils import make_aware, calculate_days_until
 
 db = SQLAlchemy()
 
@@ -436,12 +426,7 @@ class HospitalVisit(db.Model):
     @property
     def days_until(self) -> int:
         """Calculate days until this hospital visit."""
-        # Ensure visit_date is timezone-aware
-        visit_date = ensure_timezone_utc(self.visit_date)
-        now = utcnow()
-
-        delta = visit_date - now
-        return max(0, delta.days)
+        return calculate_days_until(self.visit_date)
 
 
 class Order(db.Model):

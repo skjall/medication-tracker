@@ -55,13 +55,16 @@
                     <h6>Export Data</h6>
                     <p>Export your data to CSV files for backup or analysis:</p>
                     <div class="btn-group">
-                        <a href="#" class="btn btn-outline-primary">
+                        <a href="{{ url_for('advanced.export_data', data_type='medications') }}" class="btn btn-outline-primary">
                             <i class="fas fa-file-export me-1"></i>Export Medications
                         </a>
-                        <a href="#" class="btn btn-outline-primary">
+                        <a href="{{ url_for('advanced.export_data', data_type='inventory') }}" class="btn btn-outline-primary">
                             <i class="fas fa-file-export me-1"></i>Export Inventory
                         </a>
-                        <a href="#" class="btn btn-outline-primary">
+                        <a href="{{ url_for('advanced.export_data', data_type='orders') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-file-export me-1"></i>Export Orders
+                        </a>
+                        <a href="{{ url_for('advanced.export_data', data_type='visits') }}" class="btn btn-outline-primary">
                             <i class="fas fa-file-export me-1"></i>Export Visits
                         </a>
                     </div>
@@ -70,16 +73,15 @@
                 <div class="mb-4">
                     <h6>Import Data</h6>
                     <p>Import data from CSV files (advanced users only):</p>
-                    <button type="button" class="btn btn-outline-secondary" disabled>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
                         <i class="fas fa-file-import me-1"></i>Import Data
                     </button>
-                    <small class="text-muted d-block mt-1">Coming soon</small>
                 </div>
 
                 <div class="mt-4 pt-2 border-top">
                     <h6 class="text-danger">Danger Zone</h6>
                     <p>These actions cannot be undone. Use with extreme caution.</p>
-                    <button type="button" class="btn btn-outline-danger" disabled>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#resetDataModal">
                         <i class="fas fa-trash-alt me-1"></i>Reset All Data
                     </button>
                 </div>
@@ -145,7 +147,7 @@
                 <div class="mb-3">
                     <h6>Database Backup</h6>
                     <p>Create a backup of your database file:</p>
-                    <a href="#" class="btn btn-outline-primary">
+                    <a href="{{ url_for('advanced.backup_database') }}" class="btn btn-outline-primary">
                         <i class="fas fa-download me-1"></i>Backup Database
                     </a>
                 </div>
@@ -153,21 +155,141 @@
                 <div class="mb-3">
                     <h6>Database Optimization</h6>
                     <p>Optimize the database to improve performance:</p>
-                    <button type="button" class="btn btn-outline-warning" disabled>
-                        <i class="fas fa-bolt me-1"></i>Optimize Database
-                    </button>
-                    <small class="text-muted d-block mt-1">Coming soon</small>
+                    <form action="{{ url_for('advanced.optimize_db') }}" method="POST">
+                        <button type="submit" class="btn btn-outline-warning">
+                            <i class="fas fa-bolt me-1"></i>Optimize Database
+                        </button>
+                    </form>
+                    <small class="text-muted d-block mt-1">This may take a moment on larger databases</small>
                 </div>
 
                 <div class="mb-3">
                     <h6>Clear Old Logs</h6>
                     <p>Remove old inventory logs to save space:</p>
-                    <button type="button" class="btn btn-outline-danger" disabled>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#clearLogsModal">
                         <i class="fas fa-eraser me-1"></i>Clear Old Logs
                     </button>
-                    <small class="text-muted d-block mt-1">Coming soon</small>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import Data Modal -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('advanced.import_data') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> Importing data may cause duplicates. It's recommended to backup your data before importing.
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="import_type" class="form-label">Import Type</label>
+                        <select class="form-select" id="import_type" name="import_type">
+                            <option value="medications" selected>Medications</option>
+                            <option value="inventory" disabled>Inventory (Coming Soon)</option>
+                            <option value="visits" disabled>Hospital Visits (Coming Soon)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="file" class="form-label">CSV File</label>
+                        <input class="form-control" type="file" id="file" name="file" accept=".csv" required>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Note:</strong> The CSV file should match the format of the exported data.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Import Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Clear Logs Modal -->
+<div class="modal fade" id="clearLogsModal" tabindex="-1" aria-labelledby="clearLogsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clearLogsModalLabel">Clear Old Inventory Logs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('advanced.clear_logs') }}" method="POST">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This will permanently delete old inventory logs.
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="days_to_keep" class="form-label">Keep logs from the last:</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="days_to_keep" name="days_to_keep" value="90" min="30" max="365">
+                            <span class="input-group-text">days</span>
+                        </div>
+                        <div class="form-text">
+                            Logs older than this will be permanently deleted. Minimum: 30 days.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Clear Old Logs</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Data Modal -->
+<div class="modal fade" id="resetDataModal" tabindex="-1" aria-labelledby="resetDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="resetDataModalLabel">⚠️ Reset All Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('advanced.reset_data') }}" method="POST">
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>DANGER:</strong> This action will permanently delete ALL data in the application!
+                    </div>
+
+                    <p><strong>This will delete:</strong></p>
+                    <ul>
+                        <li>All medications</li>
+                        <li>All inventory records and history</li>
+                        <li>All hospital visits</li>
+                        <li>All medication orders</li>
+                        <li>All settings</li>
+                    </ul>
+
+                    <p>A backup will be created automatically before deletion, but this action cannot be easily undone.</p>
+
+                    <div class="mb-3">
+                        <label for="verification_text" class="form-label">To confirm, type <strong>"reset all data"</strong> below:</label>
+                        <input type="text" class="form-control" id="verification_text" name="verification_text" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reset All Data</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

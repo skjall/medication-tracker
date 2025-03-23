@@ -37,6 +37,8 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
     # Ensure data directory exists
     os.makedirs(os.path.join(app.root_path, "data"), exist_ok=True)
+    # Also create a backups directory
+    os.makedirs(os.path.join(app.root_path, "data", "backups"), exist_ok=True)
 
     # Default configuration
     app.config.update(
@@ -44,6 +46,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(app.root_path, 'data', 'medication_tracker.db')}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         DEBUG=os.environ.get("FLASK_ENV", "development") == "development",
+        MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max upload size
     )
 
     # Override config with test config if provided
@@ -64,6 +67,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     from routes.orders import order_bp
     from routes.hospital_visit_settings import settings_bp
     from routes.schedule import schedule_bp
+    from routes.advanced_settings import advanced_bp
 
     app.register_blueprint(medication_bp)
     app.register_blueprint(inventory_bp)
@@ -71,6 +75,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     app.register_blueprint(order_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(schedule_bp)
+    app.register_blueprint(advanced_bp)
 
     # Add utility functions to Jinja
     from utils import min_value, make_aware
@@ -90,7 +95,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         """Render the dashboard/home page."""
         medications = Medication.query.all()
         upcoming_visit = (
-            HospitalVisit.query.filter(HospitalVisit.visit_date > utcnow())
+            HospitalVisit.query.filter(HospitalVisit.visit_date >= utcnow())
             .order_by(HospitalVisit.visit_date)
             .first()
         )
@@ -177,6 +182,11 @@ if __name__ == "__main__":
     app = create_app()
     # Fix existing data in the database if needed
     fix_database_timezones(app)
+
+    # Start the automatic deduction thread
+    from hospital_visit_utils import setup_auto_deduction
+
+    auto_deduction_thread = setup_auto_deduction(app)
 
     port = int(os.environ.get("PORT", 8087))
     app.run(host="0.0.0.0", port=port, debug=app.config["DEBUG"])

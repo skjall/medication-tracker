@@ -8,7 +8,7 @@ import os
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 
-from models import db, Medication, MedicationSchedule, HospitalVisit
+from models import db, Medication, MedicationSchedule, HospitalVisit, InventoryLog
 from hospital_visit_utils import HospitalVisitSettings, calculate_days_between_visits
 
 settings_bp = Blueprint("settings", __name__, url_prefix="/settings")
@@ -84,8 +84,19 @@ def advanced():
         HospitalVisit.visit_date >= datetime.now(timezone.utc)
     ).count()
 
+    # Get inventory logs count
+    inventory_logs_count = InventoryLog.query.count()
+
     # Get database path for display
     db_path = os.path.join("data", "medication_tracker.db")
+
+    # Get database size
+    db_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), db_path)
+    db_size_mb = (
+        round(os.path.getsize(db_file_path) / (1024 * 1024), 2)
+        if os.path.exists(db_file_path)
+        else 0
+    )
 
     return render_template(
         "settings/advanced.html",
@@ -93,5 +104,7 @@ def advanced():
         med_count=med_count,
         schedule_count=schedule_count,
         upcoming_visits_count=upcoming_visits_count,
+        inventory_logs_count=inventory_logs_count,
         db_path=db_path,
+        db_size_mb=db_size_mb,
     )
