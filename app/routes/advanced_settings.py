@@ -1,10 +1,13 @@
 """
 Routes for advanced settings and data management functions.
+This is a partial fix that only addresses the timezone imports and functions.
 """
 
 import os
 import tempfile
 import pytz
+import logging
+
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List, Tuple
 
@@ -40,7 +43,69 @@ from data_utils import (
     optimize_database,
     clear_old_inventory_logs,
 )
-from timezone_helper import get_timezone_display_info, validate_timezone
+
+# Fixed import: Use the correct path to timezone_helper
+try:
+    # Try a direct import first (in case the module is in PYTHONPATH)
+    from timezone_helper import get_timezone_display_info, validate_timezone
+except ImportError:
+    # Fall back to a relative import (if the module is in the app package)
+    try:
+        from app.timezone_helper import get_timezone_display_info, validate_timezone
+    except ImportError:
+        # Last resort: implement the functions locally
+        def get_timezone_display_info() -> List[Dict[str, str]]:
+            """
+            Get timezone display information including region and current offset.
+            Fallback implementation if timezone_helper can't be imported.
+            """
+            now = datetime.now(timezone.utc)
+            timezone_info = []
+
+            for tz_name in sorted(pytz.common_timezones):
+                try:
+                    tz = pytz.timezone(tz_name)
+                    offset_seconds = tz.utcoffset(now).total_seconds()
+                    offset_hours = int(offset_seconds / 3600)
+                    offset_minutes = int((offset_seconds % 3600) / 60)
+
+                    # Format: "UTC+01:00" or "UTC-08:00"
+                    offset_str = f"UTC{'+' if offset_hours >= 0 else ''}{offset_hours:02d}:{abs(offset_minutes):02d}"
+
+                    # Split timezone name into region/city
+                    parts = tz_name.split("/")
+                    region = parts[0] if len(parts) > 0 else ""
+                    city = parts[1] if len(parts) > 1 else tz_name
+
+                    display_name = f"{city.replace('_', ' ')} ({offset_str})"
+
+                    timezone_info.append(
+                        {
+                            "name": tz_name,
+                            "region": region,
+                            "city": city,
+                            "offset": offset_str,
+                            "display_name": display_name,
+                        }
+                    )
+                except Exception:
+                    # Skip invalid timezones
+                    continue
+
+            # Sort by region then offset
+            return sorted(timezone_info, key=lambda x: (x["region"], x["offset"]))
+
+        def validate_timezone(timezone_name: str) -> bool:
+            """
+            Validate if a timezone name is valid.
+            Fallback implementation if timezone_helper can't be imported.
+            """
+            try:
+                pytz.timezone(timezone_name)
+                return True
+            except Exception:
+                return False
+
 
 advanced_bp = Blueprint("advanced", __name__, url_prefix="/advanced")
 
@@ -210,6 +275,8 @@ def advanced():
     """
     Advanced settings page (e.g., backup/restore, system settings).
     """
+    logging.info("Loading advanced settings page")
+
     # Get hospital visit settings
     settings = HospitalVisitSettings.get_settings()
 
@@ -235,6 +302,7 @@ def advanced():
     )
 
     # Import timezone helper for getting timezone information
+    logging.info("Getting timezone display information")
     timezone_info = get_timezone_display_info()
 
     return render_template(

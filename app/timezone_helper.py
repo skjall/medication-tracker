@@ -9,6 +9,7 @@ getting lists of common timezones.
 from typing import List, Dict, Optional
 from datetime import datetime, timezone
 import pytz
+import logging
 
 
 def get_common_timezones() -> List[str]:
@@ -18,44 +19,9 @@ def get_common_timezones() -> List[str]:
     Returns:
         List of timezone strings
     """
-    common_timezones = [
-        "UTC",
-        # Europe
-        "Europe/Amsterdam",
-        "Europe/Berlin",
-        "Europe/London",
-        "Europe/Madrid",
-        "Europe/Moscow",
-        "Europe/Paris",
-        "Europe/Rome",
-        "Europe/Vienna",
-        # North America
-        "US/Eastern",
-        "US/Central",
-        "US/Mountain",
-        "US/Pacific",
-        # Asia
-        "Asia/Dubai",
-        "Asia/Hong_Kong",
-        "Asia/Jerusalem",
-        "Asia/Shanghai",
-        "Asia/Singapore",
-        "Asia/Tokyo",
-        # Australia/Oceania
-        "Australia/Sydney",
-        "Australia/Melbourne",
-        "Pacific/Auckland",
-        # South America
-        "America/Bogota",
-        "America/Buenos_Aires",
-        "America/Sao_Paulo",
-        # Africa
-        "Africa/Cairo",
-        "Africa/Johannesburg",
-        "Africa/Lagos",
-    ]
-
-    return sorted(common_timezones)
+    timezones = sorted(pytz.common_timezones)
+    logging.info(f"Common timezones: {timezones}")
+    return timezones
 
 
 def get_timezone_display_info() -> List[Dict[str, str]]:
@@ -65,6 +31,7 @@ def get_timezone_display_info() -> List[Dict[str, str]]:
     Returns:
         List of dictionaries with timezone information
     """
+    logging.info("Getting timezone display information")
     now = datetime.now(timezone.utc)
     timezone_info = []
 
