@@ -11,6 +11,9 @@ from datetime import datetime, timezone
 import pytz
 import logging
 
+# Get module-specific logger
+logger = logging.getLogger(__name__)
+
 
 def get_common_timezones() -> List[str]:
     """
@@ -19,9 +22,13 @@ def get_common_timezones() -> List[str]:
     Returns:
         List of timezone strings
     """
-    timezones = sorted(pytz.common_timezones)
-    logging.info(f"Common timezones: {timezones}")
-    return timezones
+    try:
+        timezones = sorted(pytz.common_timezones)
+        logger.info(f"Found {len(timezones)} common timezones")
+        return timezones
+    except Exception as e:
+        logger.error(f"Error getting common timezones: {e}")
+        return []
 
 
 def get_timezone_display_info() -> List[Dict[str, str]]:
@@ -31,14 +38,29 @@ def get_timezone_display_info() -> List[Dict[str, str]]:
     Returns:
         List of dictionaries with timezone information
     """
-    logging.info("Getting timezone display information")
-    now = datetime.now(timezone.utc)
+    logger.info("Getting timezone display information")
+
+    # Important: Use a naive datetime object (no timezone info)
+    # This is required for pytz localization
+    now_naive = datetime.now().replace(microsecond=0)
+
     timezone_info = []
+
+    # Track how many timezones we're processing
+    processed = 0
+    skipped = 0
 
     for tz_name in get_common_timezones():
         try:
+            processed += 1
             tz = pytz.timezone(tz_name)
-            offset_seconds = tz.utcoffset(now).total_seconds()
+
+            # Properly localize the naive datetime using pytz
+            now_localized = tz.localize(now_naive)
+
+            # Get UTC offset
+            utc_offset = now_localized.utcoffset()
+            offset_seconds = utc_offset.total_seconds()
             offset_hours = int(offset_seconds / 3600)
             offset_minutes = int((offset_seconds % 3600) / 60)
 
@@ -56,17 +78,48 @@ def get_timezone_display_info() -> List[Dict[str, str]]:
                 {
                     "name": tz_name,
                     "region": region,
-                    "city": city,
+                    "city": city.replace("_", " "),
                     "offset": offset_str,
                     "display_name": display_name,
                 }
             )
-        except Exception:
-            # Skip invalid timezones
+        except Exception as e:
+            skipped += 1
+            logger.error(f"Error processing timezone {tz_name}: {e}")
             continue
 
-    # Sort by region then offset
-    return sorted(timezone_info, key=lambda x: (x["region"], x["offset"]))
+    # Process special timezones
+    # UTC and GMT are already in pytz.common_timezones, but let's make sure they're in our list
+    for special_tz in ["UTC", "GMT"]:
+        if not any(tz["name"] == special_tz for tz in timezone_info):
+            timezone_info.append(
+                {
+                    "name": special_tz,
+                    "region": "",
+                    "city": special_tz,
+                    "offset": "UTC+00:00",
+                    "display_name": f"{special_tz} (UTC+00:00)",
+                }
+            )
+
+    # Log the result
+    logger.info(
+        f"Processed {processed} timezones, skipped {skipped}, returning {len(timezone_info)} entries"
+    )
+
+    # Sort by region and then by city
+    result = sorted(
+        timezone_info, key=lambda x: (x.get("region", ""), x.get("city", ""))
+    )
+
+    # Log final count
+    logger.info(f"Final timezone list contains {len(result)} entries")
+
+    # Print first few entries as a sample
+    for i, tz in enumerate(result[:5]):
+        logger.debug(f"Sample timezone {i+1}: {tz['name']} - {tz['display_name']}")
+
+    return result
 
 
 def validate_timezone(timezone_name: str) -> bool:

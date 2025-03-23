@@ -36,14 +36,25 @@
 
                             {% set regions = timezone_info | groupby('region') %}
                             {% for region, timezones in regions %}
-                                <optgroup label="{{ region }}">
-                                    {% for tz in timezones %}
-                                        {% if tz.name != settings.timezone_name %}
-                                            <option value="{{ tz.name }}">{{ tz.display_name }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </optgroup>
+                                {% if region %}
+                                    <optgroup label="{{ region }}">
+                                        {% for tz in timezones %}
+                                            {% if tz.name != settings.timezone_name %}
+                                                <option value="{{ tz.name }}">{{ tz.display_name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endif %}
                             {% endfor %}
+
+                            <!-- Special timezones without a region -->
+                            <optgroup label="Other">
+                                {% for tz in timezone_info %}
+                                    {% if not tz.region and tz.name != settings.timezone_name %}
+                                        <option value="{{ tz.name }}">{{ tz.display_name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
                         </select>
                         <div class="form-text">
                             Select your local timezone. This affects how dates and times are displayed throughout the application.
