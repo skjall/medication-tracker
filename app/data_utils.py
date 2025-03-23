@@ -340,7 +340,7 @@ def import_medications_from_csv(file_path: str) -> Tuple[int, List[str]]:
                         safety_margin_days=(
                             int(row["Safety Margin Days"])
                             if row.get("Safety Margin Days")
-                            else 14
+                            else 30
                         ),
                     )
 

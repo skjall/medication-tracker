@@ -68,7 +68,7 @@ class Medication(db.Model):
         Integer, default=0, comment="Minimum inventory level before warning"
     )
     safety_margin_days: Mapped[int] = mapped_column(
-        Integer, default=14, comment="Extra days to add when calculating needs"
+        Integer, default=30, comment="Extra days to add when calculating needs"
     )
 
     # Auto deduction enabled flag

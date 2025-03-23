@@ -34,7 +34,7 @@ def new():
         package_size_n3 = int(request.form.get("package_size_n3", 0) or 0)
 
         min_threshold = int(request.form.get("min_threshold", 0) or 0)
-        safety_margin_days = int(request.form.get("safety_margin_days", 14) or 14)
+        safety_margin_days = int(request.form.get("safety_margin_days", 30) or 30)
 
         # Create new medication
         medication = Medication(
@@ -99,7 +99,7 @@ def edit(id: int):
             request.form.get("min_threshold", medication.min_threshold) or 0
         )
         medication.safety_margin_days = int(
-            request.form.get("safety_margin_days", medication.safety_margin_days) or 14
+            request.form.get("safety_margin_days", medication.safety_margin_days) or 30
         )
 
         db.session.commit()
