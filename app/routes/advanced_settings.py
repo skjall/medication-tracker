@@ -4,6 +4,7 @@ Routes for advanced settings and data management functions.
 
 import os
 import tempfile
+import pytz
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List, Tuple
 
@@ -20,7 +21,15 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 
-from models import db, Medication, Inventory, InventoryLog, HospitalVisit
+from models import (
+    db,
+    Medication,
+    Inventory,
+    InventoryLog,
+    HospitalVisit,
+    HospitalVisitSettings,
+    MedicationSchedule,
+)
 from data_utils import (
     export_medications_to_csv,
     export_inventory_to_csv,
@@ -31,6 +40,7 @@ from data_utils import (
     optimize_database,
     clear_old_inventory_logs,
 )
+from timezone_helper import get_timezone_display_info, validate_timezone
 
 advanced_bp = Blueprint("advanced", __name__, url_prefix="/advanced")
 
@@ -171,3 +181,70 @@ def reset_data():
         flash(f"Error resetting data: {str(e)}", "error")
 
     return redirect(url_for("index"))
+
+
+@advanced_bp.route("/update_timezone", methods=["POST"])
+def update_timezone():
+    """
+    Update application timezone setting.
+    """
+    timezone_name = request.form.get("timezone_name", "UTC")
+
+    # Validate timezone
+    try:
+        pytz.timezone(timezone_name)
+    except Exception as e:
+        flash(f"Invalid timezone: {timezone_name}", "error")
+        return redirect(url_for("settings.advanced"))
+
+    settings = HospitalVisitSettings.get_settings()
+    settings.timezone_name = timezone_name
+    db.session.commit()
+
+    flash(f"Application timezone updated to {timezone_name}", "success")
+    return redirect(url_for("settings.advanced"))
+
+
+@advanced_bp.route("/advanced", methods=["GET"])
+def advanced():
+    """
+    Advanced settings page (e.g., backup/restore, system settings).
+    """
+    # Get hospital visit settings
+    settings = HospitalVisitSettings.get_settings()
+
+    # Get database statistics
+    med_count = Medication.query.count()
+    schedule_count = MedicationSchedule.query.count()
+    upcoming_visits_count = HospitalVisit.query.filter(
+        HospitalVisit.visit_date >= datetime.now(timezone.utc)
+    ).count()
+
+    # Get inventory logs count
+    inventory_logs_count = InventoryLog.query.count()
+
+    # Get database path for display
+    db_path = os.path.join("data", "medication_tracker.db")
+
+    # Get database size
+    db_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), db_path)
+    db_size_mb = (
+        round(os.path.getsize(db_file_path) / (1024 * 1024), 2)
+        if os.path.exists(db_file_path)
+        else 0
+    )
+
+    # Import timezone helper for getting timezone information
+    timezone_info = get_timezone_display_info()
+
+    return render_template(
+        "settings/advanced.html",
+        settings=settings,
+        med_count=med_count,
+        schedule_count=schedule_count,
+        upcoming_visits_count=upcoming_visits_count,
+        inventory_logs_count=inventory_logs_count,
+        db_path=db_path,
+        db_size_mb=db_size_mb,
+        timezone_info=timezone_info,
+    )

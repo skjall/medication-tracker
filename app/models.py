@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, List, Tuple, Any
-import os
+from pytz import timezone as pytz_timezone
 import enum
 import json
 
@@ -557,23 +557,31 @@ class MedicationSchedule(db.Model):
     def is_due_now(self, current_time: datetime) -> bool:
         """
         Check if medication is due to be taken at the current time.
+
         Args:
-            current_time: The current datetime
+            current_time: The current datetime in UTC
+
         Returns:
             Boolean indicating if the medication is due
         """
-        # Ensure current_time is timezone-aware
+        # Ensure current_time is timezone-aware UTC
         current_time = ensure_timezone_utc(current_time)
+
+        # Convert to local timezone for comparison with schedule times
+        from utils import to_local_timezone
+
+        local_time = to_local_timezone(current_time)
 
         # If we've already deducted today or there's no last deduction, check schedule
         if self.last_deduction is not None:
             last_deduction = ensure_timezone_utc(self.last_deduction)
-            last_deduction_date = last_deduction.date()
-            if last_deduction_date == current_time.date():
+            # Convert last deduction to local time for date comparison
+            local_last_deduction = to_local_timezone(last_deduction)
+            if local_last_deduction.date() == local_time.date():
                 return False  # Already deducted today
 
         # Get current time in HH:MM format for comparison
-        current_time_str = current_time.strftime("%H:%M")
+        current_time_str = local_time.strftime("%H:%M")
         times_list = self.formatted_times
 
         # Check if current time matches any of the scheduled times
@@ -590,13 +598,15 @@ class MedicationSchedule(db.Model):
                 return True  # First time taking this medication
 
             last_deduction = ensure_timezone_utc(self.last_deduction)
-            days_since_last = (current_time.date() - last_deduction.date()).days
+            # Convert to local timezone for date comparison
+            local_last_deduction = to_local_timezone(last_deduction)
+            days_since_last = (local_time.date() - local_last_deduction.date()).days
             return days_since_last >= self.interval_days
 
         # For weekday schedule, check if today is one of the selected days
         elif self.schedule_type == ScheduleType.WEEKDAYS:
-            # Get day of week (0=Monday, 6=Sunday)
-            current_weekday = current_time.weekday()
+            # Get day of week (0=Monday, 6=Sunday) using local time
+            current_weekday = local_time.weekday()
             return current_weekday in self.formatted_weekdays
 
         return False
@@ -643,6 +653,9 @@ class HospitalVisitSettings(db.Model):
     # Whether orders should by default cover until next-but-one visit
     default_order_for_next_but_one: Mapped[bool] = mapped_column(Boolean, default=True)
 
+    # Timezone setting for the application
+    timezone_name: Mapped[str] = mapped_column(String(50), default="UTC")
+
     # Last automatic deduction check timestamp
     last_deduction_check: Mapped[Optional[datetime]] = mapped_column(
         DateTime, nullable=True
@@ -671,6 +684,7 @@ class HospitalVisitSettings(db.Model):
                 default_visit_interval=90,
                 auto_schedule_visits=False,
                 default_order_for_next_but_one=True,
+                timezone_name="UTC",
             )
             db.session.add(settings)
             db.session.commit()

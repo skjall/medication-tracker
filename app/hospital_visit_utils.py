@@ -84,6 +84,7 @@ def auto_deduct_inventory():
     Should be run regularly (e.g. every hour) to ensure timely deductions.
     """
     from models import Medication
+    from utils import to_local_timezone, from_local_timezone
 
     logging.info("Running automatic inventory deduction")
 

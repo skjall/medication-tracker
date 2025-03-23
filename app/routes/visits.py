@@ -60,13 +60,15 @@ def new():
         logger.debug(f"New visit form data: date={visit_date_str}, notes={notes}")
 
         try:
-            # Parse date from form
-            visit_date = datetime.strptime(visit_date_str, "%d.%m.%Y")
+            # Parse date from form - explicitly handle DD.MM.YYYY format
+            visit_date = datetime.strptime(visit_date_str, "%Y-%m-%d")
             logger.debug(f"Parsed visit date: {visit_date}")
 
-            # Make the datetime timezone-aware
-            visit_date = visit_date.replace(tzinfo=timezone.utc)
-            logger.debug(f"Timezone-aware visit date: {visit_date}")
+            # Convert local date to UTC for storage
+            from utils import from_local_timezone
+
+            visit_date = from_local_timezone(visit_date)
+            logger.debug(f"UTC visit date: {visit_date}")
 
             # Create new visit
             visit = HospitalVisit(visit_date=visit_date, notes=notes)
@@ -154,12 +156,14 @@ def edit(id: int):
 
         try:
             # Parse date from form
-            visit_date = datetime.strptime(visit_date_str, "%d.%m.%Y")
+            visit_date = datetime.strptime(visit_date_str, "%Y-%m-%d")
             logger.debug(f"Parsed visit date: {visit_date}")
 
-            # Make the datetime timezone-aware
-            visit_date = visit_date.replace(tzinfo=timezone.utc)
-            logger.debug(f"Timezone-aware visit date: {visit_date}")
+            # Convert local date to UTC for storage
+            from utils import from_local_timezone
+
+            visit_date = from_local_timezone(visit_date)
+            logger.debug(f"UTC visit date: {visit_date}")
 
             # Update visit
             visit.visit_date = visit_date
@@ -178,8 +182,11 @@ def edit(id: int):
             logger.error(f"Date parsing error: {e} for input '{visit_date_str}'")
             flash("Invalid date format. Please use DD.MM.YYYY format.", "error")
 
-    # Format date for the form
-    formatted_date = visit.visit_date.strftime("%d.%m.%Y")
+    # Format date for the form - use local timezone
+    from utils import to_local_timezone
+
+    local_visit_date = to_local_timezone(visit.visit_date)
+    formatted_date = local_visit_date.strftime("%d.%m.%Y")
     logger.debug(f"Formatted date for form: {formatted_date}")
 
     return render_template(

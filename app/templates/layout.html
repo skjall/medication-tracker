@@ -105,7 +105,11 @@
 
     <footer class="bg-light py-3 mt-auto">
         <div class="container text-center">
-            <p class="text-muted mb-0">Jan Gro&szlig;heim &copy; {{ now.year }}</p>
+            <p class="text-muted mb-0">
+                Jan Gro&szlig;heim &copy; {{ now.year }} |
+                Timezone: {{ settings.timezone_name }} |
+                Local time: {{ now.strftime('%H:%M:%S') }}
+            </p>
         </div>
     </footer>
 

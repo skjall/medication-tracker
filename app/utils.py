@@ -238,3 +238,85 @@ def optimize_database() -> Tuple[bool, str]:
 
     except Exception as e:
         return False, f"Error optimizing database: {str(e)}"
+
+
+def get_application_timezone():
+    """
+    Get the application timezone from settings.
+
+    Returns:
+        pytz timezone object for the configured timezone
+    """
+    from models import HospitalVisitSettings
+
+    settings = HospitalVisitSettings.get_settings()
+    import pytz
+
+    return pytz.timezone(settings.timezone_name)
+
+
+def to_local_timezone(dt: datetime) -> datetime:
+    """
+    Convert UTC datetime to local application timezone.
+
+    Args:
+        dt: Datetime object in UTC
+
+    Returns:
+        Datetime object converted to local application timezone
+    """
+    if dt is None:
+        return None
+    # Ensure datetime is UTC
+    dt = ensure_timezone_utc(dt)
+    # Convert to local timezone
+    return dt.astimezone(get_application_timezone())
+
+
+def from_local_timezone(dt: datetime) -> datetime:
+    """
+    Convert local datetime to UTC for storage.
+
+    Args:
+        dt: Datetime object in local timezone
+
+    Returns:
+        Datetime object converted to UTC
+    """
+    if dt is None:
+        return None
+    # If datetime has no timezone, assume it's in local timezone
+    if dt.tzinfo is None:
+        local_tz = get_application_timezone()
+        dt = local_tz.localize(dt)
+    # Convert to UTC
+    return dt.astimezone(timezone.utc)
+
+
+# Modified formatting functions
+def format_date(date: datetime) -> str:
+    """
+    Format a datetime object for display in local timezone.
+
+    Args:
+        date: The datetime object to format
+
+    Returns:
+        Formatted date string
+    """
+    date = to_local_timezone(date)
+    return date.strftime("%d.%m.%Y")
+
+
+def format_datetime(date: datetime) -> str:
+    """
+    Format a datetime object with time for display in local timezone.
+
+    Args:
+        date: The datetime object to format
+
+    Returns:
+        Formatted datetime string
+    """
+    date = to_local_timezone(date)
+    return date.strftime("%d.%m.%Y %H:%M")

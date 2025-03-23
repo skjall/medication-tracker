@@ -14,6 +14,62 @@
 </div>
 
 <div class="row">
+    <!-- Timezone Settings Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Timezone Settings</h5>
+            </div>
+            <div class="card-body">
+                <p>The application currently uses timezone: <strong>{{ settings.timezone_name }}</strong></p>
+                <p>Current time in this timezone: <strong>{{ now.strftime('%H:%M:%S %d.%m.%Y') }}</strong></p>
+
+                <form action="{{ url_for('advanced.update_timezone') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="timezone_name" class="form-label">Application Timezone</label>
+                        <select class="form-select" id="timezone_name" name="timezone_name">
+                            <optgroup label="Current">
+                                <option value="{{ settings.timezone_name }}" selected>
+                                    {{ settings.timezone_name }} (Current)
+                                </option>
+                            </optgroup>
+
+                            {% set regions = timezone_info | groupby('region') %}
+                            {% for region, timezones in regions %}
+                                <optgroup label="{{ region }}">
+                                    {% for tz in timezones %}
+                                        {% if tz.name != settings.timezone_name %}
+                                            <option value="{{ tz.name }}">{{ tz.display_name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            Select your local timezone. This affects how dates and times are displayed throughout the application.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Update Timezone
+                    </button>
+                </form>
+
+                <div class="alert alert-info mt-3">
+                    <div class="d-flex">
+                        <i class="fas fa-info-circle me-3 fa-2x"></i>
+                        <div>
+                            <p class="mb-0">
+                                Changing the timezone affects how dates and times are displayed and how scheduled deductions are processed.
+                                All data is stored in UTC internally.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Automatic Deduction Card -->
     <div class="col-md-6 mb-4">
         <div class="card h-100">
@@ -43,7 +99,9 @@
             </div>
         </div>
     </div>
+</div>
 
+<div class="row">
     <!-- Data Management Card -->
     <div class="col-md-6 mb-4">
         <div class="card h-100">
@@ -88,9 +146,7 @@
             </div>
         </div>
     </div>
-</div>
 
-<div class="row">
     <!-- System Status Card -->
     <div class="col-md-6 mb-4">
         <div class="card h-100">
@@ -134,7 +190,9 @@
             </div>
         </div>
     </div>
+</div>
 
+<div class="row">
     <!-- Database Maintenance Card -->
     <div class="col-md-6 mb-4">
         <div class="card h-100">
