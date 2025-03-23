@@ -37,7 +37,7 @@
                         <div class="timeline-item">
                             <div class="timeline-item-content bg-info text-white">
                                 <div class="timeline-item-title">Next Visit</div>
-                                <div class="timeline-item-date">{{ upcoming_visit.visit_date.strftime('%Y-%m-%d') }}</div>
+                                <div class="timeline-item-date">{{ upcoming_visit.visit_date.strftime('%d.%m.%Y') }}</div>
                                 <div class="timeline-item-days">{{ upcoming_visit.days_until }} days</div>
                             </div>
                         </div>
@@ -54,7 +54,7 @@
                             <div class="timeline-item">
                                 <div class="timeline-item-content bg-secondary text-white">
                                     <div class="timeline-item-title">Next-But-One Visit</div>
-                                    <div class="timeline-item-date">{{ next_but_one_visit.visit_date.strftime('%Y-%m-%d') }}</div>
+                                    <div class="timeline-item-date">{{ next_but_one_visit.visit_date.strftime('%d.%m.%Y') }}</div>
                                     <div class="timeline-item-days">Estimated</div>
                                 </div>
                             </div>
@@ -67,7 +67,7 @@
                             <div class="timeline-item">
                                 <div class="timeline-item-content bg-primary text-white">
                                     <div class="timeline-item-title">Next-But-One Visit</div>
-                                    <div class="timeline-item-date">{{ next_but_one_visit.visit_date.strftime('%Y-%m-%d') }}</div>
+                                    <div class="timeline-item-date">{{ next_but_one_visit.visit_date.strftime('%d.%m.%Y') }}</div>
                                     <div class="timeline-item-days">{{ nbut1_days }} days</div>
                                 </div>
                             </div>

@@ -35,7 +35,7 @@
                 <p>
                     <strong>Associated Visit:</strong>
                     <a href="{{ url_for('visits.show', id=visit.id) }}">
-                        {{ visit.visit_date.strftime('%Y-%m-%d') }}
+                        {{ visit.visit_date.strftime('%d.%m.%Y') }}
                     </a>
                     {% if make_aware(visit.visit_date) >= now %}
                         <span class="badge bg-info ms-2">{{ visit.days_until }} days away</span>
@@ -45,7 +45,7 @@
                 </p>
 
                 <p>
-                    <strong>Created:</strong> {{ order.created_date.strftime('%Y-%m-%d %H:%M') }}
+                    <strong>Created:</strong> {{ order.created_date.strftime('%d.%m.%Y %H:%M') }}
                 </p>
 
                 <p>

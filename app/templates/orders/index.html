@@ -39,7 +39,7 @@
                                 </td>
                                 <td>
                                     <a href="{{ url_for('visits.show', id=order.hospital_visit.id) }}">
-                                        {{ order.hospital_visit.visit_date.strftime('%Y-%m-%d') }}
+                                        {{ order.hospital_visit.visit_date.strftime('%d.%m.%Y') }}
                                     </a>
                                 </td>
                                 <td>
@@ -47,7 +47,7 @@
                                         {{ order.status|capitalize }}
                                     </span>
                                 </td>
-                                <td>{{ order.created_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ order.created_date.strftime('%d.%m.%Y') }}</td>
                                 <td>{{ order.order_items|length }} medication{% if order.order_items|length != 1 %}s{% endif %}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
@@ -109,10 +109,10 @@
                                 </td>
                                 <td>
                                     <a href="{{ url_for('visits.show', id=order.hospital_visit.id) }}">
-                                        {{ order.hospital_visit.visit_date.strftime('%Y-%m-%d') }}
+                                        {{ order.hospital_visit.visit_date.strftime('%d.%m.%Y') }}
                                     </a>
                                 </td>
-                                <td>{{ order.created_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ order.created_date.strftime('%d.%m.%Y') }}</td>
                                 <td>{{ order.order_items|length }} medication{% if order.order_items|length != 1 %}s{% endif %}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">

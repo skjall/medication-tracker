@@ -61,7 +61,7 @@
                                 </td>
                                 <td class="{% if med.depletion_date and (med.depletion_date - now).days < 14 %}text-danger{% else %}text-warning{% endif %}">
                                     {% if med.depletion_date %}
-                                        {{ med.depletion_date.strftime('%Y-%m-%d') }}
+                                        {{ med.depletion_date.strftime('%d.%m.%Y') }}
                                     {% else %}
                                         <span class="text-muted">N/A</span>
                                     {% endif %}

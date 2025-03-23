@@ -148,7 +148,7 @@ class Medication(db.Model):
                 if amount > 0 and self.inventory.current_count >= amount:
                     self.inventory.update_count(
                         -amount,
-                        f"Automatic deduction: {amount} units at {current_time.strftime('%Y-%m-%d %H:%M')}",
+                        f"Automatic deduction: {amount} units at {current_time.strftime('%d.%m.%Y %H:%M')}",
                     )
                     total_deducted += amount
                     deduction_made = True
@@ -421,7 +421,7 @@ class HospitalVisit(db.Model):
     )
 
     def __repr__(self) -> str:
-        return f"<HospitalVisit {self.visit_date.strftime('%Y-%m-%d')}>"
+        return f"<HospitalVisit {self.visit_date.strftime('%d.%m.%Y')}>"
 
     @property
     def days_until(self) -> int:

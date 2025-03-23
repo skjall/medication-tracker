@@ -23,7 +23,7 @@
             <div class="card-body">
                 {% if upcoming_visit %}
                     <h3 class="text-primary">
-                        {{ upcoming_visit.visit_date.strftime('%Y-%m-%d') }}
+                        {{ upcoming_visit.visit_date.strftime('%d.%m.%Y') }}
                         <small class="text-muted ms-2">({{ upcoming_visit.days_until }} days away)</small>
                     </h3>
                     {% if upcoming_visit.notes %}
@@ -141,7 +141,7 @@
                                         </td>
                                         <td>
                                             {% if med.depletion_date %}
-                                                {{ med.depletion_date.strftime('%Y-%m-%d') }}
+                                                {{ med.depletion_date.strftime('%d.%m.%Y') }}
                                             {% else %}
                                                 <span class="text-muted">N/A</span>
                                             {% endif %}

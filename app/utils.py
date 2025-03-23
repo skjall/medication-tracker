@@ -38,7 +38,7 @@ def format_date(date: datetime) -> str:
     Returns:
         Formatted date string
     """
-    return date.strftime("%Y-%m-%d")
+    return date.strftime("%d.%m.%Y")
 
 
 def format_datetime(date: datetime) -> str:
@@ -51,7 +51,7 @@ def format_datetime(date: datetime) -> str:
     Returns:
         Formatted datetime string
     """
-    return date.strftime("%Y-%m-%d %H:%M")
+    return date.strftime("%d.%m.%Y %H:%M")
 
 
 def make_aware(dt: datetime) -> datetime:

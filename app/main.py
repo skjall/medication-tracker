@@ -94,6 +94,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     def index():
         """Render the dashboard/home page."""
         medications = Medication.query.all()
+        # Using the same filter as the visit page to ensure consistency
         upcoming_visit = (
             HospitalVisit.query.filter(HospitalVisit.visit_date >= utcnow())
             .order_by(HospitalVisit.visit_date)

@@ -86,7 +86,7 @@
                                 <td>
                                     {% if med.depletion_date %}
                                         <span class="{{ color_class }}">
-                                            {{ med.depletion_date.strftime('%Y-%m-%d') }}
+                                            {{ med.depletion_date.strftime('%d.%m.%Y') }}
                                         </span>
                                     {% else %}
                                         <span class="text-muted">N/A</span>

@@ -5,8 +5,7 @@ Routes for hospital visit management.
 from datetime import datetime, timezone
 from typing import Dict, Any, List
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-
-from models import db, HospitalVisit, Order, OrderItem, Medication
+from models import db, HospitalVisit, Order, OrderItem, Medication, utcnow
 
 visit_bp = Blueprint("visits", __name__, url_prefix="/visits")
 
@@ -14,20 +13,16 @@ visit_bp = Blueprint("visits", __name__, url_prefix="/visits")
 @visit_bp.route("/")
 def index():
     """Display list of all hospital visits."""
-    # Get upcoming visits
+    # Get upcoming visits - now using utcnow() from models
     upcoming_visits = (
-        HospitalVisit.query.filter(
-            HospitalVisit.visit_date >= datetime.now(timezone.utc)
-        )
+        HospitalVisit.query.filter(HospitalVisit.visit_date >= utcnow())
         .order_by(HospitalVisit.visit_date)
         .all()
     )
 
     # Get past visits
     past_visits = (
-        HospitalVisit.query.filter(
-            HospitalVisit.visit_date < datetime.now(timezone.utc)
-        )
+        HospitalVisit.query.filter(HospitalVisit.visit_date < utcnow())
         .order_by(HospitalVisit.visit_date.desc())
         .limit(10)
         .all()
@@ -48,7 +43,7 @@ def new():
 
         try:
             # Parse date from form
-            visit_date = datetime.strptime(visit_date_str, "%Y-%m-%d")
+            visit_date = datetime.strptime(visit_date_str, "%d.%m.%Y")
             # Make the datetime timezone-aware
             visit_date = visit_date.replace(tzinfo=timezone.utc)
 
@@ -120,7 +115,7 @@ def edit(id: int):
 
         try:
             # Parse date from form
-            visit_date = datetime.strptime(visit_date_str, "%Y-%m-%d")
+            visit_date = datetime.strptime(visit_date_str, "%d.%m.%Y")
             # Make the datetime timezone-aware
             visit_date = visit_date.replace(tzinfo=timezone.utc)
 
@@ -137,7 +132,7 @@ def edit(id: int):
             flash("Invalid date format. Please use YYYY-MM-DD format.", "error")
 
     # Format date for the form
-    formatted_date = visit.visit_date.strftime("%Y-%m-%d")
+    formatted_date = visit.visit_date.strftime("%d.%m.%Y")
 
     return render_template(
         "visits/edit.html", visit=visit, formatted_date=formatted_date
@@ -169,9 +164,7 @@ def delete(id: int):
 def next_visit():
     """Display details about the next upcoming hospital visit."""
     next_visit = (
-        HospitalVisit.query.filter(
-            HospitalVisit.visit_date >= datetime.now(timezone.utc)
-        )
+        HospitalVisit.query.filter(HospitalVisit.visit_date >= utcnow())
         .order_by(HospitalVisit.visit_date)
         .first()
     )

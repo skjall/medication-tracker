@@ -102,7 +102,7 @@
                     <dt class="col-sm-6">Last Deduction Check:</dt>
                     <dd class="col-sm-6">
                         {% if settings.last_deduction_check %}
-                            {{ settings.last_deduction_check.strftime('%Y-%m-%d %H:%M') }}
+                            {{ settings.last_deduction_check.strftime('%d.%m.%Y %H:%M') }}
                         {% else %}
                             <span class="text-muted">Never</span>
                         {% endif %}

@@ -19,7 +19,7 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Edit Visit on {{ visit.visit_date.strftime('%Y-%m-%d') }}</h5>
+        <h5 class="mb-0">Edit Visit on {{ visit.visit_date.strftime('%d.%m.%Y') }}</h5>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('visits.edit', id=visit.id) }}">

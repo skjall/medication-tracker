@@ -243,7 +243,7 @@
                         <div class="col-md-6 text-center">
                             {% if medication.depletion_date %}
                                 <h3 class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}">
-                                    {{ medication.depletion_date.strftime('%Y-%m-%d') }}
+                                    {{ medication.depletion_date.strftime('%d.%m.%Y') }}
                                 </h3>
                                 <p>Depletion Date</p>
                             {% else %}
@@ -293,7 +293,7 @@
                         {% for item in medication.order_items %}
                             <tr>
                                 <td>{{ item.order.id }}</td>
-                                <td>{{ item.order.hospital_visit.visit_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ item.order.hospital_visit.visit_date.strftime('%d.%m.%Y') }}</td>
                                 <td>
                                     <span class="badge {% if item.order.status == 'planned' %}bg-primary{% elif item.order.status == 'printed' %}bg-info{% elif item.order.status == 'fulfilled' %}bg-success{% endif %}">
                                         {{ item.order.status|capitalize }}
