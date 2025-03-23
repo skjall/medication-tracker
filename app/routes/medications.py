@@ -23,11 +23,11 @@ def new():
     if request.method == "POST":
         # Extract form data
         name = request.form.get("name", "")
-        dosage = float(request.form.get("dosage", 1))  # Default to 1 for compatibility
-        frequency = float(
-            request.form.get("frequency", 1)
-        )  # Default to 1 for compatibility
         notes = request.form.get("notes", "")
+
+        # Keep these fields for database compatibility, but they're no longer used for calculations
+        dosage = float(request.form.get("dosage", 1))  # Default to 1
+        frequency = float(request.form.get("frequency", 1))  # Default to 1
 
         package_size_n1 = int(request.form.get("package_size_n1", 0) or 0)
         package_size_n2 = int(request.form.get("package_size_n2", 0) or 0)
@@ -39,8 +39,8 @@ def new():
         # Create new medication
         medication = Medication(
             name=name,
-            dosage=dosage,
-            frequency=frequency,
+            dosage=dosage,  # Kept for database compatibility
+            frequency=frequency,  # Kept for database compatibility
             notes=notes,
             package_size_n1=package_size_n1,
             package_size_n2=package_size_n2,
@@ -79,10 +79,13 @@ def edit(id: int):
     if request.method == "POST":
         # Update medication with form data
         medication.name = request.form.get("name", medication.name)
+
+        # Keep these fields for database compatibility, but they're no longer used for calculations
         medication.dosage = float(request.form.get("dosage", medication.dosage))
         medication.frequency = float(
             request.form.get("frequency", medication.frequency)
         )
+
         medication.notes = request.form.get("notes", medication.notes)
 
         medication.package_size_n1 = int(

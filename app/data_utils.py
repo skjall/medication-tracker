@@ -5,16 +5,28 @@ These functions handle CSV export/import and database operations.
 
 import os
 import csv
+import json
 import shutil
 import logging
+from datetime import datetime
 from io import StringIO
 from datetime import datetime, timedelta, timezone
 from typing import Tuple, List, Dict, Any, Optional
 
 from flask import Response, current_app
-from sqlalchemy import text
+from sqlalchemy import func
 
-from models import db, Inventory, Order, OrderItem, HospitalVisit, Medication
+from models import (
+    db,
+    Inventory,
+    Order,
+    OrderItem,
+    HospitalVisit,
+    Medication,
+    Medication,
+    MedicationSchedule,
+    ScheduleType,
+)
 from utils import format_date, format_datetime, ensure_timezone_utc, from_local_timezone
 
 
@@ -596,6 +608,7 @@ def import_visits_from_csv(
     Returns:
         Tuple of (number of records imported/updated, list of error messages)
     """
+
     success_count = 0
     errors = []
 
@@ -895,6 +908,217 @@ def reset_orders_data() -> int:
 
         # Delete orders
         count = Order.query.delete()
+        db.session.commit()
+
+        return count
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def export_schedules_to_csv() -> Response:
+    """
+    Export all medication schedules to a CSV file.
+
+    Returns:
+        Flask Response object with CSV data
+    """
+    si = StringIO()
+    writer = csv.writer(si)
+
+    # Write header
+    writer.writerow(
+        [
+            "Schedule ID",
+            "Medication ID",
+            "Medication Name",
+            "Schedule Type",
+            "Interval Days",
+            "Weekdays",
+            "Times of Day",
+            "Units Per Dose",
+            "Last Deduction",
+            "Created At",
+            "Updated At",
+        ]
+    )
+
+    # Write data
+    schedules = MedicationSchedule.query.all()
+    for schedule in schedules:
+        writer.writerow(
+            [
+                schedule.id,
+                schedule.medication_id,
+                schedule.medication.name,
+                schedule.schedule_type.value,
+                schedule.interval_days,
+                (
+                    ",".join(map(str, schedule.formatted_weekdays))
+                    if schedule.formatted_weekdays
+                    else ""
+                ),
+                ",".join(schedule.formatted_times),
+                schedule.units_per_dose,
+                (
+                    format_datetime(schedule.last_deduction)
+                    if schedule.last_deduction
+                    else ""
+                ),
+                format_datetime(schedule.created_at),
+                format_datetime(schedule.updated_at),
+            ]
+        )
+
+    output = si.getvalue()
+
+    # Create response
+    response = Response(
+        output,
+        mimetype="text/csv",
+        headers={
+            "Content-disposition": "attachment; filename=medication_schedules.csv"
+        },
+    )
+
+    return response
+
+
+def import_schedules_from_csv(
+    file_path: str, override: bool = False
+) -> Tuple[int, List[str]]:
+    """
+    Import medication schedules from a CSV file.
+
+    Args:
+        file_path: Path to the CSV file
+        override: If True, update existing schedules with the same ID or create new ones
+
+    Returns:
+        Tuple of (number of records imported/updated, list of error messages)
+    """
+    success_count = 0
+    errors = []
+
+    try:
+        with open(file_path, "r", newline="") as csvfile:
+            reader = csv.DictReader(csvfile)
+
+            for row in reader:
+                try:
+                    # Check if medication exists
+                    med_id = row.get("Medication ID")
+                    med_name = row.get("Medication Name")
+
+                    if med_id:
+                        medication = Medication.query.get(med_id)
+                    elif med_name:
+                        medication = Medication.query.filter_by(name=med_name).first()
+                    else:
+                        errors.append(f"Row without medication ID or name: {row}")
+                        continue
+
+                    if not medication:
+                        errors.append(
+                            f"Medication not found: ID={med_id}, Name={med_name}"
+                        )
+                        continue
+
+                    # Check if schedule exists
+                    schedule_id = row.get("Schedule ID")
+                    existing_schedule = None
+
+                    if schedule_id and schedule_id.isdigit():
+                        existing_schedule = MedicationSchedule.query.get(
+                            int(schedule_id)
+                        )
+
+                    if existing_schedule and not override:
+                        errors.append(
+                            f"Schedule #{schedule_id} already exists. Use override to update."
+                        )
+                        continue
+
+                    # Create or update schedule
+                    if existing_schedule and override:
+                        schedule = existing_schedule
+                    else:
+                        schedule = MedicationSchedule(medication_id=medication.id)
+                        db.session.add(schedule)
+
+                    # Update schedule fields
+                    schedule_type_value = row.get("Schedule Type", "daily")
+                    try:
+                        schedule.schedule_type = ScheduleType(schedule_type_value)
+                    except ValueError:
+                        errors.append(
+                            f"Invalid schedule type: {schedule_type_value}. Using 'daily'."
+                        )
+                        schedule.schedule_type = ScheduleType.DAILY
+
+                    # Update interval days
+                    schedule.interval_days = int(row.get("Interval Days", 1) or 1)
+
+                    # Update weekdays
+                    weekdays_str = row.get("Weekdays", "")
+                    if weekdays_str:
+                        try:
+                            weekdays = [int(day) for day in weekdays_str.split(",")]
+                            schedule.weekdays = json.dumps(weekdays)
+                        except Exception as e:
+                            errors.append(f"Error parsing weekdays: {e}")
+                            schedule.weekdays = json.dumps([])
+                    else:
+                        schedule.weekdays = json.dumps([])
+
+                    # Update times of day
+                    times_str = row.get("Times of Day", "")
+                    if times_str:
+                        times = times_str.split(",")
+                        schedule.times_of_day = json.dumps(times)
+                    else:
+                        errors.append(
+                            f"No times of day specified for schedule. Using default '09:00'."
+                        )
+                        schedule.times_of_day = json.dumps(["09:00"])
+
+                    # Update units per dose
+                    try:
+                        schedule.units_per_dose = float(
+                            row.get("Units Per Dose", 1.0) or 1.0
+                        )
+                    except ValueError:
+                        errors.append(
+                            f"Invalid units per dose: {row.get('Units Per Dose')}. Using 1.0."
+                        )
+                        schedule.units_per_dose = 1.0
+
+                    success_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error importing schedule: {str(e)}")
+
+            # Commit all changes
+            if success_count > 0:
+                db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        errors.append(f"Global import error: {str(e)}")
+
+    return success_count, errors
+
+
+def reset_schedules_data() -> int:
+    """
+    Reset schedule data by deleting all medication schedule records.
+
+    Returns:
+        Number of records deleted
+    """
+    try:
+        # Delete schedules
+        count = MedicationSchedule.query.delete()
         db.session.commit()
 
         return count

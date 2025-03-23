@@ -44,10 +44,13 @@ from data_utils import (
     export_inventory_to_csv,
     export_orders_to_csv,
     export_visits_to_csv,
+    export_schedules_to_csv,
     create_database_backup,
     import_medications_from_csv,
+    import_schedules_from_csv,
     optimize_database,
     clear_old_inventory_logs,
+    reset_schedules_data,
 )
 
 # Logger for this module
@@ -267,6 +270,8 @@ def export_data(data_type: str):
         return export_orders_to_csv()
     elif data_type == "visits":
         return export_visits_to_csv()
+    elif data_type == "schedules":
+        return export_schedules_to_csv()
     else:
         flash(f"Unknown export type: {data_type}", "error")
         return redirect(url_for("settings.advanced"))
@@ -441,6 +446,7 @@ def data_management():
     visit_count = HospitalVisit.query.count()
     order_count = Order.query.count()
     order_item_count = OrderItem.query.count()
+    schedule_count = MedicationSchedule.query.count()
 
     # Get database path for display
     db_path = os.path.join("data", "medication_tracker.db")
@@ -460,6 +466,7 @@ def data_management():
         visit_count=visit_count,
         order_count=order_count,
         order_item_count=order_item_count,
+        schedule_count=schedule_count,
         db_path=db_path,
         db_size_mb=db_size_mb,
     )
@@ -508,6 +515,10 @@ def import_data_type(data_type: str):
             from data_utils import import_visits_from_csv
 
             success_count, errors = import_visits_from_csv(file_path, override)
+        elif data_type == "schedules":
+            from data_utils import import_schedules_from_csv
+
+            success_count, errors = import_schedules_from_csv(file_path, override)
         else:
             flash(f"Unknown import type: {data_type}", "error")
             return redirect(url_for("settings.data_management"))
@@ -586,6 +597,12 @@ def reset_data_type(data_type: str):
 
             count = reset_visits_data()
             flash(f"All visit data has been reset ({count} records)", "success")
+
+        elif data_type == "schedules":
+            from data_utils import reset_schedules_data
+
+            count = reset_schedules_data()
+            flash(f"All schedule data has been reset ({count} records)", "success")
 
         else:
             flash(f"Unknown data type: {data_type}", "error")

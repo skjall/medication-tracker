@@ -25,13 +25,16 @@
 
                 <form action="{{ url_for('settings.update_timezone') }}" method="POST">
                     <div class="mb-3">
+                        <label for="timezone_search" class="form-label">Search Timezone</label>
+                        <input type="text" class="form-control" id="timezone_search" placeholder="Start typing to search (e.g. 'Berlin', 'New York')">
+                    </div>
+
+                    <div class="mb-3">
                         <label for="timezone_name" class="form-label">Application Timezone</label>
-                        <select class="form-select" id="timezone_name" name="timezone_name">
-                            <optgroup label="Current">
-                                <option value="{{ settings.timezone_name }}" selected>
-                                    {{ settings.timezone_name }} (Current)
-                                </option>
-                            </optgroup>
+                        <select class="form-select" id="timezone_name" name="timezone_name" size="10">
+                            <option value="{{ settings.timezone_name }}" selected>
+                                {{ settings.timezone_name }} (Current)
+                            </option>
 
                             {% set regions = timezone_info | groupby('region') %}
                             {% for region, timezones in regions %}
@@ -344,4 +347,73 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Timezone search functionality
+        const searchInput = document.getElementById('timezone_search');
+        const timezoneSelect = document.getElementById('timezone_name');
+
+        if (searchInput && timezoneSelect) {
+            const originalOptions = Array.from(timezoneSelect.options);
+            const originalOptgroups = Array.from(timezoneSelect.getElementsByTagName('optgroup'));
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+
+                // Reset select to original state
+                while (timezoneSelect.firstChild) {
+                    timezoneSelect.removeChild(timezoneSelect.firstChild);
+                }
+
+                if (searchTerm.length === 0) {
+                    // Restore original options and groups
+                    originalOptgroups.forEach(group => {
+                        timezoneSelect.appendChild(group.cloneNode(true));
+                    });
+
+                    // Make sure current timezone is still selected
+                    for (let i = 0; i < timezoneSelect.options.length; i++) {
+                        if (timezoneSelect.options[i].value === "{{ settings.timezone_name }}") {
+                            timezoneSelect.options[i].selected = true;
+                            break;
+                        }
+                    }
+                } else {
+                    // Filter options based on search term
+                    const matchingOptions = originalOptions.filter(option =>
+                        option.text.toLowerCase().includes(searchTerm)
+                    );
+
+                    // Add filtered options directly to select without optgroups
+                    matchingOptions.forEach(option => {
+                        const newOption = option.cloneNode(true);
+                        timezoneSelect.appendChild(newOption);
+
+                        // Keep current timezone selected
+                        if (newOption.value === "{{ settings.timezone_name }}") {
+                            newOption.selected = true;
+                        }
+                    });
+
+                    // If no matches found, add a placeholder option
+                    if (matchingOptions.length === 0) {
+                        const noMatchOption = document.createElement('option');
+                        noMatchOption.text = 'No matches found';
+                        noMatchOption.disabled = true;
+                        timezoneSelect.appendChild(noMatchOption);
+                    }
+                }
+            });
+
+            // Select the timezone when clicking on an option
+            timezoneSelect.addEventListener('change', function() {
+                const selectedOption = timezoneSelect.options[timezoneSelect.selectedIndex];
+                searchInput.value = selectedOption.text;
+            });
+        }
+    });
+</script>
 {% endblock %}

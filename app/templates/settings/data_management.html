@@ -38,6 +38,9 @@
                     <dt class="col-sm-6">Total Medications:</dt>
                     <dd class="col-sm-6">{{ med_count }}</dd>
 
+                    <dt class="col-sm-6">Medication Schedules:</dt>
+                    <dd class="col-sm-6">{{ schedule_count }}</dd>
+
                     <dt class="col-sm-6">Inventory Records:</dt>
                     <dd class="col-sm-6">{{ inventory_count }}</dd>
 
@@ -46,6 +49,7 @@
 
                     <dt class="col-sm-6">Orders:</dt>
                     <dd class="col-sm-6">{{ order_count }} ({{ order_item_count }} items)</dd>
+
                 </dl>
             </div>
         </div>
@@ -108,6 +112,28 @@
                             </button>
                         </td>
                     </tr>
+
+                    <!-- Schedules -->
+                    <tr>
+                      <td><strong>Schedules</strong></td>
+                      <td>Medication timing, frequency, and dosages</td>
+                      <td>{{ schedule_count }}</td>
+                      <td>
+                          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" data-import-type="schedules">
+                              <i class="fas fa-file-import me-1"></i>Import
+                          </button>
+                      </td>
+                      <td>
+                          <a href="{{ url_for('settings.export_data', data_type='schedules') }}" class="btn btn-success btn-sm">
+                              <i class="fas fa-file-export me-1"></i>Export
+                          </a>
+                      </td>
+                      <td>
+                          <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#resetModal" data-reset-type="schedules" data-reset-count="{{ schedule_count }}">
+                              <i class="fas fa-trash-alt me-1"></i>Reset
+                          </button>
+                      </td>
+                  </tr>
 
                     <!-- Inventory -->
                     <tr>
@@ -320,6 +346,10 @@
                     infoText.textContent = 'Import order data from a CSV file.';
                     csvHelpText.innerHTML = 'Expected columns:<br>Order ID, Visit Date, Status, Created Date, Medication, Quantity Needed, Packages N1, Packages N2, Packages N3';
                 }
+                else if (importType === 'schedules') {
+                    infoText.textContent = 'Import medication schedule data from a CSV file.';
+                    csvHelpText.innerHTML = 'Expected columns:<br>Medication ID or Medication Name, Schedule Type (daily/interval/weekdays), Interval Days, Weekdays (comma-separated), Times of Day (comma-separated), Units Per Dose';
+                }
             });
         }
 
@@ -356,6 +386,9 @@
                 }
                 else if (resetType === 'orders') {
                     detailsList.innerHTML = '<li>All order records</li><li>All order items</li>';
+                }
+                else if (resetType === 'schedules') {
+                    detailsList.innerHTML = '<li>All medication schedule records</li>';
                 }
 
                 // Update verification text instruction

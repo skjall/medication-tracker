@@ -48,14 +48,20 @@ class Medication(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    dosage: Mapped[float] = mapped_column(Float, nullable=False)
 
-    # Keeping frequency for backward compatibility, but will be calculated from schedules
+    # Legacy fields - marked as deprecated but kept for database compatibility
+    # These are no longer used for calculations
+    dosage: Mapped[float] = mapped_column(
+        Float,
+        nullable=False,
+        comment="DEPRECATED: No longer used for calculations, use schedules instead.",
+    )
     frequency: Mapped[float] = mapped_column(
         Float,
         nullable=False,
-        comment="Number of times per day (deprecated, use schedules)",
+        comment="DEPRECATED: No longer used for calculations, use schedules instead.",
     )
+
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Package sizes
@@ -98,15 +104,15 @@ class Medication(db.Model):
     )
 
     def __repr__(self) -> str:
-        return f"<Medication {self.name}, {self.dosage} units>"
+        return f"<Medication {self.name}>"
 
     @property
     def daily_usage(self) -> float:
-        """Calculate daily usage based on schedules or fallback to dosage*frequency."""
-        if self.schedules:
-            return sum(schedule.calculate_daily_usage() for schedule in self.schedules)
-        # Fallback to old calculation method
-        return self.dosage * self.frequency
+        """Calculate daily usage based on schedules."""
+        if not self.schedules:
+            # Return 0 if no schedules are defined
+            return 0.0
+        return sum(schedule.calculate_daily_usage() for schedule in self.schedules)
 
     @property
     def days_remaining(self) -> Optional[float]:

@@ -50,7 +50,7 @@
                     {% if medication.schedules %}
                         (based on {{ medication.schedules|length }} schedule{{ 's' if medication.schedules|length != 1 }})
                     {% else %}
-                        (based on basic dosage × frequency)
+                        (no schedules defined)
                     {% endif %}
                 </p>
             </div>
@@ -121,7 +121,7 @@
         {% else %}
             <div class="alert alert-info mt-3">
                 <i class="fas fa-info-circle me-2"></i>
-                No detailed schedules defined yet. Define schedules to enable automatic inventory deduction and more precise daily usage calculation.
+                No detailed schedules defined yet. Define schedules to enable automatic inventory deduction and precise daily usage calculation.
                 <div class="mt-2">
                     <a href="{{ url_for('schedules.new', medication_id=medication.id) }}" class="btn btn-sm btn-primary">
                         <i class="fas fa-plus me-1"></i>Add First Schedule
@@ -142,13 +142,24 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <h6>Dosage:</h6>
-                        <p>{{ medication.dosage }} units</p>
+                        <h6>Daily Usage:</h6>
+                        <p>
+                            {% if medication.daily_usage > 0 %}
+                                {{ medication.daily_usage|round(1) }} units per day
+                            {% else %}
+                                <span class="text-warning">No schedules defined</span>
+                            {% endif %}
+                        </p>
                     </div>
                     <div class="col-md-6">
-                        <h6>Base Frequency:</h6>
-                        <p>{{ medication.frequency }} times per day</p>
-                        <div class="small text-muted">(This is the legacy setting, prefer advanced scheduling)</div>
+                        <h6>Schedules:</h6>
+                        <p>
+                            {% if medication.schedules|length > 0 %}
+                                {{ medication.schedules|length }} schedule{{ 's' if medication.schedules|length != 1 }}
+                            {% else %}
+                                <span class="text-warning">None</span>
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
 

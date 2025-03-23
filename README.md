@@ -4,11 +4,32 @@ A lightweight Python-based web application hosted on Docker that helps track med
 
 ## Features
 
-- Medication management with dosage and frequency tracking
-- Inventory tracking with warnings for low stock
-- Hospital visit planning with medication needs calculation
-- Package size optimization for prescription orders
-- Printable order forms for hospital visits
+- **Medication Management**:
+  - Track medication dosage, frequency, and package sizes
+  - Advanced scheduling options (daily, interval, or specific weekdays)
+  - Automatic inventory deduction based on schedules
+
+- **Inventory Tracking**:
+  - Real-time inventory monitoring with low stock warnings
+  - Package-based inventory management (N1, N2, N3 sizes)
+  - Full history of inventory changes with timestamps
+
+- **Hospital Visit Planning**:
+  - Schedule and manage upcoming hospital visits
+  - Calculate medication needs until next visit
+  - Support for next-but-one visit planning
+
+- **Order Management**:
+  - Create medication orders for hospital visits
+  - Calculate package requirements based on needs
+  - Generate printable order forms
+  - Track order fulfillment and update inventory
+
+- **Data Management**:
+  - Import/export data for all system components
+  - CSV import/export for medications, inventory, visits, and orders
+  - Individual data type reset capabilities
+  - Database backup and optimization tools
 
 ## Screenshots
 
@@ -85,26 +106,47 @@ python app/main.py
    - Package sizes (N1, N2, N3)
    - Minimum threshold for alerts
    - Safety margin days for calculations
+3. Set up medication schedules to define when and how much to take
+4. Enable automatic deduction for seamless inventory management
 
 ### Managing Inventory
 
 1. Navigate to "Inventory" -> "Inventory Overview"
-2. Use the quick adjust buttons to update inventory
+2. Use the quick adjust buttons to update inventory levels
 3. View low stock warnings and depletion forecasts
+4. Track inventory changes with detailed history logs
 
 ### Scheduling Hospital Visits
 
 1. Navigate to "Hospital Visits" -> "Schedule Visit"
 2. Enter the date of your upcoming visit
 3. Optionally create an order for the visit
+4. Choose between regular ordering or next-but-one planning
 
 ### Creating Orders
 
 1. Navigate to "Orders" -> "New Order"
 2. Select medications needed until your next visit
-3. Review and submit the order
-4. Print the order for your hospital visit
-5. Mark as fulfilled when medications are received
+3. Review automatically calculated package requirements
+4. Generate a printable order form for your hospital visit
+5. Mark as fulfilled when medications are received to update inventory
+
+### Data Management
+
+1. Navigate to "Settings" -> "Advanced Settings" -> "Data Management"
+2. Import or export data for medications, inventory, visits, and orders
+3. Reset individual data categories as needed
+4. Create database backups before making significant changes
+
+## System Settings
+
+### Timezone Configuration
+
+The application supports all standard timezones and displays dates and times according to your selected timezone. All data is stored in UTC format internally for consistency.
+
+### Automatic Deduction
+
+The system checks hourly for scheduled medications and automatically deducts them from your inventory. This keeps your inventory levels accurate without manual intervention.
 
 ## Data Structure
 
@@ -114,7 +156,8 @@ The application uses SQLite for data storage with the following structure:
 - **Inventory**: Current stock levels and adjustment history
 - **Hospital Visits**: Upcoming and past visit records
 - **Orders**: Medication orders linked to hospital visits
+- **Schedules**: Detailed medication scheduling information
 
 ## License
 
-This project is propritary
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
