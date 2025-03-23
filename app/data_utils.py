@@ -6,6 +6,7 @@ These functions handle CSV export/import and database operations.
 import os
 import csv
 import shutil
+import logging
 from io import StringIO
 from datetime import datetime, timedelta, timezone
 from typing import Tuple, List, Dict, Any, Optional
