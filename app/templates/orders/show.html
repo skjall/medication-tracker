@@ -37,7 +37,7 @@
                     <a href="{{ url_for('visits.show', id=visit.id) }}">
                         {{ visit.visit_date.strftime('%Y-%m-%d') }}
                     </a>
-                    {% if visit.visit_date >= now %}
+                    {% if make_aware(visit.visit_date) >= now %}
                         <span class="badge bg-info ms-2">{{ visit.days_until }} days away</span>
                     {% else %}
                         <span class="badge bg-secondary ms-2">Past visit</span>
@@ -106,7 +106,7 @@
                                     <tr>
                                         <td>
                                             <strong>{{ item.medication.name }}</strong>
-                                            <div class="small text-muted">{{ item.medication.dosage }} units × {{ item.medication.frequency }}/day</div>
+                                            <div class="small text-muted">{{ item.medication.daily_usage|round(1) }} units/day</div>
                                         </td>
                                         <td>{{ item.quantity_needed }} units</td>
                                         <td>
