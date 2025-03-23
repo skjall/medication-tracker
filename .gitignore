@@ -49,5 +49,9 @@ Thumbs.db
 data/*
 !data/.gitkeep
 
+# Logs
+logs/*
+!logs/.gitkeep
+
 # Repomix
 repomix-output.txt

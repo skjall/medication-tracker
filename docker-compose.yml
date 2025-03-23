@@ -8,10 +8,12 @@ services:
       - '8087:8087'
     volumes:
       - medication_tracker_data:/app/data
+      - medication_tracker_logs:/app/logs
     restart: unless-stopped
     environment:
       - FLASK_ENV=production
       - SECRET_KEY=${SECRET_KEY:-change_me_in_production}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO} # Set to DEBUG, INFO, WARNING, ERROR, or CRITICAL
     healthcheck:
       test:
         [
@@ -28,3 +30,5 @@ services:
 volumes:
   medication_tracker_data:
     name: medication_tracker_data
+  medication_tracker_logs:
+    name: medication_tracker_logs

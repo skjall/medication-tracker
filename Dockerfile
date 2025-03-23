@@ -13,8 +13,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ .
 
-# Create a volume for data persistence
+# Create directories for data and logs
+RUN mkdir -p /app/data /app/logs \
+  && chmod -R 755 /app/data /app/logs
+
+# Create volumes for data and logs persistence
 VOLUME /app/data
+VOLUME /app/logs
 
 # Expose the port the app runs on
 EXPOSE 8087

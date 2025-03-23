@@ -3,6 +3,7 @@ Main application module for the Medication Tracker application.
 """
 
 import os
+import logging
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 
@@ -20,6 +21,7 @@ from models import (
     ensure_timezone_utc,
     utcnow,
 )
+from logging_config import configure_logging
 
 
 def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
@@ -47,11 +49,15 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         DEBUG=os.environ.get("FLASK_ENV", "development") == "development",
         MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max upload size
+        LOG_LEVEL=os.environ.get("LOG_LEVEL", "INFO"),  # Default log level
     )
 
     # Override config with test config if provided
     if test_config:
         app.config.update(test_config)
+
+    # Configure logging
+    logger = configure_logging(app)
 
     # Initialize database
     db.init_app(app)
@@ -93,6 +99,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     @app.route("/")
     def index():
         """Render the dashboard/home page."""
+        logger.debug("Rendering dashboard page")
         medications = Medication.query.all()
         # Using the same filter as the visit page to ensure consistency
         upcoming_visit = (
@@ -117,6 +124,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     @app.errorhandler(404)
     def page_not_found(e):
         """Handle 404 errors with a custom page."""
+        logger.warning(f"Page not found: {request.path}")
         return render_template("404.html"), 404
 
     return app
@@ -129,6 +137,9 @@ def fix_database_timezones(app):
     This is a one-time fix for existing data.
     """
     with app.app_context():
+        logger = logging.getLogger(__name__)
+        logger.info("Running timezone fix for database records")
+
         try:
             # Fix HospitalVisit dates
             visits = HospitalVisit.query.all()
@@ -172,15 +183,19 @@ def fix_database_timezones(app):
 
             # Commit all changes
             db.session.commit()
-            print("Successfully updated database with timezone information.")
+            logger.info("Successfully updated database with timezone information.")
         except Exception as e:
-            print(f"Error updating database timezones: {e}")
+            logger.error(f"Error updating database timezones: {e}")
             db.session.rollback()
 
 
 # Application entry point
 if __name__ == "__main__":
     app = create_app()
+
+    # Get logger
+    logger = logging.getLogger(__name__)
+
     # Fix existing data in the database if needed
     fix_database_timezones(app)
 
@@ -189,5 +204,7 @@ if __name__ == "__main__":
 
     auto_deduction_thread = setup_auto_deduction(app)
 
+    # Start the application
     port = int(os.environ.get("PORT", 8087))
+    logger.info(f"Starting Medication Tracker on port {port}")
     app.run(host="0.0.0.0", port=port, debug=app.config["DEBUG"])
