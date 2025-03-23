@@ -18,6 +18,7 @@ from models import (
     Order,
     OrderItem,
 )
+from utils import min_value
 
 
 def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
@@ -66,6 +67,9 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     app.register_blueprint(visit_bp)
     app.register_blueprint(order_bp)
 
+    # Add utility functions to Jinja
+    app.jinja_env.globals.update(min=min_value)
+
     # Context processor to add date/time variables to all templates
     @app.context_processor
     def inject_now():
@@ -100,5 +104,4 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 # Application entry point
 if __name__ == "__main__":
     app = create_app()
-    # Use 0.0.0.0 to make the server accessible from outside the container
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8087, debug=True)

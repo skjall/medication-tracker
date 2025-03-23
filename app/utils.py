@@ -3,13 +3,30 @@ Utility functions for the Medication Tracker application.
 """
 
 from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, TypeVar
 import os
 import csv
 from io import StringIO
 
 from flask import current_app, Response
 from models import Medication, Inventory, HospitalVisit, Order, OrderItem
+
+# Generic type for min_value function
+T = TypeVar("T")
+
+
+def min_value(a: T, b: T) -> T:
+    """
+    Return the minimum of two values.
+
+    Args:
+        a: First value
+        b: Second value
+
+    Returns:
+        The minimum value
+    """
+    return min(a, b)
 
 
 def format_date(date: datetime) -> str:

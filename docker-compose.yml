@@ -5,7 +5,7 @@ services:
     image: ${DOCKER_REGISTRY}/medication-tracker:latest
     container_name: medication-tracker
     ports:
-      - '8087:8080'
+      - '8087:8087'
     volumes:
       - medication_tracker_data:/app/data
     restart: unless-stopped
@@ -20,7 +20,7 @@ services:
           '--no-verbose',
           '--tries=1',
           '--spider',
-          'http://localhost:8080/',
+          'http://localhost:8087/',
         ]
       interval: 30s
       timeout: 10s

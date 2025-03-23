@@ -17,7 +17,7 @@ COPY app/ .
 VOLUME /app/data
 
 # Expose the port the app runs on
-EXPOSE 8080
+EXPOSE 8087
 
 # Command to run the application
 CMD ["python", "main.py"]
