@@ -28,17 +28,25 @@
                         <input type="text" class="form-control" id="name" name="name" required>
                     </div>
 
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Basic dosage settings:</strong> After creating the medication, you can set up advanced scheduling
+                        (daily, every X days, specific weekdays) using the Medication Schedule feature.
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="dosage" class="form-label">Dosage (units) <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="dosage" name="dosage" step="0.1" min="0.1" required>
+                                <div class="form-text">Units per dose (use advanced scheduling for multiple doses)</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="frequency" class="form-label">Frequency (per day) <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="frequency" name="frequency" step="0.1" min="0.1" required>
+                                <div class="form-text">Default doses per day (can be refined later)</div>
                             </div>
                         </div>
                     </div>
@@ -101,7 +109,10 @@
                 <h6>Daily Usage:</h6>
                 <p class="mb-0">
                     <span id="calculated-usage">0</span> units per day
-                    <small class="text-muted">(based on dosage × frequency)</small>
+                    <small class="text-muted">(based on simple dosage × frequency)</small>
+                </p>
+                <p class="mt-2">
+                    <span class="text-info">After creating the medication, you'll be able to set up advanced scheduling.</span>
                 </p>
             </div>
 

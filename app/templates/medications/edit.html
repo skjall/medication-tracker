@@ -33,17 +33,25 @@
                         <input type="text" class="form-control" id="name" name="name" value="{{ medication.name }}" required>
                     </div>
 
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Legacy dosage settings:</strong> For more advanced scheduling (daily, every X days, specific weekdays),
+                        use the <a href="{{ url_for('schedules.index', medication_id=medication.id) }}" class="alert-link">Medication Schedule</a> feature.
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="dosage" class="form-label">Dosage (units) <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="dosage" name="dosage" step="0.1" min="0.1" value="{{ medication.dosage }}" required>
+                                <div class="form-text">Units per dose (use advanced scheduling for multiple doses)</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="frequency" class="form-label">Frequency (per day) <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="frequency" name="frequency" step="0.1" min="0.1" value="{{ medication.frequency }}" required>
+                                <div class="form-text">Default doses per day (legacy setting)</div>
                             </div>
                         </div>
                     </div>
@@ -106,8 +114,20 @@
                 <h6>Daily Usage:</h6>
                 <p class="mb-0">
                     <span id="calculated-usage">{{ (medication.dosage * medication.frequency)|round(1) }}</span> units per day
-                    <small class="text-muted">(based on dosage × frequency)</small>
+                    <small class="text-muted">(based on simple dosage × frequency)</small>
                 </p>
+                {% if medication.schedules %}
+                    <p class="mb-0 mt-2">
+                        <span class="text-primary"><strong>{{ medication.daily_usage|round(1) }}</strong> units per day</span>
+                        <small class="text-muted">(based on advanced schedule with {{ medication.schedules|length }} rule{{ 's' if medication.schedules|length != 1 }})</small>
+                    </p>
+                {% else %}
+                    <p class="mt-2">
+                        <a href="{{ url_for('schedules.index', medication_id=medication.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-calendar-alt me-1"></i>Set Up Advanced Schedule
+                        </a>
+                    </p>
+                {% endif %}
             </div>
 
             <div class="mt-4 d-flex justify-content-between">

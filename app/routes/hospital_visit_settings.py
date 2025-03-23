@@ -4,10 +4,11 @@ Routes for managing hospital visit settings.
 
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
+import os
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 
-from models import db
+from models import db, Medication, MedicationSchedule, HospitalVisit
 from hospital_visit_utils import HospitalVisitSettings, calculate_days_between_visits
 
 settings_bp = Blueprint("settings", __name__, url_prefix="/settings")
@@ -73,4 +74,24 @@ def advanced():
     """
     Advanced settings page (e.g., backup/restore, system settings).
     """
-    return render_template("settings/advanced.html")
+    # Get hospital visit settings
+    settings = HospitalVisitSettings.get_settings()
+
+    # Get database statistics
+    med_count = Medication.query.count()
+    schedule_count = MedicationSchedule.query.count()
+    upcoming_visits_count = HospitalVisit.query.filter(
+        HospitalVisit.visit_date >= datetime.now(timezone.utc)
+    ).count()
+
+    # Get database path for display
+    db_path = os.path.join("data", "medication_tracker.db")
+
+    return render_template(
+        "settings/advanced.html",
+        settings=settings,
+        med_count=med_count,
+        schedule_count=schedule_count,
+        upcoming_visits_count=upcoming_visits_count,
+        db_path=db_path,
+    )
