@@ -1,0 +1,174 @@
+<!-- Template for advanced settings -->
+{% extends "layout.html" %}
+
+{% block title %}Advanced Settings - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-sliders-h me-2"></i>Advanced Settings
+    </h1>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="row">
+    <!-- Automatic Deduction Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Automatic Inventory Deduction</h5>
+            </div>
+            <div class="card-body">
+                <p>The system automatically deducts medication from your inventory based on your defined schedules.</p>
+
+                <div class="alert alert-info">
+                    <div class="d-flex">
+                        <i class="fas fa-info-circle me-3 fa-2x"></i>
+                        <div>
+                            <p class="mb-0">
+                                Automatic deduction runs hourly to check if any medications are due to be taken.
+                                If so, the corresponding amount is deducted from your inventory.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <p>You can manually trigger the deduction check for testing purposes:</p>
+
+                <a href="{{ url_for('schedules.check_deductions') }}" class="btn btn-primary">
+                    <i class="fas fa-check-double me-1"></i>Run Deduction Check Now
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Management Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Data Management</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6>Export Data</h6>
+                    <p>Export your data to CSV files for backup or analysis:</p>
+                    <div class="btn-group">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-file-export me-1"></i>Export Medications
+                        </a>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-file-export me-1"></i>Export Inventory
+                        </a>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-file-export me-1"></i>Export Visits
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6>Import Data</h6>
+                    <p>Import data from CSV files (advanced users only):</p>
+                    <button type="button" class="btn btn-outline-secondary" disabled>
+                        <i class="fas fa-file-import me-1"></i>Import Data
+                    </button>
+                    <small class="text-muted d-block mt-1">Coming soon</small>
+                </div>
+
+                <div class="mt-4 pt-2 border-top">
+                    <h6 class="text-danger">Danger Zone</h6>
+                    <p>These actions cannot be undone. Use with extreme caution.</p>
+                    <button type="button" class="btn btn-outline-danger" disabled>
+                        <i class="fas fa-trash-alt me-1"></i>Reset All Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- System Status Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">System Status</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-6">Last Deduction Check:</dt>
+                    <dd class="col-sm-6">
+                        {% if settings.last_deduction_check %}
+                            {{ settings.last_deduction_check.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            <span class="text-muted">Never</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-6">Database Path:</dt>
+                    <dd class="col-sm-6"><code>{{ db_path }}</code></dd>
+
+                    <dt class="col-sm-6">Total Medications:</dt>
+                    <dd class="col-sm-6">{{ med_count }}</dd>
+
+                    <dt class="col-sm-6">Total Schedules:</dt>
+                    <dd class="col-sm-6">{{ schedule_count }}</dd>
+
+                    <dt class="col-sm-6">Upcoming Visits:</dt>
+                    <dd class="col-sm-6">{{ upcoming_visits_count }}</dd>
+                </dl>
+
+                <div class="alert alert-secondary">
+                    <div class="d-flex">
+                        <i class="fas fa-server me-3 fa-2x"></i>
+                        <div>
+                            <p class="mb-0">
+                                System is running normally. Automatic deduction is active and checking medication schedules hourly.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Maintenance Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Database Maintenance</h5>
+            </div>
+            <div class="card-body">
+                <p>Regular database maintenance helps keep your application running smoothly.</p>
+
+                <div class="mb-3">
+                    <h6>Database Backup</h6>
+                    <p>Create a backup of your database file:</p>
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="fas fa-download me-1"></i>Backup Database
+                    </a>
+                </div>
+
+                <div class="mb-3">
+                    <h6>Database Optimization</h6>
+                    <p>Optimize the database to improve performance:</p>
+                    <button type="button" class="btn btn-outline-warning" disabled>
+                        <i class="fas fa-bolt me-1"></i>Optimize Database
+                    </button>
+                    <small class="text-muted d-block mt-1">Coming soon</small>
+                </div>
+
+                <div class="mb-3">
+                    <h6>Clear Old Logs</h6>
+                    <p>Remove old inventory logs to save space:</p>
+                    <button type="button" class="btn btn-outline-danger" disabled>
+                        <i class="fas fa-eraser me-1"></i>Clear Old Logs
+                    </button>
+                    <small class="text-muted d-block mt-1">Coming soon</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,251 +1,278 @@
 {% extends "layout.html" %}
 
-{% block title %}Inventory: {{ medication.name }} - Medication Tracker{% endblock %}
+{% block title %}{{ medication.name }} - Medication Tracker{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-boxes me-2"></i>Inventory: {{ medication.name }}
+        <i class="fas fa-pills me-2"></i>{{ medication.name }}
     </h1>
     <div>
-        <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Inventory
+        <a href="{{ url_for('medications.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
         </a>
-        <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-primary ms-2">
-            <i class="fas fa-pills me-1"></i>Medication Details
+        <a href="{{ url_for('medications.edit', id=medication.id) }}" class="btn btn-primary ms-2">
+            <i class="fas fa-edit me-1"></i>Edit
         </a>
     </div>
 </div>
 
-<!-- Summary Card -->
+<!-- Medication Details Card -->
 <div class="row">
-    <div class="col-12 mb-4">
-        <div class="card {% if inventory.is_low %}border-danger{% else %}border-success{% endif %}">
-            <div class="card-header {% if inventory.is_low %}bg-danger{% else %}bg-success{% endif %} text-white">
-                <h5 class="mb-0">Current Inventory Status</h5>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Medication Information</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="text-center">
-                            <div class="display-4 mb-0 {% if inventory.is_low %}text-danger{% else %}text-success{% endif %}">
-                                {{ inventory.current_count }}
-                            </div>
-                            <p class="lead">Current Units</p>
-                            <div class="progress mt-2">
-                                {% set percent = 100 if not medication.min_threshold else (inventory.current_count / (medication.min_threshold * 2) * 100)|round %}
-                                <div class="progress-bar {% if inventory.is_low %}bg-danger{% elif percent < 50 %}bg-warning{% else %}bg-success{% endif %}"
-                                     role="progressbar"
-                                     style="width: {{ min(100, percent) }}%"
-                                     aria-valuenow="{{ inventory.current_count }}"
-                                     aria-valuemin="0"
-                                     aria-valuemax="{{ medication.min_threshold * 2 }}">
-                                </div>
-                            </div>
-                            <small class="text-muted">Minimum threshold: {{ medication.min_threshold }} units</small>
-                        </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Dosage:</h6>
+                        <p>{{ medication.dosage }} units</p>
                     </div>
-                    <div class="col-md-4">
-                        <div class="text-center">
-                            <div class="display-4 mb-0 {% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% else %}text-success{% endif %}">
+                    <div class="col-md-6">
+                        <h6>Frequency:</h6>
+                        <p>{{ medication.frequency }} times per day</p>
+                    </div>
+                </div>
+
+                <h6>Daily Usage:</h6>
+                <p class="mb-4">{{ medication.daily_usage|round(1) }} units per day</p>
+
+                {% if medication.notes %}
+                    <h6>Notes:</h6>
+                    <p class="mb-4">{{ medication.notes }}</p>
+                {% endif %}
+
+                <h6>Package Sizes:</h6>
+                <div class="row mb-4">
+                    {% if medication.package_size_n1 %}
+                        <div class="col-md-4">
+                            <div class="package-box n1">
+                                <strong>N1:</strong> {{ medication.package_size_n1 }} units
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if medication.package_size_n2 %}
+                        <div class="col-md-4">
+                            <div class="package-box n2">
+                                <strong>N2:</strong> {{ medication.package_size_n2 }} units
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if medication.package_size_n3 %}
+                        <div class="col-md-4">
+                            <div class="package-box n3">
+                                <strong>N3:</strong> {{ medication.package_size_n3 }} units
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if not medication.package_size_n1 and not medication.package_size_n2 and not medication.package_size_n3 %}
+                        <div class="col-12">
+                            <p class="text-muted">No package sizes defined</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <h6>Inventory Settings:</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Min Threshold:</strong> {{ medication.min_threshold }} units</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Safety Margin:</strong> {{ medication.safety_margin_days }} days</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Status Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 {% if medication.inventory and medication.inventory.is_low %}border-danger{% else %}border-success{% endif %}">
+            <div class="card-header {% if medication.inventory and medication.inventory.is_low %}bg-danger{% else %}bg-success{% endif %} text-white">
+                <h5 class="mb-0">Inventory Status</h5>
+            </div>
+            <div class="card-body">
+                {% if medication.inventory %}
+                    <div class="text-center mb-4">
+                        <div class="display-1 {% if medication.inventory.is_low %}text-danger{% else %}text-success{% endif %}">
+                            {{ medication.inventory.current_count }}
+                        </div>
+                        <p class="lead">Current Units</p>
+                        <div class="progress mt-2">
+                            {% set percent = 100 if not medication.min_threshold else (medication.inventory.current_count / (medication.min_threshold * 2) * 100)|round %}
+                            <div class="progress-bar {% if medication.inventory.is_low %}bg-danger{% elif percent < 50 %}bg-warning{% else %}bg-success{% endif %}"
+                                 role="progressbar"
+                                 style="width: {{ min(100, percent) }}%"
+                                 aria-valuenow="{{ medication.inventory.current_count }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="{{ medication.min_threshold * 2 }}">
+                            </div>
+                        </div>
+                        <small class="text-muted">Minimum threshold: {{ medication.min_threshold }} units</small>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 text-center">
+                            <h3 class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}">
                                 {% if medication.days_remaining %}
                                     {{ medication.days_remaining|round(1) }}
                                 {% else %}
                                     -
                                 {% endif %}
-                            </div>
-                            <p class="lead">Days Remaining</p>
+                            </h3>
+                            <p>Days Remaining</p>
+                        </div>
+                        <div class="col-md-6 text-center">
                             {% if medication.depletion_date %}
-                                <p>
-                                    Will run out on
-                                    <strong class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}">
-                                        {{ medication.depletion_date.strftime('%Y-%m-%d') }}
-                                    </strong>
-                                </p>
+                                <h3 class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}">
+                                    {{ medication.depletion_date.strftime('%Y-%m-%d') }}
+                                </h3>
+                                <p>Depletion Date</p>
+                            {% else %}
+                                <h3>-</h3>
+                                <p>Depletion Date</p>
                             {% endif %}
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="text-center">
-                            <div class="display-4 mb-0">{{ medication.daily_usage|round(1) }}</div>
-                            <p class="lead">Daily Usage</p>
-                            <p>
-                                Dosage: <strong>{{ medication.dosage }} units</strong><br>
-                                Frequency: <strong>{{ medication.frequency }} per day</strong>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <!-- Adjust Inventory Card -->
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Adjust Inventory</h5>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('inventory.adjust', id=inventory.id) }}">
-                    <div class="mb-4">
-                        <label for="adjustment" class="form-label">Adjustment Amount</label>
-                        <div class="input-group">
-                            <button class="btn btn-lg btn-outline-danger" type="button" id="btn-minus">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="number" class="form-control form-control-lg text-center" id="adjustment" name="adjustment" value="0">
-                            <button class="btn btn-lg btn-outline-success" type="button" id="btn-plus">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                        <div class="form-text">
-                            Enter a positive number to add units, or a negative number to subtract units
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-center mb-4">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-danger quick-adjust-btn" data-amount="-10">-10</button>
-                            <button type="button" class="btn btn-outline-danger quick-adjust-btn" data-amount="-5">-5</button>
-                            <button type="button" class="btn btn-outline-danger quick-adjust-btn" data-amount="-1">-1</button>
-                            <button type="button" class="btn btn-outline-success quick-adjust-btn" data-amount="1">+1</button>
-                            <button type="button" class="btn btn-outline-success quick-adjust-btn" data-amount="5">+5</button>
-                            <button type="button" class="btn btn-outline-success quick-adjust-btn" data-amount="10">+10</button>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="notes" class="form-label">Notes</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Optional notes about this adjustment"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>Save Adjustment
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Package Inventory Card -->
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">Update Package Inventory</h5>
-            </div>
-            <div class="card-body">
-                <p class="card-text">
-                    Update inventory by specifying package counts instead of total units.
-                </p>
-
-                <form method="POST" action="{{ url_for('inventory.update_packages', id=inventory.id) }}">
-                    <div class="row">
-                        {% if medication.package_size_n1 %}
-                            <div class="col-md-4 mb-3">
-                                <label for="packages_n1" class="form-label">N1 Packages</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="packages_n1" name="packages_n1" min="0" value="{{ inventory.packages_n1 }}">
-                                    <span class="input-group-text">× {{ medication.package_size_n1 }}</span>
-                                </div>
-                            </div>
-                        {% endif %}
-
-                        {% if medication.package_size_n2 %}
-                            <div class="col-md-4 mb-3">
-                                <label for="packages_n2" class="form-label">N2 Packages</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="packages_n2" name="packages_n2" min="0" value="{{ inventory.packages_n2 }}">
-                                    <span class="input-group-text">× {{ medication.package_size_n2 }}</span>
-                                </div>
-                            </div>
-                        {% endif %}
-
-                        {% if medication.package_size_n3 %}
-                            <div class="col-md-4 mb-3">
-                                <label for="packages_n3" class="form-label">N3 Packages</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="packages_n3" name="packages_n3" min="0" value="{{ inventory.packages_n3 }}">
-                                    <span class="input-group-text">× {{ medication.package_size_n3 }}</span>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="alert alert-info">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <div>
-                                This will update the total unit count based on package sizes. The current total is <strong>{{ inventory.current_count }}</strong> units.
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-info">
-                        <i class="fas fa-sync me-1"></i>Update Packages
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Inventory History Card -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header bg-secondary text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Inventory History</h5>
-                    <a href="{{ url_for('inventory.logs', id=inventory.id) }}" class="btn btn-sm btn-light">
-                        <i class="fas fa-history me-1"></i>View Full History
-                    </a>
-                </div>
-            </div>
-            <div class="card-body">
-                {% if logs %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Previous Count</th>
-                                    <th>Adjustment</th>
-                                    <th>New Count</th>
-                                    <th>Notes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for log in logs %}
-                                    <tr>
-                                        <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                                        <td>{{ log.previous_count }}</td>
-                                        <td class="{% if log.adjustment < 0 %}text-danger{% elif log.adjustment > 0 %}text-success{% endif %}">
-                                            {{ log.adjustment }}
-                                        </td>
-                                        <td>{{ log.new_count }}</td>
-                                        <td>{{ log.notes or '' }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('inventory.show', id=medication.inventory.id) }}" class="btn btn-primary">
+                            <i class="fas fa-boxes me-1"></i>Manage Inventory
+                        </a>
                     </div>
                 {% else %}
-                    <p class="card-text">No inventory adjustments recorded yet.</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        No inventory record found for this medication.
+                    </div>
+                    <p>An inventory record should have been created automatically. Please contact the administrator.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Setup inventory adjustment buttons
-        setupInventoryAdjustment();
-    });
-</script>
+<!-- Associated Orders Card -->
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Order History</h5>
+    </div>
+    <div class="card-body">
+        {% if medication.order_items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Visit Date</th>
+                            <th>Order Status</th>
+                            <th>Quantity</th>
+                            <th>Packages</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in medication.order_items %}
+                            <tr>
+                                <td>{{ item.order.id }}</td>
+                                <td>{{ item.order.hospital_visit.visit_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <span class="badge {% if item.order.status == 'planned' %}bg-primary{% elif item.order.status == 'printed' %}bg-info{% elif item.order.status == 'fulfilled' %}bg-success{% endif %}">
+                                        {{ item.order.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td>{{ item.quantity_needed }} units</td>
+                                <td>
+                                    <small>
+                                        {% if item.packages_n1 > 0 %}
+                                            N1: {{ item.packages_n1 }}{% if item.packages_n2 > 0 or item.packages_n3 > 0 %}<br>{% endif %}
+                                        {% endif %}
+                                        {% if item.packages_n2 > 0 %}
+                                            N2: {{ item.packages_n2 }}{% if item.packages_n3 > 0 %}<br>{% endif %}
+                                        {% endif %}
+                                        {% if item.packages_n3 > 0 %}
+                                            N3: {{ item.packages_n3 }}
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('orders.show', id=item.order.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No orders found for this medication.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- Medication Schedule Card -->
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Medication Schedule</h5>
+    </div>
+    <div class="card-body">
+        <p>Manage the intake schedule for this medication to enable automatic inventory tracking.</p>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <p class="mb-0">
+                    <strong>Current Status:</strong>
+                    {% if medication.auto_deduction_enabled %}
+                        <span class="text-success">
+                            <i class="fas fa-check-circle"></i> Automatic deduction enabled
+                        </span>
+                    {% else %}
+                        <span class="text-secondary">
+                            <i class="fas fa-times-circle"></i> Automatic deduction disabled
+                        </span>
+                    {% endif %}
+                </p>
+
+                <p class="mt-2 mb-0">
+                    <strong>Daily Usage:</strong> {{ medication.daily_usage|round(2) }} units
+                    {% if medication.schedules %}
+                        (based on {{ medication.schedules|length }} schedule{{ 's' if medication.schedules|length != 1 }})
+                    {% else %}
+                        (based on dosage × frequency)
+                    {% endif %}
+                </p>
+            </div>
+
+            <div>
+                <a href="{{ url_for('schedules.index', medication_id=medication.id) }}" class="btn btn-primary">
+                    <i class="fas fa-calendar-alt me-1"></i>Manage Schedules
+                </a>
+            </div>
+        </div>
+
+        {% if not medication.schedules %}
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                No detailed schedules defined yet. Define schedules to enable automatic inventory deduction.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- Delete Button -->
+<div class="mt-4">
+    <form method="POST" action="{{ url_for('medications.delete', id=medication.id) }}" onsubmit="return confirm('Are you sure you want to delete this medication? This cannot be undone.');">
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash-alt me-1"></i>Delete Medication
+        </button>
+    </form>
+</div>
 {% endblock %}

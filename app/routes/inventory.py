@@ -2,7 +2,7 @@
 Routes for inventory management.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 

@@ -2,7 +2,7 @@
 Routes for hospital visit management.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 
@@ -16,14 +16,18 @@ def index():
     """Display list of all hospital visits."""
     # Get upcoming visits
     upcoming_visits = (
-        HospitalVisit.query.filter(HospitalVisit.visit_date >= datetime.utcnow())
+        HospitalVisit.query.filter(
+            HospitalVisit.visit_date >= datetime.now(timezone.utc)
+        )
         .order_by(HospitalVisit.visit_date)
         .all()
     )
 
     # Get past visits
     past_visits = (
-        HospitalVisit.query.filter(HospitalVisit.visit_date < datetime.utcnow())
+        HospitalVisit.query.filter(
+            HospitalVisit.visit_date < datetime.now(timezone.utc)
+        )
         .order_by(HospitalVisit.visit_date.desc())
         .limit(10)
         .all()
@@ -45,6 +49,8 @@ def new():
         try:
             # Parse date from form
             visit_date = datetime.strptime(visit_date_str, "%Y-%m-%d")
+            # Make the datetime timezone-aware
+            visit_date = visit_date.replace(tzinfo=timezone.utc)
 
             # Create new visit
             visit = HospitalVisit(visit_date=visit_date, notes=notes)
@@ -115,6 +121,8 @@ def edit(id: int):
         try:
             # Parse date from form
             visit_date = datetime.strptime(visit_date_str, "%Y-%m-%d")
+            # Make the datetime timezone-aware
+            visit_date = visit_date.replace(tzinfo=timezone.utc)
 
             # Update visit
             visit.visit_date = visit_date
@@ -161,7 +169,9 @@ def delete(id: int):
 def next_visit():
     """Display details about the next upcoming hospital visit."""
     next_visit = (
-        HospitalVisit.query.filter(HospitalVisit.visit_date >= datetime.utcnow())
+        HospitalVisit.query.filter(
+            HospitalVisit.visit_date >= datetime.now(timezone.utc)
+        )
         .order_by(HospitalVisit.visit_date)
         .first()
     )

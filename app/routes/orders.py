@@ -2,7 +2,7 @@
 Routes for medication order management.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from flask import (
     Blueprint,
@@ -57,7 +57,9 @@ def new():
     else:
         # If no visit specified, use the next upcoming visit
         visit = (
-            HospitalVisit.query.filter(HospitalVisit.visit_date >= datetime.utcnow())
+            HospitalVisit.query.filter(
+                HospitalVisit.visit_date >= datetime.now(timezone.utc)
+            )
             .order_by(HospitalVisit.visit_date)
             .first()
         )
@@ -257,7 +259,7 @@ def printable(id: int):
             order=order,
             visit=order.hospital_visit,
             order_items=order.order_items,
-            print_date=datetime.utcnow(),
+            print_date=datetime.now(timezone.utc),
         )
     )
 

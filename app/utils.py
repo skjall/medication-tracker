@@ -2,7 +2,7 @@
 Utility functions for the Medication Tracker application.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, List, Optional, Tuple, TypeVar
 import os
 import csv
@@ -55,6 +55,21 @@ def format_datetime(date: datetime) -> str:
     return date.strftime("%Y-%m-%d %H:%M")
 
 
+def make_aware(dt: datetime) -> datetime:
+    """
+    Ensure a datetime is timezone-aware by adding UTC timezone if needed.
+
+    Args:
+        dt: Datetime object that might be timezone-naive
+
+    Returns:
+        Timezone-aware datetime object (with UTC timezone)
+    """
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
 def calculate_days_until(target_date: datetime) -> int:
     """
     Calculate days until a target date.
@@ -65,7 +80,11 @@ def calculate_days_until(target_date: datetime) -> int:
     Returns:
         Number of days until the target date (0 if in the past)
     """
-    delta = target_date - datetime.utcnow()
+    # Ensure both datetimes are timezone-aware before comparison
+    target_date = make_aware(target_date)
+    now = datetime.now(timezone.utc)
+
+    delta = target_date - now
     return max(0, delta.days)
 
 

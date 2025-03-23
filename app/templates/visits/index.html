@@ -1,142 +1,240 @@
 {% extends "layout.html" %}
 
-{% block title %}Hospital Visits - Medication Tracker{% endblock %}
+{% block title %}Dashboard - Medication Tracker{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>
-        <i class="fas fa-hospital me-2"></i>Hospital Visits
-    </h1>
-    <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
-        <i class="fas fa-calendar-plus me-1"></i>Schedule Visit
-    </a>
+<div class="row mb-4">
+    <div class="col">
+        <h1>
+            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+        </h1>
+    </div>
 </div>
 
-<!-- Upcoming Visits Card -->
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Upcoming Visits</h5>
+<div class="row">
+    <!-- Next Visit Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>Next Hospital Visit
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_visit %}
+                    <h3 class="text-primary">
+                        {{ upcoming_visit.visit_date.strftime('%Y-%m-%d') }}
+                        <small class="text-muted ms-2">({{ upcoming_visit.days_until }} days away)</small>
+                    </h3>
+                    {% if upcoming_visit.notes %}
+                        <p class="card-text mt-3">
+                            <strong>Notes:</strong> {{ upcoming_visit.notes }}
+                        </p>
+                    {% endif %}
+                    <div class="mt-4">
+                        <a href="{{ url_for('visits.show', id=upcoming_visit.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i>View Details
+                        </a>
+                        <a href="{{ url_for('orders.new', visit_id=upcoming_visit.id) }}" class="btn btn-outline-success ms-2">
+                            <i class="fas fa-plus me-1"></i>Create Order
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="card-text">No upcoming hospital visits scheduled.</p>
+                    <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
+                        <i class="fas fa-calendar-plus me-1"></i>Schedule a Visit
+                    </a>
+                {% endif %}
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        {% if upcoming_visits %}
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Days Until</th>
-                            <th>Notes</th>
-                            <th>Orders</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for visit in upcoming_visits %}
-                            <tr>
-                                <td>
-                                    <strong>{{ visit.visit_date.strftime('%Y-%m-%d') }}</strong>
-                                    {% if loop.first %}
-                                        <span class="badge bg-primary ms-2">Next</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill {% if visit.days_until < 7 %}bg-danger{% elif visit.days_until < 14 %}bg-warning{% else %}bg-success{% endif %}">
-                                        {{ visit.days_until }} days
+
+    <!-- Low Inventory Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 {% if low_inventory %}border-danger{% else %}border-success{% endif %}">
+            <div class="card-header {% if low_inventory %}bg-danger{% else %}bg-success{% endif %} text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Low Inventory Alert
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if low_inventory %}
+                    <p class="card-text">The following medications are below minimum threshold:</p>
+                    <ul class="list-group">
+                        {% for med in low_inventory %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ med.name }}</strong>
+                                    <span class="text-danger ms-2">
+                                        <i class="fas fa-arrow-down"></i>
+                                        {{ med.inventory.current_count }} units
                                     </span>
-                                </td>
-                                <td>
-                                    <div class="notes-ellipsis">
-                                        {{ visit.notes or '' }}
-                                    </div>
-                                </td>
-                                <td>
-                                    {% set order_count = visit.orders|length %}
-                                    {% if order_count > 0 %}
-                                        <span class="badge bg-success">{{ order_count }} order{% if order_count != 1 %}s{% endif %}</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">No orders</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ url_for('visits.edit', id=visit.id) }}" class="btn btn-outline-secondary" title="Edit Visit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-outline-success" title="Create Order">
-                                            <i class="fas fa-clipboard-list"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                                </div>
+                                <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-pencil-alt me-1"></i>Update
+                                </a>
+                            </li>
                         {% endfor %}
-                    </tbody>
-                </table>
+                    </ul>
+                {% else %}
+                    <p class="card-text">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        All medications are above minimum threshold levels.
+                    </p>
+                {% endif %}
+                <div class="mt-4">
+                    <a href="{{ url_for('inventory.low') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-search me-1"></i>View All Low Stock
+                    </a>
+                </div>
             </div>
-        {% else %}
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>No upcoming hospital visits scheduled.
-            </div>
-            <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
-                <i class="fas fa-calendar-plus me-1"></i>Schedule a Visit
-            </a>
-        {% endif %}
+        </div>
     </div>
 </div>
 
-<!-- Past Visits Card -->
-<div class="card">
-    <div class="card-header bg-secondary text-white">
-        <h5 class="mb-0">Past Visits</h5>
-    </div>
-    <div class="card-body">
-        {% if past_visits %}
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Notes</th>
-                            <th>Orders</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for visit in past_visits %}
-                            <tr>
-                                <td>{{ visit.visit_date.strftime('%Y-%m-%d') }}</td>
-                                <td>
-                                    <div class="notes-ellipsis">
-                                        {{ visit.notes or '' }}
-                                    </div>
-                                </td>
-                                <td>
-                                    {% set order_count = visit.orders|length %}
-                                    {% if order_count > 0 %}
-                                        <span class="badge bg-success">{{ order_count }} order{% if order_count != 1 %}s{% endif %}</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">No orders</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+<div class="row">
+    <!-- Medications Summary Card -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-pills me-2"></i>Medications Overview
+                </h5>
             </div>
-        {% else %}
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>No past hospital visits recorded.
+            <div class="card-body">
+                {% if medications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Medication</th>
+                                    <th>Daily Usage</th>
+                                    <th>Current Inventory</th>
+                                    <th>Days Left</th>
+                                    <th>Depletion Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for med in medications %}
+                                    {% set color_class = 'text-danger' if med.inventory and med.inventory.is_low else ('text-warning' if med.days_remaining and med.days_remaining < 30 else 'text-success') %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ med.name }}</strong>
+                                            <div class="small text-muted">{{ med.dosage }} units × {{ med.frequency }}/day</div>
+                                        </td>
+                                        <td>{{ med.daily_usage|round(1) }} units</td>
+                                        <td>
+                                            {% if med.inventory %}
+                                                {{ med.inventory.current_count }} units
+                                            {% else %}
+                                                <span class="text-muted">No inventory</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if med.days_remaining %}
+                                                {{ med.days_remaining|round(1) }} days
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if med.depletion_date %}
+                                                {{ med.depletion_date.strftime('%Y-%m-%d') }}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not med.inventory %}
+                                                <span class="badge bg-secondary">No Data</span>
+                                            {% elif med.inventory.is_low %}
+                                                <span class="badge bg-danger">Low Stock</span>
+                                            {% elif med.days_remaining and med.days_remaining < 30 %}
+                                                <span class="badge bg-warning text-dark">Running Low</span>
+                                            {% else %}
+                                                <span class="badge bg-success">OK</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if med.inventory %}
+                                                    <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-success">
+                                                        <i class="fas fa-boxes"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="card-text">No medications found in the system.</p>
+                    <a href="{{ url_for('medications.new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Add Medication
+                    </a>
+                {% endif %}
             </div>
-        {% endif %}
+            {% if medications %}
+                <div class="card-footer">
+                    <a href="{{ url_for('medications.index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-pills me-1"></i>Manage Medications
+                    </a>
+                    <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-success ms-2">
+                        <i class="fas fa-boxes me-1"></i>Inventory Detail
+                    </a>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </div>
+
+{% if medications %}
+<div class="row">
+    <!-- Quick Links Card -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-link me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('medications.new') }}" class="btn btn-outline-primary w-100 h-100 py-3">
+                            <i class="fas fa-plus fa-2x mb-2"></i>
+                            <div>Add New Medication</div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('visits.new') }}" class="btn btn-outline-success w-100 h-100 py-3">
+                            <i class="fas fa-calendar-plus fa-2x mb-2"></i>
+                            <div>Schedule Hospital Visit</div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('orders.new') }}" class="btn btn-outline-info w-100 h-100 py-3">
+                            <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                            <div>Create New Order</div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('inventory.depletion') }}" class="btn btn-outline-warning w-100 h-100 py-3">
+                            <i class="fas fa-chart-line fa-2x mb-2"></i>
+                            <div>View Depletion Forecast</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

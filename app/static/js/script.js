@@ -102,15 +102,19 @@ function setupPackageCalculation() {
         .then((data) => {
           // Update the package inputs
           if (data.packages) {
-            document.getElementById(
+            const n1Input = document.getElementById(
               `packages_n1_${medicationId}`
-            ).value = data.packages.N1 || 0;
-            document.getElementById(
+            );
+            const n2Input = document.getElementById(
               `packages_n2_${medicationId}`
-            ).value = data.packages.N2 || 0;
-            document.getElementById(
+            );
+            const n3Input = document.getElementById(
               `packages_n3_${medicationId}`
-            ).value = data.packages.N3 || 0;
+            );
+
+            if (n1Input) n1Input.value = data.packages.N1 || 0;
+            if (n2Input) n2Input.value = data.packages.N2 || 0;
+            if (n3Input) n3Input.value = data.packages.N3 || 0;
           }
         })
         .catch((error) => {

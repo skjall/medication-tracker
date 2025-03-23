@@ -11,7 +11,7 @@
         <a href="{{ url_for('visits.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i>Back to Visits
         </a>
-        {% if visit.visit_date >= now %}
+        {% if make_aware(visit.visit_date) >= make_aware(now) %}
             <a href="{{ url_for('visits.edit', id=visit.id) }}" class="btn btn-primary ms-2">
                 <i class="fas fa-edit me-1"></i>Edit Visit
             </a>
@@ -23,7 +23,7 @@
 <div class="row">
     <div class="col-md-6 mb-4">
         <div class="card h-100">
-            <div class="card-header {% if visit.visit_date >= now %}bg-primary{% else %}bg-secondary{% endif %} text-white">
+            <div class="card-header {% if make_aware(visit.visit_date) >= make_aware(now) %}bg-primary{% else %}bg-secondary{% endif %} text-white">
                 <h5 class="mb-0">Visit Information</h5>
             </div>
             <div class="card-body">
@@ -32,7 +32,7 @@
                         <i class="fas fa-calendar-day me-2 text-primary"></i>
                         {{ visit.visit_date.strftime('%Y-%m-%d') }}
 
-                        {% if visit.visit_date >= now %}
+                        {% if make_aware(visit.visit_date) >= make_aware(now) %}
                             <span class="badge rounded-pill {% if visit.days_until < 7 %}bg-danger{% elif visit.days_until < 14 %}bg-warning{% else %}bg-success{% endif %} ms-3">
                                 {{ visit.days_until }} days away
                             </span>
@@ -59,7 +59,7 @@
                         {% endif %}
                     </small>
 
-                    {% if visit.visit_date >= now %}
+                    {% if make_aware(visit.visit_date) >= make_aware(now) %}
                         <form method="POST" action="{{ url_for('visits.delete', id=visit.id) }}" onsubmit="return confirm('Are you sure you want to delete this visit? This cannot be undone.');">
                             <button type="submit" class="btn btn-sm btn-danger">
                                 <i class="fas fa-trash-alt me-1"></i>Delete Visit
@@ -77,7 +77,7 @@
             <div class="card-header bg-success text-white">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Associated Orders</h5>
-                    {% if visit.visit_date >= now %}
+                    {% if make_aware(visit.visit_date) >= make_aware(now) %}
                         <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-sm btn-light">
                             <i class="fas fa-plus me-1"></i>Create Order
                         </a>
@@ -109,7 +109,7 @@
                         <i class="fas fa-info-circle me-2"></i>No orders associated with this visit yet.
                     </div>
 
-                    {% if visit.visit_date >= now %}
+                    {% if make_aware(visit.visit_date) >= make_aware(now) %}
                         <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-primary">
                             <i class="fas fa-plus me-1"></i>Create Order
                         </a>
@@ -208,7 +208,7 @@
             </div>
         {% endif %}
 
-        {% if medication_needs and visit.visit_date >= now %}
+        {% if medication_needs and make_aware(visit.visit_date) >= make_aware(now) %}
             <div class="mt-4">
                 <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-primary">
                     <i class="fas fa-clipboard-list me-1"></i>Create Order Based on These Needs

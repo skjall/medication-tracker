@@ -32,6 +32,7 @@
                             <i class="fas fa-home me-1"></i>Dashboard
                         </a>
                     </li>
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="medicationsDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-pills me-1"></i>Medications
@@ -39,6 +40,18 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('medications.index') }}">All Medications</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('medications.new') }}">Add Medication</a></li>
+                            <!-- Add a divider and scheduling option -->
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('inventory.depletion') }}">Depletion Forecast</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog me-1"></i>Settings
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('settings.hospital_visits') }}">Hospital Visit Settings</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('settings.advanced') }}">Advanced Settings</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">

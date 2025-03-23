@@ -137,9 +137,15 @@ def calculate_needs(id: int):
 
     # Get form data
     days = int(request.form.get("days", 0))
+    units = int(request.form.get("units", 0) or 0)
 
-    # Calculate needs
-    needed_units = int(medication.daily_usage * days)
+    if days and not units:
+        # Calculate needs based on days
+        needed_units = int(medication.daily_usage * days)
+    else:
+        # Use directly provided units
+        needed_units = units
+
     current_inventory = (
         medication.inventory.current_count if medication.inventory else 0
     )
