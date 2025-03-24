@@ -13,7 +13,7 @@ services:
     environment:
       - FLASK_ENV=production
       - SECRET_KEY=${SECRET_KEY:-change_me_in_production}
-      - LOG_LEVEL=${LOG_LEVEL:-INFO} # Set to DEBUG, INFO, WARNING, ERROR, or CRITICAL
+      - LOG_LEVEL=${LOG_LEVEL:-WARNING} # Set to DEBUG, INFO, WARNING, ERROR, or CRITICAL
     healthcheck:
       test:
         [

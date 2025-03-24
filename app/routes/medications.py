@@ -25,6 +25,10 @@ def new():
         name = request.form.get("name", "")
         notes = request.form.get("notes", "")
 
+        # Extract new fields for prescription form
+        active_ingredient = request.form.get("active_ingredient", "")
+        form = request.form.get("form", "")
+
         # Keep these fields for database compatibility, but they're no longer used for calculations
         dosage = float(request.form.get("dosage", 1))  # Default to 1
         frequency = float(request.form.get("frequency", 1))  # Default to 1
@@ -39,6 +43,8 @@ def new():
         # Create new medication
         medication = Medication(
             name=name,
+            active_ingredient=active_ingredient,
+            form=form,
             dosage=dosage,  # Kept for database compatibility
             frequency=frequency,  # Kept for database compatibility
             notes=notes,
@@ -79,6 +85,10 @@ def edit(id: int):
     if request.method == "POST":
         # Update medication with form data
         medication.name = request.form.get("name", medication.name)
+
+        # Update new fields for prescription form
+        medication.active_ingredient = request.form.get("active_ingredient", "")
+        medication.form = request.form.get("form", "")
 
         # Keep these fields for database compatibility, but they're no longer used for calculations
         medication.dosage = float(request.form.get("dosage", medication.dosage))

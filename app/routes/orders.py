@@ -12,8 +12,10 @@ from flask import (
     url_for,
     flash,
     jsonify,
+    send_file,
     make_response,
 )
+from pdf_utils import generate_prescription_pdf
 
 from models import db, Medication, HospitalVisit, Order, OrderItem
 
@@ -318,3 +320,34 @@ def fulfill(id: int):
 
     flash("Order fulfilled and inventory updated successfully", "success")
     return redirect(url_for("orders.show", id=order.id))
+
+
+@order_bp.route("/<int:id>/prescription", methods=["GET"])
+def prescription(id: int):
+    """Generate a prescription PDF for the order."""
+    order = Order.query.get_or_404(id)
+
+    # Check if there's an active prescription template
+    from models import PrescriptionTemplate
+
+    active_template = PrescriptionTemplate.get_active_template()
+
+    if not active_template:
+        flash(
+            "No active prescription template found. Please configure a template first.",
+            "warning",
+        )
+        return redirect(url_for("prescriptions.index"))
+
+    # Generate the PDF
+    pdf_path = generate_prescription_pdf(order.id)
+
+    if pdf_path:
+        # Determine the filename for download
+        filename = f"prescription_order_{order.id}.pdf"
+
+        # Return the file for download
+        return send_file(pdf_path, download_name=filename, as_attachment=True)
+    else:
+        flash("Error generating prescription PDF", "error")
+        return redirect(url_for("orders.show", id=id))

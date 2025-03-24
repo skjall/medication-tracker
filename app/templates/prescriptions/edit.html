@@ -1,0 +1,163 @@
+<!-- File: app/templates/prescriptions/edit.html -->
+{% extends "layout.html" %}
+
+{% block title %}Edit Prescription Template - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-edit me-2"></i>Edit Prescription Template
+    </h1>
+    <div>
+        <a href="{{ url_for('prescriptions.show', id=template.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Details
+        </a>
+        <a href="{{ url_for('prescriptions.index') }}" class="btn btn-outline-secondary ms-2">
+            <i class="fas fa-list me-1"></i>All Templates
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Edit Template: {{ template.name }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('prescriptions.edit', id=template.id) }}" enctype="multipart/form-data">
+            <div class="row">
+                <!-- Basic Information -->
+                <div class="col-md-6">
+                    <h5 class="mb-3">Template Information</h5>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Template Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ template.name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ template.description or '' }}</textarea>
+                        <div class="form-text">Optional description of this template</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="template_file" class="form-label">Template PDF File</label>
+                        <div class="input-group">
+                            <input type="file" class="form-control" id="template_file" name="template_file" accept=".pdf">
+                            <button class="btn btn-outline-secondary" type="button" disabled>Current: {{ template.template_file }}</button>
+                        </div>
+                        <div class="form-text">Upload a new file only if you want to replace the current one</div>
+                    </div>
+                </div>
+
+                <!-- Form Configuration -->
+                <div class="col-md-6">
+                    <h5 class="mb-3">Form Configuration</h5>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="first_field_tab_index" class="form-label">First Field Tab Index</label>
+                                <input type="number" class="form-control" id="first_field_tab_index" name="first_field_tab_index" min="1" value="{{ template.first_field_tab_index }}">
+                                <div class="form-text">Tab index of the first field in the form</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="medications_per_page" class="form-label">Medications Per Page</label>
+                                <input type="number" class="form-control" id="medications_per_page" name="medications_per_page" min="1" value="{{ template.medications_per_page }}">
+                                <div class="form-text">Maximum number of medications per page</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4 mb-3">Column Mappings</h5>
+                    <p class="text-muted small">Define which medication data should be inserted into which form column</p>
+
+                    <div id="column-mappings">
+                        {% for col_num, field_name in template.column_mapping_dict.items() %}
+                        <div class="row mb-2">
+                            <div class="col-md-3">
+                                <label class="form-label {% if loop.index == 1 %}visible{% else %}visually-hidden{% endif %}">Column #</label>
+                                <input type="number" class="form-control" name="column_{{ loop.index }}_num" value="{{ col_num }}" min="1">
+                            </div>
+                            <div class="col-md-9">
+                                <label class="form-label {% if loop.index == 1 %}visible{% else %}visually-hidden{% endif %}">Field</label>
+                                <select class="form-select" name="column_{{ loop.index }}_field">
+                                    {% for field in field_mappings %}
+                                        <option value="{{ field.value }}" {% if field.value == field_name %}selected{% endif %}>{{ field.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="add-column-btn">
+                            <i class="fas fa-plus me-1"></i>Add Column
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4">
+                <div class="d-flex">
+                    <i class="fas fa-info-circle me-3 fa-2x"></i>
+                    <div>
+                        <p class="mb-0">
+                            <strong>Important Notes:</strong><br>
+                            1. If you upload a new template file, all the form field positions will need to be reconfigured<br>
+                            2. Make sure the tab order in your PDF form matches the column configuration you set here<br>
+                            3. Any changes will take effect immediately for future prescription downloads
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{{ url_for('prescriptions.show', id=template.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addColumnBtn = document.getElementById('add-column-btn');
+        const columnMappings = document.getElementById('column-mappings');
+
+        if (addColumnBtn && columnMappings) {
+            let columnCount = {{ template.column_mapping_dict|length }};
+
+            addColumnBtn.addEventListener('click', function() {
+                columnCount++;
+
+                const newRow = document.createElement('div');
+                newRow.className = 'row mb-2';
+                newRow.innerHTML = `
+                    <div class="col-md-3">
+                        <input type="number" class="form-control" name="column_${columnCount}_num" value="${columnCount}" min="1">
+                    </div>
+                    <div class="col-md-9">
+                        <select class="form-select" name="column_${columnCount}_field">
+                            {% for field in field_mappings %}
+                                <option value="{{ field.value }}">{{ field.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                `;
+
+                columnMappings.appendChild(newRow);
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -73,6 +73,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     from routes.orders import order_bp
     from routes.settings import settings_bp
     from routes.schedule import schedule_bp
+    from routes.prescription_templates import prescription_bp
 
     app.register_blueprint(medication_bp)
     app.register_blueprint(inventory_bp)
@@ -80,6 +81,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     app.register_blueprint(order_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(schedule_bp)
+    app.register_blueprint(prescription_bp)
 
     # Add utility functions to Jinja
     from utils import min_value, make_aware

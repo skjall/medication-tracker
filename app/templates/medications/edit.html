@@ -33,6 +33,18 @@
                         <input type="text" class="form-control" id="name" name="name" value="{{ medication.name }}" required>
                     </div>
 
+                    <div class="mb-3">
+                        <label for="active_ingredient" class="form-label">Active Ingredient</label>
+                        <input type="text" class="form-control" id="active_ingredient" name="active_ingredient" value="{{ medication.active_ingredient or '' }}">
+                        <div class="form-text">The active pharmaceutical ingredient (Wirkstoff)</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="form" class="form-label">Form</label>
+                        <input type="text" class="form-control" id="form" name="form" value="{{ medication.form or '' }}">
+                        <div class="form-text">The pharmaceutical form (e.g., tablets, capsules, solution)</div>
+                    </div>
+
                     <!-- Hidden fields for backward compatibility -->
                     <input type="hidden" name="dosage" value="{{ medication.dosage }}">
                     <input type="hidden" name="frequency" value="{{ medication.frequency }}">
