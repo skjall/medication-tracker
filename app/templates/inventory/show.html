@@ -84,11 +84,15 @@
 <div class="row">
     <!-- Adjust Inventory Card -->
     <div class="col-md-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Adjust Inventory</h5>
+                <h5 class="mb-0"><i class="fas fa-plus-minus me-2"></i>Adjust Inventory (Add/Subtract)</h5>
             </div>
             <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Use this form to <strong>add or subtract</strong> units from your current inventory.
+                </div>
                 <form method="POST" action="{{ url_for('inventory.adjust', id=inventory.id) }}">
                     <div class="mb-4">
                         <label for="adjustment" class="form-label">Adjustment Amount</label>
@@ -132,59 +136,75 @@
 
     <!-- Package Inventory Card -->
     <div class="col-md-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header bg-info text-white">
-                <h5 class="mb-0">Update Package Inventory</h5>
+                <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Set Inventory (Absolute Values)</h5>
             </div>
             <div class="card-body">
-                <p class="card-text">
-                    Update inventory by specifying package counts instead of total units.
-                </p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Use this form to <strong>set absolute values</strong> for your inventory quantities.
+                </div>
 
                 <form method="POST" action="{{ url_for('inventory.update_packages', id=inventory.id) }}">
-                    <div class="row">
-                        {% if medication.package_size_n1 %}
-                            <div class="col-md-4 mb-3">
-                                <label for="packages_n1" class="form-label">N1 Packages</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="packages_n1" name="packages_n1" min="0" value="{{ inventory.packages_n1 }}">
-                                    <span class="input-group-text">× {{ medication.package_size_n1 }}</span>
-                                </div>
-                            </div>
-                        {% endif %}
-
-                        {% if medication.package_size_n2 %}
-                            <div class="col-md-4 mb-3">
-                                <label for="packages_n2" class="form-label">N2 Packages</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="packages_n2" name="packages_n2" min="0" value="{{ inventory.packages_n2 }}">
-                                    <span class="input-group-text">× {{ medication.package_size_n2 }}</span>
-                                </div>
-                            </div>
-                        {% endif %}
-
-                        {% if medication.package_size_n3 %}
-                            <div class="col-md-4 mb-3">
-                                <label for="packages_n3" class="form-label">N3 Packages</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="packages_n3" name="packages_n3" min="0" value="{{ inventory.packages_n3 }}">
-                                    <span class="input-group-text">× {{ medication.package_size_n3 }}</span>
-                                </div>
-                            </div>
-                        {% endif %}
+                    <!-- Total units direct input -->
+                    <div class="mb-4">
+                        <label for="direct_units" class="form-label">Set Total Units Directly</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="direct_units" name="direct_units" min="0" value="{{ inventory.current_count }}">
+                            <span class="input-group-text">units</span>
+                        </div>
+                        <div class="form-text">
+                            Enter the total number of units you currently have
+                        </div>
                     </div>
 
-                    <div class="alert alert-info">
+                    <div class="mt-4 mb-4">
+                        <h6>Or Set Package Quantities</h6>
+                        <div class="row">
+                            {% if medication.package_size_n1 %}
+                                <div class="col-md-4 mb-3">
+                                    <label for="packages_n1" class="form-label">N1 Packages</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="packages_n1" name="packages_n1" min="0" value="{{ inventory.packages_n1 }}">
+                                        <span class="input-group-text">× {{ medication.package_size_n1 }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if medication.package_size_n2 %}
+                                <div class="col-md-4 mb-3">
+                                    <label for="packages_n2" class="form-label">N2 Packages</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="packages_n2" name="packages_n2" min="0" value="{{ inventory.packages_n2 }}">
+                                        <span class="input-group-text">× {{ medication.package_size_n2 }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if medication.package_size_n3 %}
+                                <div class="col-md-4 mb-3">
+                                    <label for="packages_n3" class="form-label">N3 Packages</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="packages_n3" name="packages_n3" min="0" value="{{ inventory.packages_n3 }}">
+                                        <span class="input-group-text">× {{ medication.package_size_n3 }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-info-circle me-2"></i>
                             <div>
-                                This will update the total unit count based on package sizes. The current total is <strong>{{ inventory.current_count }}</strong> units.
+                                You can either set the total units directly <strong>or</strong> specify package quantities. The package quantities will be ignored if you enter a direct unit count.
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-info">
-                        <i class="fas fa-sync me-1"></i>Update Packages
+                        <i class="fas fa-sync me-1"></i>Update Inventory
                     </button>
                 </form>
             </div>
@@ -244,8 +264,63 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Setup inventory adjustment buttons
-        // setupInventoryAdjustment(); # DISABLED because it was called twice
+        // setupInventoryAdjustment(); // DISABLED because it was called twice
+
+        // Setup direct unit input and package fields
+        const directUnitsInput = document.getElementById('direct_units');
+        const packagesN1Input = document.getElementById('packages_n1');
+        const packagesN2Input = document.getElementById('packages_n2');
+        const packagesN3Input = document.getElementById('packages_n3');
+
+        // Function to update visual state based on whether direct units has a value
+        const updateVisualState = function() {
+            if (!directUnitsInput) return;
+
+            const hasValue = directUnitsInput.value.trim() !== '';
+            const packageInputs = [packagesN1Input, packagesN2Input, packagesN3Input];
+
+            // Update visual state of package inputs
+            packageInputs.forEach(input => {
+                if (!input) return;
+
+                if (hasValue) {
+                    input.classList.add('text-muted');
+                } else {
+                    input.classList.remove('text-muted');
+                }
+            });
+        };
+
+        // Function to clear package input fields
+        const clearPackageInputs = function() {
+            if (packagesN1Input) packagesN1Input.value = '0';
+            if (packagesN2Input) packagesN2Input.value = '0';
+            if (packagesN3Input) packagesN3Input.value = '0';
+        };
+
+        // Function to clear direct units input
+        const clearDirectUnits = function() {
+            if (directUnitsInput) directUnitsInput.value = '';
+            updateVisualState();
+        };
+
+        // When direct units changes, clear package inputs and update visual state
+        if (directUnitsInput) {
+            directUnitsInput.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    clearPackageInputs();
+                }
+                updateVisualState();
+            });
+        }
+
+        // When package inputs change, clear direct units
+        if (packagesN1Input) packagesN1Input.addEventListener('input', clearDirectUnits);
+        if (packagesN2Input) packagesN2Input.addEventListener('input', clearDirectUnits);
+        if (packagesN3Input) packagesN3Input.addEventListener('input', clearDirectUnits);
+
+        // Initial update of visual state
+        updateVisualState();
     });
 </script>
 {% endblock %}
