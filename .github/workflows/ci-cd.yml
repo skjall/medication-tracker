@@ -2,10 +2,10 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches: [main]
+    branches: [main, development]
   pull_request:
     types: [closed]
-    branches: [main]
+    branches: [main, development]
 
 jobs:
   test:
@@ -35,7 +35,6 @@ jobs:
 
   build-and-push:
     needs: test
-    # Only run on push to main or when PR is merged to main
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
 
@@ -53,13 +52,23 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      - name: Set Docker tags based on branch
+        id: set-tags
+        run: |
+          # Extract branch name from github.ref (remove 'refs/heads/' prefix)
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "TAGS=${{ secrets.REGISTRY_HOST }}/medication-tracker:latest,${{ secrets.REGISTRY_HOST }}/medication-tracker:$BRANCH_NAME,${{ secrets.REGISTRY_HOST }}/medication-tracker:${{ github.sha }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAGS=${{ secrets.REGISTRY_HOST }}/medication-tracker:$BRANCH_NAME,${{ secrets.REGISTRY_HOST }}/medication-tracker:${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: |
-            ${{ secrets.REGISTRY_HOST }}/medication-tracker:latest
-            ${{ secrets.REGISTRY_HOST }}/medication-tracker:${{ github.sha }}
+          tags: ${{ steps.set-tags.outputs.TAGS }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
