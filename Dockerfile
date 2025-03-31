@@ -11,8 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app/ .
-
 # Create directories for data and logs
 RUN mkdir -p /app/data /app/logs \
   && chmod -R 755 /app/data /app/logs
@@ -23,6 +21,9 @@ VOLUME /app/logs
 
 # Expose the port the app runs on
 EXPOSE 8087
+
+# Copy the application code
+COPY app/ .
 
 # Command to run the application
 CMD ["python", "main.py"]

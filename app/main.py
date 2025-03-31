@@ -4,11 +4,10 @@ Main application module for the Medication Tracker application.
 
 import os
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any
 
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
-from flask_sqlalchemy import SQLAlchemy
 
 from models import (
     db,
@@ -22,6 +21,7 @@ from models import (
     utcnow,
 )
 from logging_config import configure_logging
+from task_scheduler import TaskScheduler
 
 
 def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
@@ -50,6 +50,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         DEBUG=os.environ.get("FLASK_ENV", "development") == "development",
         MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max upload size
         LOG_LEVEL=os.environ.get("LOG_LEVEL", "INFO"),  # Default log level
+        SCHEDULER_AUTO_START=True,  # Auto-start the task scheduler
     )
 
     # Override config with test config if provided
@@ -61,6 +62,9 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
     # Initialize database
     db.init_app(app)
+
+    # Initialize task scheduler
+    scheduler = TaskScheduler(app)
 
     # Create tables if they don't exist
     with app.app_context():
@@ -74,6 +78,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     from routes.settings import settings_bp
     from routes.schedule import schedule_bp
     from routes.prescription_templates import prescription_bp
+    from routes.system import system_bp
 
     app.register_blueprint(medication_bp)
     app.register_blueprint(inventory_bp)
@@ -82,6 +87,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     app.register_blueprint(settings_bp)
     app.register_blueprint(schedule_bp)
     app.register_blueprint(prescription_bp)
+    app.register_blueprint(system_bp)
 
     # Add utility functions to Jinja
     from utils import min_value, make_aware
@@ -144,7 +150,56 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         logger.warning(f"Page not found: {request.path}")
         return render_template("404.html"), 404
 
+    # Add scheduler tasks
+    with app.app_context():
+        # Register the auto-deduction task
+        from hospital_visit_utils import auto_deduct_inventory
+
+        # Run every hour (3600 seconds)
+        scheduler.add_task(
+            name="auto_deduction",
+            func=auto_deduct_inventory,
+            interval_seconds=3600,  # 1 hour
+        )
+
+        # Add task to check for upcoming visits (every 12 hours)
+        scheduler.add_task(
+            name="check_upcoming_visits",
+            func=check_upcoming_visits,
+            interval_seconds=43200,  # 12 hours
+        )
+
+        logger.info("Scheduled background tasks registered")
+
     return app
+
+
+# Simple function to check upcoming visits and perform any necessary actions
+def check_upcoming_visits():
+    """Check upcoming visits and perform any necessary actions."""
+    logger = logging.getLogger(__name__)
+    logger.info("Checking upcoming visits")
+
+    from models import HospitalVisit, utcnow
+
+    # Get visits in the next 7 days
+    now = utcnow()
+    one_week_later = now + timedelta(days=7)
+
+    upcoming = (
+        HospitalVisit.query.filter(
+            HospitalVisit.visit_date >= now, HospitalVisit.visit_date <= one_week_later
+        )
+        .order_by(HospitalVisit.visit_date)
+        .all()
+    )
+
+    logger.info(f"Found {len(upcoming)} visits in the next 7 days")
+
+    # This is where you could add code to send notifications
+    # or perform other actions based on upcoming visits
+
+    return len(upcoming)
 
 
 # After database initialization, ensure all existing datetimes have timezone info
@@ -215,11 +270,6 @@ if __name__ == "__main__":
 
     # Fix existing data in the database if needed
     fix_database_timezones(app)
-
-    # Start the automatic deduction thread
-    from hospital_visit_utils import setup_auto_deduction
-
-    auto_deduction_thread = setup_auto_deduction(app)
 
     # Start the application
     port = int(os.environ.get("PORT", 8087))

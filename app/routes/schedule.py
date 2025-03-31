@@ -6,7 +6,16 @@ import json
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    jsonify,
+    current_app,
+)
 
 from models import db, Medication
 from models import MedicationSchedule, ScheduleType
@@ -165,5 +174,10 @@ def check_deductions():
 
     auto_deduct_inventory()
     flash("Medication deductions checked successfully", "success")
+
+    # Get the referer to return to the previous page
+    referer = request.headers.get("Referer")
+    if referer and "system/status" in referer:
+        return redirect(url_for("system.status"))
 
     return redirect(url_for("index"))

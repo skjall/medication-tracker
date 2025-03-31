@@ -28,32 +28,6 @@ def min_value(a: T, b: T) -> T:
     return min(a, b)
 
 
-def format_date(date: datetime) -> str:
-    """
-    Format a datetime object for display.
-
-    Args:
-        date: The datetime object to format
-
-    Returns:
-        Formatted date string
-    """
-    return date.strftime("%d.%m.%Y")
-
-
-def format_datetime(date: datetime) -> str:
-    """
-    Format a datetime object with time for display.
-
-    Args:
-        date: The datetime object to format
-
-    Returns:
-        Formatted datetime string
-    """
-    return date.strftime("%d.%m.%Y %H:%M")
-
-
 def make_aware(dt: datetime) -> datetime:
     """
     Ensure a datetime is timezone-aware by adding UTC timezone if needed.
@@ -293,7 +267,20 @@ def from_local_timezone(dt: datetime) -> datetime:
     return dt.astimezone(timezone.utc)
 
 
-# Modified formatting functions
+def format_time(date: datetime) -> str:
+    """
+    Format a datetime object for display in local timezone.
+
+    Args:
+        date: The datetime object to format
+
+    Returns:
+        Formatted date string
+    """
+    date = to_local_timezone(date)
+    return date.strftime("%H:%M:%S")
+
+
 def format_date(date: datetime) -> str:
     """
     Format a datetime object for display in local timezone.
@@ -308,7 +295,7 @@ def format_date(date: datetime) -> str:
     return date.strftime("%d.%m.%Y")
 
 
-def format_datetime(date: datetime) -> str:
+def format_datetime(date: datetime, show_seconds: bool = False) -> str:
     """
     Format a datetime object with time for display in local timezone.
 
@@ -319,4 +306,8 @@ def format_datetime(date: datetime) -> str:
         Formatted datetime string
     """
     date = to_local_timezone(date)
+
+    if show_seconds:
+        return date.strftime("%d.%m.%Y %H:%M:%S")
+
     return date.strftime("%d.%m.%Y %H:%M")

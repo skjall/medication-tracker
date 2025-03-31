@@ -2,18 +2,15 @@
 Hospital Visit Settings and Automatic Deduction utilities.
 
 This module provides:
-1. Automatic inventory deduction background task
+1. Automatic inventory deduction process
 2. Utility functions for visit planning
 """
 
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, List, Tuple, Any
-import threading
-import time
 import logging
 
-from flask import current_app
 from sqlalchemy import func
 
 from models import db, ensure_timezone_utc, utcnow, HospitalVisitSettings
@@ -78,17 +75,22 @@ def calculate_days_between_visits() -> int:
     return HospitalVisitSettings.get_settings().default_visit_interval
 
 
-def auto_deduct_inventory():
+def auto_deduct_inventory() -> int:
     """
     Check medications that are due for automatic deduction.
     Should be run regularly (e.g. every hour) to ensure timely deductions.
+
+    Returns:
+        Number of medications deducted
     """
     from models import Medication
     from utils import to_local_timezone, from_local_timezone
 
-    logging.info("Running automatic inventory deduction")
+    logger = logging.getLogger(__name__)
+    logger.info("Running automatic inventory deduction")
 
     current_time = utcnow()
+    deduction_count = 0
 
     # Get settings
     settings = HospitalVisitSettings.get_settings()
@@ -100,65 +102,39 @@ def auto_deduct_inventory():
     # Get all medications with auto-deduction enabled
     medications = Medication.query.filter_by(auto_deduction_enabled=True).all()
 
+    logger.info(f"Checking {len(medications)} medications with auto-deduction enabled")
+
     for med in medications:
         # Check and deduct if scheduled
         deducted, amount = med.check_and_deduct_inventory(current_time)
         if deducted:
-            logging.info(f"Auto-deducted {amount} units of {med.name}")
+            deduction_count += 1
+            logger.info(f"Auto-deducted {amount} units of {med.name}")
 
     # Commit all changes
     db.session.commit()
 
+    logger.info(
+        f"Automatic deduction complete. Deducted {deduction_count} medications."
+    )
 
-class AutoDeductionThread(threading.Thread):
+    return deduction_count
+
+
+class HospitalVisitSettings:
     """
-    Background thread to periodically check for and apply automatic inventory deductions.
+    Helper class to access hospital visit settings.
+    This is a facade to the database model for use in other modules.
     """
 
-    def __init__(self, app, interval_seconds=3600):
+    @staticmethod
+    def get_settings():
         """
-        Initialize the auto-deduction thread.
+        Get the application settings for hospital visits.
 
-        Args:
-            app: Flask application instance
-            interval_seconds: How often to check for deductions (default: 1 hour)
+        Returns:
+            Hospital visit settings object
         """
-        super().__init__(daemon=True)
-        self.app = app
-        self.interval_seconds = interval_seconds
-        self.stop_event = threading.Event()
+        from models import HospitalVisitSettings as SettingsModel
 
-    def run(self):
-        """Run the deduction thread until stopped."""
-        logging.info("Starting automatic inventory deduction thread")
-
-        while not self.stop_event.is_set():
-            # Create app context for database operations
-            with self.app.app_context():
-                try:
-                    auto_deduct_inventory()
-                except Exception as e:
-                    logging.error(f"Error in auto-deduction: {e}")
-
-            # Sleep until next check
-            time.sleep(self.interval_seconds)
-
-    def stop(self):
-        """Signal the thread to stop."""
-        self.stop_event.set()
-
-
-def setup_auto_deduction(app, interval_seconds=3600):
-    """
-    Setup and start the automatic inventory deduction background task.
-
-    Args:
-        app: Flask application instance
-        interval_seconds: How often to check for deductions (default: 1 hour)
-
-    Returns:
-        The started thread
-    """
-    thread = AutoDeductionThread(app, interval_seconds)
-    thread.start()
-    return thread
+        return SettingsModel.get_settings()
