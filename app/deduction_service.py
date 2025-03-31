@@ -7,11 +7,11 @@ This module provides improved medication deduction tracking, including:
 3. Retroactive application of deductions that should have happened
 """
 
-from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Tuple, Optional, Any
+from datetime import datetime, timedelta
+from typing import List, Tuple, Any
 import logging
-import json
 from collections import defaultdict
+from utils import get_application_timezone
 
 from models import (
     db,
@@ -120,6 +120,15 @@ def _calculate_daily_missed_deductions(
     Returns:
         List of missed deduction times in local timezone
     """
+    # Ensure both times are timezone-aware in the application's timezone
+    app_timezone = get_application_timezone()
+
+    # Make sure local_last_deduction and local_current_time are timezone-aware
+    if local_last_deduction.tzinfo is None:
+        local_last_deduction = local_last_deduction.replace(tzinfo=app_timezone)
+    if local_current_time.tzinfo is None:
+        local_current_time = local_current_time.replace(tzinfo=app_timezone)
+
     missed_deductions = []
 
     # Get start and end dates (just the date part)
@@ -154,10 +163,16 @@ def _calculate_daily_missed_deductions(
             if time_str in processed_slots[current_date]:
                 continue
 
-            # Parse the time
+            # Parse the time and create a timezone-aware datetime
             hour, minute = map(int, time_str.split(":"))
             scheduled_datetime = datetime(
-                current_date.year, current_date.month, current_date.day, hour, minute, 0
+                current_date.year,
+                current_date.month,
+                current_date.day,
+                hour,
+                minute,
+                0,
+                tzinfo=app_timezone,
             )
 
             # Only include times that are:
