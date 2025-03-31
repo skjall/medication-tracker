@@ -3,25 +3,25 @@ import sys
 import unittest
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta, timezone
-import json
 
 # Add app to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../app"))
+sys.path.insert(0, path)
 
-# Import Flask and create app
+
+# Import necessary modules
 from main import create_app
-from models import (
-    db,
-    Medication,
-    Inventory,
-    MedicationSchedule,
-    ScheduleType,
-    ensure_timezone_utc,
+from models import MedicationSchedule, ScheduleType, Medication, Inventory
+from deduction_service import (
+    _calculate_daily_missed_deductions,
+    _calculate_interval_missed_deductions,
+    _calculate_weekdays_missed_deductions,
+    calculate_missed_deductions,
+    perform_deductions,
 )
-from utils import to_local_timezone
 
 
-class TestDeductionService(unittest.TestCase):
+class TestIsDueNow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Create a test app and push an application context
@@ -36,25 +36,33 @@ class TestDeductionService(unittest.TestCase):
 
     def setUp(self):
         # Reset database
+        from models import db
+
+        print("Path added to sys.path:", path)
+
         db.session.remove()
         db.drop_all()
         db.create_all()
 
-        # Additional setup specific to each test method
-        # Mock the timezone to a fixed value to ensure consistent testing
+        # Set up current time and yesterday
         self.now = datetime.now(timezone.utc)
         self.yesterday = self.now - timedelta(days=1)
 
         # Create a mock schedule
+        from unittest.mock import MagicMock
+
         self.schedule = MagicMock(spec=MedicationSchedule)
         self.schedule.formatted_times = ["08:00", "18:00"]
         self.schedule.last_deduction = self.yesterday
         self.schedule.interval_days = 1
         self.schedule.formatted_weekdays = [0, 2, 4]  # Mon, Wed, Fri
+        self.schedule.units_per_dose = 2.0
 
         # Create a mock medication
         self.medication = MagicMock(spec=Medication)
         self.medication.name = "Test Med"
+        self.medication.auto_deduction_enabled = True
+
         self.medication.schedules = [self.schedule]
 
         # Create a mock inventory

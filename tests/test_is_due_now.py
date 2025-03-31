@@ -14,14 +14,15 @@ from datetime import datetime, timedelta, timezone
 # Add app to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
 
-# Import the models to test
-from models import MedicationSchedule, ScheduleType, ensure_timezone_utc
-
 
 class TestIsDueNow(unittest.TestCase):
     """Test cases for the is_due_now method in MedicationSchedule."""
 
     def setUp(self):
+
+        # Import the models to test
+        from models import MedicationSchedule, ScheduleType, ensure_timezone_utc
+
         """Set up test fixtures before each test."""
         # Create a mock schedule
         self.schedule = MagicMock(spec=MedicationSchedule)
@@ -46,7 +47,7 @@ class TestIsDueNow(unittest.TestCase):
         self.schedule.last_deduction = None
 
         # Set up utility function mocks
-        self.to_local_patcher = patch("utils.to_local_timezone")
+        self.to_local_patcher = patch("models.to_local_timezone")
         self.mock_to_local = self.to_local_patcher.start()
 
         # By default, make the local time the same as UTC for testing simplicity

@@ -7,7 +7,7 @@ from datetime import datetime
 from tempfile import NamedTemporaryFile
 
 # We'll use PyPDF2 for PDF form filling
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 
 logger = logging.getLogger(__name__)
 

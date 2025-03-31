@@ -211,6 +211,9 @@ def _calculate_interval_missed_deductions(
     missed_deductions = []
     interval_days = schedule.interval_days
 
+    # Ensure both times are timezone-aware in the application's timezone
+    app_timezone = get_application_timezone()
+
     # Calculate the first day in the interval after the last deduction
     last_deduction_date = local_last_deduction.date()
     current_date = local_current_time.date()
@@ -239,7 +242,13 @@ def _calculate_interval_missed_deductions(
         for time_str in scheduled_times:
             hour, minute = map(int, time_str.split(":"))
             scheduled_datetime = datetime(
-                date.year, date.month, date.day, hour, minute, 0
+                date.year,
+                date.month,
+                date.day,
+                hour,
+                minute,
+                0,
+                tzinfo=app_timezone,
             )
 
             # Only include times before current time
@@ -269,6 +278,9 @@ def _calculate_weekdays_missed_deductions(
     """
     missed_deductions = []
     selected_weekdays = schedule.formatted_weekdays
+
+    # Ensure both times are timezone-aware in the application's timezone
+    app_timezone = get_application_timezone()
 
     # Get start and end dates
     start_date = local_last_deduction.date()
@@ -317,6 +329,7 @@ def _calculate_weekdays_missed_deductions(
                     hour,
                     minute,
                     0,
+                    tzinfo=app_timezone,
                 )
 
                 # Only include times that are:
@@ -383,6 +396,7 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                 for deduction_time in missed_deductions:
                     # Deduct the scheduled amount
                     amount = schedule.units_per_dose
+                    logger.error(amount)
                     if amount > 0 and medication.inventory.current_count >= amount:
                         medication.inventory.update_count(
                             -amount,
