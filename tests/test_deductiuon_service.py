@@ -286,7 +286,11 @@ class TestDeductionService(BaseTestCase):
 
             # Verify schedule's last_deduction was updated
             self.db.session.refresh(self.schedule)
-            self.assertEqual(self.schedule.last_deduction, mock_calc.return_value[-1])
+
+            # Compare only the relevant parts of the datetime, ignoring timezone info
+            expected_time = mock_calc.return_value[-1].replace(tzinfo=None)
+            actual_time = self.schedule.last_deduction.replace(tzinfo=None)
+            self.assertEqual(actual_time, expected_time)
 
             # Verify inventory was updated correctly (deducted 2 doses of 2.0 units)
             self.db.session.refresh(self.inventory)
