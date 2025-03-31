@@ -1,46 +1,56 @@
 """
-Unit tests for the models file
+Tests for model classes.
 
-
+This module contains tests for the various model classes in the application,
+focusing on their methods and relationships.
 """
 
-import os
-import sys
 import unittest
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta, timezone
 
-# Add app to path for imports
-path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../app"))
-if path not in sys.path:
-    sys.path.insert(0, path)
+from .test_base import BaseTestCase
+from app.models import (
+    Medication,
+    Inventory,
+    MedicationSchedule,
+    ScheduleType,
+    HospitalVisit,
+    Order,
+    OrderItem,
+)
 
-# Import the models to test
-from models import MedicationSchedule, ScheduleType
 
-
-class TestIsDueNow(unittest.TestCase):
-    """Test cases for the is_due_now method in MedicationSchedule."""
+class TestMedicationSchedule(BaseTestCase):
+    """Test cases for the MedicationSchedule model."""
 
     def setUp(self):
         """Set up test fixtures before each test."""
-        # Create a mock schedule
-        self.schedule = MagicMock(spec=MedicationSchedule)
+        super().setUp()
 
-        self.schedule.is_due_now = MedicationSchedule.is_due_now.__get__(
-            self.schedule, MedicationSchedule
+        # Create a test medication for the schedule
+        self.medication = Medication(
+            name="Test Medication",
+            dosage=2.0,
+            frequency=2.0,
+            package_size_n1=30,
+            package_size_n2=100,
+            min_threshold=20,
+            safety_margin_days=14,
         )
 
-        # Set up schedule data
-        self.schedule.formatted_times = ["08:00", "18:00"]
-        self.schedule.formatted_weekdays = [0, 2, 4]  # Mon, Wed, Fri
-        self.schedule.interval_days = 1
-        self.schedule.schedule_type = ScheduleType.DAILY
+        # Create a schedule attached to the medication
+        self.schedule = MedicationSchedule(
+            medication=self.medication,
+            schedule_type=ScheduleType.DAILY,
+            interval_days=1,
+            times_of_day='["08:00", "18:00"]',
+            units_per_dose=1.5,
+        )
 
-        # Current time and last deduction
+        # Current time and yesterday
         self.now = datetime.now(timezone.utc)
         self.yesterday = self.now - timedelta(days=1)
-        self.schedule.last_deduction = None
 
         # Set up utility function mocks
         self.to_local_patcher = patch("utils.to_local_timezone")
@@ -52,6 +62,7 @@ class TestIsDueNow(unittest.TestCase):
     def tearDown(self):
         """Clean up after each test."""
         self.to_local_patcher.stop()
+        super().tearDown()
 
     def test_exact_time_match(self):
         """Test that exactly matching a scheduled time returns True."""
@@ -182,7 +193,7 @@ class TestIsDueNow(unittest.TestCase):
         """Test weekday schedule behavior."""
         # Set schedule to weekdays (Mon, Wed, Fri)
         self.schedule.schedule_type = ScheduleType.WEEKDAYS
-        self.schedule.formatted_weekdays = [0, 2, 4]  # Mon(0), Wed(2), Fri(4)
+        self.schedule.weekdays = "[0, 2, 4]"  # Mon(0), Wed(2), Fri(4)
 
         # Test with different weekdays
         for weekday in range(7):  # 0-6 (Mon-Sun)
@@ -240,6 +251,138 @@ class TestIsDueNow(unittest.TestCase):
         # The expected behavior is False (not due)
         result = self.schedule.is_due_now(current_time)
         self.assertFalse(result)
+
+    def test_calculate_daily_usage_daily(self):
+        """Test calculation of daily usage for daily schedule."""
+        # Set a daily schedule with 2 doses per day, 1.5 units per dose
+        self.schedule.schedule_type = ScheduleType.DAILY
+        self.schedule.times_of_day = '["08:00", "18:00"]'
+        self.schedule.units_per_dose = 1.5
+
+        # Expected: 2 times * 1.5 units = 3 units per day
+        self.assertEqual(self.schedule.calculate_daily_usage(), 3.0)
+
+    def test_calculate_daily_usage_interval(self):
+        """Test calculation of daily usage for interval schedule."""
+        # Set an interval schedule (every 2 days) with 2 doses per day, 1.5 units per dose
+        self.schedule.schedule_type = ScheduleType.INTERVAL
+        self.schedule.interval_days = 2
+        self.schedule.times_of_day = '["08:00", "18:00"]'
+        self.schedule.units_per_dose = 1.5
+
+        # Expected: (2 times * 1.5 units) / 2 days = 1.5 units per day
+        self.assertEqual(self.schedule.calculate_daily_usage(), 1.5)
+
+    def test_calculate_daily_usage_weekdays(self):
+        """Test calculation of daily usage for weekday schedule."""
+        # Set a weekday schedule (3 days per week) with 2 doses per day, 1.5 units per dose
+        self.schedule.schedule_type = ScheduleType.WEEKDAYS
+        self.schedule.weekdays = "[0, 2, 4]"  # Mon, Wed, Fri (3 days)
+        self.schedule.times_of_day = '["08:00", "18:00"]'
+        self.schedule.units_per_dose = 1.5
+
+        # Expected: (2 times * 1.5 units * 3 days) / 7 days = 1.29 units per day
+        self.assertAlmostEqual(self.schedule.calculate_daily_usage(), 1.29, places=2)
+
+
+class TestMedication(BaseTestCase):
+    """Test cases for the Medication model."""
+
+    def setUp(self):
+        """Set up test fixtures before each test."""
+        super().setUp()
+
+        # Create a test medication with inventory
+        self.medication = Medication(
+            name="Test Medication",
+            dosage=2.0,
+            frequency=2.0,
+            package_size_n1=30,
+            package_size_n2=100,
+            package_size_n3=500,
+            min_threshold=20,
+            safety_margin_days=14,
+        )
+
+        # Create inventory
+        self.inventory = Inventory(medication=self.medication, current_count=100)
+
+        # Create a schedule
+        self.schedule = MedicationSchedule(
+            medication=self.medication,
+            schedule_type=ScheduleType.DAILY,
+            times_of_day='["08:00", "18:00"]',
+            units_per_dose=1.5,
+        )
+
+    def test_daily_usage_calculation(self):
+        """Test that daily usage is calculated correctly from schedules."""
+        # Expected: 2 times per day * 1.5 units = 3.0 units per day
+        self.assertEqual(self.medication.daily_usage, 3.0)
+
+        # Add another schedule
+        schedule2 = MedicationSchedule(
+            medication=self.medication,
+            schedule_type=ScheduleType.DAILY,
+            times_of_day='["12:00"]',
+            units_per_dose=1.0,
+        )
+
+        # Expected: (2 times * 1.5 units) + (1 time * 1.0 units) = 4.0 units per day
+        self.assertEqual(self.medication.daily_usage, 4.0)
+
+    def test_days_remaining_calculation(self):
+        """Test that days remaining is calculated correctly."""
+        # With 100 units and usage of 3.0 units per day, should have 33.33 days
+        self.assertAlmostEqual(self.medication.days_remaining, 33.33, places=2)
+
+        # Change inventory to test different values
+        self.inventory.current_count = 50
+        # With 50 units and usage of 3.0 units per day, should have 16.67 days
+        self.assertAlmostEqual(self.medication.days_remaining, 16.67, places=2)
+
+    def test_depletion_date_calculation(self):
+        """Test that depletion date is calculated correctly."""
+        # With current usage and inventory, should deplete in about 33.33 days
+        days_remaining = self.medication.days_remaining
+        expected_date = datetime.now(timezone.utc) + timedelta(days=days_remaining)
+
+        # Should be within a small delta (seconds difference due to test execution time)
+        delta = abs((expected_date - self.medication.depletion_date).total_seconds())
+        self.assertLess(delta, 5)  # Allow 5 seconds difference
+
+    def test_calculate_packages_needed(self):
+        """Test that package calculation works correctly."""
+        # Test with 175 units needed - should prefer larger packages
+        packages = self.medication.calculate_packages_needed(175)
+
+        # Expected optimal solution is 1*N3(500) + 1*N2(100) + 0*N1(30)
+        self.assertEqual(packages["N3"], 0)  # No N3 packages (too large)
+        self.assertEqual(packages["N2"], 1)  # 1 N2 package (100 units)
+        self.assertEqual(packages["N1"], 3)  # 3 N1 packages (3*30 = 90 units)
+
+        # Total: 100 + 90 = 190 units (>= 175 needed)
+
+    def test_calculate_needed_until_visit(self):
+        """Test calculation of medication needs until a visit."""
+        # Create a visit date 30 days in the future
+        visit_date = datetime.now(timezone.utc) + timedelta(days=30)
+
+        # Calculate needs without safety margin
+        needed = self.medication.calculate_needed_until_visit(
+            visit_date, include_safety_margin=False, consider_next_but_one=False
+        )
+
+        # Expected: 30 days * 3.0 units per day = 90 units
+        self.assertEqual(needed, 90)
+
+        # Calculate needs with safety margin (14 days)
+        needed_with_margin = self.medication.calculate_needed_until_visit(
+            visit_date, include_safety_margin=True, consider_next_but_one=False
+        )
+
+        # Expected: (30 days + 14 days) * 3.0 units per day = 132 units
+        self.assertEqual(needed_with_margin, 132)
 
 
 if __name__ == "__main__":
