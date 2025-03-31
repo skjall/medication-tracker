@@ -36,7 +36,7 @@
                     <dt class="col-sm-6">Last Deduction Check:</dt>
                     <dd class="col-sm-6">
                         {% if status.last_deduction_check %}
-                            {{ status.last_deduction_check }}
+                            {{ status.last_deduction_check|truncate(19, True, '') }}
                         {% else %}
                             <span class="text-muted">Never run</span>
                         {% endif %}
@@ -71,7 +71,7 @@
                                 <td>{{ task.interval }} seconds</td>
                                 <td>
                                     {% if task.last_run %}
-                                        {{ task.last_run }}
+                                        {{ task.last_run|truncate(19, True, '') }} <!-- Truncate to eliminate fractional seconds -->
                                     {% else %}
                                         <span class="text-muted">Never</span>
                                     {% endif %}

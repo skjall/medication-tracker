@@ -171,6 +171,45 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
         logger.info("Scheduled background tasks registered")
 
+    @app.context_processor
+    def inject_now():
+        """
+        Context processor to inject current time and settings into all templates.
+
+        Returns:
+            Dictionary with variables available to all templates
+        """
+        # Get UTC time first
+        utc_now = utcnow()
+
+        # Convert to local timezone
+        from utils import to_local_timezone
+
+        local_now = to_local_timezone(utc_now)
+
+        # Get settings for access in all templates
+        from models import HospitalVisitSettings
+
+        settings = HospitalVisitSettings.get_settings()
+
+        # Return both UTC and local time, plus settings
+        return {
+            "now": utc_now,  # UTC time for backend calculations
+            "local_time": local_now,  # Local time for display
+            "settings": settings,  # Application settings for templates
+        }
+
+    @app.template_filter("datetime")
+    def parse_datetime(value):
+        """Parse an ISO format datetime string into a datetime object."""
+        if isinstance(value, datetime):
+            return value
+        try:
+            return datetime.fromisoformat(value)
+        except (ValueError, TypeError):
+            # If the string doesn't match ISO format, return current time as fallback
+            return datetime.now(timezone.utc)
+
     return app
 
 
@@ -259,34 +298,6 @@ def fix_database_timezones(app):
         except Exception as e:
             logger.error(f"Error updating database timezones: {e}")
             db.session.rollback()
-
-    @app.context_processor
-    def inject_now():
-        """
-        Context processor to inject current time and settings into all templates.
-
-        Returns:
-            Dictionary with variables available to all templates
-        """
-        # Get UTC time first
-        utc_now = utcnow()
-
-        # Convert to local timezone
-        from utils import to_local_timezone
-
-        local_now = to_local_timezone(utc_now)
-
-        # Get settings for access in all templates
-        from models import HospitalVisitSettings
-
-        settings = HospitalVisitSettings.get_settings()
-
-        # Return both UTC and local time, plus settings
-        return {
-            "now": utc_now,  # UTC time for backend calculations
-            "local_time": local_now,  # Local time for display
-            "settings": settings,  # Application settings for templates
-        }
 
 
 # Application entry point

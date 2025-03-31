@@ -18,7 +18,11 @@ from sqlalchemy import (
     JSON,
     Enum,
 )
+import logging
 from utils import make_aware, calculate_days_until
+
+
+logger = logging.getLogger(__name__)
 
 db = SQLAlchemy()
 
@@ -586,6 +590,9 @@ class MedicationSchedule(db.Model):
 
         # Check if current time matches any of the scheduled times
         if current_time_str not in times_list:
+            logger.debug(
+                f"Current time {current_time_str} not in scheduled times {times_list}"
+            )
             return False
 
         # If we've already deducted today, check if we should deduct again based on schedule
@@ -596,23 +603,38 @@ class MedicationSchedule(db.Model):
 
             # For daily schedule, only deduct once per day per time slot
             if self.schedule_type == ScheduleType.DAILY:
+                logger.debug(
+                    f"This is a daily schedule. Last deduction was at {local_last_deduction.strftime('%H:%M')}"
+                )
                 # If last deduction was today and the same hour/minute, don't deduct again
                 same_day = local_last_deduction.date() == local_time.date()
                 same_time_slot = (
                     local_last_deduction.strftime("%H:%M") == current_time_str
                 )
                 if same_day and same_time_slot:
+                    logger.debug(
+                        f"Already deducted today at {local_last_deduction.strftime('%H:%M')}"
+                    )
                     return False
 
             # For interval schedule, check if it's been interval_days since last deduction
             elif self.schedule_type == ScheduleType.INTERVAL:
+                logger.debug(
+                    f"This is an interval schedule. Last deduction was at {local_last_deduction.strftime('%d.%m.%Y')}"
+                )
                 days_since_last = (local_time.date() - local_last_deduction.date()).days
                 # Only deduct if interval days have passed and we're at the right time
                 if days_since_last < self.interval_days:
+                    logger.debug(
+                        f"Last deduction was only {days_since_last} days ago, not due yet"
+                    )
                     return False
 
             # For weekday schedule, check if today is one of the selected days
             elif self.schedule_type == ScheduleType.WEEKDAYS:
+                logger.debug(
+                    f"This is a weekdays schedule. Last deduction was at {local_last_deduction.strftime('%d.%m.%Y')}"
+                )
                 # Get day of week (0=Monday, 6=Sunday) using local time
                 current_weekday = local_time.weekday()
                 # Check if it's the right day and we haven't already deducted at this time today
@@ -624,22 +646,37 @@ class MedicationSchedule(db.Model):
                     local_last_deduction.strftime("%H:%M") == current_time_str
                 )
                 if same_day and same_time_slot:
+                    logger.debug(
+                        f"Already deducted today at {local_last_deduction.strftime('%H:%M')}"
+                    )
                     return False
 
         # For daily schedule, it's due if the time matches and we haven't deducted yet today
         if self.schedule_type == ScheduleType.DAILY:
+            logger.debug(
+                f"This is a daily schedule. Current time {current_time_str} matches schedule"
+            )
             return True
 
         # For interval schedule, we've already checked days since last deduction
         elif self.schedule_type == ScheduleType.INTERVAL:
+            logger.debug(
+                f"This is an interval schedule. Current time {current_time_str} matches schedule"
+            )
             return True
 
         # For weekday schedule, we've already checked if today is one of the selected days
         elif self.schedule_type == ScheduleType.WEEKDAYS:
+            logger.debug(
+                f"This is a weekdays schedule. Current time {current_time_str} matches schedule"
+            )
             # Get day of week (0=Monday, 6=Sunday) using local time
             current_weekday = local_time.weekday()
             return current_weekday in self.formatted_weekdays
 
+        logger.debug(
+            f"Schedule type {self.schedule_type} not recognized, cannot determine if due"
+        )
         return False
 
     def calculate_daily_usage(self) -> float:

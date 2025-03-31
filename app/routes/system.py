@@ -53,18 +53,6 @@ def status():
     python_version = platform.python_version()
     flask_version = flask.__version__
 
-    # Add jinja2 filter for parsing ISO datetime strings
-    @current_app.template_filter("datetime")
-    def parse_datetime(value):
-        """Parse an ISO format datetime string into a datetime object."""
-        if isinstance(value, datetime):
-            return value
-        try:
-            return datetime.fromisoformat(value)
-        except (ValueError, TypeError):
-            # If the string doesn't match ISO format, return current time as fallback
-            return datetime.now(timezone.utc)
-
     status = {
         "scheduler_running": scheduler_running,
         "tasks": tasks,

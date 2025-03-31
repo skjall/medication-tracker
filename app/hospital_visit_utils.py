@@ -105,20 +105,20 @@ def auto_deduct_inventory() -> int:
     logger.info(f"Checking {len(medications)} medications with auto-deduction enabled")
 
     # Process each medication
-    for med in medications:
-        if not med.inventory:
-            logger.warning(f"Medication {med.name} has no inventory record")
+    for medication in medications:
+        if not medication.inventory:
+            logger.warning(f"Medication {medication.name} has no inventory record")
             continue
 
         # Check each schedule
-        for schedule in med.schedules:
+        for schedule in medication.schedules:
             if schedule.is_due_now(current_time):
-                logger.info(f"Schedule {schedule.id} for {med.name} is due now")
+                logger.info(f"Schedule {schedule.id} for {medication.name} is due now")
 
                 # Deduct the scheduled amount
                 amount = schedule.units_per_dose
-                if amount > 0 and med.inventory.current_count >= amount:
-                    med.inventory.update_count(
+                if amount > 0 and medication.inventory.current_count >= amount:
+                    medication.inventory.update_count(
                         -amount,
                         f"Automatic deduction: {amount} units at {current_time.strftime('%d.%m.%Y %H:%M')}",
                     )
@@ -126,11 +126,15 @@ def auto_deduct_inventory() -> int:
 
                     # Update last deduction time
                     schedule.last_deduction = current_time
-                    logger.info(f"Deducted {amount} units from {med.name}")
+                    logger.info(f"Deducted {amount} units from {medication.name}")
                 else:
                     logger.warning(
-                        f"Not enough inventory to deduct {amount} units from {med.name}. Current count: {med.inventory.current_count}"
+                        f"Not enough inventory to deduct {amount} units from {medication.name}. Current count: {medication.inventory.current_count}"
                     )
+            else:
+                logger.info(
+                    f"Schedule {schedule.id} for {medication.name} is not due yet."
+                )
 
     # Commit all changes
     if deduction_count > 0:
