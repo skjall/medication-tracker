@@ -7,7 +7,6 @@ which is responsible for tracking and deducting medication inventory.
 
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta, timezone
-
 from .test_base import BaseTestCase
 
 
@@ -26,6 +25,17 @@ class TestDeductionService(BaseTestCase):
             Inventory,
             HospitalVisitSettings,
         )
+
+        # Clean up any existing data to prevent test interference - using db session directly
+        try:
+            self.db.session.execute(self.db.delete(MedicationSchedule))
+            self.db.session.execute(self.db.delete(Inventory))
+            self.db.session.execute(self.db.delete(Medication))
+            self.db.session.execute(self.db.delete(HospitalVisitSettings))
+            self.db.session.commit()
+        except Exception as e:
+            self.db.session.rollback()
+            print(f"Error cleaning up database: {e}")
 
         # Import module here to avoid issues with app context
         from app.deduction_service import (
@@ -74,6 +84,12 @@ class TestDeductionService(BaseTestCase):
             last_deduction=self.yesterday,
         )
         self.db.session.add(self.schedule)
+
+        # Create settings
+        self.settings = HospitalVisitSettings(
+            default_visit_interval=90, timezone_name="UTC"
+        )
+        self.db.session.add(self.settings)
         self.db.session.commit()
 
         # Set up utility function mocks
@@ -88,13 +104,6 @@ class TestDeductionService(BaseTestCase):
         self.mock_from_local_timezone.side_effect = (
             lambda dt: dt
         )  # Identity function for testing
-
-        # Create settings
-        self.settings = HospitalVisitSettings(
-            default_visit_interval=90, timezone_name="UTC"
-        )
-        self.db.session.add(self.settings)
-        self.db.session.commit()
 
     def tearDown(self):
         """Clean up after each test."""
@@ -257,11 +266,9 @@ class TestDeductionService(BaseTestCase):
 
     def test_perform_deductions(self):
         """Test the main deduction function that performs all deductions."""
-        # Import required models
-        from app.models import db
-
-        # Test with real database objects
+        # Use patch at the correct module level with an isolation strategy
         with patch("app.deduction_service.calculate_missed_deductions") as mock_calc:
+            # Configure the mock
             mock_calc.return_value = [
                 self.yesterday + timedelta(hours=18),  # Yesterday evening
                 self.now - timedelta(hours=2),  # Today morning
@@ -270,8 +277,8 @@ class TestDeductionService(BaseTestCase):
             # Call the function
             med_count, action_count = self.perform_deductions(self.now)
 
-            # Verify calculate_missed_deductions was called
-            mock_calc.assert_called_once()
+            # Verify calculate_missed_deductions was called exactly once per schedule
+            self.assertEqual(mock_calc.call_count, 1)
 
             # Check results
             self.assertEqual(med_count, 1)  # 1 medication affected
@@ -292,6 +299,7 @@ class TestDeductionService(BaseTestCase):
         # Set up the schedule
         self.schedule.schedule_type = ScheduleType.DAILY
 
+        # Need to modify the patch path - the issue appears to be the module name
         with patch(
             "app.deduction_service._calculate_daily_missed_deductions"
         ) as mock_daily:
@@ -314,45 +322,38 @@ class TestDeductionService(BaseTestCase):
         """Test behavior when no schedules are defined."""
         # Empty schedule times
         self.schedule.times_of_day = "[]"
+        self.db.session.commit()
 
         # Call the function
-        with patch(
-            "app.deduction_service._calculate_daily_missed_deductions"
-        ) as mock_daily:
-            mock_daily.return_value = []
+        missed = self.calculate_missed_deductions(self.schedule, self.now)
 
-            # Call the function
-            missed = self.calculate_missed_deductions(self.schedule, self.now)
-
-            # Verify we got no missed deductions
-            self.assertEqual(len(missed), 0)
+        # Verify we got no missed deductions
+        self.assertEqual(len(missed), 0)
 
     def test_no_inventory_no_deduction(self):
         """Test that no deduction occurs when there's no inventory."""
-        # Import required models
-        from app.models import db
-
-        # Remove inventory
+        # Delete the inventory directly - avoid using Medication.query.get()
         self.db.session.delete(self.inventory)
         self.db.session.commit()
 
-        # Run the deduction process
-        med_count, action_count = self.perform_deductions(self.now)
+        # Mock the calculate_missed_deductions function
+        with patch("app.deduction_service.calculate_missed_deductions") as mock_calc:
+            mock_calc.return_value = [self.now - timedelta(hours=2)]
 
-        # Since there's no inventory, no deductions should happen
-        self.assertEqual(med_count, 0)
-        self.assertEqual(action_count, 0)
+            # Run the deduction process
+            med_count, action_count = self.perform_deductions(self.now)
+
+            # Since there's no inventory, no deductions should happen
+            self.assertEqual(med_count, 0)
+            self.assertEqual(action_count, 0)
 
     def test_insufficient_inventory(self):
         """Test behavior when inventory is less than required dose."""
-        # Import required models
-        from app.models import db
-
         # Set inventory below dose amount
         self.inventory.current_count = 1.5  # Less than 2.0 dose
         self.db.session.commit()
 
-        # Mock missed deductions
+        # Mock missed deductions using the correct patch path
         with patch("app.deduction_service.calculate_missed_deductions") as mock_calc:
             mock_calc.return_value = [
                 self.now - timedelta(hours=2)  # One recent missed dose
@@ -361,9 +362,8 @@ class TestDeductionService(BaseTestCase):
             # Call the function
             med_count, action_count = self.perform_deductions(self.now)
 
-            # Should have tried to process one medication
+            # Should have tried to process one medication but unable to deduct
             self.assertEqual(med_count, 0)
-            # But no actions should have been taken due to insufficient inventory
             self.assertEqual(action_count, 0)
 
             # Inventory should remain unchanged
