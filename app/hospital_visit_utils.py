@@ -15,6 +15,9 @@ from sqlalchemy import func
 
 from models import db, ensure_timezone_utc, utcnow, HospitalVisitSettings
 
+# Logger for this module
+logger = logging.getLogger(__name__)
+
 
 def calculate_estimated_next_visit_date(from_date: datetime = None) -> datetime:
     """
@@ -80,14 +83,43 @@ def auto_deduct_inventory() -> int:
     Check medications that are due for automatic deduction.
     Should be run regularly (e.g. every hour) to ensure timely deductions.
 
+    This function now uses the enhanced deduction service that properly
+    handles missed deductions between scheduler runs.
+
+    Returns:
+        Number of medications deducted
+    """
+    logger.info("Running automatic inventory deduction (enhanced version)")
+
+    try:
+        # Import the enhanced deduction service
+        from deduction_service import perform_deductions
+
+        # Perform deductions and get results
+        med_count, action_count = perform_deductions()
+
+        # Return the count of medications affected
+        return med_count
+
+    except ImportError as e:
+        logger.error(f"Error importing deduction service: {e}")
+        logger.warning("Falling back to legacy deduction method")
+
+        # Fall back to the legacy method if the import fails
+        return _legacy_auto_deduct_inventory()
+
+
+def _legacy_auto_deduct_inventory() -> int:
+    """
+    Legacy method for deducting inventory based on exact time matching.
+    Kept for backward compatibility but should eventually be removed.
+
     Returns:
         Number of medications deducted
     """
     from models import Medication
-    from utils import to_local_timezone, from_local_timezone
 
-    logger = logging.getLogger(__name__)
-    logger.info("Running automatic inventory deduction")
+    logger.info("Running legacy automatic inventory deduction")
 
     current_time = utcnow()
     deduction_count = 0

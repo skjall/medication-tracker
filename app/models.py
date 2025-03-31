@@ -568,7 +568,11 @@ class MedicationSchedule(db.Model):
 
     def is_due_now(self, current_time: datetime) -> bool:
         """
-        Check if medication is due to be taken at the current time.
+        Determine if a medication dose is due at the current time.
+
+        Note: This method is used by the legacy auto-deduction system.
+        For the enhanced system, see the deduction_service module which
+        handles missed deductions more comprehensively.
 
         Args:
             current_time: The current datetime in UTC
@@ -588,10 +592,27 @@ class MedicationSchedule(db.Model):
         current_time_str = local_time.strftime("%H:%M")
         times_list = self.formatted_times
 
-        # Check if current time matches any of the scheduled times
-        if current_time_str not in times_list:
+        # Check if current time matches any of the scheduled times (with 5-minute flexibility)
+        # This allows for the scheduler running every hour to catch doses that might
+        # otherwise be missed due to exact time matching
+        time_match = False
+        for scheduled_time in times_list:
+            # Parse the scheduled time to compare with current time
+            scheduled_hour, scheduled_minute = map(int, scheduled_time.split(":"))
+            current_hour, current_minute = map(int, current_time_str.split(":"))
+
+            # Calculate total minutes for both times
+            scheduled_minutes = scheduled_hour * 60 + scheduled_minute
+            current_minutes = current_hour * 60 + current_minute
+
+            # Check if within 5 minutes of the scheduled time
+            if abs(current_minutes - scheduled_minutes) <= 5:
+                time_match = True
+                break
+
+        if not time_match:
             logger.debug(
-                f"Current time {current_time_str} not in scheduled times {times_list}"
+                f"Current time {current_time_str} not within 5 minutes of any scheduled times {times_list}"
             )
             return False
 
@@ -606,11 +627,20 @@ class MedicationSchedule(db.Model):
                 logger.debug(
                     f"This is a daily schedule. Last deduction was at {local_last_deduction.strftime('%H:%M')}"
                 )
-                # If last deduction was today and the same hour/minute, don't deduct again
+                # If last deduction was today and the same hour/minute (approximately), don't deduct again
                 same_day = local_last_deduction.date() == local_time.date()
-                same_time_slot = (
-                    local_last_deduction.strftime("%H:%M") == current_time_str
+
+                # Check if the last deduction was for the same time slot (within 5 minutes)
+                scheduled_hour, scheduled_minute = map(int, current_time_str.split(":"))
+                last_hour, last_minute = map(
+                    int, local_last_deduction.strftime("%H:%M").split(":")
                 )
+
+                scheduled_minutes = scheduled_hour * 60 + scheduled_minute
+                last_minutes = last_hour * 60 + last_minute
+
+                same_time_slot = abs(last_minutes - scheduled_minutes) <= 5
+
                 if same_day and same_time_slot:
                     logger.debug(
                         f"Already deducted today at {local_last_deduction.strftime('%H:%M')}"
@@ -640,11 +670,21 @@ class MedicationSchedule(db.Model):
                 # Check if it's the right day and we haven't already deducted at this time today
                 if current_weekday not in self.formatted_weekdays:
                     return False
-                # Check if we've already deducted today at this time
+
+                # Check if we've already deducted today at this time slot
                 same_day = local_last_deduction.date() == local_time.date()
-                same_time_slot = (
-                    local_last_deduction.strftime("%H:%M") == current_time_str
+
+                # Check if the last deduction was for the same time slot (within 5 minutes)
+                scheduled_hour, scheduled_minute = map(int, current_time_str.split(":"))
+                last_hour, last_minute = map(
+                    int, local_last_deduction.strftime("%H:%M").split(":")
                 )
+
+                scheduled_minutes = scheduled_hour * 60 + scheduled_minute
+                last_minutes = last_hour * 60 + last_minute
+
+                same_time_slot = abs(last_minutes - scheduled_minutes) <= 5
+
                 if same_day and same_time_slot:
                     logger.debug(
                         f"Already deducted today at {local_last_deduction.strftime('%H:%M')}"

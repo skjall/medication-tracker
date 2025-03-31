@@ -152,15 +152,31 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
     # Add scheduler tasks
     with app.app_context():
-        # Register the auto-deduction task
-        from hospital_visit_utils import auto_deduct_inventory
+        # Register the enhanced auto-deduction task
+        # We check for the enhanced version first, and fall back if not available
+        try:
+            # Try to import the new enhanced deduction service
+            from deduction_service import perform_deductions
 
-        # Run every hour (3600 seconds)
-        scheduler.add_task(
-            name="auto_deduction",
-            func=auto_deduct_inventory,
-            interval_seconds=3600,  # 1 hour
-        )
+            # Use the enhanced version
+            logger.info("Registering enhanced auto-deduction service")
+            scheduler.add_task(
+                name="auto_deduction",
+                func=perform_deductions,
+                interval_seconds=3600,  # 1 hour
+            )
+        except ImportError:
+            # Fall back to the legacy auto-deduction method
+            logger.warning(
+                "Enhanced deduction service not available, using legacy auto-deduction"
+            )
+            from hospital_visit_utils import auto_deduct_inventory
+
+            scheduler.add_task(
+                name="auto_deduction",
+                func=auto_deduct_inventory,
+                interval_seconds=3600,  # 1 hour
+            )
 
         # Add task to check for upcoming visits (every 12 hours)
         scheduler.add_task(
