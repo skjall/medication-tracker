@@ -233,3 +233,20 @@ class TaskScheduler:
             time.sleep(self._sleep_interval)
 
         logger.info("Scheduler thread stopped")
+
+    def restart(self) -> None:
+        """
+        Restart the scheduler by stopping and starting it again.
+
+        This will gracefully shut down the current thread and start a new one.
+        """
+        logger.info("Restarting task scheduler")
+
+        # Shut down if running
+        if self.running:
+            self.shutdown()
+
+        # Start again
+        self.start()
+
+        logger.info("Task scheduler restarted")

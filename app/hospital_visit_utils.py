@@ -104,19 +104,40 @@ def auto_deduct_inventory() -> int:
 
     logger.info(f"Checking {len(medications)} medications with auto-deduction enabled")
 
+    # Process each medication
     for med in medications:
-        # Check and deduct if scheduled
-        deducted, amount = med.check_and_deduct_inventory(current_time)
-        if deducted:
-            deduction_count += 1
-            logger.info(f"Auto-deducted {amount} units of {med.name}")
+        if not med.inventory:
+            logger.warning(f"Medication {med.name} has no inventory record")
+            continue
+
+        # Check each schedule
+        for schedule in med.schedules:
+            if schedule.is_due_now(current_time):
+                logger.info(f"Schedule {schedule.id} for {med.name} is due now")
+
+                # Deduct the scheduled amount
+                amount = schedule.units_per_dose
+                if amount > 0 and med.inventory.current_count >= amount:
+                    med.inventory.update_count(
+                        -amount,
+                        f"Automatic deduction: {amount} units at {current_time.strftime('%d.%m.%Y %H:%M')}",
+                    )
+                    deduction_count += 1
+
+                    # Update last deduction time
+                    schedule.last_deduction = current_time
+                    logger.info(f"Deducted {amount} units from {med.name}")
+                else:
+                    logger.warning(
+                        f"Not enough inventory to deduct {amount} units from {med.name}. Current count: {med.inventory.current_count}"
+                    )
 
     # Commit all changes
-    db.session.commit()
-
-    logger.info(
-        f"Automatic deduction complete. Deducted {deduction_count} medications."
-    )
+    if deduction_count > 0:
+        db.session.commit()
+        logger.info(f"Auto-deduction complete: {deduction_count} medications deducted")
+    else:
+        logger.info("No medications due for deduction at this time")
 
     return deduction_count
 

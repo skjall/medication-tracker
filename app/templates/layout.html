@@ -106,12 +106,13 @@
         {% block content %}{% endblock %}
     </div>
 
+    <!-- Footer section for layout.html with local_time fallback -->
     <footer class="bg-light py-3 mt-auto">
         <div class="container text-center">
             <p class="text-muted mb-0">
                 Jan Gro&szlig;heim &copy; {{ now.year }} |
                 Timezone: {{ settings.timezone_name }} |
-                Local time: {{ now.strftime('%H:%M:%S') }}
+                Local time: {% if local_time is defined %}{{ local_time.strftime('%H:%M:%S') }}{% else %}{{ now.strftime('%H:%M:%S') }}<sup>*</sup>{% endif %}
             </p>
         </div>
     </footer>

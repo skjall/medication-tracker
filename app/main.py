@@ -260,6 +260,34 @@ def fix_database_timezones(app):
             logger.error(f"Error updating database timezones: {e}")
             db.session.rollback()
 
+    @app.context_processor
+    def inject_now():
+        """
+        Context processor to inject current time and settings into all templates.
+
+        Returns:
+            Dictionary with variables available to all templates
+        """
+        # Get UTC time first
+        utc_now = utcnow()
+
+        # Convert to local timezone
+        from utils import to_local_timezone
+
+        local_now = to_local_timezone(utc_now)
+
+        # Get settings for access in all templates
+        from models import HospitalVisitSettings
+
+        settings = HospitalVisitSettings.get_settings()
+
+        # Return both UTC and local time, plus settings
+        return {
+            "now": utc_now,  # UTC time for backend calculations
+            "local_time": local_now,  # Local time for display
+            "settings": settings,  # Application settings for templates
+        }
+
 
 # Application entry point
 if __name__ == "__main__":

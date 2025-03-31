@@ -580,14 +580,6 @@ class MedicationSchedule(db.Model):
 
         local_time = to_local_timezone(current_time)
 
-        # If we've already deducted today or there's no last deduction, check schedule
-        if self.last_deduction is not None:
-            last_deduction = ensure_timezone_utc(self.last_deduction)
-            # Convert last deduction to local time for date comparison
-            local_last_deduction = to_local_timezone(last_deduction)
-            if local_last_deduction.date() == local_time.date():
-                return False  # Already deducted today
-
         # Get current time in HH:MM format for comparison
         current_time_str = local_time.strftime("%H:%M")
         times_list = self.formatted_times
@@ -596,22 +588,53 @@ class MedicationSchedule(db.Model):
         if current_time_str not in times_list:
             return False
 
-        # For daily schedule, it's due if the time matches
+        # If we've already deducted today, check if we should deduct again based on schedule
+        if self.last_deduction is not None:
+            last_deduction = ensure_timezone_utc(self.last_deduction)
+            # Convert last deduction to local time for date comparison
+            local_last_deduction = to_local_timezone(last_deduction)
+
+            # For daily schedule, only deduct once per day per time slot
+            if self.schedule_type == ScheduleType.DAILY:
+                # If last deduction was today and the same hour/minute, don't deduct again
+                same_day = local_last_deduction.date() == local_time.date()
+                same_time_slot = (
+                    local_last_deduction.strftime("%H:%M") == current_time_str
+                )
+                if same_day and same_time_slot:
+                    return False
+
+            # For interval schedule, check if it's been interval_days since last deduction
+            elif self.schedule_type == ScheduleType.INTERVAL:
+                days_since_last = (local_time.date() - local_last_deduction.date()).days
+                # Only deduct if interval days have passed and we're at the right time
+                if days_since_last < self.interval_days:
+                    return False
+
+            # For weekday schedule, check if today is one of the selected days
+            elif self.schedule_type == ScheduleType.WEEKDAYS:
+                # Get day of week (0=Monday, 6=Sunday) using local time
+                current_weekday = local_time.weekday()
+                # Check if it's the right day and we haven't already deducted at this time today
+                if current_weekday not in self.formatted_weekdays:
+                    return False
+                # Check if we've already deducted today at this time
+                same_day = local_last_deduction.date() == local_time.date()
+                same_time_slot = (
+                    local_last_deduction.strftime("%H:%M") == current_time_str
+                )
+                if same_day and same_time_slot:
+                    return False
+
+        # For daily schedule, it's due if the time matches and we haven't deducted yet today
         if self.schedule_type == ScheduleType.DAILY:
             return True
 
-        # For interval schedule, check if it's been interval_days since last deduction
+        # For interval schedule, we've already checked days since last deduction
         elif self.schedule_type == ScheduleType.INTERVAL:
-            if self.last_deduction is None:
-                return True  # First time taking this medication
+            return True
 
-            last_deduction = ensure_timezone_utc(self.last_deduction)
-            # Convert to local timezone for date comparison
-            local_last_deduction = to_local_timezone(last_deduction)
-            days_since_last = (local_time.date() - local_last_deduction.date()).days
-            return days_since_last >= self.interval_days
-
-        # For weekday schedule, check if today is one of the selected days
+        # For weekday schedule, we've already checked if today is one of the selected days
         elif self.schedule_type == ScheduleType.WEEKDAYS:
             # Get day of week (0=Monday, 6=Sunday) using local time
             current_weekday = local_time.weekday()
