@@ -2,6 +2,8 @@
 Routes for system status and maintenance functions.
 """
 
+import logging
+
 from datetime import datetime, timezone
 from utils import to_local_timezone, format_datetime, format_time, format_date
 
@@ -15,6 +17,9 @@ from flask import (
 )
 
 system_bp = Blueprint("system", __name__, url_prefix="/system")
+
+# Logger for this module
+logger = logging.getLogger(__name__)
 
 
 @system_bp.route("/status")
@@ -32,10 +37,15 @@ def status():
     tasks = []
 
     if hasattr(current_app, "scheduler"):
+        logger.info("Scheduler is available in the app context.")
         scheduler = current_app.scheduler
+
         scheduler_running = scheduler.running
 
-        # Get task information - Remove run_at_minute which doesn't exist
+        # Log the status of the scheduler running:
+        logger.info(f"Scheduler running: {scheduler_running}")
+
+        # Get task information
         tasks = [
             {
                 "name": name,
@@ -45,6 +55,8 @@ def status():
             }
             for name, task in scheduler.tasks.items()
         ]
+    else:
+        logger.warning("Scheduler is not available in the app context.")
 
     # Get Python and Flask versions for display
     import platform
@@ -57,9 +69,7 @@ def status():
         "scheduler_running": scheduler_running,
         "tasks": tasks,
         "last_deduction_check": (
-            settings.last_deduction_check.isoformat()
-            if settings.last_deduction_check
-            else None
+            settings.last_deduction_check if settings.last_deduction_check else None
         ),
     }
 

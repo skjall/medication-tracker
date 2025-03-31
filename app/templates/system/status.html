@@ -33,10 +33,10 @@
                     <dt class="col-sm-6">Current Time (UTC):</dt>
                     <dd class="col-sm-6">{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
 
-                    <dt class="col-sm-6">Last Deduction Check:</dt>
+                    <dt class="col-sm-6">Last Deduction Check (UTC):</dt>
                     <dd class="col-sm-6">
                         {% if status.last_deduction_check %}
-                            {{ status.last_deduction_check|truncate(19, True, '') }}
+                            {{ status.last_deduction_check.strftime('%Y-%m-%d %H:%M:%S') }}
                         {% else %}
                             <span class="text-muted">Never run</span>
                         {% endif %}
@@ -117,20 +117,11 @@
             </div>
             <div class="col-md-6">
                 <dl class="row">
-                    <dt class="col-sm-6">Automatic Deduction:</dt>
-                    <dd class="col-sm-6">
-                        {% if scheduler_running %}
-                            <span class="text-success">Active</span>
-                        {% else %}
-                            <span class="text-danger">Inactive</span>
-                        {% endif %}
-                    </dd>
-
                     <dt class="col-sm-6">Server Time:</dt>
                     <dd class="col-sm-6">{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
 
                     <dt class="col-sm-6">Local Time:</dt>
-                    <dd class="col-sm-6">{{ local_time|default(now.strftime('%Y-%m-%d %H:%M:%S')) }}</dd>
+                    <dd class="col-sm-6">{{ local_time.strftime('%Y-%m-%d %H:%M:%S')|default(now.strftime('%Y-%m-%d %H:%M:%S')) }}</dd>
                 </dl>
             </div>
         </div>
@@ -157,9 +148,9 @@
             </div>
 
             <div class="col-md-4 mb-3">
-                <button class="btn btn-outline-danger w-100" disabled>
+                <a href="{{ url_for('system.restart_scheduler')}}" class="btn btn-outline-danger w-100">
                     <i class="fas fa-power-off me-1"></i>Restart Scheduler
-                </button>
+                </a>
             </div>
 
             <div class="col-md-4 mb-3">

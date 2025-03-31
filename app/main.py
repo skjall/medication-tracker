@@ -251,7 +251,7 @@ def check_upcoming_visits():
 
     logger.info(f"Found {len(upcoming)} visits in the next 7 days")
 
-    # This is where you could add code to send notifications
+    # This is where we could add code to send notifications
     # or perform other actions based on upcoming visits
 
     return len(upcoming)
