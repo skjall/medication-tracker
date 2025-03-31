@@ -8,10 +8,9 @@ import csv
 import json
 import shutil
 import logging
-from datetime import datetime
 from io import StringIO
-from datetime import datetime, timedelta, timezone
-from typing import Tuple, List, Dict, Any, Optional
+from datetime import datetime, timezone
+from typing import Tuple, List
 
 from flask import Response, current_app
 from sqlalchemy import func
@@ -22,7 +21,6 @@ from models import (
     Order,
     OrderItem,
     HospitalVisit,
-    Medication,
     Medication,
     MedicationSchedule,
     ScheduleType,
@@ -791,7 +789,7 @@ def import_orders_from_csv(
                                         break
                                     except ValueError:
                                         continue
-                            except Exception as e:
+                            except Exception:
                                 pass  # Use default date if parsing fails
 
                         processed_orders[order_id] = order
@@ -853,7 +851,7 @@ def reset_inventory_data() -> int:
         # Delete inventory logs first
         from models import InventoryLog
 
-        log_count = InventoryLog.query.delete()
+        InventoryLog.query.delete()
 
         # Delete inventory records
         count = Inventory.query.delete()
@@ -883,7 +881,7 @@ def reset_visits_data() -> int:
     """
     try:
         # Delete orders first (they depend on visits)
-        orders_deleted = reset_orders_data()
+        reset_orders_data()
 
         # Delete visits
         count = HospitalVisit.query.delete()
@@ -1078,7 +1076,7 @@ def import_schedules_from_csv(
                         schedule.times_of_day = json.dumps(times)
                     else:
                         errors.append(
-                            f"No times of day specified for schedule. Using default '09:00'."
+                            "No times of day specified for schedule. Using default '09:00'."
                         )
                         schedule.times_of_day = json.dumps(["09:00"])
 

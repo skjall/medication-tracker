@@ -3,8 +3,6 @@ Routes for medication scheduling.
 """
 
 import json
-from datetime import datetime, timezone
-from typing import Dict, List, Optional
 
 from flask import (
     Blueprint,
@@ -13,8 +11,6 @@ from flask import (
     redirect,
     url_for,
     flash,
-    jsonify,
-    current_app,
 )
 
 from models import db, Medication
@@ -79,7 +75,7 @@ def new(medication_id: int):
         db.session.add(schedule)
         db.session.commit()
 
-        flash(f"Schedule added successfully", "success")
+        flash("Schedule added successfully", "success")
         return redirect(url_for("schedules.index", medication_id=medication.id))
 
     return render_template("schedules/new.html", medication=medication)
@@ -123,7 +119,7 @@ def edit(id: int):
         # Save changes
         db.session.commit()
 
-        flash(f"Schedule updated successfully", "success")
+        flash("Schedule updated successfully", "success")
         return redirect(url_for("schedules.index", medication_id=medication.id))
 
     return render_template(

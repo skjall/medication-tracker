@@ -4,9 +4,6 @@ import os
 import logging
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-from tempfile import NamedTemporaryFile
-
-# We'll use PyPDF2 for PDF form filling
 from pypdf import PdfReader, PdfWriter
 
 logger = logging.getLogger(__name__)

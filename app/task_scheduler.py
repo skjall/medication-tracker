@@ -6,7 +6,6 @@ background tasks in the Flask application.
 """
 
 import threading
-import time
 import logging
 import atexit
 from typing import Callable, Dict, List, Optional, Any

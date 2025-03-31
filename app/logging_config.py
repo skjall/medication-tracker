@@ -5,7 +5,7 @@ Enhanced logging configuration for the Medication Tracker application.
 import os
 import logging
 from logging.handlers import RotatingFileHandler
-from typing import Optional, Dict, Any
+from typing import Any
 
 
 def configure_logging(app_instance: Any) -> logging.Logger:

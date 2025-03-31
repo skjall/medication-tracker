@@ -13,7 +13,7 @@ import tempfile
 import pytz
 import logging
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, List
 
 from flask import (
     Blueprint,
@@ -22,9 +22,7 @@ from flask import (
     redirect,
     url_for,
     flash,
-    jsonify,
     send_file,
-    current_app,
 )
 from werkzeug.utils import secure_filename
 
@@ -47,10 +45,8 @@ from data_utils import (
     export_schedules_to_csv,
     create_database_backup,
     import_medications_from_csv,
-    import_schedules_from_csv,
     optimize_database,
     clear_old_inventory_logs,
-    reset_schedules_data,
 )
 
 # Logger for this module
@@ -62,7 +58,7 @@ try:
     from timezone_helper import get_timezone_display_info, validate_timezone
 
     logger.info("Successfully imported timezone_helper")
-except ImportError as e:
+except ImportError:
     # Fall back to relative import
     try:
         from app.timezone_helper import get_timezone_display_info, validate_timezone

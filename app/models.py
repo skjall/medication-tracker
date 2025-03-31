@@ -1,6 +1,6 @@
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Optional, List, Tuple, Any
+from typing import Dict, Optional, List, Tuple
 import enum
 import json
 
@@ -14,12 +14,11 @@ from sqlalchemy import (
     Text,
     Boolean,
     ForeignKey,
-    func,
     JSON,
     Enum,
 )
 import logging
-from utils import make_aware, calculate_days_until, ensure_timezone_utc
+from utils import calculate_days_until, ensure_timezone_utc
 
 
 logger = logging.getLogger(__name__)
@@ -251,7 +250,6 @@ class Medication(db.Model):
         Returns:
             Dictionary with keys 'N1', 'N2', 'N3' and corresponding package counts
         """
-        import math
 
         packages = {"N1": 0, "N2": 0, "N3": 0}
 

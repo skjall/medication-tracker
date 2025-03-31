@@ -7,7 +7,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any
 
-from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
+from flask import Flask, render_template, request
 
 from models import (
     db,
@@ -16,7 +16,6 @@ from models import (
     InventoryLog,
     HospitalVisit,
     Order,
-    OrderItem,
     ensure_timezone_utc,
     utcnow,
 )
@@ -191,34 +190,6 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         )
 
         logger.info("Scheduled background tasks registered")
-
-    @app.context_processor
-    def inject_now():
-        """
-        Context processor to inject current time and settings into all templates.
-
-        Returns:
-            Dictionary with variables available to all templates
-        """
-        # Get UTC time first
-        utc_now = utcnow()
-
-        # Convert to local timezone
-        from utils import to_local_timezone
-
-        local_now = to_local_timezone(utc_now)
-
-        # Get settings for access in all templates
-        from models import HospitalVisitSettings
-
-        settings = HospitalVisitSettings.get_settings()
-
-        # Return both UTC and local time, plus settings
-        return {
-            "now": utc_now,  # UTC time for backend calculations
-            "local_time": local_now,  # Local time for display
-            "settings": settings,  # Application settings for templates
-        }
 
     @app.template_filter("datetime")
     def parse_datetime(value):

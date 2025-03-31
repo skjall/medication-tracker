@@ -6,8 +6,8 @@ conversion between UTC and local timezone, timezone validation, and
 getting lists of common timezones.
 """
 
-from typing import List, Dict, Optional
-from datetime import datetime, timezone
+from typing import List, Dict
+from datetime import datetime
 import pytz
 import logging
 
@@ -116,8 +116,10 @@ def get_timezone_display_info() -> List[Dict[str, str]]:
     logger.info(f"Final timezone list contains {len(result)} entries")
 
     # Print first few entries as a sample
-    for i, tz in enumerate(result[:5]):
-        logger.debug(f"Sample timezone {i+1}: {tz['name']} - {tz['display_name']}")
+    for line_index, tz in enumerate(result[:5]):
+        logger.debug(
+            f"Sample timezone {line_index + 1}: {tz['name']} - {tz['display_name']}"
+        )
 
     return result
 

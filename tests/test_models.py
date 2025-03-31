@@ -17,7 +17,6 @@ from app.models import (
     ScheduleType,
 )
 
-
 import logging
 
 # Temporarily increase log level
@@ -324,7 +323,7 @@ class TestMedication(BaseTestCase):
         self.assertEqual(self.medication.daily_usage, 3.0)
 
         # Add another schedule
-        schedule2 = MedicationSchedule(
+        MedicationSchedule(
             medication=self.medication,
             schedule_type=ScheduleType.DAILY,
             times_of_day='["12:00"]',

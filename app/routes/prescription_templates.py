@@ -5,7 +5,6 @@ Routes for prescription template management.
 import os
 import json
 import logging
-from typing import Dict, Optional, List, Tuple
 from werkzeug.utils import secure_filename
 
 from flask import (
@@ -17,7 +16,6 @@ from flask import (
     flash,
     current_app,
     send_file,
-    abort,
 )
 
 from models import db, PrescriptionTemplate

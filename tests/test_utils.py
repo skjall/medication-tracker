@@ -6,7 +6,7 @@ timezone handling, date formatting, and other helper functions.
 """
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from datetime import datetime, timedelta, timezone
 import pytz
 
@@ -77,11 +77,6 @@ class TestTimezoneUtils(BaseTestCase):
             # Check timezone
             self.assertEqual(result.tzinfo.zone, berlin_tz.zone)
 
-            # Berlin is ahead of UTC by 1 or 2 hours depending on DST
-            # So the hour should be adjusted accordingly
-            utc_hour = self.utc_now.hour
-            expected_hour = (utc_hour + 1) % 24  # Assuming CET (UTC+1)
-
             # We need to be flexible about DST, so just check that time differs
             self.assertNotEqual(self.utc_now.hour, result.hour)
 
@@ -101,10 +96,6 @@ class TestTimezoneUtils(BaseTestCase):
 
             # Check timezone
             self.assertEqual(result.tzinfo, timezone.utc)
-
-            # The hour should be adjusted back
-            berlin_hour = berlin_time.hour
-            expected_hour = (berlin_hour - 1) % 24  # Assuming CET (UTC+1)
 
             # We need to be flexible about DST, so just check that time differs
             self.assertNotEqual(berlin_time.hour, result.hour)

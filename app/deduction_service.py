@@ -8,7 +8,7 @@ This module provides improved medication deduction tracking, including:
 """
 
 from datetime import datetime, timedelta
-from typing import List, Tuple, Any
+from typing import List, Tuple
 import logging
 from collections import defaultdict
 from utils import get_application_timezone
@@ -413,7 +413,8 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                     if amount > 0 and medication.inventory.current_count >= amount:
                         medication.inventory.update_count(
                             -amount,
-                            f"Automatic deduction (retroactive): {amount} units for {deduction_time.strftime('%d.%m.%Y %H:%M')}",
+                            f"Automatic deduction (retroactive): {amount} units \
+                                for {deduction_time.strftime('%d.%m.%Y %H:%M')}",
                         )
                         action_count += 1
                         med_deducted = True
@@ -423,7 +424,8 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                         )
                     else:
                         logger.warning(
-                            f"Not enough inventory to deduct {amount} units from {medication.name}. Current count: {medication.inventory.current_count}"
+                            f"Not enough inventory to deduct {amount} units from \
+                                {medication.name}. Current count: {medication.inventory.current_count}"
                         )
 
                 # Update last deduction time to the most recent missed deduction

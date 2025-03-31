@@ -10,9 +10,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import logging
 
-from sqlalchemy import func
-
-from models import db, ensure_timezone_utc, utcnow, HospitalVisitSettings
+from models import ensure_timezone_utc, utcnow, HospitalVisitSettings
 
 # Logger for this module
 logger = logging.getLogger(__name__)
@@ -114,22 +112,3 @@ def auto_deduct_inventory() -> int:
 
     # Return the count of medications affected
     return med_count
-
-
-class HospitalVisitSettings:
-    """
-    Helper class to access hospital visit settings.
-    This is a facade to the database model for use in other modules.
-    """
-
-    @staticmethod
-    def get_settings():
-        """
-        Get the application settings for hospital visits.
-
-        Returns:
-            Hospital visit settings object
-        """
-        from models import HospitalVisitSettings as SettingsModel
-
-        return SettingsModel.get_settings()

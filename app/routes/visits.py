@@ -3,10 +3,9 @@ Routes for hospital visit management.
 """
 
 import logging
-from datetime import datetime, timezone
-from typing import Dict, Any, List
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from models import db, HospitalVisit, Order, OrderItem, Medication, utcnow
+from datetime import datetime
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from models import db, HospitalVisit, Order, Medication, utcnow
 
 # Get a logger specific to this module
 logger = logging.getLogger(__name__)
