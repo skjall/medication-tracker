@@ -1,10 +1,10 @@
-name: Build, Test, and Push
+name: Build and Publish Docker Image
 
 on:
   push:
     branches: [main, development]
+    tags: ['v*.*.*']
   pull_request:
-    types: [opened, synchronize, reopened]
     branches: [main, development]
 
 jobs:
@@ -33,42 +33,77 @@ jobs:
         run: |
           pytest --cov=app tests/
 
-  build-and-push:
+  docker:
     needs: test
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Custom Registry
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.REGISTRY_HOST }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set Docker tags based on branch
-        id: set-tags
+      - name: Get app version for main branch
+        # Uses a specific, predictable version pattern for main branch
+        # This reads APP_VERSION from a version.txt file in the repo
+        id: app_version
+        if: github.ref == 'refs/heads/main'
         run: |
-          # Extract branch name from github.ref (remove 'refs/heads/' prefix)
-          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          VERSION=$(cat version.txt)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Using explicit version: ${VERSION} for main branch"
 
+      - name: Generate dev version for development branch
+        # Creates a timestamp-based version for development branch
+        id: dev_version
+        if: github.ref == 'refs/heads/development'
+        run: |
+          TIMESTAMP=$(date +%Y%m%d%H%M)
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          DEV_VERSION="dev-${TIMESTAMP}-${SHORT_SHA}"
+          echo "version=${DEV_VERSION}" >> $GITHUB_OUTPUT
+          echo "Using auto-generated version: ${DEV_VERSION} for development branch"
+
+      - name: Set Docker tags
+        id: docker_tags
+        run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "TAGS=${{ secrets.REGISTRY_HOST }}/medication-tracker:latest,${{ secrets.REGISTRY_HOST }}/medication-tracker:$BRANCH_NAME,${{ secrets.REGISTRY_HOST }}/medication-tracker:${{ github.sha }}" >> $GITHUB_OUTPUT
+            # Main branch gets version from file and "latest" tag
+            VERSION="${{ steps.app_version.outputs.version }}"
+            echo "tags=skjall/medication-tracker:latest,skjall/medication-tracker:${VERSION}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/development" ]]; then
+            # Development branch gets dev- prefix with timestamp and commit hash
+            DEV_VERSION="${{ steps.dev_version.outputs.version }}"
+            echo "tags=skjall/medication-tracker:${DEV_VERSION},skjall/medication-tracker:development" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            # Tag pushes
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "tags=skjall/medication-tracker:${VERSION}" >> $GITHUB_OUTPUT
           else
-            echo "TAGS=${{ secrets.REGISTRY_HOST }}/medication-tracker:$BRANCH_NAME,${{ secrets.REGISTRY_HOST }}/medication-tracker:${{ github.sha }}" >> $GITHUB_OUTPUT
+            # Other branches just get the branch name
+            BRANCH=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's/[\/]/-/g')
+            echo "tags=skjall/medication-tracker:${BRANCH}" >> $GITHUB_OUTPUT
           fi
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.set-tags.outputs.TAGS }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ${{ steps.docker_tags.outputs.tags }}
+          build-args: |
+            VERSION=${{ steps.app_version.outputs.version || steps.dev_version.outputs.version || github.ref_name }}
+          cache-from: type=registry,ref=skjall/medication-tracker:buildcache
+          cache-to: type=registry,ref=skjall/medication-tracker:buildcache,mode=max

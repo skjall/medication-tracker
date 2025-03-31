@@ -1,6 +1,9 @@
 # Medication Tracker
 
-A lightweight Python-based web application hosted on Docker that helps track medications, inventory levels, and prepare for hospital visits.
+A lightweight Python-based web application that helps track medications, inventory levels, and prepare for hospital visits, using SQLite for data storage.
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/skjall/medication-tracker)](https://hub.docker.com/r/skjall/medication-tracker)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
@@ -28,8 +31,11 @@ A lightweight Python-based web application hosted on Docker that helps track med
 - **Data Management**:
   - Import/export data for all system components
   - CSV import/export for medications, inventory, visits, and orders
-  - Individual data type reset capabilities
   - Database backup and optimization tools
+
+## Access Warning
+
+⚠️ **This software has no access protection. Users are advised to not expose any sensitive information and to only deploy it on local networks or behind appropriate security measures. The application is intended for personal use and should not be publicly accessible.**
 
 ## Screenshots
 
@@ -44,120 +50,147 @@ A lightweight Python-based web application hosted on Docker that helps track med
 
 ### Hospital Visits
 ![Hospital Visits](screenshots/visits.png)
-
-## Getting Started
-
-### Prerequisites
-
-- Docker and Docker Compose
-
-### Installation with Docker
-
-1. Clone this repository
 ```bash
-git clone https://github.com/yourusername/medication-tracker.git
-cd medication-tracker
+docker run -d \
+  --name medication-tracker \
+  -p 8087:8087 \
+  -v medication_tracker_data:/app/data \
+  -v medication_tracker_logs:/app/logs \
+  -e SECRET_KEY=your_secure_secret_key \
+  skjall/medication-tracker:latest
 ```
 
-2. Build and start the container
+Then access the application at http://localhost:8087
+
+## Using Docker Compose
+
+1. Create a docker-compose.yml file:
+
+```yaml
+version: '3.8'
+
+services:
+  medication-tracker:
+    image: skjall/medication-tracker:latest
+    container_name: medication-tracker
+    ports:
+      - '8087:8087'
+    volumes:
+      - medication_tracker_data:/app/data
+      - medication_tracker_logs:/app/logs
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=change_me_in_production
+      - LOG_LEVEL=INFO
+
+volumes:
+  medication_tracker_data:
+  medication_tracker_logs:
+```
+
+2. Start the application:
+
 ```bash
 docker-compose up -d
 ```
 
 3. Access the application at http://localhost:8087
 
-### Installation for Development
+## Environment Variables
 
-To set up a development environment:
+- `SECRET_KEY`: Secret key for session signing (required in production)
+- `FLASK_ENV`: Set to `production` for production use
+- `LOG_LEVEL`: Set logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`, or `CRITICAL`)
 
-1. Create a virtual environment
-```bash
-python -m venv venv
-```
+## Data Persistence
 
-2. Activate it
-```bash
-# On Windows
-venv\Scripts\activate
-
-# On macOS/Linux
-source venv/bin/activate
-```
-
-3. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-4. Run the application
-```bash
-python app/main.py
-```
-
-5. Access the application at http://localhost:8087
+All data is stored in SQLite databases in the `/app/data` directory. To persist your data, mount this directory as a volume.
 
 ## Usage Guide
 
 ### Adding Medications
 
-1. Navigate to "Medications" -> "Add Medication"
-2. Enter medication details including:
-   - Name, dosage, and frequency
-   - Package sizes (N1, N2, N3)
-   - Minimum threshold for alerts
-   - Safety margin days for calculations
+1. Navigate to "Medications" → "Add Medication"
+2. Enter medication details including name, dosage, package sizes
 3. Set up medication schedules to define when and how much to take
 4. Enable automatic deduction for seamless inventory management
 
 ### Managing Inventory
 
-1. Navigate to "Inventory" -> "Inventory Overview"
+1. Navigate to "Inventory" → "Inventory Overview"
 2. Use the quick adjust buttons to update inventory levels
 3. View low stock warnings and depletion forecasts
 4. Track inventory changes with detailed history logs
 
 ### Scheduling Hospital Visits
 
-1. Navigate to "Hospital Visits" -> "Schedule Visit"
+1. Navigate to "Hospital Visits" → "Schedule Visit"
 2. Enter the date of your upcoming visit
 3. Optionally create an order for the visit
 4. Choose between regular ordering or next-but-one planning
 
 ### Creating Orders
 
-1. Navigate to "Orders" -> "New Order"
+1. Navigate to "Orders" → "New Order"
 2. Select medications needed until your next visit
 3. Review automatically calculated package requirements
 4. Generate a printable order form for your hospital visit
 5. Mark as fulfilled when medications are received to update inventory
 
-### Data Management
+## Building from Source
 
-1. Navigate to "Settings" -> "Advanced Settings" -> "Data Management"
-2. Import or export data for medications, inventory, visits, and orders
-3. Reset individual data categories as needed
-4. Create database backups before making significant changes
+If you want to build the Docker image yourself:
 
-## System Settings
+```bash
+git clone https://github.com/skjall/medication-tracker.git
+cd medication-tracker
+docker build -t medication-tracker --build-arg VERSION=$(cat version.txt) .
+```
 
-### Timezone Configuration
+## Versioning
 
-The application supports all standard timezones and displays dates and times according to your selected timezone. All data is stored in UTC format internally for consistency.
+The application follows semantic versioning:
 
-### Automatic Deduction
+- Main branch: Uses explicit version from `version.txt` file
+- Development branch: Auto-generates version with format `dev-YYYYMMDDHHMM-commit`
+- Tagged releases: Use the tag version (e.g., `v1.0.0` → `1.0.0`)
 
-The system checks hourly for scheduled medications and automatically deducts them from your inventory. This keeps your inventory levels accurate without manual intervention.
+To update the version:
 
-## Data Structure
+```bash
+# Increment patch version (1.0.0 → 1.0.1)
+./scripts/update_version.sh patch
 
-The application uses SQLite for data storage with the following structure:
+# Increment minor version (1.0.0 → 1.1.0)
+./scripts/update_version.sh minor
 
-- **Medications**: Name, dosage, frequency, package sizes
-- **Inventory**: Current stock levels and adjustment history
-- **Hospital Visits**: Upcoming and past visit records
-- **Orders**: Medication orders linked to hospital visits
-- **Schedules**: Detailed medication scheduling information
+# Increment major version (1.0.0 → 2.0.0)
+./scripts/update_version.sh major
+
+# Update, commit, and tag in one command
+./scripts/update_version.sh patch --commit --tag
+```
+
+## Development Setup
+
+To set up a development environment:
+
+1. Clone the repository
+2. Create a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Run the application:
+   ```bash
+   python app/main.py
+   ```
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.

@@ -1,3 +1,8 @@
+# Git
+.git
+.github
+.gitignore
+
 # Python
 __pycache__/
 *.py[cod]
@@ -19,21 +24,8 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# Flask
-instance/
-.webassets-cache
-
-# SQLite
-*.db
-*.sqlite
-*.sqlite3
-
-# Environment
-.env
-.venv
 venv/
-ENV/
+.venv/
 
 # IDE
 .idea/
@@ -45,10 +37,27 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Project specific
+# Project specific data and logs
 app/data/*
 !app/data/.gitkeep
-
-# Logs
 app/logs/*
 !app/logs/.gitkeep
+
+# Tests
+tests/
+pytest.ini
+
+# Documentation
+screenshots/
+*.md
+!README.md
+!LICENSE.md
+
+# Docker
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Other
+renovate.json
+repomix-output.txt

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   medication-tracker:
-    image: ${DOCKER_REGISTRY}/medication-tracker:latest
+    image: skjall/medication-tracker:latest
     container_name: medication-tracker
     ports:
       - '8087:8087'
@@ -13,7 +13,7 @@ services:
     environment:
       - FLASK_ENV=production
       - SECRET_KEY=${SECRET_KEY:-change_me_in_production}
-      - LOG_LEVEL=${LOG_LEVEL:-WARNING} # Set to DEBUG, INFO, WARNING, ERROR, or CRITICAL
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     healthcheck:
       test:
         [
