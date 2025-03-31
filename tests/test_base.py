@@ -38,15 +38,12 @@ class BaseTestCase(unittest.TestCase):
         cls.app_context = cls.app.app_context()
         cls.app_context.push()
 
-        # Get the db instance that was initialized in create_app
-        with cls.app.app_context():
-            # Import models AFTER app context is pushed
-            from app.models import db
+        # Use the db instance that was initialized in create_app
+        # This is the key change - use the db attached to app
+        cls.db = cls.app.db
 
-            cls.db = db
-
-            # Create all tables
-            cls.db.create_all()
+        # Create all tables
+        cls.db.create_all()
 
     @classmethod
     def tearDownClass(cls):

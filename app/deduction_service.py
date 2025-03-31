@@ -396,7 +396,6 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                 for deduction_time in missed_deductions:
                     # Deduct the scheduled amount
                     amount = schedule.units_per_dose
-                    logger.error(amount)
                     if amount > 0 and medication.inventory.current_count >= amount:
                         medication.inventory.update_count(
                             -amount,
