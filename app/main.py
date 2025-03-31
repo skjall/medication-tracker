@@ -110,9 +110,9 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         local_now = to_local_timezone(utc_now)
 
         # Get settings for access in all templates
-        from models import HospitalVisitSettings
+        from models import Settings
 
-        settings = HospitalVisitSettings.get_settings()
+        settings = Settings.get_settings()
 
         # Return both UTC and local time, plus settings
         return {

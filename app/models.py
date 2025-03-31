@@ -179,7 +179,7 @@ class Medication(db.Model):
             The number of units needed
         """
         # Ensure visit_date is timezone-aware
-        from hospital_visit_utils import HospitalVisitSettings
+        from hospital_visit_utils import Settings
 
         visit_date = ensure_timezone_utc(visit_date)
         now = datetime.now(timezone.utc)
@@ -204,13 +204,13 @@ class Medication(db.Model):
                 consider_next_but_one = True
             else:
                 # Fall back to global setting
-                settings = HospitalVisitSettings.get_settings()
+                settings = Settings.get_settings()
                 consider_next_but_one = settings.default_order_for_next_but_one
 
         # If next-but-one is enabled, double the visit interval
         if consider_next_but_one:
             # Get the default interval between visits
-            settings = HospitalVisitSettings.get_settings()
+            settings = Settings.get_settings()
             # Add another visit interval to the calculation
             days_until_visit += settings.default_visit_interval
 
@@ -743,7 +743,7 @@ class MedicationSchedule(db.Model):
         return 0.0
 
 
-class HospitalVisitSettings(db.Model):
+class Settings(db.Model):
     """
     System-wide settings for hospital visits and planning.
     Singleton model (only one row expected).
@@ -777,10 +777,10 @@ class HospitalVisitSettings(db.Model):
     )
 
     def __repr__(self) -> str:
-        return f"<HospitalVisitSettings interval={self.default_visit_interval} days>"
+        return f"<Settings interval={self.default_visit_interval} days>"
 
     @classmethod
-    def get_settings(cls) -> HospitalVisitSettings:
+    def get_settings(cls) -> Settings:
         """
         Get or create the hospital visit settings.
 

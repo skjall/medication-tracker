@@ -221,9 +221,9 @@ def get_application_timezone():
     Returns:
         pytz timezone object for the configured timezone
     """
-    from models import HospitalVisitSettings
+    from models import Settings
 
-    settings = HospitalVisitSettings.get_settings()
+    settings = Settings.get_settings()
     import pytz
 
     return pytz.timezone(settings.timezone_name)

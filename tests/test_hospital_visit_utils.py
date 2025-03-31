@@ -32,7 +32,7 @@ class TestHospitalVisitUtils(BaseTestCase):
             ScheduleType,
             Medication,
             Inventory,
-            HospitalVisitSettings,
+            Settings,
             HospitalVisit,
         )
 
@@ -49,7 +49,7 @@ class TestHospitalVisitUtils(BaseTestCase):
         self.auto_deduct_inventory = auto_deduct_inventory
 
         # Create test settings
-        self.settings = HospitalVisitSettings(
+        self.settings = Settings(
             default_visit_interval=90,
             auto_schedule_visits=True,
             default_order_for_next_but_one=True,

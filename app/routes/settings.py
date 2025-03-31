@@ -32,7 +32,7 @@ from models import (
     Inventory,
     InventoryLog,
     HospitalVisit,
-    HospitalVisitSettings,
+    Settings,
     MedicationSchedule,
     Order,
     OrderItem,
@@ -144,7 +144,7 @@ def hospital_visits():
     logger.info("Accessing hospital visit settings page")
 
     # Get current settings
-    settings = HospitalVisitSettings.get_settings()
+    settings = Settings.get_settings()
 
     if request.method == "POST":
         # Update settings from form
@@ -203,7 +203,7 @@ def advanced():
     logger.info("Loading advanced settings page")
 
     # Get hospital visit settings
-    settings = HospitalVisitSettings.get_settings()
+    settings = Settings.get_settings()
 
     # Get database statistics
     med_count = Medication.query.count()
@@ -421,7 +421,7 @@ def update_timezone():
         flash(f"Invalid timezone: {timezone_name}", "error")
         return redirect(url_for("settings.advanced"))
 
-    settings = HospitalVisitSettings.get_settings()
+    settings = Settings.get_settings()
     settings.timezone_name = timezone_name
     db.session.commit()
 

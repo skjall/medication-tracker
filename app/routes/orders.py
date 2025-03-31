@@ -105,9 +105,9 @@ def new():
         return redirect(url_for("orders.show", id=order.id))
 
     # Get settings to check if next-but-one is enabled globally
-    from hospital_visit_utils import HospitalVisitSettings
+    from hospital_visit_utils import Settings
 
-    settings = HospitalVisitSettings.get_settings()
+    settings = Settings.get_settings()
 
     # Determine if we should calculate for next-but-one visit
     consider_next_but_one = (

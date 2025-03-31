@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import logging
 
-from models import ensure_timezone_utc, utcnow, HospitalVisitSettings
+from models import ensure_timezone_utc, utcnow, Settings
 
 # Logger for this module
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ def calculate_estimated_next_visit_date(from_date: datetime = None) -> datetime:
     else:
         from_date = ensure_timezone_utc(from_date)
 
-    settings = HospitalVisitSettings.get_settings()
+    settings = Settings.get_settings()
 
     # Calculate next visit date based on default interval
     next_visit_date = from_date + timedelta(days=settings.default_visit_interval)
@@ -88,7 +88,7 @@ def calculate_days_between_visits() -> int:
             return int(average)
 
     # Fallback to settings
-    return HospitalVisitSettings.get_settings().default_visit_interval
+    return Settings.get_settings().default_visit_interval
 
 
 def auto_deduct_inventory() -> int:

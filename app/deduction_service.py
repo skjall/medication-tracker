@@ -451,9 +451,9 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
         logger.info("No deductions needed at this time")
 
     # Update the last deduction check time in settings
-    from models import HospitalVisitSettings
+    from models import Settings
 
-    settings = HospitalVisitSettings.get_settings()
+    settings = Settings.get_settings()
     settings.last_deduction_check = current_time
     db.session.commit()
 

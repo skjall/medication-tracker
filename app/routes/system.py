@@ -28,9 +28,9 @@ def status():
     Render a system status page with scheduler information.
     Displays the status of background tasks and system health.
     """
-    from models import HospitalVisitSettings
+    from models import Settings
 
-    settings = HospitalVisitSettings.get_settings()
+    settings = Settings.get_settings()
 
     # Check if scheduler is available in the app context
     scheduler_running = False

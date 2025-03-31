@@ -28,7 +28,7 @@ class TestDeductionService(BaseTestCase):
             ScheduleType,
             Medication,
             Inventory,
-            HospitalVisitSettings,
+            Settings,
         )
 
         # Import module here to avoid issues with app context
@@ -79,9 +79,7 @@ class TestDeductionService(BaseTestCase):
         self.db.session.add(self.schedule)
 
         # Create settings
-        self.settings = HospitalVisitSettings(
-            default_visit_interval=90, timezone_name="UTC"
-        )
+        self.settings = Settings(default_visit_interval=90, timezone_name="UTC")
         self.db.session.add(self.settings)
         self.db.session.commit()
 

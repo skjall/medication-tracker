@@ -54,15 +54,15 @@ class TestTimezoneUtils(BaseTestCase):
 
     def test_to_local_timezone(self):
         """Test conversion from UTC to local timezone."""
-        from app.models import HospitalVisitSettings
+        from app.models import Settings
 
         # Mock the application timezone setting
         with patch("utils.get_application_timezone") as mock_get_tz:
             # Set app timezone to Berlin
             timezone_string = "Europe/Berlin"
 
-            # Create a HospitalVisitSettings object with the timezone
-            set = HospitalVisitSettings(timezone_name=timezone_string)
+            # Create a Settings object with the timezone
+            set = Settings(timezone_name=timezone_string)
             self.db.session.add(set)
             self.db.session.flush()
 
