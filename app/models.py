@@ -86,7 +86,7 @@ class Medication(db.Model):
         cascade="all, delete-orphan",
     )
     order_items: Mapped[List[OrderItem]] = relationship(
-        "OrderItem", back_populates="medication"
+        "OrderItem", back_populates="medication", cascade="save-update"
     )
 
     # New relationship for medication schedules
@@ -475,8 +475,12 @@ class OrderItem(db.Model):
     __tablename__ = "order_items"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    order_id: Mapped[int] = mapped_column(Integer, ForeignKey("orders.id"))
-    medication_id: Mapped[int] = mapped_column(Integer, ForeignKey("medications.id"))
+    order_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("orders.id"), nullable=False
+    )
+    medication_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("medications.id"), nullable=True
+    )
 
     quantity_needed: Mapped[int] = mapped_column(Integer)
     packages_n1: Mapped[int] = mapped_column(Integer, default=0)
@@ -490,7 +494,8 @@ class OrderItem(db.Model):
     )
 
     def __repr__(self) -> str:
-        return f"<OrderItem {self.medication.name} for order {self.order_id}>"
+        med_name = self.medication.name if self.medication else "Unknown medication"
+        return f"<OrderItem {med_name} for order {self.order_id}>"
 
 
 class ScheduleType(enum.Enum):

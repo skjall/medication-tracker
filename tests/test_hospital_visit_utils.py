@@ -10,14 +10,7 @@ from datetime import datetime, timedelta, timezone
 import pytz
 
 from .test_base import BaseTestCase
-from app.models import (
-    HospitalVisit,
-    HospitalVisitSettings,
-    Medication,
-    Inventory,
-    MedicationSchedule,
-    ScheduleType,
-)
+
 
 import logging
 
@@ -42,18 +35,6 @@ class TestHospitalVisitUtils(BaseTestCase):
             HospitalVisitSettings,
             HospitalVisit,
         )
-
-        # Clean up any existing data to prevent test interference - using db session directly
-        try:
-            self.db.session.execute(self.db.delete(MedicationSchedule))
-            self.db.session.execute(self.db.delete(Inventory))
-            self.db.session.execute(self.db.delete(Medication))
-            self.db.session.execute(self.db.delete(HospitalVisitSettings))
-            self.db.session.execute(self.db.delete(HospitalVisit))
-            self.db.session.commit()
-        except Exception as e:
-            self.db.session.rollback()
-            print(f"Error cleaning up database: {e}")
 
         # Import here to avoid issues with app context
         from app.hospital_visit_utils import (

@@ -31,17 +31,6 @@ class TestDeductionService(BaseTestCase):
             HospitalVisitSettings,
         )
 
-        # Clean up any existing data to prevent test interference - using db session directly
-        try:
-            self.db.session.execute(self.db.delete(MedicationSchedule))
-            self.db.session.execute(self.db.delete(Inventory))
-            self.db.session.execute(self.db.delete(Medication))
-            self.db.session.execute(self.db.delete(HospitalVisitSettings))
-            self.db.session.commit()
-        except Exception as e:
-            self.db.session.rollback()
-            print(f"Error cleaning up database: {e}")
-
         # Import module here to avoid issues with app context
         from app.deduction_service import (
             calculate_missed_deductions,

@@ -1,167 +1,319 @@
 """
-Tests for hospital visit utilities.
+Tests for model relationships.
 
-This module tests functions related to hospital visit scheduling,
-interval calculations, and automatic inventory deduction.
+This module tests the relationships between different model classes,
+ensuring cascades, back references, and constraints work correctly.
 """
 
-from unittest.mock import patch
-from datetime import datetime, timedelta, timezone
-import pytz
-
 from .test_base import BaseTestCase
-from app.models import (
-    HospitalVisit,
-    HospitalVisitSettings,
-    Medication,
-    Inventory,
-    MedicationSchedule,
-    ScheduleType,
-)
 
 import logging
 
 # Temporarily increase log level
-logger = logging.getLogger("app.hospital_visit_utils")
+logger = logging.getLogger("app.model_relationships")
 logger.setLevel(logging.DEBUG)
 
 
-class TestHospitalVisitUtils(BaseTestCase):
-    """Test cases for hospital visit utility functions."""
+class TestModelRelationships(BaseTestCase):
+    """Test cases for model relationships."""
 
     def setUp(self):
         """Set up test fixtures before each test."""
         super().setUp()
 
-        # Import here to avoid issues with app context
-        from app.hospital_visit_utils import (
-            calculate_estimated_next_visit_date,
-            calculate_days_between_visits,
-            auto_deduct_inventory,
-        )
+    def test_medication_inventory_relationship(self):
+        """Test the relationship between Medication and Inventory."""
+        from app.models import Medication, Inventory
 
-        # Save references to the functions for testing
-        self.calculate_estimated_next_visit_date = calculate_estimated_next_visit_date
-        self.calculate_days_between_visits = calculate_days_between_visits
-        self.auto_deduct_inventory = auto_deduct_inventory
-
-        # Create test settings
-        self.settings = HospitalVisitSettings(
-            default_visit_interval=90,
-            auto_schedule_visits=True,
-            default_order_for_next_but_one=True,
-            timezone_name="UTC",
-        )
-        self.db.session.add(self.settings)
-
-        # Past visits
-        self.visit1 = HospitalVisit(
-            visit_date=self.now - timedelta(days=90), notes="Past visit 1"
-        )
-
-        self.visit2 = HospitalVisit(
-            visit_date=self.now - timedelta(days=45), notes="Past visit 2"
-        )
-
-        # Upcoming visit
-        self.visit3 = HospitalVisit(
-            visit_date=self.now + timedelta(days=45), notes="Upcoming visit"
-        )
-
-        self.db.session.add_all([self.visit1, self.visit2, self.visit3])
-        self.db.session.commit()
-
-        # Create medication with schedule for auto-deduction testing
-        self.medication = Medication(
-            name="Test Med", dosage=2.0, frequency=2.0, auto_deduction_enabled=True
-        )
-        self.db.session.add(self.medication)
+        # Create a medication
+        med = Medication(name="Test Med", dosage=1.0, frequency=1.0)
+        self.db.session.add(med)
+        self.db.session.flush()
 
         # Create inventory
-        self.inventory = Inventory(medication=self.medication, current_count=100)
-        self.db.session.add(self.inventory)
+        inv = Inventory(medication=med, current_count=100)
+        self.db.session.add(inv)
+        self.db.session.commit()
 
-        # Create a schedule due now
-        self.schedule = MedicationSchedule(
-            medication=self.medication,
-            schedule_type=ScheduleType.DAILY,
-            times_of_day='["08:00", "18:00"]',
-            units_per_dose=2.0,
+        # Test the relationship from both sides
+        self.assertEqual(med.inventory, inv)
+        self.assertEqual(inv.medication, med)
+
+        # Test cascade delete: deleting medication should delete inventory
+        self.db.session.delete(med)
+        self.db.session.commit()
+
+        # Inventory should be gone
+        self.assertEqual(self.db.session.query(Inventory).count(), 0)
+
+    def test_inventory_log_relationship(self):
+        """Test the relationship between Inventory and InventoryLog."""
+        from app.models import Inventory, InventoryLog, Medication
+
+        # Create a medication and inventory
+        med = Medication(name="Test Med", dosage=1.0, frequency=1.0)
+        self.db.session.add(med)
+        self.db.session.flush()
+
+        inv = Inventory(medication=med, current_count=100)
+        self.db.session.add(inv)
+        self.db.session.flush()
+
+        # Create inventory logs
+        log1 = InventoryLog(
+            inventory=inv,
+            previous_count=0,
+            adjustment=100,
+            new_count=100,
+            notes="Initial stock",
         )
-        self.db.session.add(self.schedule)
+        self.db.session.add(log1)
+
+        log2 = InventoryLog(
+            inventory=inv,
+            previous_count=100,
+            adjustment=-10,
+            new_count=90,
+            notes="Used some",
+        )
+        self.db.session.add(log2)
         self.db.session.commit()
 
-    def test_calculate_estimated_next_visit_date(self):
-        """Test estimating the next visit date based on settings."""
-        # Test with default from_date (current date)
-        next_date = self.calculate_estimated_next_visit_date()
+        # Test the relationship
+        self.assertEqual(len(inv.inventory_logs), 2)
+        self.assertIn(log1, inv.inventory_logs)
+        self.assertIn(log2, inv.inventory_logs)
 
-        # Should be 90 days in the future (default interval)
-        expected_date = self.now.astimezone(pytz.timezone("UTC")) + timedelta(days=90)
-        delta = abs((next_date - expected_date).total_seconds())
-        self.assertLess(delta, 5)  # Allow 5 seconds difference
-
-        # Test with custom from_date
-        from_date = datetime(2023, 1, 1, tzinfo=timezone.utc)
-        next_date = self.calculate_estimated_next_visit_date(from_date)
-
-        # Should be 90 days after from_date
-        expected_date = from_date + timedelta(days=90)
-        self.assertEqual(next_date.date(), expected_date.date())
-
-    def test_calculate_days_between_visits(self):
-        """Test calculating the average days between visits."""
-        # With our test data, we have 2 intervals:
-        # visit1 to visit2: 45 days
-        # visit2 to visit3: 90 days
-        # Average: (45 + 90) / 2 = 67.5 days, rounded to 67
-
-        result = self.calculate_days_between_visits()
-        self.assertEqual(result, 67)
-
-        # Test with no visits
-        self.db.session.delete(self.visit1)
-        self.db.session.delete(self.visit2)
-        self.db.session.delete(self.visit3)
+        # Test cascade delete: deleting inventory should delete logs
+        self.db.session.delete(inv)
         self.db.session.commit()
 
-        # Should fall back to settings default
-        result = self.calculate_days_between_visits()
-        self.assertEqual(result, 90)
+        # Logs should be gone
+        self.assertEqual(self.db.session.query(InventoryLog).count(), 0)
 
-    def test_auto_deduct_inventory(self):
-        """Test automatic inventory deduction."""
-        # Setup the schedule to be due now
-        # Mock is_due_now to return True
-        with patch("models.MedicationSchedule.is_due_now", return_value=True):
-            # Run the deduction
-            deduction_count = self.auto_deduct_inventory()
+    def test_medication_schedule_relationship(self):
+        """Test the relationship between Medication and MedicationSchedule."""
+        from app.models import Medication, MedicationSchedule, ScheduleType
 
-            # Should have processed one medication
-            self.assertEqual(deduction_count, 1)
+        # Create a medication
+        med = Medication(name="Test Med", dosage=1.0, frequency=1.0)
+        self.db.session.add(med)
+        self.db.session.flush()
 
-            # Verify inventory was deducted
-            self.db.session.refresh(self.inventory)
-            self.assertEqual(self.inventory.current_count, 98.0)  # 100 - 2.0
+        # Create schedules
+        schedule1 = MedicationSchedule(
+            medication=med,
+            schedule_type=ScheduleType.DAILY,
+            times_of_day='["08:00"]',
+            units_per_dose=1.0,
+        )
+        self.db.session.add(schedule1)
 
-            # Verify last deduction was updated
-            self.db.session.refresh(self.schedule)
-            self.assertIsNotNone(self.schedule.last_deduction)
-
-    def test_disabled_auto_deduction(self):
-        """Test that auto-deduction respects the enabled flag."""
-        # Disable auto-deduction
-        self.medication.auto_deduction_enabled = False
+        schedule2 = MedicationSchedule(
+            medication=med,
+            schedule_type=ScheduleType.DAILY,
+            times_of_day='["20:00"]',
+            units_per_dose=1.0,
+        )
+        self.db.session.add(schedule2)
         self.db.session.commit()
 
-        # Mock is_due_now to return True
-        with patch("models.MedicationSchedule.is_due_now", return_value=True):
-            # Run the deduction
-            deduction_count = self.auto_deduct_inventory()
+        # Test the relationship
+        self.assertEqual(len(med.schedules), 2)
+        self.assertIn(schedule1, med.schedules)
+        self.assertIn(schedule2, med.schedules)
 
-            # No medications should have been processed
-            self.assertEqual(deduction_count, 0)
+        # Test cascade delete: deleting medication should delete schedules
+        self.db.session.delete(med)
+        self.db.session.commit()
 
-            # Inventory should remain unchanged
-            self.db.session.refresh(self.inventory)
-            self.assertEqual(self.inventory.current_count, 100)
+        # Schedules should be gone
+        self.assertEqual(self.db.session.query(MedicationSchedule).count(), 0)
+
+    def test_hospital_visit_order_relationship(self):
+        """Test the relationship between HospitalVisit and Order."""
+        from app.models import HospitalVisit, Order
+
+        # Create a hospital visit
+        visit = HospitalVisit(
+            visit_date=self.db.func.current_timestamp(), notes="Test visit"
+        )
+        self.db.session.add(visit)
+        self.db.session.flush()
+
+        # Create orders
+        order1 = Order(hospital_visit=visit, status="planned")
+        self.db.session.add(order1)
+
+        order2 = Order(hospital_visit=visit, status="printed")
+        self.db.session.add(order2)
+        self.db.session.commit()
+
+        # Test the relationship
+        self.assertEqual(len(visit.orders), 2)
+        self.assertIn(order1, visit.orders)
+        self.assertIn(order2, visit.orders)
+
+        # Test cascade delete: deleting visit should delete orders
+        self.db.session.delete(visit)
+        self.db.session.commit()
+
+        # Orders should be gone
+        self.assertEqual(self.db.session.query(Order).count(), 0)
+
+    def test_order_orderitem_relationship(self):
+        """Test the relationship between Order and OrderItem."""
+        from app.models import Order, OrderItem, Medication, HospitalVisit
+
+        # Create a visit and order
+        visit = HospitalVisit(
+            visit_date=self.db.func.current_timestamp(), notes="Test visit"
+        )
+        self.db.session.add(visit)
+        self.db.session.flush()
+
+        order = Order(hospital_visit=visit, status="planned")
+        self.db.session.add(order)
+        self.db.session.flush()
+
+        # Create medications
+        med1 = Medication(name="Med 1", dosage=1.0, frequency=1.0)
+        med2 = Medication(name="Med 2", dosage=2.0, frequency=2.0)
+        self.db.session.add_all([med1, med2])
+        self.db.session.flush()
+
+        # Create order items
+        item1 = OrderItem(
+            order=order, medication=med1, quantity_needed=30, packages_n1=1
+        )
+        self.db.session.add(item1)
+
+        item2 = OrderItem(
+            order=order, medication=med2, quantity_needed=60, packages_n2=1
+        )
+        self.db.session.add(item2)
+        self.db.session.commit()
+
+        # Test the relationships
+        self.assertEqual(len(order.order_items), 2)
+        self.assertIn(item1, order.order_items)
+        self.assertIn(item2, order.order_items)
+
+        self.assertEqual(len(med1.order_items), 1)
+        self.assertEqual(len(med2.order_items), 1)
+        self.assertEqual(med1.order_items[0], item1)
+        self.assertEqual(med2.order_items[0], item2)
+
+        logger.debug(
+            f"Orders before deletion: {self.db.session.query(OrderItem).all()}"
+        )
+
+        # Test cascade delete: deleting order should delete items
+        self.db.session.delete(order)
+        self.db.session.commit()
+
+        # Verify that the order is gone
+        logger.debug(f"Orders after deletion: {self.db.session.query(OrderItem).all()}")
+
+        # After deleting the order
+        remaining_items = self.db.session.query(OrderItem).all()
+        if remaining_items:
+            logger.info(f"Remaining items: {remaining_items}")
+            logger.debug(f"Item order_id: {remaining_items[0].order_id}")
+        else:
+            logger.debug("No remaining items found.")
+
+        # Items should be gone
+        self.assertEqual(self.db.session.query(OrderItem).count(), 0)
+
+        # Medications should still exist
+        self.assertEqual(self.db.session.query(Medication).count(), 2)
+
+    def test_medication_deletion_with_relations(self):
+        """Test deleting a medication with various related objects."""
+        from app.models import (
+            Medication,
+            Inventory,
+            InventoryLog,
+            MedicationSchedule,
+            Order,
+            OrderItem,
+            ScheduleType,
+            HospitalVisit,
+        )
+
+        # Create a medication with inventory, logs, schedules, and order items
+        med = Medication(name="Complex Med", dosage=1.0, frequency=1.0)
+        self.db.session.add(med)
+        self.db.session.flush()
+
+        # Add inventory
+        inv = Inventory(medication=med, current_count=100)
+        self.db.session.add(inv)
+        self.db.session.flush()
+
+        # Add inventory log
+        log = InventoryLog(
+            inventory=inv, previous_count=0, adjustment=100, new_count=100
+        )
+        self.db.session.add(log)
+
+        # Add schedule
+        schedule = MedicationSchedule(
+            medication=med,
+            schedule_type=ScheduleType.DAILY,
+            times_of_day='["08:00"]',
+            units_per_dose=1.0,
+        )
+        self.db.session.add(schedule)
+
+        # Create a visit and order
+        visit = HospitalVisit(
+            visit_date=self.db.func.current_timestamp(), notes="Test visit"
+        )
+        self.db.session.add(visit)
+        self.db.session.flush()
+
+        order = Order(hospital_visit=visit, status="planned")
+        self.db.session.add(order)
+        self.db.session.flush()
+
+        # Add order item
+        item = OrderItem(order=order, medication=med, quantity_needed=30, packages_n1=1)
+        self.db.session.add(item)
+        self.db.session.commit()
+
+        # Verify relationships
+        self.assertEqual(med.inventory, inv)
+        self.assertEqual(len(inv.inventory_logs), 1)
+        self.assertEqual(len(med.schedules), 1)
+        self.assertEqual(len(med.order_items), 1)
+
+        # Deleting medication should:
+        # - Delete inventory (cascade)
+        # - Delete inventory logs (cascade through inventory)
+        # - Delete schedules (cascade)
+        # But should NOT delete order items (they should reference None)
+
+        med_id = med.id
+        self.db.session.delete(med)
+        self.db.session.commit()
+
+        # Verify cascades
+        self.assertEqual(
+            self.db.session.query(Medication).filter_by(id=med_id).count(), 0
+        )
+        self.assertEqual(
+            self.db.session.query(Inventory).filter_by(medication_id=med_id).count(), 0
+        )
+        self.assertEqual(
+            self.db.session.query(MedicationSchedule)
+            .filter_by(medication_id=med_id)
+            .count(),
+            0,
+        )
+
+        # Order item should still exist but have NULL medication_id
+        order_item = self.db.session.get(OrderItem, item.id)
+        self.assertIsNotNone(order_item)
+        self.assertIsNone(order_item.medication)

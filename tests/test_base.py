@@ -73,7 +73,30 @@ class BaseTestCase(unittest.TestCase):
         # Set current date to now
         self.now = datetime.now()
 
-        logger.debug(f"Defining global now: {self.now}")
+        # Import models after app context is created
+        from app.models import (
+            MedicationSchedule,
+            Medication,
+            Inventory,
+            HospitalVisitSettings,
+            HospitalVisit,
+            Order,
+            OrderItem,
+        )
+
+        # Clean up any existing data to prevent test interference - using db session directly
+        try:
+            self.db.session.execute(self.db.delete(MedicationSchedule))
+            self.db.session.execute(self.db.delete(Inventory))
+            self.db.session.execute(self.db.delete(Medication))
+            self.db.session.execute(self.db.delete(HospitalVisitSettings))
+            self.db.session.execute(self.db.delete(HospitalVisit))
+            self.db.session.execute(self.db.delete(Order))
+            self.db.session.execute(self.db.delete(OrderItem))
+            self.db.session.commit()
+        except Exception as e:
+            self.db.session.rollback()
+            print(f"Error cleaning up database: {e}")
 
     def tearDown(self):
         """Clean up after each test."""

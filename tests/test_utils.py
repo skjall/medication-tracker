@@ -34,7 +34,6 @@ class TestTimezoneUtils(BaseTestCase):
         self.naive_now = self.now
 
     def test_ensure_timezone_utc(self):
-        """Test that timezone-naive datetimes get UTC timezone."""
         # Test with timezone-naive datetime
         result = ensure_timezone_utc(self.naive_now)
         self.assertEqual(result.tzinfo, timezone.utc)
@@ -44,8 +43,8 @@ class TestTimezoneUtils(BaseTestCase):
         berlin_time = self.now.astimezone(berlin_tz)
         result = ensure_timezone_utc(berlin_time)
 
-        # Should keep the original timezone
-        self.assertEqual(result.tzinfo, berlin_tz)
+        # Compare timezone zones instead of objects
+        self.assertEqual(result.tzinfo.zone, berlin_tz.zone)
 
     def test_to_local_timezone(self):
         """Test conversion from UTC to local timezone."""

@@ -372,7 +372,14 @@ class TestMedication(BaseTestCase):
         """Test calculation of medication needs until a visit."""
 
         # Create a visit date 30 days in the future
-        visit_date = self.now.astimezone(pytz.timezone("UTC")) + timedelta(days=30)
+        # Add some milliseconds to ensure it's after the current date since the actual
+        # function will call its own now from datetime and is therefore slightly off
+        # which would result in 29 days instead of 30
+        visit_date = (
+            self.now.astimezone(pytz.timezone("UTC"))
+            + timedelta(days=30)
+            + timedelta(milliseconds=10)
+        )
 
         logger.info(f"Current date: {self.now.astimezone(pytz.timezone("UTC"))}")
         logger.info(f"Visit date: {visit_date}")
