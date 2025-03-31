@@ -46,12 +46,12 @@ ENV/
 Thumbs.db
 
 # Project specific
-data/*
-!data/.gitkeep
+app/data/*
+!app/data/.gitkeep
 
 # Logs
-logs/*
-!logs/.gitkeep
+app/logs/*
+!app/logs/.gitkeep
 
 # Repomix
 repomix-output.txt
