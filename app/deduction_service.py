@@ -66,29 +66,43 @@ def calculate_missed_deductions(
     # Get scheduled times in HH:MM format
     scheduled_times = schedule.formatted_times
 
+    logger.debug(f"Scheduled times: {scheduled_times}")
+
     # Calculate missed deductions based on schedule type
     missed_deductions = []
 
-    if schedule.schedule_type == ScheduleType.DAILY:
+    if str(schedule.schedule_type) == str(ScheduleType.DAILY):
+        logger.debug("Calculating missed deductions for daily schedule")
         # For daily schedules, check each day between last deduction and now
         missed_deductions = _calculate_daily_missed_deductions(
             schedule, local_last_deduction, local_current_time, scheduled_times
         )
 
-    elif schedule.schedule_type == ScheduleType.INTERVAL:
+    elif str(schedule.schedule_type) == str(ScheduleType.INTERVAL):
+        logger.debug("Calculating missed deductions for interval schedule")
         # For interval schedules (every X days)
         missed_deductions = _calculate_interval_missed_deductions(
             schedule, local_last_deduction, local_current_time, scheduled_times
         )
 
-    elif schedule.schedule_type == ScheduleType.WEEKDAYS:
+    elif str(schedule.schedule_type) == str(ScheduleType.WEEKDAYS):
+        logger.debug("Calculating missed deductions for weekday schedule")
         # For specific weekdays
         missed_deductions = _calculate_weekdays_missed_deductions(
             schedule, local_last_deduction, local_current_time, scheduled_times
         )
+    else:
+        logger.warning(
+            f"Unknown schedule type {schedule.schedule_type} for schedule {schedule.id}"
+        )
+        return []
+
+    logger.debug(f"Missed deductions calculated: {len(missed_deductions)} found")
 
     # Convert missed deductions back to UTC for database storage
     utc_missed_deductions = [from_local_timezone(dt) for dt in missed_deductions]
+
+    logger.debug(f"Found {len(utc_missed_deductions)} missed deductions")
 
     if utc_missed_deductions:
         logger.info(

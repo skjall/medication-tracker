@@ -183,11 +183,17 @@ class Medication(db.Model):
         from hospital_visit_utils import HospitalVisitSettings
 
         visit_date = ensure_timezone_utc(visit_date)
-        now = utcnow()
+        now = datetime.now(timezone.utc)
+
+        logger.debug(f"Visit date: {visit_date}, Current time: {now}")
 
         days_until_visit = (visit_date - now).days
         if days_until_visit < 0:
             days_until_visit = 0
+
+        logger.info(
+            f"Calculating units needed until visit on {visit_date.strftime('%d.%m.%Y')}: {days_until_visit} days"
+        )
 
         # Get next-but-one setting if not explicitly provided
         if consider_next_but_one is None:

@@ -12,9 +12,14 @@ All test classes should inherit from this base class.
 import os
 import sys
 import unittest
+from datetime import datetime, timedelta, timezone
+import logging
 
 # Add app directory to Python path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
+
+logger = logging.getLogger("test_base")
+logger.setLevel(logging.DEBUG)
 
 
 class BaseTestCase(unittest.TestCase):
@@ -23,6 +28,7 @@ class BaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up the test class with a shared app context."""
+
         # Create a test app with scheduler disabled
         from app.main import create_app
 
@@ -63,6 +69,11 @@ class BaseTestCase(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures for each test."""
         self.db.session.begin_nested()  # Create a savepoint
+
+        # Set current date to now
+        self.now = datetime.now()
+
+        logger.debug(f"Defining global now: {self.now}")
 
     def tearDown(self):
         """Clean up after each test."""

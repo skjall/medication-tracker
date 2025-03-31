@@ -30,8 +30,8 @@ class TestTimezoneUtils(BaseTestCase):
         super().setUp()
 
         # Create a datetime object for testing
-        self.utc_now = datetime.now(timezone.utc)
-        self.naive_now = datetime.now()
+        self.utc_now = self.now.astimezone(pytz.timezone("UTC"))
+        self.naive_now = self.now
 
     def test_ensure_timezone_utc(self):
         """Test that timezone-naive datetimes get UTC timezone."""
@@ -41,7 +41,7 @@ class TestTimezoneUtils(BaseTestCase):
 
         # Test with timezone-aware datetime
         berlin_tz = pytz.timezone("Europe/Berlin")
-        berlin_time = datetime.now(berlin_tz)
+        berlin_time = self.now.astimezone(berlin_tz)
         result = ensure_timezone_utc(berlin_time)
 
         # Should keep the original timezone
@@ -78,7 +78,7 @@ class TestTimezoneUtils(BaseTestCase):
             mock_get_tz.return_value = berlin_tz
 
             # Create a Berlin timezone datetime
-            berlin_time = datetime.now(berlin_tz)
+            berlin_time = self.now.astimezone(berlin_tz)
 
             # Convert to UTC
             result = from_local_timezone(berlin_time)
@@ -96,7 +96,7 @@ class TestTimezoneUtils(BaseTestCase):
     def test_calculate_days_until(self):
         """Test calculation of days until a target date."""
         # Today should return 1 (tomorrow)
-        today = datetime.now(timezone.utc)
+        today = self.now.astimezone(pytz.timezone("UTC"))
         result = calculate_days_until(today)
         self.assertEqual(result, 1)
 
@@ -111,7 +111,7 @@ class TestTimezoneUtils(BaseTestCase):
         self.assertEqual(result, 5)
 
         # Test with timezone-naive datetime
-        naive_future = datetime.now() + timedelta(days=3)
+        naive_future = self.now + timedelta(days=3)
         result = calculate_days_until(naive_future)
         self.assertEqual(result, 3)
 

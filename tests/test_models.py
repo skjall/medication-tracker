@@ -5,9 +5,9 @@ This module contains tests for the various model classes in the application,
 focusing on their methods and relationships.
 """
 
-import unittest
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta, timezone
+import pytz
 
 from .test_base import BaseTestCase
 from app.models import (
@@ -15,10 +15,14 @@ from app.models import (
     Inventory,
     MedicationSchedule,
     ScheduleType,
-    HospitalVisit,
-    Order,
-    OrderItem,
 )
+
+
+import logging
+
+# Temporarily increase log level
+logger = logging.getLogger("app.models")
+logger.setLevel(logging.DEBUG)
 
 
 class TestMedicationSchedule(BaseTestCase):
@@ -49,7 +53,6 @@ class TestMedicationSchedule(BaseTestCase):
         )
 
         # Current time and yesterday
-        self.now = datetime.now(timezone.utc)
         self.yesterday = self.now - timedelta(days=1)
 
         # Set up utility function mocks
@@ -345,7 +348,9 @@ class TestMedication(BaseTestCase):
         """Test that depletion date is calculated correctly."""
         # With current usage and inventory, should deplete in about 33.33 days
         days_remaining = self.medication.days_remaining
-        expected_date = datetime.now(timezone.utc) + timedelta(days=days_remaining)
+        expected_date = self.now.astimezone(pytz.timezone("UTC")) + timedelta(
+            days=days_remaining
+        )
 
         # Should be within a small delta (seconds difference due to test execution time)
         delta = abs((expected_date - self.medication.depletion_date).total_seconds())
@@ -365,15 +370,19 @@ class TestMedication(BaseTestCase):
 
     def test_calculate_needed_until_visit(self):
         """Test calculation of medication needs until a visit."""
+
         # Create a visit date 30 days in the future
-        visit_date = datetime.now(timezone.utc) + timedelta(days=30)
+        visit_date = self.now.astimezone(pytz.timezone("UTC")) + timedelta(days=30)
+
+        logger.info(f"Current date: {self.now.astimezone(pytz.timezone("UTC"))}")
+        logger.info(f"Visit date: {visit_date}")
 
         # Calculate needs without safety margin
         needed = self.medication.calculate_needed_until_visit(
             visit_date, include_safety_margin=False, consider_next_but_one=False
         )
 
-        # Expected: 30 days * 3.0 units per day = 90 units
+        # Expected: 30 days * 3.0 units per dose = 90 units
         self.assertEqual(needed, 90)
 
         # Calculate needs with safety margin (14 days)
@@ -383,7 +392,3 @@ class TestMedication(BaseTestCase):
 
         # Expected: (30 days + 14 days) * 3.0 units per day = 132 units
         self.assertEqual(needed_with_margin, 132)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -7,8 +7,7 @@ This module provides:
 """
 
 from __future__ import annotations
-from datetime import datetime, timedelta, timezone
-from typing import Dict, Optional, List, Tuple, Any
+from datetime import datetime, timedelta
 import logging
 
 from sqlalchemy import func
@@ -50,12 +49,22 @@ def calculate_days_between_visits() -> int:
     Returns:
         Average days between visits
     """
+    logger.info("Calculating average days between hospital visits")
+
     from models import HospitalVisit
 
     # Get last 5 visits
     visits = (
         HospitalVisit.query.order_by(HospitalVisit.visit_date.desc()).limit(6).all()
     )
+
+    logger.info(f"Found {len(visits)} visits for calculation")
+
+    # Iterate over visits if exist and show content of object
+    for visit in visits:
+        for key, value in visit.__dict__.items():
+            if key != "_sa_instance_state":
+                logger.debug(f"{key}: {value}")
 
     # If we have at least 2 visits, calculate average
     if len(visits) >= 2:
@@ -70,9 +79,15 @@ def calculate_days_between_visits() -> int:
             days = (v2_date - v1_date).days
             intervals.append(days)
 
+        logger.info(f"Intervals: {intervals}")
+
+        # Calculate average
+        average = sum(intervals) / len(intervals)
+        logger.info(f"Average days between visits: {average}")
+
         # Return average
         if intervals:
-            return int(sum(intervals) / len(intervals))
+            return int(average)
 
     # Fallback to settings
     return HospitalVisitSettings.get_settings().default_visit_interval
@@ -91,91 +106,14 @@ def auto_deduct_inventory() -> int:
     """
     logger.info("Running automatic inventory deduction (enhanced version)")
 
-    try:
-        # Import the enhanced deduction service
-        from deduction_service import perform_deductions
+    # Import the enhanced deduction service
+    from deduction_service import perform_deductions
 
-        # Perform deductions and get results
-        med_count, action_count = perform_deductions()
+    # Perform deductions and get results
+    med_count, action_count = perform_deductions()
 
-        # Return the count of medications affected
-        return med_count
-
-    except ImportError as e:
-        logger.error(f"Error importing deduction service: {e}")
-        logger.warning("Falling back to legacy deduction method")
-
-        # Fall back to the legacy method if the import fails
-        return _legacy_auto_deduct_inventory()
-
-
-def _legacy_auto_deduct_inventory() -> int:
-    """
-    Legacy method for deducting inventory based on exact time matching.
-    Kept for backward compatibility but should eventually be removed.
-
-    Returns:
-        Number of medications deducted
-    """
-    from models import Medication
-
-    logger.info("Running legacy automatic inventory deduction")
-
-    current_time = utcnow()
-    deduction_count = 0
-
-    # Get settings
-    settings = HospitalVisitSettings.get_settings()
-
-    # Record that we checked
-    settings.last_deduction_check = current_time
-    db.session.commit()
-
-    # Get all medications with auto-deduction enabled
-    medications = Medication.query.filter_by(auto_deduction_enabled=True).all()
-
-    logger.info(f"Checking {len(medications)} medications with auto-deduction enabled")
-
-    # Process each medication
-    for medication in medications:
-        if not medication.inventory:
-            logger.warning(f"Medication {medication.name} has no inventory record")
-            continue
-
-        # Check each schedule
-        for schedule in medication.schedules:
-            if schedule.is_due_now(current_time):
-                logger.info(f"Schedule {schedule.id} for {medication.name} is due now")
-
-                # Deduct the scheduled amount
-                amount = schedule.units_per_dose
-                if amount > 0 and medication.inventory.current_count >= amount:
-                    medication.inventory.update_count(
-                        -amount,
-                        f"Automatic deduction: {amount} units at {current_time.strftime('%d.%m.%Y %H:%M')}",
-                    )
-                    deduction_count += 1
-
-                    # Update last deduction time
-                    schedule.last_deduction = current_time
-                    logger.info(f"Deducted {amount} units from {medication.name}")
-                else:
-                    logger.warning(
-                        f"Not enough inventory to deduct {amount} units from {medication.name}. Current count: {medication.inventory.current_count}"
-                    )
-            else:
-                logger.info(
-                    f"Schedule {schedule.id} for {medication.name} is not due yet."
-                )
-
-    # Commit all changes
-    if deduction_count > 0:
-        db.session.commit()
-        logger.info(f"Auto-deduction complete: {deduction_count} medications deducted")
-    else:
-        logger.info("No medications due for deduction at this time")
-
-    return deduction_count
+    # Return the count of medications affected
+    return med_count
 
 
 class HospitalVisitSettings:

@@ -5,8 +5,9 @@ This module tests functions related to hospital visit scheduling,
 interval calculations, and automatic inventory deduction.
 """
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from datetime import datetime, timedelta, timezone
+import pytz
 
 from .test_base import BaseTestCase
 from app.models import (
@@ -16,8 +17,13 @@ from app.models import (
     Inventory,
     MedicationSchedule,
     ScheduleType,
-    db,
 )
+
+import logging
+
+# Temporarily increase log level
+logger = logging.getLogger("app.hospital_visit_utils")
+logger.setLevel(logging.DEBUG)
 
 
 class TestHospitalVisitUtils(BaseTestCase):
@@ -26,6 +32,28 @@ class TestHospitalVisitUtils(BaseTestCase):
     def setUp(self):
         """Set up test fixtures before each test."""
         super().setUp()
+
+        # Import models after app context is created
+        from app.models import (
+            MedicationSchedule,
+            ScheduleType,
+            Medication,
+            Inventory,
+            HospitalVisitSettings,
+            HospitalVisit,
+        )
+
+        # Clean up any existing data to prevent test interference - using db session directly
+        try:
+            self.db.session.execute(self.db.delete(MedicationSchedule))
+            self.db.session.execute(self.db.delete(Inventory))
+            self.db.session.execute(self.db.delete(Medication))
+            self.db.session.execute(self.db.delete(HospitalVisitSettings))
+            self.db.session.execute(self.db.delete(HospitalVisit))
+            self.db.session.commit()
+        except Exception as e:
+            self.db.session.rollback()
+            print(f"Error cleaning up database: {e}")
 
         # Import here to avoid issues with app context
         from app.hospital_visit_utils import (
@@ -46,48 +74,45 @@ class TestHospitalVisitUtils(BaseTestCase):
             default_order_for_next_but_one=True,
             timezone_name="UTC",
         )
-        db.session.add(self.settings)
-
-        # Create a few visits
-        now = datetime.now(timezone.utc)
+        self.db.session.add(self.settings)
 
         # Past visits
         self.visit1 = HospitalVisit(
-            visit_date=now - timedelta(days=90), notes="Past visit 1"
+            visit_date=self.now - timedelta(days=90), notes="Past visit 1"
         )
 
         self.visit2 = HospitalVisit(
-            visit_date=now - timedelta(days=45), notes="Past visit 2"
+            visit_date=self.now - timedelta(days=45), notes="Past visit 2"
         )
 
         # Upcoming visit
         self.visit3 = HospitalVisit(
-            visit_date=now + timedelta(days=45), notes="Upcoming visit"
+            visit_date=self.now + timedelta(days=45), notes="Upcoming visit"
         )
 
-        db.session.add_all([self.visit1, self.visit2, self.visit3])
-        db.session.commit()
+        self.db.session.add_all([self.visit1, self.visit2, self.visit3])
+        self.db.session.commit()
 
         # Create medication with schedule for auto-deduction testing
         self.medication = Medication(
             name="Test Med", dosage=2.0, frequency=2.0, auto_deduction_enabled=True
         )
-        db.session.add(self.medication)
+        self.db.session.add(self.medication)
 
         # Create inventory
         self.inventory = Inventory(medication=self.medication, current_count=100)
-        db.session.add(self.inventory)
+        self.db.session.add(self.inventory)
 
         # Create a schedule due now
-        self.now = datetime.now(timezone.utc)
         self.schedule = MedicationSchedule(
             medication=self.medication,
             schedule_type=ScheduleType.DAILY,
             times_of_day='["08:00", "18:00"]',
             units_per_dose=2.0,
+            last_deduction=self.now - timedelta(days=1),
         )
-        db.session.add(self.schedule)
-        db.session.commit()
+        self.db.session.add(self.schedule)
+        self.db.session.commit()
 
     def test_calculate_estimated_next_visit_date(self):
         """Test estimating the next visit date based on settings."""
@@ -95,7 +120,7 @@ class TestHospitalVisitUtils(BaseTestCase):
         next_date = self.calculate_estimated_next_visit_date()
 
         # Should be 90 days in the future (default interval)
-        expected_date = datetime.now(timezone.utc) + timedelta(days=90)
+        expected_date = self.now.astimezone(pytz.timezone("UTC")) + timedelta(days=90)
         delta = abs((next_date - expected_date).total_seconds())
         self.assertLess(delta, 5)  # Allow 5 seconds difference
 
@@ -115,13 +140,14 @@ class TestHospitalVisitUtils(BaseTestCase):
         # Average: (45 + 90) / 2 = 67.5 days, rounded to 67
 
         result = self.calculate_days_between_visits()
+
         self.assertEqual(result, 67)
 
         # Test with no visits
-        db.session.delete(self.visit1)
-        db.session.delete(self.visit2)
-        db.session.delete(self.visit3)
-        db.session.commit()
+        self.db.session.delete(self.visit1)
+        self.db.session.delete(self.visit2)
+        self.db.session.delete(self.visit3)
+        self.db.session.commit()
 
         # Should fall back to settings default
         result = self.calculate_days_between_visits()
@@ -139,18 +165,18 @@ class TestHospitalVisitUtils(BaseTestCase):
             self.assertEqual(deduction_count, 1)
 
             # Verify inventory was deducted
-            db.session.refresh(self.inventory)
-            self.assertEqual(self.inventory.current_count, 98.0)  # 100 - 2.0
+            self.db.session.refresh(self.inventory)
+            self.assertEqual(self.inventory.current_count, 96.0)  # 100 - (2 * 2.0)
 
             # Verify last deduction was updated
-            db.session.refresh(self.schedule)
+            self.db.session.refresh(self.schedule)
             self.assertIsNotNone(self.schedule.last_deduction)
 
     def test_disabled_auto_deduction(self):
         """Test that auto-deduction respects the enabled flag."""
         # Disable auto-deduction
         self.medication.auto_deduction_enabled = False
-        db.session.commit()
+        self.db.session.commit()
 
         # Mock is_due_now to return True
         with patch("models.MedicationSchedule.is_due_now", return_value=True):
@@ -161,9 +187,5 @@ class TestHospitalVisitUtils(BaseTestCase):
             self.assertEqual(deduction_count, 0)
 
             # Inventory should remain unchanged
-            db.session.refresh(self.inventory)
+            self.db.session.refresh(self.inventory)
             self.assertEqual(self.inventory.current_count, 100)
-
-
-if __name__ == "__main__":
-    unittest.main()
