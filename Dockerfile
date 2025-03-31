@@ -26,4 +26,4 @@ EXPOSE 8087
 COPY app/ .
 
 # Command to run the application
-CMD ["python", "main.py"]
+CMD ["gunicorn","--bind", "0.0.0.0:8087","--workers", "4","--threads", "2","--timeout", "120","main:create_app()"]

@@ -76,17 +76,18 @@
                             </li>
                         {% endfor %}
                     </ul>
+                    <div class="mt-4">
+                        <a href="{{ url_for('inventory.low') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-1"></i>View All Low Stock
+                        </a>
+                    </div>
                 {% else %}
                     <p class="card-text">
                         <i class="fas fa-check-circle text-success me-2"></i>
                         All medications are above minimum threshold levels.
                     </p>
                 {% endif %}
-                <div class="mt-4">
-                    <a href="{{ url_for('inventory.low') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-search me-1"></i>View All Low Stock
-                    </a>
-                </div>
+
             </div>
         </div>
     </div>
