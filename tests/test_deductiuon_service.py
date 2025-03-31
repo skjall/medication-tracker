@@ -1,12 +1,3 @@
-"""
-Unit tests for the deduction_service module.
-
-This module tests the enhanced medication deduction service, focusing on:
-1. Calculation of missed deductions
-2. Proper handling of different schedule types
-3. Integration with inventory updates
-"""
-
 import os
 import sys
 import unittest
@@ -17,34 +8,42 @@ import json
 # Add app to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
 
-# Import the modules to test
-from deduction_service import (
-    calculate_missed_deductions,
-    _calculate_daily_missed_deductions,
-    _calculate_interval_missed_deductions,
-    _calculate_weekdays_missed_deductions,
-    perform_deductions,
-)
-
-# Import models for mocking
+# Import Flask and create app
+from main import create_app
 from models import (
-    MedicationSchedule,
-    ScheduleType,
+    db,
     Medication,
     Inventory,
+    MedicationSchedule,
+    ScheduleType,
     ensure_timezone_utc,
 )
+from utils import to_local_timezone
 
 
 class TestDeductionService(unittest.TestCase):
-    """Test cases for the deduction service module."""
+    @classmethod
+    def setUpClass(cls):
+        # Create a test app and push an application context
+        cls.app = create_app({"TESTING": True})
+        cls.app_context = cls.app.app_context()
+        cls.app_context.push()
+
+    @classmethod
+    def tearDownClass(cls):
+        # Pop the application context
+        cls.app_context.pop()
 
     def setUp(self):
-        """Set up test fixtures before each test."""
-        # Create mock dates
+        # Reset database
+        db.session.remove()
+        db.drop_all()
+        db.create_all()
+
+        # Additional setup specific to each test method
+        # Mock the timezone to a fixed value to ensure consistent testing
         self.now = datetime.now(timezone.utc)
         self.yesterday = self.now - timedelta(days=1)
-        self.two_days_ago = self.now - timedelta(days=2)
 
         # Create a mock schedule
         self.schedule = MagicMock(spec=MedicationSchedule)
