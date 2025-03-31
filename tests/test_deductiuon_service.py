@@ -1,3 +1,10 @@
+"""
+Tests for the deduction_service module with improved setup/teardown.
+
+This module tests the functionality of the deduction service
+with proper handling of the task scheduler to avoid logging errors.
+"""
+
 import os
 import sys
 import unittest
@@ -6,51 +13,52 @@ from datetime import datetime, timedelta, timezone
 
 # Add app to path for imports
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../app"))
-sys.path.insert(0, path)
+if path not in sys.path:
+    sys.path.insert(0, path)
+
+# Import directly from task_scheduler to fix the error during shutdown
+from task_scheduler import TaskScheduler
 
 
-# Import necessary modules
-from main import create_app
-from models import MedicationSchedule, ScheduleType, Medication, Inventory
-from deduction_service import (
-    _calculate_daily_missed_deductions,
-    _calculate_interval_missed_deductions,
-    _calculate_weekdays_missed_deductions,
-    calculate_missed_deductions,
-    perform_deductions,
-)
+class TestDeductionService(unittest.TestCase):
+    """Test suite for deduction_service module."""
 
-
-class TestIsDueNow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # Create a test app and push an application context
-        cls.app = create_app({"TESTING": True})
+        """Set up the test class with a shared app context."""
+        # Create a test app with scheduler disabled
+        from main import create_app
+
+        cls.app = create_app({"TESTING": True, "SCHEDULER_AUTO_START": False})
         cls.app_context = cls.app.app_context()
         cls.app_context.push()
 
+        # Ensure models are imported after app context is created
+        from models import db
+
+        db.create_all()
+
     @classmethod
     def tearDownClass(cls):
-        # Pop the application context
+        """Clean up the test class."""
+        # Shutdown the scheduler if it exists
+        if hasattr(cls.app, "scheduler"):
+            cls.app.scheduler.shutdown()
+
+        # Pop the app context
         cls.app_context.pop()
 
     def setUp(self):
-        # Reset database
-        from models import db
-
-        print("Path added to sys.path:", path)
-
-        db.session.remove()
-        db.drop_all()
-        db.create_all()
+        """Set up test fixtures for each test."""
+        # Import necessary modules within the test method to ensure
+        # the app context is active
+        from models import MedicationSchedule, ScheduleType, Medication, Inventory
 
         # Set up current time and yesterday
         self.now = datetime.now(timezone.utc)
         self.yesterday = self.now - timedelta(days=1)
 
         # Create a mock schedule
-        from unittest.mock import MagicMock
-
         self.schedule = MagicMock(spec=MedicationSchedule)
         self.schedule.formatted_times = ["08:00", "18:00"]
         self.schedule.last_deduction = self.yesterday
@@ -62,7 +70,6 @@ class TestIsDueNow(unittest.TestCase):
         self.medication = MagicMock(spec=Medication)
         self.medication.name = "Test Med"
         self.medication.auto_deduction_enabled = True
-
         self.medication.schedules = [self.schedule]
 
         # Create a mock inventory
@@ -90,6 +97,9 @@ class TestIsDueNow(unittest.TestCase):
 
     def test_calculate_daily_missed_deductions(self):
         """Test calculation of missed deductions for daily schedules."""
+        from deduction_service import _calculate_daily_missed_deductions
+        from models import ScheduleType
+
         # Set up the schedule
         self.schedule.schedule_type = ScheduleType.DAILY
 
@@ -147,6 +157,9 @@ class TestIsDueNow(unittest.TestCase):
 
     def test_calculate_interval_missed_deductions(self):
         """Test calculation of missed deductions for interval schedules."""
+        from deduction_service import _calculate_interval_missed_deductions
+        from models import ScheduleType
+
         # Set up the schedule (every 2 days)
         self.schedule.schedule_type = ScheduleType.INTERVAL
         self.schedule.interval_days = 2
@@ -178,6 +191,9 @@ class TestIsDueNow(unittest.TestCase):
 
     def test_calculate_weekdays_missed_deductions(self):
         """Test calculation of missed deductions for weekday schedules."""
+        from deduction_service import _calculate_weekdays_missed_deductions
+        from models import ScheduleType
+
         # Set up the schedule (Mon, Wed, Fri)
         self.schedule.schedule_type = ScheduleType.WEEKDAYS
         self.schedule.formatted_weekdays = [0, 2, 4]  # Mon, Wed, Fri
@@ -235,9 +251,10 @@ class TestIsDueNow(unittest.TestCase):
             self.assertGreater(len(missed), 0)
             self.assertLessEqual(len(missed), 30)  # Sanity check
 
-    @patch("deduction_service.db.session")
-    def test_perform_deductions(self, mock_session):
+    def test_perform_deductions(self):
         """Test the main deduction function that performs all deductions."""
+        from deduction_service import perform_deductions
+
         # Set up expectations
         self.medication.auto_deduction_enabled = True
 
@@ -252,26 +269,31 @@ class TestIsDueNow(unittest.TestCase):
                     self.now - timedelta(hours=2),  # Today morning
                 ]
 
-                # Call the function
-                med_count, action_count = perform_deductions(self.now)
+                # Mock db.session
+                with patch("deduction_service.db.session") as mock_session:
+                    # Call the function
+                    med_count, action_count = perform_deductions(self.now)
 
-                # Check results
-                self.assertEqual(med_count, 1)  # 1 medication affected
-                self.assertEqual(action_count, 2)  # 2 deductions made
+                    # Check results
+                    self.assertEqual(med_count, 1)  # 1 medication affected
+                    self.assertEqual(action_count, 2)  # 2 deductions made
 
-                # Verify inventory was updated correctly
-                self.assertEqual(self.inventory.update_count.call_count, 2)
+                    # Verify inventory was updated correctly
+                    self.assertEqual(self.inventory.update_count.call_count, 2)
 
-                # Verify last_deduction was updated
-                self.assertEqual(
-                    self.schedule.last_deduction, mock_calc.return_value[-1]
-                )
+                    # Verify last_deduction was updated
+                    self.assertEqual(
+                        self.schedule.last_deduction, mock_calc.return_value[-1]
+                    )
 
-                # Verify session commit was called
-                mock_session.commit.assert_called()
+                    # Verify session commit was called
+                    mock_session.commit.assert_called()
 
     def test_calculate_missed_deductions_for_daily(self):
         """Test the main missed deduction calculation for daily schedule."""
+        from deduction_service import calculate_missed_deductions
+        from models import ScheduleType
+
         self.schedule.schedule_type = ScheduleType.DAILY
 
         with patch(
@@ -294,6 +316,9 @@ class TestIsDueNow(unittest.TestCase):
 
     def test_no_missed_deductions_without_schedules(self):
         """Test behavior when no schedules are defined."""
+        from deduction_service import calculate_missed_deductions
+        from models import ScheduleType
+
         # Empty schedule times
         self.schedule.formatted_times = []
 

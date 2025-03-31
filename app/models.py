@@ -19,20 +19,12 @@ from sqlalchemy import (
     Enum,
 )
 import logging
-from utils import make_aware, calculate_days_until
+from utils import make_aware, calculate_days_until, ensure_timezone_utc
 
 
 logger = logging.getLogger(__name__)
 
 db = SQLAlchemy()
-
-
-# Create a function to ensure all datetime objects are timezone-aware
-def ensure_timezone_utc(dt: datetime) -> datetime:
-    """Make sure datetime has timezone info, defaulting to UTC if none."""
-    if dt.tzinfo is None:
-        return dt.replace(tzinfo=timezone.utc)
-    return dt
 
 
 # Function to return timezone-aware current time

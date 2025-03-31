@@ -130,6 +130,7 @@ class TaskScheduler:
         self.running = False
         self.thread: Optional[threading.Thread] = None
         self._sleep_interval = 1  # Check tasks every second
+        self._shutdown_event = threading.Event()
 
         # Keep track of app reference
         self.app = None
@@ -231,6 +232,7 @@ class TaskScheduler:
 
         logger.info("Starting task scheduler")
         self.running = True
+        self._shutdown_event.clear()  # Clear the shutdown event
         self.thread = threading.Thread(target=self._run_scheduler, daemon=True)
         self.thread.start()
 
@@ -239,32 +241,60 @@ class TaskScheduler:
         if not self.running:
             return
 
-        logger.info("Shutting down task scheduler")
+        try:
+            logger.info("Shutting down task scheduler")
+        except Exception:
+            # Ignore errors that happen during logging shutdown
+            pass
+
         self.running = False
+        self._shutdown_event.set()  # Signal the thread to exit
+
         if self.thread and self.thread.is_alive():
-            self.thread.join(timeout=5)
+            try:
+                self.thread.join(timeout=5)
+            except Exception:
+                # Ignore thread join errors during shutdown
+                pass
 
     def _run_scheduler(self) -> None:
         """Main scheduler loop to check and execute tasks."""
-        logger.info("Scheduler thread started")
+        try:
+            logger.info("Scheduler thread started")
 
-        while self.running:
-            current_time = datetime.now(timezone.utc)
+            while self.running and not self._shutdown_event.is_set():
+                current_time = datetime.now(timezone.utc)
 
-            for name, task in self.tasks.items():
-                # Check if this task should run now
-                if task.should_run(current_time):
-                    if self.app:
-                        # Run within app context if we have an app
-                        with self.app.app_context():
+                for name, task in self.tasks.items():
+                    # Skip if shutdown was requested
+                    if self._shutdown_event.is_set():
+                        break
+
+                    # Check if this task should run now
+                    if task.should_run(current_time):
+                        if self.app:
+                            # Run within app context if we have an app
+                            with self.app.app_context():
+                                task.run()
+                        else:
                             task.run()
-                    else:
-                        task.run()
 
-            # Sleep until next check
-            time.sleep(self._sleep_interval)
+                # Sleep until next check, but allow for early interrupt
+                self._shutdown_event.wait(timeout=self._sleep_interval)
 
-        logger.info("Scheduler thread stopped")
+            try:
+                logger.info("Scheduler thread stopped")
+            except Exception:
+                # Ignore errors that happen during logging shutdown
+                pass
+
+        except Exception as e:
+            # Catch all exceptions to avoid thread crashes
+            try:
+                logger.error(f"Scheduler thread error: {e}", exc_info=True)
+            except Exception:
+                # Ignore errors that happen during logging shutdown
+                pass
 
     def restart(self) -> None:
         """

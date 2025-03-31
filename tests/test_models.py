@@ -1,8 +1,7 @@
 """
-Unit tests for the is_due_now method in the MedicationSchedule class.
+Unit tests for the models file
 
-This test module focuses on verifying the behavior of the is_due_now method
-with the new 5-minute flexibility for time matching.
+
 """
 
 import os
@@ -12,24 +11,21 @@ from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta, timezone
 
 # Add app to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../app"))
+if path not in sys.path:
+    sys.path.insert(0, path)
+
+# Import the models to test
+from models import MedicationSchedule, ScheduleType
 
 
 class TestIsDueNow(unittest.TestCase):
     """Test cases for the is_due_now method in MedicationSchedule."""
 
     def setUp(self):
-
-        # Import the models to test
-        from models import MedicationSchedule, ScheduleType, ensure_timezone_utc
-
         """Set up test fixtures before each test."""
         # Create a mock schedule
         self.schedule = MagicMock(spec=MedicationSchedule)
-
-        # Add the is_due_now method to test
-        # This is a bit of a hack to get the method into our mock
-        from models import MedicationSchedule
 
         self.schedule.is_due_now = MedicationSchedule.is_due_now.__get__(
             self.schedule, MedicationSchedule
@@ -47,7 +43,7 @@ class TestIsDueNow(unittest.TestCase):
         self.schedule.last_deduction = None
 
         # Set up utility function mocks
-        self.to_local_patcher = patch("models.to_local_timezone")
+        self.to_local_patcher = patch("utils.to_local_timezone")
         self.mock_to_local = self.to_local_patcher.start()
 
         # By default, make the local time the same as UTC for testing simplicity
@@ -206,7 +202,7 @@ class TestIsDueNow(unittest.TestCase):
             )
 
             # Mock the weekday check
-            with patch("models.to_local_timezone") as mock_to_local:
+            with patch("utils.to_local_timezone") as mock_to_local:
                 mock_dt = MagicMock()
                 mock_dt.date.return_value = current_time.date()
                 mock_dt.weekday.return_value = weekday
