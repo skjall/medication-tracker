@@ -9,13 +9,6 @@ from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta, timezone
 
 from .test_base import BaseTestCase
-from app.models import (
-    MedicationSchedule,
-    ScheduleType,
-    Medication,
-    Inventory,
-    HospitalVisitSettings,
-)
 
 
 class TestDeductionService(BaseTestCase):
@@ -24,6 +17,15 @@ class TestDeductionService(BaseTestCase):
     def setUp(self):
         """Set up test fixtures for each test."""
         super().setUp()
+
+        # Import models after app context is created
+        from app.models import (
+            MedicationSchedule,
+            ScheduleType,
+            Medication,
+            Inventory,
+            HospitalVisitSettings,
+        )
 
         # Import module here to avoid issues with app context
         from app.deduction_service import (
@@ -55,14 +57,12 @@ class TestDeductionService(BaseTestCase):
         )
 
         # Add to database
-        from app.models import db
-
-        db.session.add(self.medication)
-        db.session.flush()
+        self.db.session.add(self.medication)
+        self.db.session.flush()
 
         # Create inventory
         self.inventory = Inventory(medication=self.medication, current_count=100)
-        db.session.add(self.inventory)
+        self.db.session.add(self.inventory)
 
         # Create a schedule
         self.schedule = MedicationSchedule(
@@ -73,8 +73,8 @@ class TestDeductionService(BaseTestCase):
             units_per_dose=2.0,
             last_deduction=self.yesterday,
         )
-        db.session.add(self.schedule)
-        db.session.commit()
+        self.db.session.add(self.schedule)
+        self.db.session.commit()
 
         # Set up utility function mocks
         self.utils_patcher = patch("app.deduction_service.to_local_timezone")
@@ -93,8 +93,8 @@ class TestDeductionService(BaseTestCase):
         self.settings = HospitalVisitSettings(
             default_visit_interval=90, timezone_name="UTC"
         )
-        db.session.add(self.settings)
-        db.session.commit()
+        self.db.session.add(self.settings)
+        self.db.session.commit()
 
     def tearDown(self):
         """Clean up after each test."""
@@ -104,6 +104,8 @@ class TestDeductionService(BaseTestCase):
 
     def test_calculate_daily_missed_deductions(self):
         """Test calculation of missed deductions for daily schedules."""
+        from app.models import ScheduleType
+
         # Set up the schedule
         self.schedule.schedule_type = ScheduleType.DAILY
 
@@ -161,6 +163,8 @@ class TestDeductionService(BaseTestCase):
 
     def test_calculate_interval_missed_deductions(self):
         """Test calculation of missed deductions for interval schedules."""
+        from app.models import ScheduleType
+
         # Set up the schedule (every 2 days)
         self.schedule.schedule_type = ScheduleType.INTERVAL
         self.schedule.interval_days = 2
@@ -192,6 +196,8 @@ class TestDeductionService(BaseTestCase):
 
     def test_calculate_weekdays_missed_deductions(self):
         """Test calculation of missed deductions for weekday schedules."""
+        from app.models import ScheduleType
+
         # Set up the schedule (Mon, Wed, Fri)
         self.schedule.schedule_type = ScheduleType.WEEKDAYS
         self.schedule.weekdays = "[0, 2, 4]"  # Mon, Wed, Fri
@@ -214,7 +220,7 @@ class TestDeductionService(BaseTestCase):
         )
 
         # Mock weekday determination
-        with patch("deduction_service.to_local_timezone") as mock_to_local:
+        with patch("app.deduction_service.to_local_timezone") as mock_to_local:
             # Make the dates return the right weekday when checked
             def mock_weekday_dates(dt):
                 # Create a map of dates to weekdays for our test period
@@ -251,8 +257,11 @@ class TestDeductionService(BaseTestCase):
 
     def test_perform_deductions(self):
         """Test the main deduction function that performs all deductions."""
+        # Import required models
+        from app.models import db
+
         # Test with real database objects
-        with patch("deduction_service.calculate_missed_deductions") as mock_calc:
+        with patch("app.deduction_service.calculate_missed_deductions") as mock_calc:
             mock_calc.return_value = [
                 self.yesterday + timedelta(hours=18),  # Yesterday evening
                 self.now - timedelta(hours=2),  # Today morning
@@ -269,22 +278,22 @@ class TestDeductionService(BaseTestCase):
             self.assertEqual(action_count, 2)  # 2 deductions made
 
             # Verify schedule's last_deduction was updated
-            from app.models import db
-
-            db.session.refresh(self.schedule)
+            self.db.session.refresh(self.schedule)
             self.assertEqual(self.schedule.last_deduction, mock_calc.return_value[-1])
 
             # Verify inventory was updated correctly (deducted 2 doses of 2.0 units)
-            db.session.refresh(self.inventory)
+            self.db.session.refresh(self.inventory)
             self.assertEqual(self.inventory.current_count, 100 - (2 * 2.0))
 
     def test_calculate_missed_deductions_for_daily(self):
         """Test the main missed deduction calculation for daily schedule."""
+        from app.models import ScheduleType
+
         # Set up the schedule
         self.schedule.schedule_type = ScheduleType.DAILY
 
         with patch(
-            "deduction_service._calculate_daily_missed_deductions"
+            "app.deduction_service._calculate_daily_missed_deductions"
         ) as mock_daily:
             mock_daily.return_value = [
                 self.yesterday + timedelta(hours=18),
@@ -308,7 +317,7 @@ class TestDeductionService(BaseTestCase):
 
         # Call the function
         with patch(
-            "deduction_service._calculate_daily_missed_deductions"
+            "app.deduction_service._calculate_daily_missed_deductions"
         ) as mock_daily:
             mock_daily.return_value = []
 
@@ -320,11 +329,12 @@ class TestDeductionService(BaseTestCase):
 
     def test_no_inventory_no_deduction(self):
         """Test that no deduction occurs when there's no inventory."""
-        # Remove inventory
+        # Import required models
         from app.models import db
 
-        db.session.delete(self.inventory)
-        db.session.commit()
+        # Remove inventory
+        self.db.session.delete(self.inventory)
+        self.db.session.commit()
 
         # Run the deduction process
         med_count, action_count = self.perform_deductions(self.now)
@@ -335,14 +345,15 @@ class TestDeductionService(BaseTestCase):
 
     def test_insufficient_inventory(self):
         """Test behavior when inventory is less than required dose."""
-        # Set inventory below dose amount
-        self.inventory.current_count = 1.5  # Less than 2.0 dose
+        # Import required models
         from app.models import db
 
-        db.session.commit()
+        # Set inventory below dose amount
+        self.inventory.current_count = 1.5  # Less than 2.0 dose
+        self.db.session.commit()
 
         # Mock missed deductions
-        with patch("deduction_service.calculate_missed_deductions") as mock_calc:
+        with patch("app.deduction_service.calculate_missed_deductions") as mock_calc:
             mock_calc.return_value = [
                 self.now - timedelta(hours=2)  # One recent missed dose
             ]
@@ -356,9 +367,5 @@ class TestDeductionService(BaseTestCase):
             self.assertEqual(action_count, 0)
 
             # Inventory should remain unchanged
-            db.session.refresh(self.inventory)
+            self.db.session.refresh(self.inventory)
             self.assertEqual(self.inventory.current_count, 1.5)
-
-
-if __name__ == "__main__":
-    unittest.main()

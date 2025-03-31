@@ -61,7 +61,12 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     logger = configure_logging(app)
 
     # Initialize database
+    from models import db
+
     db.init_app(app)
+
+    # Add this line to store the db instance on the app object
+    app.db = db
 
     # Initialize task scheduler
     scheduler = TaskScheduler(app)
