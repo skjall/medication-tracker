@@ -21,7 +21,7 @@
             </div>
             <div class="card-body">
                 <p>The application currently uses timezone: <strong>{{ settings.timezone_name }}</strong></p>
-                <p>Current time in this timezone: <strong>{{ now.strftime('%H:%M:%S %d.%m.%Y') }}</strong></p>
+                <p>Current time in this timezone: <strong>{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</strong></p>
 
                 <form action="{{ url_for('settings.update_timezone') }}" method="POST">
                     <div class="mb-3">

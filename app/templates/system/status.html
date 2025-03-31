@@ -31,12 +31,12 @@
                     </dd>
 
                     <dt class="col-sm-6">Current Time (UTC):</dt>
-                    <dd class="col-sm-6">{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                    <dd class="col-sm-6">{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</dd>
 
                     <dt class="col-sm-6">Last Deduction Check (UTC):</dt>
                     <dd class="col-sm-6">
                         {% if status.last_deduction_check %}
-                            {{ status.last_deduction_check.strftime('%Y-%m-%d %H:%M:%S') }}
+                            {{ status.last_deduction_check.strftime('%d.%m.%Y %H:%M:%S') }}
                         {% else %}
                             <span class="text-muted">Never run</span>
                         {% endif %}
@@ -118,10 +118,10 @@
             <div class="col-md-6">
                 <dl class="row">
                     <dt class="col-sm-6">Server Time:</dt>
-                    <dd class="col-sm-6">{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                    <dd class="col-sm-6">{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</dd>
 
                     <dt class="col-sm-6">Local Time:</dt>
-                    <dd class="col-sm-6">{{ local_time.strftime('%Y-%m-%d %H:%M:%S')|default(now.strftime('%Y-%m-%d %H:%M:%S')) }}</dd>
+                    <dd class="col-sm-6">{{ local_time.strftime('%d.%m.%Y %H:%M:%S')|default(now.strftime('%d.%m.%Y %H:%M:%S')) }}</dd>
                 </dl>
             </div>
         </div>
