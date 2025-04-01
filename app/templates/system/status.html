@@ -1,0 +1,177 @@
+{% extends "layout.html" %}
+
+{% block title %}System Status - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-server me-2"></i>System Status
+    </h1>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+<!-- Scheduler Status Card -->
+<div class="card mb-4">
+    <div class="card-header {% if status.scheduler_running %}bg-success{% else %}bg-danger{% endif %} text-white">
+        <h5 class="mb-0">Task Scheduler</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-6">Current Status:</dt>
+                    <dd class="col-sm-6">
+                        {% if status.scheduler_running %}
+                            <span class="text-success">Running</span>
+                        {% else %}
+                            <span class="text-danger">Stopped</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-6">Current Time (UTC):</dt>
+                    <dd class="col-sm-6">{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</dd>
+
+                    <dt class="col-sm-6">Last Deduction Check (UTC):</dt>
+                    <dd class="col-sm-6">
+                        {% if status.last_deduction_check %}
+                            {{ status.last_deduction_check.strftime('%d.%m.%Y %H:%M:%S') }}
+                        {% else %}
+                            <span class="text-muted">Never run</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Status Card -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Scheduled Tasks</h5>
+    </div>
+    <div class="card-body">
+        {% if status.tasks %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Task Name</th>
+                            <th>Interval</th>
+                            <th>Last Run</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in status.tasks %}
+                            <tr>
+                                <td>{{ task.name }}</td>
+                                <td>{{ task.interval }} seconds</td>
+                                <td>
+                                    {% if task.last_run %}
+                                        {{ task.last_run|truncate(19, True, '') }} <!-- Truncate to eliminate fractional seconds -->
+                                    {% else %}
+                                        <span class="text-muted">Never</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if task.is_running %}
+                                        <span class="badge bg-info">Running</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Idle</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>No scheduled tasks found.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- System Information Card -->
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">System Information</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-6">Python Version:</dt>
+                    <dd class="col-sm-6">{{ python_version|default('3.x') }}</dd>
+
+                    <dt class="col-sm-6">Flask Version:</dt>
+                    <dd class="col-sm-6">{{ flask_version|default('3.x') }}</dd>
+
+                    <dt class="col-sm-6">Timezone:</dt>
+                    <dd class="col-sm-6">{{ settings.timezone_name }}</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-6">Server Time:</dt>
+                    <dd class="col-sm-6">{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</dd>
+
+                    <dt class="col-sm-6">Local Time:</dt>
+                    <dd class="col-sm-6">{{ local_time.strftime('%d.%m.%Y %H:%M:%S')|default(now.strftime('%d.%m.%Y %H:%M:%S')) }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle me-2"></i>
+            The task scheduler runs background tasks including automatic inventory deduction.
+            If the scheduler is not running, automatic deduction will not occur.
+        </div>
+    </div>
+</div>
+
+<!-- Debug Actions -->
+<div class="card mt-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">Debug Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <a href="{{ url_for('schedules.check_deductions') }}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-sync me-1"></i>Run Deduction Check Now
+                </a>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <a href="{{ url_for('system.restart_scheduler')}}" class="btn btn-outline-danger w-100">
+                    <i class="fas fa-power-off me-1"></i>Restart Scheduler
+                </a>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <button class="btn btn-outline-info w-100" onclick="refreshPage()" type="button">
+                    <i class="fas fa-redo me-1"></i>Refresh Status
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function refreshPage() {
+        window.location.reload();
+    }
+
+    // Auto refresh every 30 seconds
+    setTimeout(function() {
+        refreshPage();
+    }, 30000);
+</script>
+{% endblock %}

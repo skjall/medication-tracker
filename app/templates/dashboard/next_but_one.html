@@ -1,0 +1,274 @@
+<!-- Template for next-but-one visit planning dashboard -->
+{% extends "layout.html" %}
+
+{% block title %}Next-But-One Visit Planning - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-calendar-alt me-2"></i>Next-But-One Visit Planning
+    </h1>
+    <div>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Visit Timeline Card -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Visit Timeline</h5>
+    </div>
+    <div class="card-body">
+        <div class="timeline-container">
+            <div class="timeline">
+                <div class="timeline-line"></div>
+
+                <!-- Today marker -->
+                <div class="timeline-marker" style="left: 0%">
+                    <div class="timeline-date">Today</div>
+                </div>
+
+                <!-- Next visit marker -->
+                {% if upcoming_visit %}
+                    {% set next_visit_percent = (upcoming_visit.days_until / (interval_days * 2)) * 100 %}
+                    <div class="timeline-marker" style="left: {{ next_visit_percent }}%">
+                        <div class="timeline-item">
+                            <div class="timeline-item-content bg-info text-white">
+                                <div class="timeline-item-title">Next Visit</div>
+                                <div class="timeline-item-date">{{ upcoming_visit.visit_date.strftime('%d.%m.%Y') }}</div>
+                                <div class="timeline-item-days">{{ upcoming_visit.days_until }} days</div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Next-but-one visit marker -->
+                {% if next_but_one_visit %}
+                    {% if next_but_one_visit is mapping %}
+                        <!-- Estimated next-but-one visit -->
+                        {% set nbut1_days = (next_but_one_visit.visit_date - now).days %}
+                        {% set nbut1_percent = (nbut1_days / (interval_days * 2)) * 100 %}
+                        <div class="timeline-marker" style="left: {{ nbut1_percent }}%">
+                            <div class="timeline-item">
+                                <div class="timeline-item-content bg-secondary text-white">
+                                    <div class="timeline-item-title">Next-But-One Visit</div>
+                                    <div class="timeline-item-date">{{ next_but_one_visit.visit_date.strftime('%d.%m.%Y') }}</div>
+                                    <div class="timeline-item-days">Estimated</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Scheduled next-but-one visit -->
+                        {% set nbut1_days = (next_but_one_visit.visit_date - now).days %}
+                        {% set nbut1_percent = (nbut1_days / (interval_days * 2)) * 100 %}
+                        <div class="timeline-marker" style="left: {{ nbut1_percent }}%">
+                            <div class="timeline-item">
+                                <div class="timeline-item-content bg-primary text-white">
+                                    <div class="timeline-item-title">Next-But-One Visit</div>
+                                    <div class="timeline-item-date">{{ next_but_one_visit.visit_date.strftime('%d.%m.%Y') }}</div>
+                                    <div class="timeline-item-days">{{ nbut1_days }} days</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <!-- End marker -->
+                <div class="timeline-marker" style="left: 100%">
+                    <div class="timeline-date">+{{ interval_days * 2 }} days</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle me-3 fa-2x"></i>
+                <div>
+                    <p class="mb-0">
+                        This view helps you plan medication needs until your next-but-one hospital visit.
+                        The typical interval between visits is <strong>{{ interval_days }} days</strong>.
+                    </p>
+                    {% if visit_settings.default_order_for_next_but_one %}
+                        <p class="mb-0 mt-2">
+                            Your medication orders are currently configured to plan for the next-but-one visit by default.
+                        </p>
+                    {% else %}
+                        <p class="mb-0 mt-2">
+                            Your medication orders are currently configured to plan only for the next visit by default.
+                            <a href="{{ url_for('settings.hospital_visits') }}" class="text-decoration-underline">Change this setting</a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medication Needs Card -->
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Medication Needs for Next-But-One Visit</h5>
+    </div>
+    <div class="card-body">
+        {% if medications %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Medication</th>
+                            <th>Daily Usage</th>
+                            <th>Current Stock</th>
+                            <th>Needed for Next-But-One</th>
+                            <th>Additional Needed</th>
+                            <th>Packages</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for med in medications %}
+                            {% set days_needed = interval_days * 2 + med.safety_margin_days %}
+                            {% set units_needed = (med.daily_usage * days_needed)|round(0)|int %}
+                            {% set units_current = med.inventory.current_count if med.inventory else 0 %}
+                            {% set units_additional = max(0, units_needed - units_current) %}
+                            {% set packages = med.calculate_packages_needed(units_additional) %}
+
+                            <tr>
+                                <td>
+                                    <strong>{{ med.name }}</strong>
+                                </td>
+                                <td>{{ med.daily_usage|round(1) }} units</td>
+                                <td>{{ units_current }}</td>
+                                <td>{{ units_needed }}</td>
+                                <td class="{% if units_additional > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    {% if units_additional > 0 %}
+                                        <strong>+{{ units_additional }}</strong>
+                                    {% else %}
+                                        <span class="text-success">Sufficient</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if units_additional > 0 %}
+                                        <small>
+                                            {% if packages.N1 > 0 %}
+                                                N1: {{ packages.N1 }}<br>
+                                            {% endif %}
+                                            {% if packages.N2 > 0 %}
+                                                N2: {{ packages.N2 }}<br>
+                                            {% endif %}
+                                            {% if packages.N3 > 0 %}
+                                                N3: {{ packages.N3 }}
+                                            {% endif %}
+                                        </small>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-secondary" title="View Medication">
+                                            <i class="fas fa-pills"></i>
+                                        </a>
+                                        {% if med.inventory %}
+                                            <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary" title="Manage Inventory">
+                                                <i class="fas fa-boxes"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if upcoming_visit %}
+                <div class="mt-4">
+                    <a href="{{ url_for('orders.new', visit_id=upcoming_visit.id) }}" class="btn btn-primary">
+                        <i class="fas fa-clipboard-list me-1"></i>Create Order for Next Visit
+                    </a>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                No medications found in the system or no inventory data available.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* Timeline styles */
+    .timeline-container {
+        padding: 40px 0;
+        position: relative;
+    }
+
+    .timeline {
+        position: relative;
+        height: 200px;
+        margin: 0 40px;
+    }
+
+    .timeline-line {
+        position: absolute;
+        top: 100px;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background-color: #dee2e6;
+        z-index: 1;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        top: 92px;
+        width: 2px;
+        height: 20px;
+        background-color: #6c757d;
+        transform: translateX(-50%);
+        z-index: 2;
+    }
+
+    .timeline-date {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+
+    .timeline-item {
+        position: absolute;
+        top: -80px;
+        transform: translateX(-50%);
+        z-index: 3;
+    }
+
+    .timeline-item-content {
+        padding: 8px 12px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        min-width: 120px;
+        text-align: center;
+    }
+
+    .timeline-item-date {
+        font-size: 0.8rem;
+    }
+
+    .timeline-item-title {
+        font-weight: bold;
+        margin: 5px 0;
+    }
+
+    .timeline-item-days {
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}

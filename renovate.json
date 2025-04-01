@@ -1,0 +1,40 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "automerge": true,
+  "baseBranches": ["development"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true
+    },
+    {
+      "groupName": "Flask packages",
+      "matchPackageNames": ["/^Flask/"]
+    },
+    {
+      "allowedVersions": "<4.0.0",
+      "matchPackageNames": ["/^python/"]
+    }
+  ],
+  "dockerfile": {
+    "fileMatch": ["Dockerfile"],
+    "pinDigests": true
+  },
+  "pip_requirements": {
+    "fileMatch": ["requirements.txt"]
+  },
+  "docker-compose": {
+    "fileMatch": ["docker-compose.yml", "docker-compose.yaml"]
+  },
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "schedule": ["every weekend"],
+  "timezone": "Europe/Berlin",
+  "labels": ["dependencies"]
+}

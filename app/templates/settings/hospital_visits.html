@@ -1,0 +1,132 @@
+<!-- Template for hospital visit settings -->
+{% extends "layout.html" %}
+
+{% block title %}Hospital Visit Settings - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-hospital-user me-2"></i>Hospital Visit Settings
+    </h1>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Visit Planning Settings</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('settings.hospital_visits') }}">
+            <div class="mb-4">
+                <label for="default_visit_interval" class="form-label">Default Hospital Visit Interval</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="default_visit_interval" name="default_visit_interval"
+                           min="1" value="{{ settings.default_visit_interval }}" required>
+                    <span class="input-group-text">days</span>
+                </div>
+                <div class="form-text">
+                    This interval is used to predict future visits and calculate medication needs.
+                    {% if actual_interval != settings.default_visit_interval %}
+                        <br>
+                        <span class="text-info">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Based on your visit history, your actual average interval is {{ actual_interval }} days.
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="auto_schedule_visits" name="auto_schedule_visits"
+                           {% if settings.auto_schedule_visits %}checked{% endif %}>
+                    <label class="form-check-label" for="auto_schedule_visits">
+                        Automatically schedule new visits
+                    </label>
+                </div>
+                <div class="form-text ms-4">
+                    When enabled, the system will automatically create a new visit {{ settings.default_visit_interval }} days
+                    after your last visit.
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="default_order_for_next_but_one" name="default_order_for_next_but_one"
+                           {% if settings.default_order_for_next_but_one %}checked{% endif %}>
+                    <label class="form-check-label" for="default_order_for_next_but_one">
+                        Default to ordering for next-but-one visit
+                    </label>
+                </div>
+                <div class="form-text ms-4">
+                    When enabled, medication orders will by default be calculated to last until the next-but-one visit,
+                    not just the next visit. This is useful if you typically receive medications that should last
+                    until your next-but-one visit.
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <div class="d-flex">
+                    <i class="fas fa-info-circle me-3 fa-2x"></i>
+                    <div>
+                        <p class="mb-0">
+                            The system will use these settings to help plan your medication needs for upcoming hospital visits.
+                            It will calculate how many days of medication you need based on your visit schedule and the
+                            safety margin configured for each medication.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>Save Settings
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Order Planning Card -->
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Order Planning Tips</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Next Visit Order</h6>
+                <p>When planning for the next visit only:</p>
+                <ul>
+                    <li>Orders cover the period until your next scheduled visit</li>
+                    <li>Plus the safety margin configured for each medication</li>
+                    <li>This is suitable when you receive prescriptions each visit</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Next-But-One Visit Order</h6>
+                <p>When planning for the next-but-one visit:</p>
+                <ul>
+                    <li>Orders cover double the period (until your next-but-one visit)</li>
+                    <li>Plus the safety margin configured for each medication</li>
+                    <li>This is suitable when you receive prescriptions that should last for two visit cycles</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="alert alert-warning mt-3">
+            <div class="d-flex">
+                <i class="fas fa-exclamation-triangle me-3 fa-2x"></i>
+                <div>
+                    <p class="mb-0">
+                        You can override the next-but-one visit setting for individual visits when creating orders.
+                        Check the option in the visit details page if you want to change the planning scope for a specific visit.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends "layout.html" %}
+
+{% block title %}Create Order - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-clipboard-list me-2"></i>Create Medication Order
+    </h1>
+    <div>
+        <a href="{{ url_for('orders.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Orders
+        </a>
+        <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-hospital me-1"></i>Visit Details
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Order for Hospital Visit on {{ visit.visit_date.strftime('%d.%m.%Y') }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle me-3 fa-2x"></i>
+                <div>
+                    <p class="mb-0">
+                        This order is for your hospital visit in
+                        <strong>{{ visit.days_until }} days</strong>
+                        on <strong>{{ visit.visit_date.strftime('%d.%m.%Y') }}</strong>.
+                    </p>
+                    <p class="mb-0 mt-2">
+                        {% if consider_next_but_one %}
+                            <span class="badge bg-info">Next-But-One Planning</span>
+                            <span class="ms-2">Medication needs are calculated to last until your <strong>next-but-one</strong> visit</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Standard Planning</span>
+                            <span class="ms-2">Medication needs are calculated to last until your next visit only</span>
+                        {% endif %}
+                    </p>
+                    <p class="mt-2 mb-0">
+                        Select the medications you need and adjust quantities as necessary.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('orders.new') }}">
+            <input type="hidden" name="visit_id" value="{{ visit.id }}">
+
+            <!-- Medication Selection -->
+            <div class="mt-4">
+                <h5>Select Medications</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 3%"></th>
+                                <th>Medication</th>
+                                <th>Current Stock</th>
+                                <th>Needed Until {% if consider_next_but_one %}Next-But-One{% else %}Next{% endif %} Visit</th>
+                                <th>Additional Needed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for med in medications %}
+                                {% set med_need = medication_needs.get(med.id) %}
+                                {% if med_need %}
+                                    <tr>
+                                        <td>
+                                            <div class="form-check">
+                                                <input class="form-check-input medication-checkbox" type="checkbox"
+                                                       id="include_{{ med.id }}" name="include_{{ med.id }}"
+                                                       data-medication-id="{{ med.id }}"
+                                                       {% if med_need.additional_needed > 0 %}checked{% endif %}>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <label for="include_{{ med.id }}" class="form-check-label">
+                                                <strong>{{ med.name }}</strong>
+                                                <div class="small text-muted">{{ med.daily_usage|round(1) }} units/day</div>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            {% if med.inventory %}
+                                                {{ med_need.current_inventory }} units
+                                            {% else %}
+                                                <span class="text-muted">No inventory</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ med_need.needed_units }} units</td>
+                                        <td class="{% if med_need.additional_needed > 0 %}text-danger{% endif %}">
+                                            {% if med_need.additional_needed > 0 %}
+                                                <span class="text-danger">+{{ med_need.additional_needed }} units</span>
+                                            {% else %}
+                                                <span class="text-success">Sufficient</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+
+                                    <!-- Per-medication details (hidden by default) -->
+                                    <tr id="medication_details_{{ med.id }}" class="{% if not med_need.additional_needed > 0 %}d-none{% endif %} bg-light">
+                                        <td colspan="5">
+                                            <div class="row mx-2 my-3">
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label for="quantity_{{ med.id }}" class="form-label">Quantity Needed</label>
+                                                        <input type="number" class="form-control" id="quantity_{{ med.id }}" name="quantity_{{ med.id }}" min="0" value="{{ med_need.additional_needed if med_need.additional_needed > 0 else 0 }}">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-8">
+                                                    <div class="mb-3">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <label class="form-label">Package Quantities</label>
+                                                            <button type="button" class="btn btn-sm btn-outline-primary calculate-packages-btn" data-medication-id="{{ med.id }}">
+                                                                <i class="fas fa-calculator me-1"></i>Calculate
+                                                            </button>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            {% if med.package_size_n1 %}
+                                                                <div class="col-md-4">
+                                                                    <div class="input-group mb-2">
+                                                                        <span class="input-group-text">N1</span>
+                                                                        <input type="number" class="form-control" id="packages_n1_{{ med.id }}" name="packages_n1_{{ med.id }}" min="0" value="{{ med_need.packages.N1 if med_need.additional_needed > 0 else 0 }}">
+                                                                    </div>
+                                                                    <small class="text-muted">{{ med.package_size_n1 }} units each</small>
+                                                                </div>
+                                                            {% endif %}
+
+                                                            {% if med.package_size_n2 %}
+                                                                <div class="col-md-4">
+                                                                    <div class="input-group mb-2">
+                                                                        <span class="input-group-text">N2</span>
+                                                                        <input type="number" class="form-control" id="packages_n2_{{ med.id }}" name="packages_n2_{{ med.id }}" min="0" value="{{ med_need.packages.N2 if med_need.additional_needed > 0 else 0 }}">
+                                                                    </div>
+                                                                    <small class="text-muted">{{ med.package_size_n2 }} units each</small>
+                                                                </div>
+                                                            {% endif %}
+
+                                                            {% if med.package_size_n3 %}
+                                                                <div class="col-md-4">
+                                                                    <div class="input-group mb-2">
+                                                                        <span class="input-group-text">N3</span>
+                                                                        <input type="number" class="form-control" id="packages_n3_{{ med.id }}" name="packages_n3_{{ med.id }}" min="0" value="{{ med_need.packages.N3 if med_need.additional_needed > 0 else 0 }}">
+                                                                    </div>
+                                                                    <small class="text-muted">{{ med.package_size_n3 }} units each</small>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>Create Order
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup checkboxes for medication selection
+        setupOrderItemSelection();
+
+        // Setup calculate buttons
+        setupPackageCalculation();
+    });
+</script>
+{% endblock %}

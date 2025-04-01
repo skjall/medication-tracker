@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Hospital Visit - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-edit me-2"></i>Edit Hospital Visit
+    </h1>
+    <div>
+        <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Visit
+        </a>
+        <a href="{{ url_for('visits.index') }}" class="btn btn-outline-secondary ms-2">
+            <i class="fas fa-list me-1"></i>All Visits
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Edit Visit on {{ visit.visit_date.strftime('%d.%m.%Y') }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('visits.edit', id=visit.id) }}">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="visit_date" class="form-label">Visit Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="visit_date" name="visit_date" value="{{ formatted_date }}" required>
+                        <div class="form-text">
+                            Enter the date of your upcoming hospital visit
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Optional notes about this visit">{{ visit.notes or '' }}</textarea>
+            </div>
+
+            <div class="alert alert-warning" id="warning-message" style="display: none;">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span id="warning-text"></span>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>Update Visit
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const visitDateInput = document.getElementById('visit_date');
+        const warningMessage = document.getElementById('warning-message');
+        const warningText = document.getElementById('warning-text');
+
+        if (visitDateInput && warningMessage && warningText) {
+            visitDateInput.addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Check if date is in the past
+                if (selectedDate < today) {
+                    warningText.textContent = 'You have selected a date in the past. This is allowed but may affect medication calculations.';
+                    warningMessage.style.display = 'block';
+                } else {
+                    warningMessage.style.display = 'none';
+                }
+
+                // Check if there are orders associated with this visit
+                {% if orders %}
+                    warningText.textContent = 'Warning: This visit has associated orders. Changing the date may affect medication calculations.';
+                    warningMessage.style.display = 'block';
+                {% endif %}
+            });
+
+            // Check on page load
+            visitDateInput.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
+{% endblock %}
