@@ -43,6 +43,9 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
     # Default configuration
     app.config.update(
+        SECRET_KEY=os.environ.get(
+            "SECRET_KEY", "dev"
+        ),  # Use a secure key in production
         SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(app.root_path, 'data', 'medication_tracker.db')}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         DEBUG=os.environ.get("FLASK_ENV", "development") == "development",
