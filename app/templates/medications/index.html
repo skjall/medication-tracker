@@ -13,10 +13,12 @@
 </div>
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header bg-primary text-white">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">All Medications</h5>
-            <input type="text" id="medicationSearch" class="form-control form-control-sm w-auto" placeholder="Search medications...">
+            {% if medications %}
+                <input type="text" id="medicationSearch" class="form-control form-control-sm w-auto" placeholder="Search medications...">
+            {% endif %}
         </div>
     </div>
     <div class="card-body">

@@ -57,7 +57,7 @@
                                         <a href="{{ url_for('orders.edit', id=order.id) }}" class="btn btn-outline-secondary" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-outline-info" title="Printable Version" target="_blank">
+                                        <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-outline-primary" title="Printable Version" target="_blank">
                                             <i class="fas fa-print"></i>
                                         </a>
                                         {% if order.status != 'fulfilled' %}
