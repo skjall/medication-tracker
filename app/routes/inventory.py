@@ -71,6 +71,7 @@ def adjust(id: int):
     # Extract form data
     adjustment = int(request.form.get("adjustment", 0))
     notes = request.form.get("notes", "")
+    referer = request.form.get("referer", None)
 
     # Update inventory
     inventory.update_count(adjustment, notes)
@@ -79,7 +80,12 @@ def adjust(id: int):
     flash(
         f"Inventory for {inventory.medication.name} adjusted by {adjustment}", "success"
     )
-    return redirect(url_for("inventory.show", id=inventory.id))
+
+    # Check if referer is provided
+    if referer == "index":
+        return redirect(url_for("inventory.index"))
+    else:
+        return redirect(url_for("inventory.show", id=inventory.id))
 
 
 @inventory_bp.route("/<int:id>/update_packages", methods=["POST"])

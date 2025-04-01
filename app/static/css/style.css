@@ -1,5 +1,89 @@
 /* Custom styles for Medication Tracker */
 
+.border-primary {
+  border-color: #2979a9 !important;
+}
+
+.btn-outline-primary {
+  color: #2979a9 !important;
+  border-color: #2f8aca !important;
+}
+.btn-outline-primary:hover {
+  background-color: #2979a9 !important;
+  color: white !important;
+}
+
+.btn-warning {
+  background-color: #ff8000 !important;
+  border-color: #ff8000 !important;
+  color: white !important;
+}
+.btn-outline-warning {
+  color: #ff8000 !important;
+  border-color: #ff8000 !important;
+}
+.btn-outline-warning:hover {
+  background-color: #ff8000 !important;
+  color: white !important;
+}
+
+.bg-primary {
+  background-color: #2979a9 !important;
+}
+
+.bg-warning {
+  background-color: #ff8000 !important;
+}
+
+.bg-info {
+  background-color: #1196a5 !important;
+}
+
+.text-primary {
+  color: #2979a9 !important;
+}
+
+a.nav-link,
+a.navbar-brand,
+a.navbar-toggler {
+  color: #ffffff !important;
+}
+a.nav-link:hover,
+a.navbar-brand:hover,
+a.navbar-toggler:hover {
+  color: #ffffff !important;
+}
+a.nav-link:focus,
+a.navbar-brand:focus,
+a.navbar-toggler:focus {
+  color: #ffffff !important;
+}
+.nav-link:visited,
+.navbar-brand:visited,
+.navbar-toggler:visited {
+  color: #ffffff !important;
+}
+
+.btn-primary {
+  background-color: #2979a9 !important;
+  border-color: #2f8aca !important;
+}
+
+.form-check-input:checked {
+  background-color: #2979a9 !important;
+  border-color: #2f8aca !important;
+}
+
+.alert-info {
+  background-color: #e3f2fd !important;
+  border-color: #bbdefb !important;
+}
+
+.alert-success {
+  background-color: #e8f5e9 !important;
+  border-color: #c8e6c9 !important;
+}
+
 /* Make footer stick to bottom */
 html,
 body {
@@ -22,7 +106,6 @@ footer {
 
 .card:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
 }
 
 /* Add spacing between icon and text in buttons */

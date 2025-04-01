@@ -22,8 +22,8 @@
 <!-- Visit Details Card -->
 <div class="row">
     <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header {% if make_aware(visit.visit_date) >= make_aware(now) %}bg-primary{% else %}bg-secondary{% endif %} text-white">
+        <div class="card {% if make_aware(visit.visit_date) >= make_aware(now) %}border-warning{% endif %} h-100">
+            <div class="card-header {% if make_aware(visit.visit_date) >= make_aware(now) %}bg-warning{% else %}bg-primary{% endif %} text-white">
                 <h5 class="mb-0">Visit Information</h5>
             </div>
             <div class="card-body">
@@ -74,7 +74,7 @@
     <!-- Associated Orders Card -->
     <div class="col-md-6 mb-4">
         <div class="card h-100">
-            <div class="card-header bg-success text-white">
+            <div class="card-header bg-primary text-white">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Associated Orders</h5>
                     {% if make_aware(visit.visit_date) >= make_aware(now) %}
@@ -122,7 +122,7 @@
 
 <!-- Medication Needs Card -->
 <div class="card mb-4">
-    <div class="card-header bg-info text-white">
+    <div class="card-header bg-primary text-white">
         <h5 class="mb-0">Medication Needs Calculation</h5>
     </div>
     <div class="card-body">

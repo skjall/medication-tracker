@@ -8,20 +8,24 @@
         <i class="fas fa-boxes me-2"></i>Inventory
     </h1>
     <div>
-        <a href="{{ url_for('inventory.low') }}" class="btn btn-warning">
-            <i class="fas fa-exclamation-triangle me-1"></i>Low Stock
-        </a>
-        <a href="{{ url_for('inventory.depletion') }}" class="btn btn-info ms-2">
+        {% if medications|selectattr('inventory', 'defined')|selectattr('inventory.is_low')|list|length > 0 %}
+            <a href="{{ url_for('inventory.low') }}" class="btn btn-warning">
+                <i class="fas fa-exclamation-triangle me-1"></i>Low Stock List
+            </a>
+        {% endif %}
+        <a href="{{ url_for('inventory.depletion') }}" class="btn btn-primary ms-2">
             <i class="fas fa-chart-line me-1"></i>Depletion Forecast
         </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header">
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Inventory Overview</h5>
-            <input type="text" id="inventorySearch" class="form-control form-control-sm w-auto" placeholder="Search medications...">
+            {% if medications %}
+                <input type="text" id="inventorySearch" class="form-control form-control-sm w-auto" placeholder="Search medications...">
+            {% endif %}
         </div>
     </div>
     <div class="card-body">
@@ -94,6 +98,8 @@
                                 <td>
                                     {% if not med.inventory %}
                                         <span class="badge bg-secondary">No Data</span>
+                                    {% elif med.inventory.current_count == 0 %}
+                                        <span class="badge bg-danger">Critical</span>
                                     {% elif med.inventory.is_low %}
                                         <span class="badge bg-danger">Low Stock</span>
                                     {% elif med.days_remaining and med.days_remaining < 30 %}
@@ -207,13 +213,26 @@
                 const medicationId = button.getAttribute('data-medication-id');
                 const inventoryId = button.getAttribute('data-inventory-id');
                 const medicationName = button.getAttribute('data-medication-name');
+                const referer = "index";
 
                 const adjustMedicationName = document.getElementById('adjustMedicationName');
                 const quickAdjustForm = document.getElementById('quickAdjustForm');
+                const refererInput = document.getElementById('refererInput') || document.createElement('input');
 
                 if (adjustMedicationName && quickAdjustForm) {
                     adjustMedicationName.textContent = medicationName;
                     quickAdjustForm.action = `/inventory/${inventoryId}/adjust`;
+
+                    // Set up referer input if it doesn't exist
+                    if (!refererInput.id) {
+                        refererInput.id = 'refererInput';
+                        refererInput.type = 'hidden';
+                        refererInput.name = 'referer';
+                        quickAdjustForm.appendChild(refererInput);
+                    }
+
+                    // Set referer value if provided
+                    refererInput.value = referer || '';
 
                     // Reset the form
                     document.getElementById('quickAdjustment').value = 0;

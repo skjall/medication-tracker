@@ -14,7 +14,7 @@
 
 <!-- Scheduler Status Card -->
 <div class="card mb-4">
-    <div class="card-header {% if status.scheduler_running %}bg-success{% else %}bg-danger{% endif %} text-white">
+    <div class="card-header {% if status.scheduler_running %}bg-primary{% else %}bg-danger{% endif %} text-white">
         <h5 class="mb-0">Task Scheduler</h5>
     </div>
     <div class="card-body">
@@ -98,7 +98,7 @@
 
 <!-- System Information Card -->
 <div class="card">
-    <div class="card-header bg-info text-white">
+    <div class="card-header bg-primary text-white">
         <h5 class="mb-0">System Information</h5>
     </div>
     <div class="card-body">
@@ -136,7 +136,7 @@
 
 <!-- Debug Actions -->
 <div class="card mt-4">
-    <div class="card-header bg-warning text-dark">
+    <div class="card-header bg-primary text-white">
         <h5 class="mb-0">Debug Actions</h5>
     </div>
     <div class="card-body">
@@ -148,13 +148,13 @@
             </div>
 
             <div class="col-md-4 mb-3">
-                <a href="{{ url_for('system.restart_scheduler')}}" class="btn btn-outline-danger w-100">
+                <a href="{{ url_for('system.restart_scheduler')}}" class="btn btn-outline-primary w-100">
                     <i class="fas fa-power-off me-1"></i>Restart Scheduler
                 </a>
             </div>
 
             <div class="col-md-4 mb-3">
-                <button class="btn btn-outline-info w-100" onclick="refreshPage()" type="button">
+                <button class="btn btn-outline-primary w-100" onclick="refreshPage()" type="button">
                     <i class="fas fa-redo me-1"></i>Refresh Status
                 </button>
             </div>
