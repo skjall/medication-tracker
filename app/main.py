@@ -24,6 +24,7 @@ from models import (
     utcnow,
 )
 from task_scheduler import TaskScheduler
+from utils import to_local_timezone
 
 
 def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
@@ -147,6 +148,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
         return render_template(
             "index.html",
+            local_time=to_local_timezone(datetime.now(timezone.utc)),
             medications=medications,
             upcoming_visit=upcoming_visit,
             low_inventory=low_inventory,

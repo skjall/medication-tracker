@@ -7,6 +7,7 @@ import logging
 from datetime import datetime, timezone
 
 # Third-party imports
+import tzlocal
 from flask import (
     Blueprint,
     current_app,
@@ -77,11 +78,14 @@ def status():
         ),
     }
 
+    local_timezone = tzlocal.get_localzone()
+    local_server_time = datetime.now().astimezone(local_timezone)
+
     return render_template(
         "system/status.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         status=status,
-        now=datetime.now(timezone.utc),
+        now=local_server_time,
         python_version=python_version,
         flask_version=flask_version,
         settings=settings,

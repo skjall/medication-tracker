@@ -27,7 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 FROM python:3.13-slim@sha256:8f3aba466a471c0ab903dbd7cb979abd4bda370b04789d25440cc90372b50e04
 
 # Define VERSION as a build argument
-ARG VERSION=1.0.0
+ARG VERSION=0.0.0
 
 LABEL org.opencontainers.image.authors="Jan Großheim (medication-tracker@skjall.de)"
 LABEL org.opencontainers.image.title="Medication Tracker"
