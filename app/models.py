@@ -1,26 +1,34 @@
+"""
+This module defines the database models.
+"""
+
+# Standard library imports
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Optional, List, Tuple
 import enum
 import json
-
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from sqlalchemy import (
-    String,
-    Integer,
-    Float,
-    DateTime,
-    Text,
-    Boolean,
-    ForeignKey,
-    JSON,
-    Enum,
-)
 import logging
+from typing import Dict, List, Optional, Tuple
+
+# Third-party imports
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    JSON,
+    String,
+    Text,
+)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+# Local application imports
 from utils import calculate_days_until, ensure_timezone_utc
 
-
+# Create a logger for this module
 logger = logging.getLogger(__name__)
 
 db = SQLAlchemy()

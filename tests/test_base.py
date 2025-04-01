@@ -9,11 +9,12 @@ This module provides a BaseTestCase class that handles:
 All test classes should inherit from this base class.
 """
 
+# Standard library imports
+import logging
 import os
 import sys
 import unittest
 from datetime import datetime
-import logging
 
 # Add app directory to Python path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
@@ -28,6 +29,22 @@ class BaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up the test class with a shared app context."""
+
+        # Set up root logger
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format="%(asctime)s [%(levelname)8s] %(name)s: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+
+        # Configure all existing loggers
+        for logger_name in logging.root.manager.loggerDict:
+            if logger_name.startswith("sqlalchemy."):
+                logger = logging.getLogger(logger_name)
+                logger.setLevel(logging.WARNING)
+            else:
+                logger = logging.getLogger(logger_name)
+                logger.setLevel(logging.DEBUG)
 
         # Create a test app with scheduler disabled
         from app.main import create_app

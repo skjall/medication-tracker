@@ -2,21 +2,38 @@
 Routes for medication order management.
 """
 
+# Standard library imports
+import logging
 from datetime import datetime, timezone
+
+# Third-party imports
 from flask import (
     Blueprint,
+    flash,
+    make_response,
+    redirect,
     render_template,
     request,
-    redirect,
-    url_for,
-    flash,
     send_file,
-    make_response,
+    url_for,
+)
+
+# Local application imports
+from models import (
+    HospitalVisit,
+    Medication,
+    Order,
+    OrderItem,
+    db,
 )
 from pdf_utils import generate_prescription_pdf
+from utils import to_local_timezone
 
-from models import db, Medication, HospitalVisit, Order, OrderItem
+# Create a logger for this module
+logger = logging.getLogger(__name__)
 
+
+# Create a blueprint for order routes
 order_bp = Blueprint("orders", __name__, url_prefix="/orders")
 
 
@@ -40,6 +57,7 @@ def index():
 
     return render_template(
         "orders/index.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         pending_orders=pending_orders,
         fulfilled_orders=fulfilled_orders,
     )
@@ -140,6 +158,7 @@ def new():
 
     return render_template(
         "orders/new.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         visit=visit,
         medications=medications,
         medication_needs=medication_needs,
@@ -154,6 +173,7 @@ def show(id: int):
 
     return render_template(
         "orders/show.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         order=order,
         visit=order.hospital_visit,
         order_items=order.order_items,
@@ -230,6 +250,7 @@ def edit(id: int):
 
     return render_template(
         "orders/edit.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         order=order,
         visit=order.hospital_visit,
         medications=medications,
@@ -272,6 +293,7 @@ def printable(id: int):
     response = make_response(
         render_template(
             "orders/printable.html",
+            local_time=to_local_timezone(datetime.now(timezone.utc)),
             order=order,
             visit=order.hospital_visit,
             order_items=order.order_items,

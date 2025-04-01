@@ -6,12 +6,15 @@ conversion between UTC and local timezone, timezone validation, and
 getting lists of common timezones.
 """
 
-from typing import List, Dict
-from datetime import datetime
-import pytz
+# Standard library imports
 import logging
+from datetime import datetime
+from typing import Dict, List
 
-# Get module-specific logger
+# Third-party imports
+import pytz
+
+# Create a logger for this module
 logger = logging.getLogger(__name__)
 
 

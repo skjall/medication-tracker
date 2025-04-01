@@ -2,10 +2,33 @@
 Routes for inventory management.
 """
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+# Standard library imports
+import logging
+from datetime import datetime, timezone
 
-from models import db, Medication, Inventory, InventoryLog
+# Third-party imports
+from flask import (
+    Blueprint,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 
+# Local application imports
+from models import (
+    Inventory,
+    InventoryLog,
+    Medication,
+    db,
+)
+from utils import to_local_timezone
+
+# Create a logger for this module
+logger = logging.getLogger(__name__)
+
+# Create a blueprint for inventory routes
 inventory_bp = Blueprint("inventory", __name__, url_prefix="/inventory")
 
 
@@ -13,7 +36,11 @@ inventory_bp = Blueprint("inventory", __name__, url_prefix="/inventory")
 def index():
     """Display inventory overview for all medications."""
     medications = Medication.query.all()
-    return render_template("inventory/index.html", medications=medications)
+    return render_template(
+        "inventory/index.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        medications=medications,
+    )
 
 
 @inventory_bp.route("/<int:id>", methods=["GET"])
@@ -29,6 +56,7 @@ def show(id: int):
 
     return render_template(
         "inventory/show.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         inventory=inventory,
         medication=inventory.medication,
         logs=logs,
@@ -134,6 +162,7 @@ def logs(id: int):
 
     return render_template(
         "inventory/logs.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         inventory=inventory,
         medication=inventory.medication,
         logs=logs,
@@ -150,7 +179,11 @@ def low():
         if med.inventory and med.inventory.is_low:
             low_inventory.append(med)
 
-    return render_template("inventory/low.html", medications=low_inventory)
+    return render_template(
+        "inventory/low.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        medications=low_inventory,
+    )
 
 
 @inventory_bp.route("/depletion")
@@ -166,6 +199,7 @@ def depletion():
 
     return render_template(
         "inventory/depletion.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         medications_with_dates=medications_with_dates,
         medications_without_dates=medications_without_dates,
     )

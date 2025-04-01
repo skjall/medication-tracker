@@ -5,11 +5,13 @@ This module tests the functionality of the deduction service,
 which is responsible for tracking and deducting medication inventory.
 """
 
-from unittest.mock import patch, MagicMock
-from datetime import datetime, timedelta, timezone
-from .test_base import BaseTestCase
-
+# Standard library imports
 import logging
+from datetime import datetime, timedelta, timezone
+from unittest.mock import MagicMock, patch
+
+# Local application imports
+from .test_base import BaseTestCase
 
 logger = logging.getLogger("app.deduction_service")
 logger.setLevel(logging.DEBUG)

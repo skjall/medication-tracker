@@ -5,19 +5,22 @@ This module contains tests for the various model classes in the application,
 focusing on their methods and relationships.
 """
 
-from unittest.mock import patch, MagicMock
+# Standard library imports
+import logging
 from datetime import datetime, timedelta, timezone
+from unittest.mock import MagicMock, patch
+
+# Third-party imports
 import pytz
 
+# Local application imports
 from .test_base import BaseTestCase
 from app.models import (
-    Medication,
     Inventory,
+    Medication,
     MedicationSchedule,
     ScheduleType,
 )
-
-import logging
 
 # Temporarily increase log level
 logger = logging.getLogger("app.models")

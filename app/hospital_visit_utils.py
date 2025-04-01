@@ -6,11 +6,13 @@ This module provides:
 2. Utility functions for visit planning
 """
 
+# Standard library imports
 from __future__ import annotations
 from datetime import datetime, timedelta
 import logging
 
-from models import ensure_timezone_utc, utcnow, Settings
+# Local application imports
+from models import Settings, ensure_timezone_utc, utcnow
 
 # Logger for this module
 logger = logging.getLogger(__name__)

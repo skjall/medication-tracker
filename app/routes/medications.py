@@ -2,10 +2,33 @@
 Routes for medication management.
 """
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+# Standard library imports
+import logging
+from datetime import datetime, timezone
 
-from models import db, Medication, Inventory
+# Third-party imports
+from flask import (
+    Blueprint,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 
+# Local application imports
+from models import (
+    Inventory,
+    Medication,
+    db,
+)
+from utils import to_local_timezone
+
+# Create a logger for this module
+logger = logging.getLogger(__name__)
+
+# Create a blueprint for medication routes
 medication_bp = Blueprint("medications", __name__, url_prefix="/medications")
 
 
@@ -13,7 +36,11 @@ medication_bp = Blueprint("medications", __name__, url_prefix="/medications")
 def index():
     """Display list of all medications."""
     medications = Medication.query.all()
-    return render_template("medications/index.html", medications=medications)
+    return render_template(
+        "medications/index.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        medications=medications,
+    )
 
 
 @medication_bp.route("/new", methods=["GET", "POST"])
@@ -73,7 +100,11 @@ def new():
 def show(id: int):
     """Display details for a specific medication."""
     medication = Medication.query.get_or_404(id)
-    return render_template("medications/show.html", medication=medication)
+    return render_template(
+        "medications/show.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        medication=medication,
+    )
 
 
 @medication_bp.route("/<int:id>/edit", methods=["GET", "POST"])
@@ -124,7 +155,11 @@ def edit(id: int):
         else:
             return redirect(url_for("medications.show", id=medication.id))
 
-    return render_template("medications/edit.html", medication=medication)
+    return render_template(
+        "medications/edit.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        medication=medication,
+    )
 
 
 @medication_bp.route("/<int:id>/delete", methods=["POST"])

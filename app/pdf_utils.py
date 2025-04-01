@@ -1,11 +1,17 @@
-# File: app/pdf_utils.py
+"""
+This module provides functionality to fill a PDF prescription form
+"""
 
-import os
+# Standard library imports
 import logging
-from typing import Dict, List, Optional, Any
+import os
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+# Third-party imports
 from pypdf import PdfReader, PdfWriter
 
+# Create a logger for this module
 logger = logging.getLogger(__name__)
 
 

@@ -5,12 +5,14 @@ This module provides a robust framework for scheduling and managing
 background tasks in the Flask application.
 """
 
-import threading
-import logging
+# Standard library imports
 import atexit
-from typing import Callable, Dict, List, Optional, Any
+import logging
+import threading
 from datetime import datetime, timezone
+from typing import Any, Callable, Dict, List, Optional
 
+# Create a logger for this module
 logger = logging.getLogger(__name__)
 
 

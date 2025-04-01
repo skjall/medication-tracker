@@ -2,14 +2,21 @@
 Routes for hospital visit management.
 """
 
+# Standard library imports
 import logging
-from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, HospitalVisit, Order, Medication, utcnow
+from datetime import datetime, timezone
+
+# Third-party imports
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+
+# Local application imports
+from models import HospitalVisit, Medication, Order, db, utcnow
+from utils import to_local_timezone
 
 # Get a logger specific to this module
 logger = logging.getLogger(__name__)
 
+# Create a blueprint for visit routes
 visit_bp = Blueprint("visits", __name__, url_prefix="/visits")
 
 
@@ -42,7 +49,10 @@ def index():
     logger.debug(f"Past visits: {[visit.id for visit in past_visits]}")
 
     return render_template(
-        "visits/index.html", upcoming_visits=upcoming_visits, past_visits=past_visits
+        "visits/index.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        upcoming_visits=upcoming_visits,
+        past_visits=past_visits,
     )
 
 
@@ -94,7 +104,10 @@ def new():
             logger.error(f"Date parsing error: {e} for input '{visit_date_str}'")
             flash("Invalid date format. Please use DD.MM.YYYY format.", "error")
 
-    return render_template("visits/new.html")
+    return render_template(
+        "visits/new.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+    )
 
 
 @visit_bp.route("/<int:id>", methods=["GET"])
@@ -132,6 +145,7 @@ def show(id: int):
 
     return render_template(
         "visits/show.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         visit=visit,
         orders=orders,
         medication_needs=medication_needs,
@@ -189,7 +203,10 @@ def edit(id: int):
     logger.debug(f"Formatted date for form: {formatted_date}")
 
     return render_template(
-        "visits/edit.html", visit=visit, formatted_date=formatted_date
+        "visits/edit.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        visit=visit,
+        formatted_date=formatted_date,
     )
 
 

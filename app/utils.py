@@ -2,13 +2,19 @@
 Utility functions for the Medication Tracker application.
 """
 
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple, TypeVar
-import os
+# Standard library imports
 import csv
+import logging
+import os
+from datetime import datetime, timezone
 from io import StringIO
+from typing import Dict, List, Optional, Tuple, TypeVar
 
-from flask import current_app, Response
+# Third-party imports
+from flask import Response, current_app
+
+# Create a logger for this module
+logger = logging.getLogger(__name__)
 
 # Generic type for min_value function
 T = TypeVar("T")

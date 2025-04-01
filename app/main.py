@@ -2,24 +2,27 @@
 Main application module for the Medication Tracker application.
 """
 
-import os
+# Standard library imports
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Optional, Dict, Any
+import os
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, Optional
 
+# Third-party imports
 from flask import Flask, render_template, request
 
+# Local application imports
+from logging_config import configure_logging
 from models import (
-    db,
-    Medication,
+    HospitalVisit,
     Inventory,
     InventoryLog,
-    HospitalVisit,
+    Medication,
     Order,
+    db,
     ensure_timezone_utc,
     utcnow,
 )
-from logging_config import configure_logging
 from task_scheduler import TaskScheduler
 
 

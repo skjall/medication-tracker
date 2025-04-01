@@ -57,6 +57,7 @@ docker run -d \
   -v medication_tracker_data:/app/data \
   -v medication_tracker_logs:/app/logs \
   -e SECRET_KEY=your_secure_secret_key \
+  --build-arg VERSION=$(cat version.txt) \
   skjall/medication-tracker:latest
 ```
 

@@ -7,21 +7,22 @@ This module provides improved medication deduction tracking, including:
 3. Retroactive application of deductions that should have happened
 """
 
-from datetime import datetime, timedelta
-from typing import List, Tuple
+# Standard library imports
 import logging
 from collections import defaultdict
-from utils import get_application_timezone
+from datetime import datetime, timedelta
+from typing import List, Tuple
 
+# Local application imports
 from models import (
-    db,
     Medication,
     MedicationSchedule,
     ScheduleType,
+    db,
     ensure_timezone_utc,
     utcnow,
 )
-from utils import to_local_timezone, from_local_timezone
+from utils import from_local_timezone, get_application_timezone, to_local_timezone
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -40,14 +41,24 @@ def calculate_missed_deductions(
     Returns:
         List of datetime objects representing missed deductions
     """
+    logger.debug(
+        f"Calculating missed deductions for schedule {schedule.id} at {current_time.isoformat()}"
+    )
+
     # Ensure times are timezone-aware
     current_time = ensure_timezone_utc(current_time)
+
+    logger.debug(f"Current time after timezone utc check: {current_time.isoformat()}")
 
     # Convert to local time for schedule checking
     local_current_time = to_local_timezone(current_time)
 
     # Get the last deduction time or use a fallback
     if schedule.last_deduction:
+        logger.debug(
+            f"Last deduction time found: {schedule.last_deduction.isoformat()}"
+        )
+
         last_deduction = ensure_timezone_utc(schedule.last_deduction)
         local_last_deduction = to_local_timezone(last_deduction)
     else:
@@ -59,8 +70,8 @@ def calculate_missed_deductions(
             last_deduction = current_time - timedelta(days=1)
         local_last_deduction = to_local_timezone(last_deduction)
 
-    logger.debug(
-        f"Checking for missed deductions since {local_last_deduction.isoformat()}"
+    logger.info(
+        f"Current time after timezone conversion to local: {local_current_time.isoformat()}"
     )
 
     # Get scheduled times in HH:MM format
@@ -97,7 +108,7 @@ def calculate_missed_deductions(
         )
         return []
 
-    logger.debug(f"Missed deductions calculated: {len(missed_deductions)} found")
+    logger.info(f"Missed deductions calculated: {len(missed_deductions)} found")
 
     # Convert missed deductions back to UTC for database storage
     utc_missed_deductions = [from_local_timezone(dt) for dt in missed_deductions]
@@ -137,11 +148,15 @@ def _calculate_daily_missed_deductions(
     # Ensure both times are timezone-aware in the application's timezone
     app_timezone = get_application_timezone()
 
+    logger.debug(f"App timezone: {app_timezone}")
+
     # Make sure local_last_deduction and local_current_time are timezone-aware
     if local_last_deduction.tzinfo is None:
         local_last_deduction = local_last_deduction.replace(tzinfo=app_timezone)
     if local_current_time.tzinfo is None:
         local_current_time = local_current_time.replace(tzinfo=app_timezone)
+
+    logger.debug(f"Local last deduction: {local_last_deduction.isoformat()}")
 
     missed_deductions = []
 
@@ -172,9 +187,17 @@ def _calculate_daily_missed_deductions(
     # Iterate through each day from last deduction to current time
     current_date = start_date
     while current_date <= end_date:
+        logger.debug(
+            f"Processing date: {current_date.isoformat()} until {end_date.isoformat()}"
+        )
         for time_str in scheduled_times:
+            logger.debug(f"Checking time slot: {time_str}")
+
             # Skip if this time slot was already processed for this day
             if time_str in processed_slots[current_date]:
+                logger.debug(
+                    f"Time slot {time_str} already processed for {current_date}"
+                )
                 continue
 
             # Parse the time and create a timezone-aware datetime
@@ -197,6 +220,14 @@ def _calculate_daily_missed_deductions(
                 and scheduled_datetime <= local_current_time
             ):
                 missed_deductions.append(scheduled_datetime)
+            elif scheduled_datetime <= local_last_deduction:
+                logger.debug(
+                    f"Skipping time {scheduled_datetime.isoformat()} as it's before last deduction"
+                )
+            else:
+                logger.debug(
+                    f"Skipping time {scheduled_datetime.isoformat()} as it's after current time"
+                )
 
         # Move to next day
         current_date += timedelta(days=1)

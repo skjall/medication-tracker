@@ -2,20 +2,35 @@
 Routes for medication scheduling.
 """
 
+# Standard library imports
 import json
+import logging
+from datetime import datetime, timezone
 
+# Third-party imports
 from flask import (
     Blueprint,
+    flash,
+    redirect,
     render_template,
     request,
-    redirect,
     url_for,
-    flash,
 )
 
-from models import db, Medication
-from models import MedicationSchedule, ScheduleType
+# Local application imports
+from models import (
+    Medication,
+    MedicationSchedule,
+    ScheduleType,
+    db,
+)
+from utils import to_local_timezone
 
+
+# Create a logger for this module
+logger = logging.getLogger(__name__)
+
+# Create a blueprint for schedule routes
 schedule_bp = Blueprint("schedules", __name__, url_prefix="/schedules")
 
 
@@ -26,7 +41,10 @@ def index(medication_id: int):
     """
     medication = Medication.query.get_or_404(medication_id)
     return render_template(
-        "schedules/index.html", medication=medication, schedules=medication.schedules
+        "schedules/index.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        medication=medication,
+        schedules=medication.schedules,
     )
 
 
@@ -47,7 +65,11 @@ def new(medication_id: int):
         times_of_day = request.form.getlist("times_of_day[]")
         if not times_of_day:
             flash("Please add at least one time for the medication", "error")
-            return render_template("schedules/new.html", medication=medication)
+            return render_template(
+                "schedules/new.html",
+                local_time=to_local_timezone(datetime.now(timezone.utc)),
+                medication=medication,
+            )
 
         # Process schedule-specific data
         interval_days = 1
@@ -78,7 +100,11 @@ def new(medication_id: int):
         flash("Schedule added successfully", "success")
         return redirect(url_for("schedules.index", medication_id=medication.id))
 
-    return render_template("schedules/new.html", medication=medication)
+    return render_template(
+        "schedules/new.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        medication=medication,
+    )
 
 
 @schedule_bp.route("/<int:id>/edit", methods=["GET", "POST"])
@@ -100,7 +126,10 @@ def edit(id: int):
         if not times_of_day:
             flash("Please add at least one time for the medication", "error")
             return render_template(
-                "schedules/edit.html", medication=medication, schedule=schedule
+                "schedules/edit.html",
+                local_time=to_local_timezone(datetime.now(timezone.utc)),
+                medication=medication,
+                schedule=schedule,
             )
 
         schedule.times_of_day = json.dumps(times_of_day)
@@ -123,7 +152,10 @@ def edit(id: int):
         return redirect(url_for("schedules.index", medication_id=medication.id))
 
     return render_template(
-        "schedules/edit.html", medication=medication, schedule=schedule
+        "schedules/edit.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        medication=medication,
+        schedule=schedule,
     )
 
 

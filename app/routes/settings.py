@@ -8,128 +8,53 @@ This file combines the functionality from:
 into a single unified settings module to avoid route conflicts.
 """
 
+# Standard library imports
+import logging
 import os
 import tempfile
-import pytz
-import logging
 from datetime import datetime, timezone
-from typing import Dict, List
+from utils import to_local_timezone
 
+# Third-party imports
+import pytz
 from flask import (
     Blueprint,
+    flash,
+    redirect,
     render_template,
     request,
-    redirect,
-    url_for,
-    flash,
     send_file,
+    url_for,
 )
 from werkzeug.utils import secure_filename
 
+# Local application imports
+from data_utils import (
+    clear_old_inventory_logs,
+    create_database_backup,
+    export_inventory_to_csv,
+    export_medications_to_csv,
+    export_orders_to_csv,
+    export_schedules_to_csv,
+    export_visits_to_csv,
+    import_medications_from_csv,
+    optimize_database,
+)
 from models import (
-    db,
-    Medication,
     Inventory,
     InventoryLog,
     HospitalVisit,
-    Settings,
+    Medication,
     MedicationSchedule,
     Order,
     OrderItem,
+    Settings,
+    db,
 )
-from data_utils import (
-    export_medications_to_csv,
-    export_inventory_to_csv,
-    export_orders_to_csv,
-    export_visits_to_csv,
-    export_schedules_to_csv,
-    create_database_backup,
-    import_medications_from_csv,
-    optimize_database,
-    clear_old_inventory_logs,
-)
+from timezone_helper import get_timezone_display_info, validate_timezone
 
 # Logger for this module
 logger = logging.getLogger(__name__)
-
-# Import timezone helper functions
-try:
-    # Try direct import first
-    from timezone_helper import get_timezone_display_info, validate_timezone
-
-    logger.info("Successfully imported timezone_helper")
-except ImportError:
-    # Fall back to relative import
-    try:
-        from app.timezone_helper import get_timezone_display_info, validate_timezone
-
-        logger.info("Successfully imported timezone_helper from app package")
-    except ImportError as ie:
-        # Log the error
-        logger.error(f"Failed to import timezone_helper: {ie}")
-
-        # Define fallback functions
-        def get_timezone_display_info() -> List[Dict[str, str]]:
-            """
-            Get timezone display information including region and current offset.
-            Fallback implementation if timezone_helper can't be imported.
-            """
-            logger.warning("Using fallback implementation of get_timezone_display_info")
-            now = datetime.now(timezone.utc)
-            timezone_info = []
-
-            try:
-                for tz_name in sorted(pytz.common_timezones):
-                    try:
-                        tz = pytz.timezone(tz_name)
-                        offset_seconds = tz.utcoffset(now).total_seconds()
-                        offset_hours = int(offset_seconds / 3600)
-                        offset_minutes = int((offset_seconds % 3600) / 60)
-
-                        # Format: "UTC+01:00" or "UTC-08:00"
-                        offset_str = f"UTC{'+' if offset_hours >= 0 else ''}{offset_hours:02d}:{abs(offset_minutes):02d}"
-
-                        # Split timezone name into region/city
-                        parts = tz_name.split("/")
-                        region = parts[0] if len(parts) > 0 else ""
-                        city = parts[1] if len(parts) > 1 else tz_name
-
-                        display_name = f"{city.replace('_', ' ')} ({offset_str})"
-
-                        timezone_info.append(
-                            {
-                                "name": tz_name,
-                                "region": region,
-                                "city": city,
-                                "offset": offset_str,
-                                "display_name": display_name,
-                            }
-                        )
-                    except Exception as e:
-                        logger.error(f"Error processing timezone {tz_name}: {e}")
-                        continue
-
-                # Log the result
-                logger.info(
-                    f"Fallback implementation found {len(timezone_info)} timezones"
-                )
-
-                # Sort by region then offset
-                return sorted(timezone_info, key=lambda x: (x["region"], x["offset"]))
-            except Exception as e:
-                logger.error(f"Error in get_timezone_display_info: {e}")
-                return []
-
-        def validate_timezone(timezone_name: str) -> bool:
-            """
-            Validate if a timezone name is valid.
-            Fallback implementation if timezone_helper can't be imported.
-            """
-            try:
-                pytz.timezone(timezone_name)
-                return True
-            except Exception:
-                return False
 
 
 # Create a single settings blueprint to combine both previous routes
@@ -168,6 +93,7 @@ def hospital_visits():
 
     return render_template(
         "settings/hospital_visits.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         settings=settings,
         actual_interval=actual_interval,
     )
@@ -237,6 +163,7 @@ def advanced():
 
     return render_template(
         "settings/advanced.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         settings=settings,
         med_count=med_count,
         schedule_count=schedule_count,
@@ -457,6 +384,7 @@ def data_management():
 
     return render_template(
         "settings/data_management.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         med_count=med_count,
         inventory_count=inventory_count,
         visit_count=visit_count,

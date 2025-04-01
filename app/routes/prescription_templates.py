@@ -2,28 +2,36 @@
 Routes for prescription template management.
 """
 
-import os
+# Standard library imports
 import json
 import logging
-from werkzeug.utils import secure_filename
+import os
+from datetime import datetime, timezone
 
+# Third-party imports
 from flask import (
     Blueprint,
+    current_app,
+    flash,
+    redirect,
     render_template,
     request,
-    redirect,
-    url_for,
-    flash,
-    current_app,
     send_file,
+    url_for,
 )
+from werkzeug.utils import secure_filename
 
-from models import db, PrescriptionTemplate
+# Local application imports
+from models import (
+    PrescriptionTemplate,
+    db,
+)
+from utils import to_local_timezone
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
 
-# Create the blueprint
+# Create the blueprint for prescription routes
 prescription_bp = Blueprint("prescriptions", __name__, url_prefix="/prescriptions")
 
 
@@ -34,7 +42,10 @@ def index():
     active_template = PrescriptionTemplate.get_active_template()
 
     return render_template(
-        "prescriptions/index.html", templates=templates, active_template=active_template
+        "prescriptions/index.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        templates=templates,
+        active_template=active_template,
     )
 
 
@@ -124,7 +135,11 @@ def new():
         {"value": "packages_n3", "label": "Packages N3"},
     ]
 
-    return render_template("prescriptions/new.html", field_mappings=field_mappings)
+    return render_template(
+        "prescriptions/new.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        field_mappings=field_mappings,
+    )
 
 
 @prescription_bp.route("/<int:id>", methods=["GET"])
@@ -152,6 +167,7 @@ def show(id: int):
 
     return render_template(
         "prescriptions/show.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         template=template,
         column_mappings=column_mappings,
         field_labels=field_labels,
@@ -306,5 +322,8 @@ def edit(id: int):
     ]
 
     return render_template(
-        "prescriptions/edit.html", template=template, field_mappings=field_mappings
+        "prescriptions/edit.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        template=template,
+        field_mappings=field_mappings,
     )

@@ -5,9 +5,11 @@ This module tests the relationships between different model classes,
 ensuring cascades, back references, and constraints work correctly.
 """
 
-from .test_base import BaseTestCase
-
+# Standard library imports
 import logging
+
+# Local application imports
+from .test_base import BaseTestCase
 
 # Temporarily increase log level
 logger = logging.getLogger("app.model_relationships")

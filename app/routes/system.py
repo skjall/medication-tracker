@@ -2,24 +2,28 @@
 Routes for system status and maintenance functions.
 """
 
+# Standard library imports
 import logging
-
 from datetime import datetime, timezone
-from utils import to_local_timezone, format_datetime, format_time, format_date
 
+# Third-party imports
 from flask import (
     Blueprint,
-    render_template,
     current_app,
-    redirect,
-    url_for,
     flash,
+    redirect,
+    render_template,
+    url_for,
 )
 
-system_bp = Blueprint("system", __name__, url_prefix="/system")
+# Local application imports
+from utils import format_date, format_datetime, format_time, to_local_timezone
 
 # Logger for this module
 logger = logging.getLogger(__name__)
+
+# Create a blueprint for system routes
+system_bp = Blueprint("system", __name__, url_prefix="/system")
 
 
 @system_bp.route("/status")
@@ -75,9 +79,9 @@ def status():
 
     return render_template(
         "system/status.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
         status=status,
         now=datetime.now(timezone.utc),
-        local_time=to_local_timezone(datetime.now(timezone.utc)),
         python_version=python_version,
         flask_version=flask_version,
         settings=settings,

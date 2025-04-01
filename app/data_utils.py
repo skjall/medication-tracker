@@ -3,29 +3,36 @@ Data export/import utilities for the Medication Tracker application.
 These functions handle CSV export/import and database operations.
 """
 
-import os
+# Standard library imports
 import csv
 import json
-import shutil
 import logging
-from io import StringIO
+import os
+import shutil
 from datetime import datetime, timezone
-from typing import Tuple, List
+from io import StringIO
+from typing import List, Tuple
 
+# Third-party imports
 from flask import Response, current_app
 from sqlalchemy import func
 
+# Local application imports
 from models import (
-    db,
-    Inventory,
-    Order,
-    OrderItem,
     HospitalVisit,
+    Inventory,
     Medication,
     MedicationSchedule,
+    Order,
+    OrderItem,
     ScheduleType,
+    db,
 )
-from utils import format_date, format_datetime, ensure_timezone_utc, from_local_timezone
+from utils import ensure_timezone_utc, format_date, format_datetime, from_local_timezone
+
+
+# Get a logger specific to this module
+logger = logging.getLogger(__name__)
 
 
 def export_medications_to_csv() -> Response:
@@ -504,7 +511,6 @@ def import_inventory_from_csv(
     """
     success_count = 0
     errors = []
-    logger = logging.getLogger(__name__)
 
     try:
         with open(file_path, "r", newline="") as csvfile:
