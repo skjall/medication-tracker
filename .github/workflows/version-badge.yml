@@ -1,0 +1,32 @@
+name: Update Version Badge
+
+on:
+  push:
+    paths:
+      - 'version.txt'
+  workflow_dispatch:
+
+jobs:
+  update-version-badge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from file
+        id: get_version
+        run: |
+          VERSION=$(cat version.txt | tr -d '[:space:]')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Create version badge
+        uses: schneegans/dynamic-badges-action@v1.6.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 34ff43625fc27ccb293931d4c0f763cc
+          filename: medication-tracker-version.json
+          label: version
+          message: ${{ steps.get_version.outputs.version }}
+          color: blue
