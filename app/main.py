@@ -5,8 +5,12 @@ Main application module for the Medication Tracker application.
 # Standard library imports
 import logging
 import os
+import sys
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
+
+# Add the app directory to the Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Third-party imports
 from flask import Flask, render_template, request
@@ -70,7 +74,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
     db.init_app(app)
 
-    # Add this line to store the db instance on the app object
+    # Set up the database URI for SQLAlchemy
     app.db = db
 
     # Initialize task scheduler

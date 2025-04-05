@@ -53,6 +53,11 @@ A lightweight Python-based web application that helps track medications, invento
 
 ### Hospital Visits
 ![Hospital Visits](resources/img/screenshots/visits.png)
+
+# Running the application
+
+## Using Docker
+
 ```bash
 docker run -d \
   --name medication-tracker \
@@ -60,7 +65,6 @@ docker run -d \
   -v medication_tracker_data:/app/data \
   -v medication_tracker_logs:/app/logs \
   -e SECRET_KEY=your_secure_secret_key \
-  --build-arg VERSION=$(cat version.txt) \
   skjall/medication-tracker:latest
 ```
 
@@ -183,8 +187,8 @@ To set up a development environment:
 1. Clone the repository
 2. Create a virtual environment:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 3. Install dependencies:
    ```bash
