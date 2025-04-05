@@ -21,6 +21,21 @@ jobs:
           VERSION=$(cat version.txt | tr -d '[:space:]')
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
+      - name: Determine badge properties
+        id: badge_props
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            # Main branch - just use the version
+            echo "message=${VERSION}" >> $GITHUB_OUTPUT
+            echo "color=blue" >> $GITHUB_OUTPUT
+          else
+            # Any other branch - add -dev suffix and use red color
+            echo "message=${VERSION}-dev" >> $GITHUB_OUTPUT
+            echo "color=red" >> $GITHUB_OUTPUT
+          fi
+        env:
+          VERSION: ${{ steps.get_version.outputs.version }}
+
       - name: Create version badge
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
@@ -28,5 +43,5 @@ jobs:
           gistID: 34ff43625fc27ccb293931d4c0f763cc
           filename: medication-tracker-version.json
           label: version
-          message: ${{ steps.get_version.outputs.version }}
-          color: blue
+          message: ${{ steps.badge_props.outputs.message }}
+          color: ${{ steps.badge_props.outputs.color }}
