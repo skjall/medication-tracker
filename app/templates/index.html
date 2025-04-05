@@ -149,10 +149,12 @@
                                         <td>
                                             {% if not med.inventory %}
                                                 <span class="badge bg-secondary">No Data</span>
+                                            {% elif med.inventory.current_count == 0 %}
+                                                <span class="badge bg-danger">critical</span>
                                             {% elif med.inventory.is_low %}
                                                 <span class="badge bg-danger">Low Stock</span>
                                             {% elif med.days_remaining and med.days_remaining < 30 %}
-                                                <span class="badge bg-warning text-dark">Running Low</span>
+                                                <span class="badge bg-warning text-white">Running Low</span>
                                             {% else %}
                                                 <span class="badge bg-success">OK</span>
                                             {% endif %}
