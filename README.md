@@ -6,7 +6,6 @@
 A lightweight Python-based web application that helps track medications, inventory levels, and prepare for hospital visits, using SQLite for data storage.
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/skjall/medication-tracker)](https://hub.docker.com/r/skjall/medication-tracker)
-[![Version](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Skjall/34ff43625fc27ccb293931d4c0f763cc/raw/medication-tracker-version.json)](https://github.com/skjall/medication-tracker/blob/main/version.txt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
