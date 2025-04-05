@@ -360,15 +360,17 @@ class TestMedication(BaseTestCase):
 
     def test_calculate_packages_needed(self):
         """Test that package calculation works correctly."""
-        # Test with 175 units needed - should prefer larger packages
+        # Test with 175 units needed
         packages = self.medication.calculate_packages_needed(175)
 
-        # Expected optimal solution is 1*N3(500) + 1*N2(100) + 0*N1(30)
+        # Expected solution is 0*N3(500) + 0*N2(100) + 6*N1(30)
         self.assertEqual(packages["N3"], 0)  # No N3 packages (too large)
-        self.assertEqual(packages["N2"], 1)  # 1 N2 package (100 units)
-        self.assertEqual(packages["N1"], 3)  # 3 N1 packages (3*30 = 90 units)
-
-        # Total: 100 + 90 = 190 units (>= 175 needed)
+        self.assertEqual(
+            packages["N2"], 0
+        )  # No N2 package (2*100 units = 200 units; delta = +25 units)
+        self.assertEqual(
+            packages["N1"], 6
+        )  # 3 N1 packages (6*30 = 180 units; delta = +5 units => Least overshoot)
 
     def test_calculate_needed_until_visit(self):
         """Test calculation of medication needs until a visit."""

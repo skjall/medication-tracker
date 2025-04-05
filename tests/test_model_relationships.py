@@ -133,11 +133,11 @@ class TestModelRelationships(BaseTestCase):
         self.assertEqual(self.db.session.query(MedicationSchedule).count(), 0)
 
     def test_hospital_visit_order_relationship(self):
-        """Test the relationship between HospitalVisit and Order."""
-        from app.models import HospitalVisit, Order
+        """Test the relationship between PhysicianVisit and Order."""
+        from app.models import PhysicianVisit, Order
 
-        # Create a hospital visit
-        visit = HospitalVisit(
+        # Create a physician visit
+        visit = PhysicianVisit(
             visit_date=self.db.func.current_timestamp(), notes="Test visit"
         )
         self.db.session.add(visit)
@@ -165,10 +165,10 @@ class TestModelRelationships(BaseTestCase):
 
     def test_order_orderitem_relationship(self):
         """Test the relationship between Order and OrderItem."""
-        from app.models import Order, OrderItem, Medication, HospitalVisit
+        from app.models import Order, OrderItem, Medication, PhysicianVisit
 
         # Create a visit and order
-        visit = HospitalVisit(
+        visit = PhysicianVisit(
             visit_date=self.db.func.current_timestamp(), notes="Test visit"
         )
         self.db.session.add(visit)
@@ -241,7 +241,7 @@ class TestModelRelationships(BaseTestCase):
             Order,
             OrderItem,
             ScheduleType,
-            HospitalVisit,
+            PhysicianVisit,
         )
 
         # Create a medication with inventory, logs, schedules, and order items
@@ -270,7 +270,7 @@ class TestModelRelationships(BaseTestCase):
         self.db.session.add(schedule)
 
         # Create a visit and order
-        visit = HospitalVisit(
+        visit = PhysicianVisit(
             visit_date=self.db.func.current_timestamp(), notes="Test visit"
         )
         self.db.session.add(visit)

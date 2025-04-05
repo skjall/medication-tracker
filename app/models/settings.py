@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class Settings(db.Model):
     """
-    System-wide settings for hospital visits and planning.
+    System-wide settings for physician visits and planning.
     Singleton model (only one row expected).
     """
 
@@ -28,7 +28,7 @@ class Settings(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    # Default interval between hospital visits in days (e.g., 90 days)
+    # Default interval between physician visits in days (e.g., 90 days)
     default_visit_interval: Mapped[int] = mapped_column(Integer, default=90)
 
     # Whether to automatically create a visit at the default interval
@@ -57,7 +57,7 @@ class Settings(db.Model):
     @classmethod
     def get_settings(cls) -> "Settings":
         """
-        Get or create the hospital visit settings.
+        Get or create the physician visit settings.
 
         Returns:
             The settings object (singleton)

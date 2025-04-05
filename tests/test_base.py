@@ -96,7 +96,7 @@ class BaseTestCase(unittest.TestCase):
             Medication,
             Inventory,
             Settings,
-            HospitalVisit,
+            PhysicianVisit,
             Order,
             OrderItem,
         )
@@ -107,7 +107,7 @@ class BaseTestCase(unittest.TestCase):
             self.db.session.execute(self.db.delete(Inventory))
             self.db.session.execute(self.db.delete(Medication))
             self.db.session.execute(self.db.delete(Settings))
-            self.db.session.execute(self.db.delete(HospitalVisit))
+            self.db.session.execute(self.db.delete(PhysicianVisit))
             self.db.session.execute(self.db.delete(Order))
             self.db.session.execute(self.db.delete(OrderItem))
             self.db.session.commit()

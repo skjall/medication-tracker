@@ -17,7 +17,7 @@
         <div class="card h-100">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-calendar-alt me-2"></i>Next Hospital Visit
+                    <i class="fas fa-calendar-alt me-2"></i>Next Physician Visit
                 </h5>
             </div>
             <div class="card-body">
@@ -40,7 +40,7 @@
                         </a>
                     </div>
                 {% else %}
-                    <p class="card-text">No upcoming hospital visits scheduled.</p>
+                    <p class="card-text">No upcoming physician visits scheduled.</p>
                     <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
                         <i class="fas fa-calendar-plus me-1"></i>Schedule a Visit
                     </a>
@@ -218,7 +218,7 @@
                     <div class="col-md-3 mb-3">
                         <a href="{{ url_for('visits.new') }}" class="btn btn-outline-primary w-100 h-100 py-3">
                             <i class="fas fa-calendar-plus fa-2x mb-2"></i>
-                            <div>Schedule Hospital Visit</div>
+                            <div>Schedule Physician Visit</div>
                         </a>
                     </div>
                     <div class="col-md-3 mb-3">

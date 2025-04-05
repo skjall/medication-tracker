@@ -194,20 +194,28 @@ def calculate_needs(id: int):
     # Get form data
     days = int(request.form.get("days", 0))
     units = int(request.form.get("units", 0) or 0)
-
-    if days and not units:
-        # Calculate needs based on days
-        needed_units = int(medication.daily_usage * days)
-    else:
-        # Use directly provided units
-        needed_units = units
+    calculation = str(request.form.get("calculation", "total"))
 
     current_inventory = (
         medication.inventory.current_count if medication.inventory else 0
     )
 
-    # Calculate additional units needed
-    additional_needed = max(0, needed_units - current_inventory)
+    if days and not units:
+        # Calculate needs based on days
+        requested_units = int(medication.daily_usage * days)
+    else:
+        # Use directly provided units
+        requested_units = units
+
+    # Calculate additional units needed based on the calculation type
+    if calculation == "additional":
+        # Calculate additional units needed
+        needed_units = requested_units + current_inventory
+        additional_needed = max(0, requested_units)
+    else:
+        # Default to total calculation
+        needed_units = requested_units
+        additional_needed = max(0, needed_units - current_inventory)
 
     # Calculate packages
     packages = medication.calculate_packages_needed(additional_needed)

@@ -1,5 +1,5 @@
 """
-Routes for hospital visit management.
+Routes for physician visit management.
 """
 
 # Standard library imports
@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 # Local application imports
-from models import HospitalVisit, Medication, Order, db, utcnow
+from models import PhysicianVisit, Medication, Order, db, utcnow
 from utils import to_local_timezone
 
 # Get a logger specific to this module
@@ -22,15 +22,15 @@ visit_bp = Blueprint("visits", __name__, url_prefix="/visits")
 
 @visit_bp.route("/")
 def index():
-    """Display list of all hospital visits."""
+    """Display list of all physician visits."""
     # Log at various levels to demonstrate the system
     logger.debug("Accessing visits index page")
     logger.info(f"Current time (UTC): {utcnow()}")
 
     # Get upcoming visits - now using utcnow() from models
     upcoming_visits = (
-        HospitalVisit.query.filter(HospitalVisit.visit_date >= utcnow())
-        .order_by(HospitalVisit.visit_date)
+        PhysicianVisit.query.filter(PhysicianVisit.visit_date >= utcnow())
+        .order_by(PhysicianVisit.visit_date)
         .all()
     )
 
@@ -39,8 +39,8 @@ def index():
 
     # Get past visits
     past_visits = (
-        HospitalVisit.query.filter(HospitalVisit.visit_date < utcnow())
-        .order_by(HospitalVisit.visit_date.desc())
+        PhysicianVisit.query.filter(PhysicianVisit.visit_date < utcnow())
+        .order_by(PhysicianVisit.visit_date.desc())
         .limit(10)
         .all()
     )
@@ -58,7 +58,7 @@ def index():
 
 @visit_bp.route("/new", methods=["GET", "POST"])
 def new():
-    """Create a new hospital visit."""
+    """Create a new physician visit."""
     logger.debug("Accessing new visit page")
 
     if request.method == "POST":
@@ -80,16 +80,16 @@ def new():
             logger.debug(f"UTC visit date: {visit_date}")
 
             # Create new visit
-            visit = HospitalVisit(visit_date=visit_date, notes=notes)
+            visit = PhysicianVisit(visit_date=visit_date, notes=notes)
 
             db.session.add(visit)
             db.session.commit()
 
             logger.info(
-                f"New hospital visit created: ID={visit.id}, date={visit_date_str}"
+                f"New physician visit created: ID={visit.id}, date={visit_date_str}"
             )
 
-            flash(f"Hospital visit scheduled for {visit_date_str}", "success")
+            flash(f"Physician visit scheduled for {visit_date_str}", "success")
 
             # Check if we should create an order automatically
             create_order = request.form.get("create_order", "no")
@@ -112,10 +112,10 @@ def new():
 
 @visit_bp.route("/<int:id>", methods=["GET"])
 def show(id: int):
-    """Display details for a specific hospital visit."""
+    """Display details for a specific physician visit."""
     logger.debug(f"Accessing visit details page for ID={id}")
 
-    visit = HospitalVisit.query.get_or_404(id)
+    visit = PhysicianVisit.query.get_or_404(id)
     logger.debug(f"Found visit: date={visit.visit_date}")
 
     # Get orders for this visit
@@ -154,10 +154,10 @@ def show(id: int):
 
 @visit_bp.route("/<int:id>/edit", methods=["GET", "POST"])
 def edit(id: int):
-    """Edit an existing hospital visit."""
+    """Edit an existing physician visit."""
     logger.debug(f"Accessing edit page for visit ID={id}")
 
-    visit = HospitalVisit.query.get_or_404(id)
+    visit = PhysicianVisit.query.get_or_404(id)
     logger.debug(f"Found visit: date={visit.visit_date}")
 
     if request.method == "POST":
@@ -185,10 +185,10 @@ def edit(id: int):
             db.session.commit()
 
             logger.info(
-                f"Updated hospital visit: ID={visit.id}, new date={visit_date_str}"
+                f"Updated physician visit: ID={visit.id}, new date={visit_date_str}"
             )
 
-            flash(f"Hospital visit updated to {visit_date_str}", "success")
+            flash(f"Physician visit updated to {visit_date_str}", "success")
             return redirect(url_for("visits.show", id=visit.id))
 
         except ValueError as e:
@@ -212,10 +212,10 @@ def edit(id: int):
 
 @visit_bp.route("/<int:id>/delete", methods=["POST"])
 def delete(id: int):
-    """Delete a hospital visit."""
+    """Delete a physician visit."""
     logger.debug(f"Attempting to delete visit ID={id}")
 
-    visit = HospitalVisit.query.get_or_404(id)
+    visit = PhysicianVisit.query.get_or_404(id)
     logger.debug(f"Found visit: date={visit.visit_date}")
 
     # Check if there are orders associated with this visit
@@ -233,26 +233,26 @@ def delete(id: int):
     db.session.delete(visit)
     db.session.commit()
 
-    logger.info(f"Deleted hospital visit: ID={id}")
+    logger.info(f"Deleted physician visit: ID={id}")
 
-    flash("Hospital visit deleted successfully", "success")
+    flash("Physician visit deleted successfully", "success")
     return redirect(url_for("visits.index"))
 
 
 @visit_bp.route("/next")
 def next_visit():
-    """Display details about the next upcoming hospital visit."""
+    """Display details about the next upcoming physician visit."""
     logger.debug("Accessing next visit redirect")
 
     next_visit = (
-        HospitalVisit.query.filter(HospitalVisit.visit_date >= utcnow())
-        .order_by(HospitalVisit.visit_date)
+        PhysicianVisit.query.filter(PhysicianVisit.visit_date >= utcnow())
+        .order_by(PhysicianVisit.visit_date)
         .first()
     )
 
     if not next_visit:
-        logger.info("No upcoming hospital visits found")
-        flash("No upcoming hospital visits scheduled", "warning")
+        logger.info("No upcoming physician visits found")
+        flash("No upcoming physician visits scheduled", "warning")
         return redirect(url_for("visits.new"))
 
     logger.debug(f"Redirecting to next visit ID={next_visit.id}")

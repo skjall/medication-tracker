@@ -9,5 +9,5 @@ This package contains route blueprints for different sections of the application
 - schedules: Schedule management
 - settings: Application settings
 - system: System status and configuration
-- visits: Hospital visit scheduling
+- visits: Physician visit scheduling
 """

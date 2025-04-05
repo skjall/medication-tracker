@@ -160,10 +160,10 @@ class Medication(db.Model):
         consider_next_but_one: bool = None,
     ) -> int:
         """
-        Calculate how many units of medication are needed until the next hospital visit.
+        Calculate how many units of medication are needed until the next physician visit.
 
         Args:
-            visit_date: The date of the next hospital visit
+            visit_date: The date of the next physician visit
             include_safety_margin: Whether to include the safety margin days in the calculation
             consider_next_but_one: Override to consider next-but-one visit (uses default from settings if None)
 
@@ -189,9 +189,9 @@ class Medication(db.Model):
         # Get next-but-one setting if not explicitly provided
         if consider_next_but_one is None:
             # Check if the visit has a specific setting
-            from models import HospitalVisit
+            from models import PhysicianVisit
 
-            visit = HospitalVisit.query.filter_by(visit_date=visit_date).first()
+            visit = PhysicianVisit.query.filter_by(visit_date=visit_date).first()
             if visit and visit.order_for_next_but_one:
                 consider_next_but_one = True
             else:
@@ -217,7 +217,7 @@ class Medication(db.Model):
         Calculate how many units are needed to last until the next-but-one visit.
 
         Args:
-            days_between_visits: Typical number of days between hospital visits
+            days_between_visits: Typical number of days between physician visits
 
         Returns:
             The number of units needed
@@ -232,9 +232,8 @@ class Medication(db.Model):
 
     def calculate_packages_needed(self, units_needed: int) -> Dict[str, int]:
         """
-        Convert required units into package quantities, optimizing for package sizes.
-        Uses a greedy algorithm to minimize the number of packages while ensuring
-        we have enough units.
+        Convert required units into package quantities, using only a single package type.
+        Chooses the package type that minimizes overage, with preference for larger packages.
 
         Args:
             units_needed: Total number of units/pills needed
@@ -242,7 +241,6 @@ class Medication(db.Model):
         Returns:
             Dictionary with keys 'N1', 'N2', 'N3' and corresponding package counts
         """
-
         packages = {"N1": 0, "N2": 0, "N3": 0}
 
         # If no units needed, return empty packages
@@ -265,21 +263,26 @@ class Medication(db.Model):
         if not available_packages:
             return packages
 
-        remaining = units_needed
+        best_package = None
+        min_overage = float("inf")
 
-        # Use larger packages as much as possible
         for package_key, package_size in available_packages:
-            if package_size <= 0:
-                continue
+            # Calculate how many packages we need and the resulting overage
+            count = (
+                units_needed + package_size - 1
+            ) // package_size  # Ceiling division
+            total_units = count * package_size
+            overage = total_units - units_needed
 
-            # Calculate how many of this package we need
-            count = remaining // package_size
-            packages[package_key] = count
-            remaining -= count * package_size
+            # If this has less overage or same overage but larger package (earlier in list)
+            if overage < min_overage or (
+                overage == min_overage and best_package is None
+            ):
+                min_overage = overage
+                best_package = (package_key, count)
 
-        # If there's still a remainder, add one more of the smallest package
-        if remaining > 0:
-            smallest_package = available_packages[-1]
-            packages[smallest_package[0]] += 1
+        # Set the count for the best package type
+        if best_package:
+            packages[best_package[0]] = best_package[1]
 
         return packages

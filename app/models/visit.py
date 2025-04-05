@@ -1,5 +1,5 @@
 """
-This module defines hospital visit and order related models.
+This module defines physician visit and order related models.
 """
 
 # Standard library imports
@@ -22,9 +22,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class HospitalVisit(db.Model):
+class PhysicianVisit(db.Model):
     """
-    Model representing a scheduled hospital visit.
+    Model representing a scheduled physician visit.
     Extended to support visit interval planning.
     """
 
@@ -54,17 +54,17 @@ class HospitalVisit(db.Model):
     )
 
     def __repr__(self) -> str:
-        return f"<HospitalVisit {self.visit_date.strftime('%d.%m.%Y')}>"
+        return f"<PhysicianVisit {self.visit_date.strftime('%d.%m.%Y')}>"
 
     @property
     def days_until(self) -> int:
-        """Calculate days until this hospital visit."""
+        """Calculate days until this physician visit."""
         return calculate_days_until(self.visit_date)
 
 
 class Order(db.Model):
     """
-    Model representing a medication order for a hospital visit.
+    Model representing a medication order for a physician visit.
     """
 
     __tablename__ = "orders"
@@ -79,8 +79,8 @@ class Order(db.Model):
     status: Mapped[str] = mapped_column(String(20), default="planned")
 
     # Relationships
-    hospital_visit: Mapped["HospitalVisit"] = relationship(
-        "HospitalVisit", back_populates="orders"
+    hospital_visit: Mapped["PhysicianVisit"] = relationship(
+        "PhysicianVisit", back_populates="orders"
     )
     order_items: Mapped[List["OrderItem"]] = relationship(
         "OrderItem", back_populates="order", cascade="all, delete-orphan"

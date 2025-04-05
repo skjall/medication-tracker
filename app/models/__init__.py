@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from .base import db, utcnow
 from .medication import Medication
 from .inventory import Inventory, InventoryLog
-from .visit import HospitalVisit, Order, OrderItem
+from .visit import PhysicianVisit, Order, OrderItem
 from .schedule import ScheduleType, MedicationSchedule
 from .settings import Settings
 from .prescription import PrescriptionTemplate
@@ -31,7 +31,7 @@ __all__ = [
     "Medication",
     "Inventory",
     "InventoryLog",
-    "HospitalVisit",
+    "PhysicianVisit",
     "Order",
     "OrderItem",
     "ScheduleType",

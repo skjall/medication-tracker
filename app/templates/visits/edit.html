@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
-{% block title %}Edit Hospital Visit - Medication Tracker{% endblock %}
+{% block title %}Edit Physician Visit - Medication Tracker{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-edit me-2"></i>Edit Hospital Visit
+        <i class="fas fa-pen-to-square me-2"></i>Edit Physician Visit
     </h1>
     <div>
         <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-secondary">
@@ -29,7 +29,7 @@
                         <label for="visit_date" class="form-label">Visit Date <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="visit_date" name="visit_date" value="{{ formatted_date }}" required>
                         <div class="form-text">
-                            Enter the date of your upcoming hospital visit
+                            Enter the date of your upcoming physician visit
                         </div>
                     </div>
                 </div>
