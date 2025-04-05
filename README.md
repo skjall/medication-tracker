@@ -1,8 +1,9 @@
+
 <p align="center">
   <img src="resources/img/logo.png" alt="Medication Tracker" title="Medication Tracker">
 </p>
 
-A lightweight Python-based web application that helps track medications, inventory levels, and prepare for hospital visits, using SQLite for data storage.
+A lightweight Python-based web application that helps track medications, inventory levels, and prepare for physician visits, using SQLite for data storage.
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/skjall/medication-tracker)](https://hub.docker.com/r/skjall/medication-tracker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -19,13 +20,13 @@ A lightweight Python-based web application that helps track medications, invento
   - Package-based inventory management (N1, N2, N3 sizes)
   - Full history of inventory changes with timestamps
 
-- **Hospital Visit Planning**:
-  - Schedule and manage upcoming hospital visits
+- **Physician Visit Planning**:
+  - Schedule and manage upcoming physician visits
   - Calculate medication needs until next visit
   - Support for next-but-one visit planning
 
 - **Order Management**:
-  - Create medication orders for hospital visits
+  - Create medication orders for physician visits
   - Calculate package requirements based on needs
   - Generate printable order forms
   - Track order fulfillment and update inventory
@@ -50,8 +51,13 @@ A lightweight Python-based web application that helps track medications, invento
 ### Inventory Management
 ![Inventory Management](resources/img/screenshots/inventory.png)
 
-### Hospital Visits
-![Hospital Visits](resources/img/screenshots/visits.png)
+### Physician Visits
+![Physician Visits](resources/img/screenshots/visits.png)
+
+# Running the application
+
+## Using Docker
+
 ```bash
 docker run -d \
   --name medication-tracker \
@@ -59,7 +65,6 @@ docker run -d \
   -v medication_tracker_data:/app/data \
   -v medication_tracker_logs:/app/logs \
   -e SECRET_KEY=your_secure_secret_key \
-  --build-arg VERSION=$(cat version.txt) \
   skjall/medication-tracker:latest
 ```
 
@@ -126,9 +131,9 @@ All data is stored in SQLite databases in the `/app/data` directory. To persist 
 3. View low stock warnings and depletion forecasts
 4. Track inventory changes with detailed history logs
 
-### Scheduling Hospital Visits
+### Scheduling Physician Visits
 
-1. Navigate to "Hospital Visits" → "Schedule Visit"
+1. Navigate to "Physician Visits" → "Schedule Visit"
 2. Enter the date of your upcoming visit
 3. Optionally create an order for the visit
 4. Choose between regular ordering or next-but-one planning
@@ -138,7 +143,7 @@ All data is stored in SQLite databases in the `/app/data` directory. To persist 
 1. Navigate to "Orders" → "New Order"
 2. Select medications needed until your next visit
 3. Review automatically calculated package requirements
-4. Generate a printable order form for your hospital visit
+4. Generate a printable order form for your physician visit
 5. Mark as fulfilled when medications are received to update inventory
 
 ## Building from Source
@@ -182,8 +187,8 @@ To set up a development environment:
 1. Clone the repository
 2. Create a virtual environment:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 3. Install dependencies:
    ```bash

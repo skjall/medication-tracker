@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
-{% block title %}Hospital Visit: {{ visit.visit_date.strftime('%d.%m.%Y') }} - Medication Tracker{% endblock %}
+{% block title %}Physician Visit: {{ visit.visit_date.strftime('%d.%m.%Y') }} - Medication Tracker{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-hospital me-2"></i>Hospital Visit Details
+        <i class="fas fa-hospital me-2"></i>Physician Visit Details
     </h1>
     <div>
         <a href="{{ url_for('visits.index') }}" class="btn btn-outline-secondary">
@@ -13,7 +13,7 @@
         </a>
         {% if make_aware(visit.visit_date) >= make_aware(now) %}
             <a href="{{ url_for('visits.edit', id=visit.id) }}" class="btn btn-primary ms-2">
-                <i class="fas fa-edit me-1"></i>Edit Visit
+                <i class="fas fa-pen-to-square me-1"></i>Edit Visit
             </a>
         {% endif %}
     </div>

@@ -19,7 +19,7 @@ from sqlalchemy import func
 
 # Local application imports
 from models import (
-    HospitalVisit,
+    PhysicianVisit,
     Inventory,
     Medication,
     MedicationSchedule,
@@ -221,12 +221,12 @@ def export_orders_to_csv() -> Response:
 
 def export_visits_to_csv() -> Response:
     """
-    Export all hospital visits to a CSV file.
+    Export all physician visits to a CSV file.
 
     Returns:
         Flask Response object with CSV data
     """
-    from models import HospitalVisit
+    from models import PhysicianVisit
     from utils import calculate_days_until
 
     si = StringIO()
@@ -246,7 +246,7 @@ def export_visits_to_csv() -> Response:
     )
 
     # Write data
-    visits = HospitalVisit.query.order_by(HospitalVisit.visit_date).all()
+    visits = PhysicianVisit.query.order_by(PhysicianVisit.visit_date).all()
     now = datetime.now(timezone.utc)
     for visit in visits:
         visit_date = ensure_timezone_utc(visit.visit_date)
@@ -603,7 +603,7 @@ def import_visits_from_csv(
     file_path: str, override: bool = False
 ) -> Tuple[int, List[str]]:
     """
-    Import hospital visits from a CSV file.
+    Import physician visits from a CSV file.
 
     Args:
         file_path: Path to the CSV file
@@ -648,8 +648,8 @@ def import_visits_from_csv(
                         continue
 
                     # Check if visit exists with same date
-                    existing_visit = HospitalVisit.query.filter(
-                        func.date(HospitalVisit.visit_date) == func.date(visit_date)
+                    existing_visit = PhysicianVisit.query.filter(
+                        func.date(PhysicianVisit.visit_date) == func.date(visit_date)
                     ).first()
 
                     if existing_visit and not override:
@@ -662,7 +662,7 @@ def import_visits_from_csv(
                     if existing_visit and override:
                         visit = existing_visit
                     else:
-                        visit = HospitalVisit(visit_date=visit_date)
+                        visit = PhysicianVisit(visit_date=visit_date)
                         db.session.add(visit)
 
                     # Update fields
@@ -741,14 +741,14 @@ def import_orders_from_csv(
                         errors.append(f"Could not parse visit date: {visit_date_str}")
                         continue
 
-                    # Find corresponding hospital visit
-                    visit = HospitalVisit.query.filter(
-                        func.date(HospitalVisit.visit_date) == func.date(visit_date)
+                    # Find corresponding physician visit
+                    visit = PhysicianVisit.query.filter(
+                        func.date(PhysicianVisit.visit_date) == func.date(visit_date)
                     ).first()
 
                     if not visit:
                         # Create the visit if it doesn't exist
-                        visit = HospitalVisit(visit_date=visit_date)
+                        visit = PhysicianVisit(visit_date=visit_date)
                         db.session.add(visit)
                         db.session.flush()  # Get ID without committing
 
@@ -880,7 +880,7 @@ def reset_inventory_data() -> int:
 
 def reset_visits_data() -> int:
     """
-    Reset hospital visit data by deleting all visit records.
+    Reset physician visit data by deleting all visit records.
 
     Returns:
         Number of records deleted
@@ -890,7 +890,7 @@ def reset_visits_data() -> int:
         reset_orders_data()
 
         # Delete visits
-        count = HospitalVisit.query.delete()
+        count = PhysicianVisit.query.delete()
         db.session.commit()
 
         return count

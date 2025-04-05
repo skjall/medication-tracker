@@ -198,7 +198,7 @@ def check_deductions():
     Manually trigger the deduction check for all medications.
     For testing/debugging purposes.
     """
-    from hospital_visit_utils import auto_deduct_inventory
+    from physician_visit_utils import auto_deduct_inventory
 
     auto_deduct_inventory()
     flash("Medication deductions checked successfully", "success")

@@ -31,7 +31,7 @@ ARG VERSION=0.0.0
 
 LABEL org.opencontainers.image.authors="Jan Großheim (medication-tracker@skjall.de)"
 LABEL org.opencontainers.image.title="Medication Tracker"
-LABEL org.opencontainers.image.description="A web application to track medications, inventory, and prepare for hospital visits"
+LABEL org.opencontainers.image.description="A web application to track medications, inventory, and prepare for physician visits"
 LABEL org.opencontainers.image.source="https://github.com/skjall/medication-tracker"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.version="${VERSION}"

@@ -96,7 +96,7 @@ function setupPackageCalculation() {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `units=${unitsNeeded}`,
+        body: `units=${unitsNeeded}&calculation=additional`,
       })
         .then((response) => response.json())
         .then((data) => {

@@ -5,24 +5,19 @@ Main application module for the Medication Tracker application.
 # Standard library imports
 import logging
 import os
+import sys
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
+
+# Add the app directory to the Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Third-party imports
 from flask import Flask, render_template, request
 
 # Local application imports
 from logging_config import configure_logging
-from models import (
-    HospitalVisit,
-    Inventory,
-    InventoryLog,
-    Medication,
-    Order,
-    db,
-    ensure_timezone_utc,
-    utcnow,
-)
+from models import *
 from task_scheduler import TaskScheduler
 from utils import to_local_timezone
 
@@ -65,12 +60,9 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     # Configure logging
     logger = configure_logging(app)
 
-    # Initialize database
-    from models import db
-
     db.init_app(app)
 
-    # Add this line to store the db instance on the app object
+    # Set up the database URI for SQLAlchemy
     app.db = db
 
     # Initialize task scheduler
@@ -136,8 +128,8 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         medications = Medication.query.all()
         # Using the same filter as the visit page to ensure consistency
         upcoming_visit = (
-            HospitalVisit.query.filter(HospitalVisit.visit_date >= utcnow())
-            .order_by(HospitalVisit.visit_date)
+            PhysicianVisit.query.filter(PhysicianVisit.visit_date >= utcnow())
+            .order_by(PhysicianVisit.visit_date)
             .first()
         )
 
@@ -181,7 +173,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             logger.warning(
                 "Enhanced deduction service not available, using legacy auto-deduction"
             )
-            from hospital_visit_utils import auto_deduct_inventory
+            from physician_visit_utils import auto_deduct_inventory
 
             scheduler.add_task(
                 name="auto_deduction",
@@ -218,17 +210,18 @@ def check_upcoming_visits():
     logger = logging.getLogger(__name__)
     logger.info("Checking upcoming visits")
 
-    from models import HospitalVisit, utcnow
+    from models import PhysicianVisit, utcnow
 
     # Get visits in the next 7 days
     now = utcnow()
     one_week_later = now + timedelta(days=7)
 
     upcoming = (
-        HospitalVisit.query.filter(
-            HospitalVisit.visit_date >= now, HospitalVisit.visit_date <= one_week_later
+        PhysicianVisit.query.filter(
+            PhysicianVisit.visit_date >= now,
+            PhysicianVisit.visit_date <= one_week_later,
         )
-        .order_by(HospitalVisit.visit_date)
+        .order_by(PhysicianVisit.visit_date)
         .all()
     )
 
@@ -251,8 +244,8 @@ def fix_database_timezones(app):
         logger.info("Running timezone fix for database records")
 
         try:
-            # Fix HospitalVisit dates
-            visits = HospitalVisit.query.all()
+            # Fix PhysicianVisit dates
+            visits = PhysicianVisit.query.all()
             for visit in visits:
                 visit.visit_date = ensure_timezone_utc(visit.visit_date)
                 visit.created_at = ensure_timezone_utc(visit.created_at)

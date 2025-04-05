@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
-{% block title %}Hospital Visits - Medication Tracker{% endblock %}
+{% block title %}Physician Visits - Medication Tracker{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-hospital-user me-2"></i>Hospital Visits
+        <i class="fas fa-hospital me-2"></i>Physician Visits
     </h1>
     <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
         <i class="fas fa-calendar-plus me-1"></i>Schedule New Visit
@@ -72,7 +72,7 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <a href="{{ url_for('visits.edit', id=visit.id) }}" class="btn btn-outline-secondary" title="Edit Visit">
-                                            <i class="fas fa-edit"></i>
+                                            <i class="fas fa-pen-to-square"></i>
                                         </a>
                                         <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-outline-success" title="Create Order">
                                             <i class="fas fa-clipboard-list"></i>
@@ -86,7 +86,7 @@
             </div>
         {% else %}
             <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>No upcoming hospital visits scheduled.
+                <i class="fas fa-info-circle me-2"></i>No upcoming physician visits scheduled.
             </div>
             <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
                 <i class="fas fa-calendar-plus me-1"></i>Schedule a Visit
@@ -145,7 +145,7 @@
             </div>
         {% else %}
             <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>No past hospital visits found.
+                <i class="fas fa-info-circle me-2"></i>No past physician visits found.
             </div>
         {% endif %}
     </div>
@@ -154,7 +154,7 @@
 <!-- Visit Timeline Visualization Card -->
 {% if upcoming_visits %}
 <div class="card mt-4">
-    <div class="card-header bg-info text-white">
+    <div class="card-header bg-primary text-white">
         <h5 class="mb-0">
             <i class="fas fa-stream me-2"></i>Visit Timeline
         </h5>
@@ -176,7 +176,7 @@
                         <div class="timeline-marker" style="left: {{ visit_percent }}%">
                             <div class="timeline-item">
                                 <div class="timeline-item-content bg-primary text-white">
-                                    <div class="timeline-item-title">Hospital Visit</div>
+                                    <div class="timeline-item-title">Physician Visit</div>
                                     <div class="timeline-item-date">{{ visit.visit_date.strftime('%d.%m.%Y') }}</div>
                                     <div class="timeline-item-days">{{ visit.days_until }} days away</div>
                                 </div>

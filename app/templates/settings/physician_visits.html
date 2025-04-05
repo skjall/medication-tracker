@@ -1,12 +1,12 @@
-<!-- Template for hospital visit settings -->
+<!-- Template for physician visit settings -->
 {% extends "layout.html" %}
 
-{% block title %}Hospital Visit Settings - Medication Tracker{% endblock %}
+{% block title %}Physician Visit Settings - Medication Tracker{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-hospital-user me-2"></i>Hospital Visit Settings
+        <i class="fas fa-hospital me-2"></i>Physician Visit Settings
     </h1>
     <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
@@ -20,7 +20,7 @@
     <div class="card-body">
         <form method="POST" action="{{ url_for('settings.hospital_visits') }}">
             <div class="mb-4">
-                <label for="default_visit_interval" class="form-label">Default Hospital Visit Interval</label>
+                <label for="default_visit_interval" class="form-label">Default Physician Visit Interval</label>
                 <div class="input-group">
                     <input type="number" class="form-control" id="default_visit_interval" name="default_visit_interval"
                            min="1" value="{{ settings.default_visit_interval }}" required>
@@ -72,7 +72,7 @@
                     <i class="fas fa-info-circle me-3 fa-2x"></i>
                     <div>
                         <p class="mb-0">
-                            The system will use these settings to help plan your medication needs for upcoming hospital visits.
+                            The system will use these settings to help plan your medication needs for upcoming physician visits.
                             It will calculate how many days of medication you need based on your visit schedule and the
                             safety margin configured for each medication.
                         </p>

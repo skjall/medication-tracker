@@ -1,5 +1,5 @@
 """
-Hospital Visit Settings and Automatic Deduction utilities.
+Physician Visit Settings and Automatic Deduction utilities.
 
 This module provides:
 1. Automatic inventory deduction process
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def calculate_estimated_next_visit_date(from_date: datetime = None) -> datetime:
     """
-    Calculate the estimated date of the next hospital visit based on settings.
+    Calculate the estimated date of the next physician visit based on settings.
 
     Args:
         from_date: The date to calculate from (defaults to current date)
@@ -49,13 +49,13 @@ def calculate_days_between_visits() -> int:
     Returns:
         Average days between visits
     """
-    logger.info("Calculating average days between hospital visits")
+    logger.info("Calculating average days between physician visits")
 
-    from models import HospitalVisit
+    from models import PhysicianVisit
 
     # Get last 5 visits
     visits = (
-        HospitalVisit.query.order_by(HospitalVisit.visit_date.desc()).limit(6).all()
+        PhysicianVisit.query.order_by(PhysicianVisit.visit_date.desc()).limit(6).all()
     )
 
     logger.info(f"Found {len(visits)} visits for calculation")

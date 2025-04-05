@@ -1,7 +1,7 @@
 """
-Tests for hospital visit utilities.
+Tests for physician visit utilities.
 
-This module tests functions related to hospital visit scheduling,
+This module tests functions related to physician visit scheduling,
 interval calculations, and automatic inventory deduction.
 """
 
@@ -18,12 +18,12 @@ import tzlocal
 from .test_base import BaseTestCase
 
 # Temporarily increase log level
-logger = logging.getLogger("test.hospital_visit_utils")
+logger = logging.getLogger("test.physician_visit_utils")
 logger.setLevel(logging.DEBUG)
 
 
-class TestHospitalVisitUtils(BaseTestCase):
-    """Test cases for hospital visit utility functions."""
+class TestPhysicianVisitUtils(BaseTestCase):
+    """Test cases for physician visit utility functions."""
 
     def setUp(self):
         """Set up test fixtures before each test."""
@@ -36,7 +36,7 @@ class TestHospitalVisitUtils(BaseTestCase):
             Medication,
             Inventory,
             Settings,
-            HospitalVisit,
+            PhysicianVisit,
         )
 
         self.MedicationSchedule = MedicationSchedule
@@ -44,10 +44,10 @@ class TestHospitalVisitUtils(BaseTestCase):
         self.Medication = Medication
         self.Inventory = Inventory
         self.Settings = Settings
-        self.HospitalVisit = HospitalVisit
+        self.PhysicianVisit = PhysicianVisit
 
         # Import here to avoid issues with app context
-        from app.hospital_visit_utils import (
+        from app.physician_visit_utils import (
             calculate_estimated_next_visit_date,
             calculate_days_between_visits,
             auto_deduct_inventory,
@@ -103,14 +103,14 @@ class TestHospitalVisitUtils(BaseTestCase):
         )
         self.db.session.add(settings)
 
-        # Create hospital visits specific to this test
-        visit1 = self.HospitalVisit(
+        # Create physician visits specific to this test
+        visit1 = self.PhysicianVisit(
             visit_date=self.now - timedelta(days=90), notes="Past visit 1"
         )
-        visit2 = self.HospitalVisit(
+        visit2 = self.PhysicianVisit(
             visit_date=self.now - timedelta(days=45), notes="Past visit 2"
         )
-        visit3 = self.HospitalVisit(
+        visit3 = self.PhysicianVisit(
             visit_date=self.now + timedelta(days=45), notes="Upcoming visit"
         )
         self.db.session.add_all([settings, visit1, visit2, visit3])

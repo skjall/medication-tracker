@@ -19,7 +19,7 @@
 
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Order for Hospital Visit on {{ visit.visit_date.strftime('%d.%m.%Y') }}</h5>
+        <h5 class="mb-0">Order for Physician Visit on {{ visit.visit_date.strftime('%d.%m.%Y') }}</h5>
     </div>
     <div class="card-body">
         <div class="alert alert-info">
@@ -27,7 +27,7 @@
                 <i class="fas fa-info-circle me-3 fa-2x"></i>
                 <div>
                     <p class="mb-0">
-                        This order is for your hospital visit in
+                        This order is for your physician visit in
                         <strong>{{ visit.days_until }} days</strong>
                         on <strong>{{ visit.visit_date.strftime('%d.%m.%Y') }}</strong>.
                     </p>

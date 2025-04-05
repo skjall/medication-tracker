@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
-{% block title %}Schedule Hospital Visit - Medication Tracker{% endblock %}
+{% block title %}Schedule Physician Visit - Medication Tracker{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-calendar-plus me-2"></i>Schedule Hospital Visit
+        <i class="fas fa-calendar-plus me-2"></i>Schedule Physician Visit
     </h1>
     <a href="{{ url_for('visits.index') }}" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left me-1"></i>Back to Visits
@@ -14,7 +14,7 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">New Hospital Visit</h5>
+        <h5 class="mb-0">New Physician Visit</h5>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('visits.new') }}">
@@ -24,7 +24,7 @@
                         <label for="visit_date" class="form-label">Visit Date <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="visit_date" name="visit_date" required>
                         <div class="form-text">
-                            Enter the date of your upcoming hospital visit
+                            Enter the date of your upcoming physician visit
                         </div>
                     </div>
                 </div>

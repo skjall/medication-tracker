@@ -20,7 +20,7 @@ from flask import (
 
 # Local application imports
 from models import (
-    HospitalVisit,
+    PhysicianVisit,
     Medication,
     Order,
     OrderItem,
@@ -71,20 +71,20 @@ def new():
     visit = None
 
     if visit_id:
-        visit = HospitalVisit.query.get_or_404(visit_id)
+        visit = PhysicianVisit.query.get_or_404(visit_id)
     else:
         # If no visit specified, use the next upcoming visit
         visit = (
-            HospitalVisit.query.filter(
-                HospitalVisit.visit_date >= datetime.now(timezone.utc)
+            PhysicianVisit.query.filter(
+                PhysicianVisit.visit_date >= datetime.now(timezone.utc)
             )
-            .order_by(HospitalVisit.visit_date)
+            .order_by(PhysicianVisit.visit_date)
             .first()
         )
 
     if not visit:
         flash(
-            "No upcoming hospital visit found. Please schedule a visit first.",
+            "No upcoming physician visit found. Please schedule a visit first.",
             "warning",
         )
         return redirect(url_for("visits.new"))
@@ -123,7 +123,7 @@ def new():
         return redirect(url_for("orders.show", id=order.id))
 
     # Get settings to check if next-but-one is enabled globally
-    from hospital_visit_utils import Settings
+    from physician_visit_utils import Settings
 
     settings = Settings.get_settings()
 

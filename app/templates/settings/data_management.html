@@ -44,7 +44,7 @@
                     <dt class="col-sm-6">Inventory Records:</dt>
                     <dd class="col-sm-6">{{ inventory_count }}</dd>
 
-                    <dt class="col-sm-6">Hospital Visits:</dt>
+                    <dt class="col-sm-6">Physician Visits:</dt>
                     <dd class="col-sm-6">{{ visit_count }}</dd>
 
                     <dt class="col-sm-6">Orders:</dt>
@@ -157,10 +157,10 @@
                         </td>
                     </tr>
 
-                    <!-- Hospital Visits -->
+                    <!-- Physician Visits -->
                     <tr>
-                        <td><strong>Hospital Visits</strong></td>
-                        <td>Scheduled hospital visits and appointments</td>
+                        <td><strong>Physician Visits</strong></td>
+                        <td>Scheduled physician visits and appointments</td>
                         <td>{{ visit_count }}</td>
                         <td>
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" data-import-type="visits">
@@ -182,7 +182,7 @@
                     <!-- Orders -->
                     <tr>
                         <td><strong>Orders</strong></td>
-                        <td>Medication orders for hospital visits</td>
+                        <td>Medication orders for physician visits</td>
                         <td>{{ order_count }}</td>
                         <td>
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" data-import-type="orders">
@@ -339,7 +339,7 @@
                     csvHelpText.innerHTML = 'Expected columns:<br>Medication ID or Medication Name, Current Count, Packages N1, Packages N2, Packages N3, Last Updated';
                 }
                 else if (importType === 'visits') {
-                    infoText.textContent = 'Import hospital visit data from a CSV file.';
+                    infoText.textContent = 'Import physician visit data from a CSV file.';
                     csvHelpText.innerHTML = 'Expected columns:<br>Visit Date, Notes, Order For Next-But-One';
                 }
                 else if (importType === 'orders') {
@@ -382,7 +382,7 @@
                     detailsList.innerHTML = '<li>All inventory records</li><li>All inventory history logs</li>';
                 }
                 else if (resetType === 'visits') {
-                    detailsList.innerHTML = '<li>All hospital visit records</li><li>All associated orders</li>';
+                    detailsList.innerHTML = '<li>All physician visit records</li><li>All associated orders</li>';
                 }
                 else if (resetType === 'orders') {
                     detailsList.innerHTML = '<li>All order records</li><li>All order items</li>';

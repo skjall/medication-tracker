@@ -43,7 +43,7 @@ from data_utils import (
 from models import (
     Inventory,
     InventoryLog,
-    HospitalVisit,
+    PhysicianVisit,
     Medication,
     MedicationSchedule,
     Order,
@@ -61,12 +61,12 @@ logger = logging.getLogger(__name__)
 settings_bp = Blueprint("settings", __name__, url_prefix="/settings")
 
 
-@settings_bp.route("/hospital_visits", methods=["GET", "POST"])
+@settings_bp.route("/physician_visits", methods=["GET", "POST"])
 def hospital_visits():
     """
-    Display and update hospital visit settings.
+    Display and update physician visit settings.
     """
-    logger.info("Accessing hospital visit settings page")
+    logger.info("Accessing physician visit settings page")
 
     # Get current settings
     settings = Settings.get_settings()
@@ -83,16 +83,16 @@ def hospital_visits():
 
         db.session.commit()
 
-        flash("Hospital visit settings updated successfully", "success")
+        flash("Physician visit settings updated successfully", "success")
         return redirect(url_for("settings.hospital_visits"))
 
     # Calculate actual average interval for information purposes
-    from hospital_visit_utils import calculate_days_between_visits
+    from physician_visit_utils import calculate_days_between_visits
 
     actual_interval = calculate_days_between_visits()
 
     return render_template(
-        "settings/hospital_visits.html",
+        "settings/physician_visits.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         settings=settings,
         actual_interval=actual_interval,
@@ -106,7 +106,7 @@ def update_visit_order_planning(visit_id: int):
     """
     logger.info(f"Updating order planning for visit {visit_id}")
 
-    visit = HospitalVisit.query.get_or_404(visit_id)
+    visit = PhysicianVisit.query.get_or_404(visit_id)
 
     # Toggle the setting
     visit.order_for_next_but_one = not visit.order_for_next_but_one
@@ -128,14 +128,14 @@ def advanced():
     """
     logger.info("Loading advanced settings page")
 
-    # Get hospital visit settings
+    # Get physician visit settings
     settings = Settings.get_settings()
 
     # Get database statistics
     med_count = Medication.query.count()
     schedule_count = MedicationSchedule.query.count()
-    upcoming_visits_count = HospitalVisit.query.filter(
-        HospitalVisit.visit_date >= datetime.now(timezone.utc)
+    upcoming_visits_count = PhysicianVisit.query.filter(
+        PhysicianVisit.visit_date >= datetime.now(timezone.utc)
     ).count()
 
     # Get inventory logs count
@@ -366,7 +366,7 @@ def data_management():
     # Get database statistics
     med_count = Medication.query.count()
     inventory_count = Inventory.query.count()
-    visit_count = HospitalVisit.query.count()
+    visit_count = PhysicianVisit.query.count()
     order_count = Order.query.count()
     order_item_count = OrderItem.query.count()
     schedule_count = MedicationSchedule.query.count()
