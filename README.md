@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/logo.png" alt="Medication Tracker" title="Medication Tracker">
+  <img src="ressources/img/logo.png" alt="Medication Tracker" title="Medication Tracker">
 </p>
 
 A lightweight Python-based web application that helps track medications, inventory levels, and prepare for hospital visits, using SQLite for data storage.
@@ -42,16 +42,16 @@ A lightweight Python-based web application that helps track medications, invento
 ## Screenshots
 
 ### Dashboard
-![Dashboard](images/screenshots/dashboard.png)
+![Dashboard](ressources/img/screenshots/dashboard.png)
 
 ### Medication Details
-![Medication Details](images/screenshots/medication_details.png)
+![Medication Details](ressources/img/screenshots/medication_details.png)
 
 ### Inventory Management
-![Inventory Management](images/screenshots/inventory.png)
+![Inventory Management](ressources/img/screenshots/inventory.png)
 
 ### Hospital Visits
-![Hospital Visits](images/screenshots/visits.png)
+![Hospital Visits](ressources/img/screenshots/visits.png)
 ```bash
 docker run -d \
   --name medication-tracker \

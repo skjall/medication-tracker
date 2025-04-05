@@ -13,6 +13,9 @@
   color: white !important;
 }
 
+.text-warning {
+  color: #ff8000 !important;
+}
 .btn-warning {
   background-color: #ff8000 !important;
   border-color: #ff8000 !important;
