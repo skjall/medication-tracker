@@ -17,16 +17,7 @@ from flask import Flask, render_template, request
 
 # Local application imports
 from logging_config import configure_logging
-from models import (
-    HospitalVisit,
-    Inventory,
-    InventoryLog,
-    Medication,
-    Order,
-    db,
-    ensure_timezone_utc,
-    utcnow,
-)
+from models import *
 from task_scheduler import TaskScheduler
 from utils import to_local_timezone
 
@@ -68,9 +59,6 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
     # Configure logging
     logger = configure_logging(app)
-
-    # Initialize database
-    from models import db
 
     db.init_app(app)
 
