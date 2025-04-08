@@ -1,5 +1,5 @@
 # Multi-stage build for smaller image size
-FROM python:3.13-slim@sha256:83509a63d2c432e365bdc7a015948a77952a23d7784a632ba741baf3ba1862cb AS builder
+FROM python:3.13-slim@sha256:6b3223eb4d93718828223966ad316909c39813dee3ee9395204940500792b740 AS builder
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Final stage with minimal dependencies
-FROM python:3.13-slim@sha256:83509a63d2c432e365bdc7a015948a77952a23d7784a632ba741baf3ba1862cb
+FROM python:3.13-slim@sha256:6b3223eb4d93718828223966ad316909c39813dee3ee9395204940500792b740
 
 # Define VERSION as a build argument
 ARG VERSION=0.0.0
