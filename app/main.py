@@ -68,9 +68,22 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     # Initialize task scheduler
     scheduler = TaskScheduler(app)
 
-    # Create tables if they don't exist
+    # Initialize database with migrations
     with app.app_context():
-        db.create_all()
+        # Import here to avoid circular imports
+        from migration_utils import check_migrations_needed, run_migrations, initialize_migrations
+
+        # Initialize migrations environment if needed
+        if not os.path.exists(os.path.join(app.root_path, '..', 'migrations', 'versions')):
+            logger.info("Initializing migrations environment for the first time")
+            initialize_migrations(app)
+
+        # Check if migrations need to be run
+        if check_migrations_needed(app):
+            logger.info("Running database migrations")
+            run_migrations(app)
+        else:
+            logger.info("Database schema is up to date")
 
     # Register blueprints (routes)
     from routes.medications import medication_bp

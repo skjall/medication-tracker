@@ -47,6 +47,23 @@
     </div>
 </div>
 
+<!-- Database Status Card -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Database Status</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <a href="{{ url_for('system.migrations') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-database me-1"></i>Database Migrations
+                </a>
+                <span class="ms-3">View migration status and history</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Task Status Card -->
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">

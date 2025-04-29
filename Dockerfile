@@ -66,6 +66,7 @@ ENV VERSION=${VERSION}
 RUN echo '#!/bin/bash\n\
   mkdir -p /app/data /app/logs\n\
   chmod -R 777 /app/data /app/logs\n\
+  python migration_cli.py apply || echo "Warning: Migrations may have failed, but continuing anyway"\n\
   exec gunicorn --bind 0.0.0.0:8087 --workers 4 --threads 2 --timeout 120 "main:create_app()"\n'\
   > /app/entrypoint.sh && \
   chmod +x /app/entrypoint.sh
