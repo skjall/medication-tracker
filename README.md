@@ -153,7 +153,7 @@ If you want to build the Docker image yourself:
 ```bash
 git clone https://github.com/skjall/medication-tracker.git
 cd medication-tracker
-docker build -t medication-tracker --build-arg VERSION=$(cat version.txt) .
+docker buildx build -t medication-tracker --build-arg VERSION=$(cat version.txt) .
 ```
 
 ## Versioning

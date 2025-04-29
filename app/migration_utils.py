@@ -19,6 +19,8 @@ from flask import Flask
 # Create a logger for this module
 logger = logging.getLogger(__name__)
 
+initial_revision = "d8942309667d"  # Initial revision ID for the database
+
 
 def get_alembic_config(app: Flask) -> Config:
     """
@@ -57,8 +59,8 @@ def get_alembic_config(app: Flask) -> Config:
 
 def check_and_fix_version_tracking(app: Flask) -> bool:
     """
-    Check if database has no alembic_version table, and if so,
-    stamp it with the initial revision d8942309667d.
+    Check if database has no alembic_version table, but an existing database file exists,
+    and if so, stamp it with the initial revision.
 
     Args:
         app: Flask application instance
@@ -68,9 +70,32 @@ def check_and_fix_version_tracking(app: Flask) -> bool:
     """
     try:
         from sqlalchemy import create_engine, inspect, text
+        import os.path
 
         # Get database URL
         db_url = app.config["SQLALCHEMY_DATABASE_URI"]
+
+        # First check if the database file exists (for SQLite)
+        # For other database types, we'll assume the database exists if we can connect
+        database_exists = True
+        if db_url.startswith("sqlite:///"):
+            # Extract file path for SQLite
+            if db_url.startswith("sqlite:////"):  # Absolute path
+                db_path = db_url[len("sqlite:///"):]
+            else:  # Relative path
+                db_path = db_url[len("sqlite:///"):]
+                db_path = os.path.join(app.root_path, db_path)
+
+            # Check if the file exists
+            database_exists = os.path.isfile(db_path)
+            logger.info(f"Checking for SQLite database at {db_path}: {'exists' if database_exists else 'not found'}")
+
+            # If the database doesn't exist, don't try to stamp it
+            if not database_exists:
+                logger.info("No existing database file found - skipping version stamping")
+                return False
+
+        # Connect to the database (this might create a new SQLite file if it doesn't exist)
         engine = create_engine(db_url)
 
         # Get inspector
@@ -80,9 +105,12 @@ def check_and_fix_version_tracking(app: Flask) -> bool:
         existing_tables = inspector.get_table_names()
         has_alembic_version = "alembic_version" in existing_tables
 
-        # If no alembic_version table, create it and stamp with initial revision
-        if not has_alembic_version:
-            logger.info("No alembic_version table found - stamping with initial revision d8942309667d")
+        # Check if there are existing tables (indicating a real, pre-existing database)
+        has_tables = len(existing_tables) > 0
+
+        # If no alembic_version table but other tables exist, create it and stamp with initial revision
+        if not has_alembic_version and has_tables:
+            logger.info(f"Existing database detected without alembic_version table - stamping with initial revision {initial_revision}")
 
             # Create alembic_version table and stamp it directly
             with engine.connect() as conn:
@@ -95,36 +123,39 @@ def check_and_fix_version_tracking(app: Flask) -> bool:
 
                 # Then insert the initial revision
                 conn.execute(text(
-                    "INSERT INTO alembic_version (version_num) VALUES ('d8942309667d')"
+                    f"INSERT INTO alembic_version (version_num) VALUES ('{initial_revision}')"
                 ))
 
                 # Commit the transaction
                 conn.commit()
 
-            logger.info("Successfully stamped database with revision d8942309667d")
+            logger.info(f"Successfully stamped database with revision {initial_revision}")
             return True
-        else:
+        elif has_alembic_version:
             logger.info("Database already has alembic_version table - checking for entries")
 
             # Check if the table is empty
             with engine.connect() as conn:
                 result = conn.execute(text("SELECT COUNT(*) FROM alembic_version"))
                 count = result.scalar()
-                if count == 0:
-                    logger.info("alembic_version table is empty - stamping with initial revision d8942309667d")
+                if count == 0 and has_tables:
+                    logger.info(f"alembic_version table is empty in existing database - stamping with initial revision {initial_revision}")
                     conn.execute(text(
-                        "INSERT INTO alembic_version (version_num) VALUES ('d8942309667d')"
+                        f"INSERT INTO alembic_version (version_num) VALUES ('{initial_revision}')"
                     ))
                     conn.commit()
-                    logger.info("Successfully stamped database with revision d8942309667d")
+                    logger.info(f"Successfully stamped database with revision {initial_revision}")
                     return True
                 else:
-                    logger.info("alembic_version table already has entries - no action needed")
+                    logger.info("alembic_version table already has entries or database is new - no action needed")
+        else:
+            logger.info("New database detected (no tables) - no stamping needed")
+
+        return False
 
     except Exception as e:
         logger.error(f"Error checking or fixing version tracking: {e}")
         return False
-
 
 def check_migrations_needed(app: Flask) -> bool:
     """

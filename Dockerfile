@@ -50,7 +50,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy the application code
-COPY app/ .
+COPY app/ ./
+
+# Copy migration files
+COPY migrations/ ../migrations/
+COPY alembic.ini ../
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -62,7 +66,7 @@ ENV LOG_LEVEL=INFO
 ARG VERSION
 ENV VERSION=${VERSION}
 
-# Create entrypoint script to handle permissions - Fixed the syntax error with parentheses
+# Create entrypoint script to handle permissions
 RUN echo '#!/bin/bash\n\
   mkdir -p /app/data /app/logs\n\
   chmod -R 777 /app/data /app/logs\n\
