@@ -17,7 +17,7 @@ from utils import to_local_timezone
 logger = logging.getLogger(__name__)
 
 # Create a blueprint for visit routes
-visit_bp = Blueprint("visits", __name__, url_prefix="/visits")
+visit_bp = Blueprint("visits", __name__, url_prefix="/physician_visits")
 
 
 @visit_bp.route("/")

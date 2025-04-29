@@ -62,7 +62,7 @@ settings_bp = Blueprint("settings", __name__, url_prefix="/settings")
 
 
 @settings_bp.route("/physician_visits", methods=["GET", "POST"])
-def hospital_visits():
+def physician_visits():
     """
     Display and update physician visit settings.
     """
