@@ -47,7 +47,7 @@ class TestPhysicianVisitUtils(BaseTestCase):
         self.PhysicianVisit = PhysicianVisit
 
         # Import here to avoid issues with app context
-        from app.hospital_visit_utils import (
+        from app.physician_visit_utils import (
             calculate_estimated_next_visit_date,
             calculate_days_between_visits,
             auto_deduct_inventory,
