@@ -1,10 +1,6 @@
 """
 Routes for managing application settings.
 
-This file combines the functionality from:
-- hospital_visit_settings.py
-- advanced_settings.py
-
 into a single unified settings module to avoid route conflicts.
 """
 
@@ -84,10 +80,10 @@ def physician_visits():
         db.session.commit()
 
         flash("Physician visit settings updated successfully", "success")
-        return redirect(url_for("settings.hospital_visits"))
+        return redirect(url_for("settings.physician_visits"))
 
     # Calculate actual average interval for information purposes
-    from physician_visit_utils import calculate_days_between_visits
+    from hospital_visit_utils import calculate_days_between_visits
 
     actual_interval = calculate_days_between_visits()
 

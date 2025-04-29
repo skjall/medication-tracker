@@ -18,7 +18,7 @@ import tzlocal
 from .test_base import BaseTestCase
 
 # Temporarily increase log level
-logger = logging.getLogger("test.physician_visit_utils")
+logger = logging.getLogger("test.hospital_visit_utils")
 logger.setLevel(logging.DEBUG)
 
 
@@ -47,7 +47,7 @@ class TestPhysicianVisitUtils(BaseTestCase):
         self.PhysicianVisit = PhysicianVisit
 
         # Import here to avoid issues with app context
-        from app.physician_visit_utils import (
+        from app.hospital_visit_utils import (
             calculate_estimated_next_visit_date,
             calculate_days_between_visits,
             auto_deduct_inventory,

@@ -71,12 +71,17 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     # Initialize database with migrations
     with app.app_context():
         # Import here to avoid circular imports
-        from migration_utils import check_migrations_needed, run_migrations, initialize_migrations
+        from migration_utils import check_migrations_needed, check_and_fix_version_tracking, run_migrations, initialize_migrations
 
         # Initialize migrations environment if needed
         if not os.path.exists(os.path.join(app.root_path, '..', 'migrations', 'versions')):
             logger.info("Initializing migrations environment for the first time")
             initialize_migrations(app)
+
+        # Check and fix version tracking if needed
+        if check_and_fix_version_tracking(app):
+            logger.info("Migration tracking fixed.")
+
 
         # Check if migrations need to be run
         if check_migrations_needed(app):
@@ -186,7 +191,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             logger.warning(
                 "Enhanced deduction service not available, using legacy auto-deduction"
             )
-            from physician_visit_utils import auto_deduct_inventory
+            from hospital_visit_utils import auto_deduct_inventory
 
             scheduler.add_task(
                 name="auto_deduction",

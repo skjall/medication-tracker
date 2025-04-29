@@ -48,6 +48,13 @@ def parse_args() -> argparse.Namespace:
     # Initialize command
     init_parser = subparsers.add_parser("init", help="Initialize migration environment")
 
+    # Stamp command
+    stamp_parser = subparsers.add_parser("stamp", help="Stamp the database with a revision without running migrations")
+    stamp_parser.add_argument("--revision", help="Revision to stamp (default: head)", default="head")
+
+    # Fix version tracking command
+    fix_parser = subparsers.add_parser("fix", help="Automatically fix version tracking for existing databases")
+
     return parser.parse_args()
 
 
@@ -68,6 +75,8 @@ def run_cli() -> None:
         initialize_migrations,
         check_migrations_needed,
         run_migrations,
+        check_and_fix_version_tracking,
+        get_alembic_config,  # We need this for the stamp command
     )
 
     # Create app with Flask test config
@@ -81,7 +90,10 @@ def run_cli() -> None:
             sys.exit(1)
 
     elif args.command == "apply":
-        # Apply migrations
+        # Check if we need to fix version tracking first
+        check_and_fix_version_tracking(app)
+
+        # Then apply migrations
         success = run_migrations(app)
         if not success:
             logger.error("Failed to apply migrations")
