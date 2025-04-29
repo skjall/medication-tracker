@@ -63,9 +63,6 @@ logs/*
 # RepoMix
 repomix-output.*
 
-
 # Alembic
-migrations/versions/*
-!migrations/versions/.gitkeep
 migrations/__pycache__/
 migrations/versions/__pycache__/
