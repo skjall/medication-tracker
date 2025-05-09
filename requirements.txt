@@ -7,3 +7,4 @@ gunicorn==23.0.0
 pytz==2025.2
 pypdf==5.4.0
 tzlocal==5.3.1
+alembic==1.15.2

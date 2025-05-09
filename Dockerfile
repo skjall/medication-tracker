@@ -1,5 +1,5 @@
 # Multi-stage build for smaller image size
-FROM python:3.13-slim@sha256:8f3aba466a471c0ab903dbd7cb979abd4bda370b04789d25440cc90372b50e04 AS builder
+FROM python:3.13-slim@sha256:60248ff36cf701fcb6729c085a879d81e4603f7f507345742dc82d4b38d16784 AS builder
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Final stage with minimal dependencies
-FROM python:3.13-slim@sha256:8f3aba466a471c0ab903dbd7cb979abd4bda370b04789d25440cc90372b50e04
+FROM python:3.13-slim@sha256:60248ff36cf701fcb6729c085a879d81e4603f7f507345742dc82d4b38d16784
 
 # Define VERSION as a build argument
 ARG VERSION=0.0.0
@@ -50,7 +50,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy the application code
-COPY app/ .
+COPY app/ ./
+
+# Copy migration files
+COPY migrations/ ../migrations/
+COPY alembic.ini ../
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -62,10 +66,11 @@ ENV LOG_LEVEL=INFO
 ARG VERSION
 ENV VERSION=${VERSION}
 
-# Create entrypoint script to handle permissions - Fixed the syntax error with parentheses
+# Create entrypoint script to handle permissions
 RUN echo '#!/bin/bash\n\
   mkdir -p /app/data /app/logs\n\
   chmod -R 777 /app/data /app/logs\n\
+  echo "Starting application..."\n\
   exec gunicorn --bind 0.0.0.0:8087 --workers 4 --threads 2 --timeout 120 "main:create_app()"\n'\
   > /app/entrypoint.sh && \
   chmod +x /app/entrypoint.sh

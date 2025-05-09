@@ -28,7 +28,7 @@ class PhysicianVisit(db.Model):
     Extended to support visit interval planning.
     """
 
-    __tablename__ = "hospital_visits"
+    __tablename__ = "physician_visits"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     visit_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
@@ -71,7 +71,7 @@ class Order(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     hospital_visit_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("hospital_visits.id")
+        Integer, ForeignKey("physician_visits.id")
     )
     created_date: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 

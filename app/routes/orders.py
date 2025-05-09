@@ -123,7 +123,7 @@ def new():
         return redirect(url_for("orders.show", id=order.id))
 
     # Get settings to check if next-but-one is enabled globally
-    from physician_visit_utils import Settings
+    from hospital_visit_utils import Settings
 
     settings = Settings.get_settings()
 

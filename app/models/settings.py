@@ -24,7 +24,7 @@ class Settings(db.Model):
     Singleton model (only one row expected).
     """
 
-    __tablename__ = "hospital_visit_settings"
+    __tablename__ = "physician_visit_settings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 

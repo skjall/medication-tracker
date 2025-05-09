@@ -19,6 +19,7 @@ from flask import (
 
 # Local application imports
 from utils import format_date, format_datetime, format_time, to_local_timezone
+from migration_utils import check_migrations_needed, get_migration_history
 
 # Logger for this module
 logger = logging.getLogger(__name__)
@@ -107,3 +108,43 @@ def restart_scheduler():
         flash("Task scheduler not available", "error")
 
     return redirect(url_for("system.status"))
+
+
+@system_bp.route("/migrations")
+def migrations():
+    """
+    Display database migration status and history.
+    """
+    logger.info("Accessing database migrations page")
+
+    # Check if migrations are needed
+    migrations_needed = check_migrations_needed(current_app)
+
+    # Get migration history
+    migration_history = get_migration_history(current_app)
+
+    return render_template(
+        "system/migrations.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        migrations_needed=migrations_needed,
+        migration_history=migration_history,
+    )
+
+
+@system_bp.route("/run_migrations", methods=["POST"])
+def run_db_migrations():
+    """
+    Run database migrations manually.
+    """
+    logger.info("Manual migration requested")
+
+    from migration_utils import run_migrations
+
+    success = run_migrations(current_app)
+
+    if success:
+        flash("Database migrations completed successfully", "success")
+    else:
+        flash("Error running database migrations", "error")
+
+    return redirect(url_for("system.migrations"))

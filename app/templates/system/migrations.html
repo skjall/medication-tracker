@@ -1,0 +1,149 @@
+{% extends "layout.html" %}
+
+{% block title %}Database Migrations - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-database me-2"></i>Database Migrations
+    </h1>
+    <a href="{{ url_for('system.status') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to System Status
+    </a>
+</div>
+
+<!-- Migration Status Card -->
+<div class="card mb-4">
+    <div class="card-header {% if migrations_needed %}bg-warning{% else %}bg-success{% endif %} text-white">
+        <h5 class="mb-0">Migration Status</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                {% if migrations_needed %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Database migrations are needed. Your database schema is not up to date with the application code.
+                    </div>
+                    <form action="{{ url_for('system.run_db_migrations') }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-database me-1"></i> Run Migrations
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Database is up to date. No migrations needed.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Migration History Card -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Migration History</h5>
+    </div>
+    <div class="card-body">
+        {% if migration_history %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Revision</th>
+                            <th>Timestamp</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for revision_id, timestamp, description in migration_history %}
+                            <tr>
+                                <td><code>{{ revision_id }}</code></td>
+                                <td>{{ timestamp }}</td>
+                                <td>{{ description }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>No migration history available.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Migration Information Card -->
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Migration Information</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Database migrations are used to update the database schema when the application is upgraded.
+            Migrations are automatically applied when the application starts.
+        </div>
+
+        <h5 class="mt-3">What Are Migrations?</h5>
+        <p>
+            Migrations are version-controlled changes to your database schema. Each time the application structure changes
+            (like adding new fields to a table or creating new tables), a migration is created to track these changes.
+        </p>
+
+        <h5 class="mt-3">How Migrations Work</h5>
+        <ul>
+            <li>When the application starts, it checks if there are any pending migrations</li>
+            <li>If migrations are needed, they are automatically applied</li>
+            <li>This keeps your database in sync with the application code</li>
+        </ul>
+
+        <h5 class="mt-3">For Developers</h5>
+        <div class="bg-light p-3 rounded">
+            <p class="mb-2">Create a new migration:</p>
+            <code>./scripts/create_migration.sh "Description of changes"</code>
+
+            <p class="mt-3 mb-2">Apply migrations manually:</p>
+            <code>./scripts/apply_migrations.sh</code>
+
+            <p class="mt-3 mb-2">View migration status:</p>
+            <code>python app/migration_cli.py check</code>
+        </div>
+    </div>
+</div>
+
+<!-- Debug Actions -->
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Debug Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <form action="{{ url_for('system.run_db_migrations') }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-sync me-1"></i>Run Migrations Now
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <button class="btn btn-outline-primary w-100" onclick="refreshPage()" type="button">
+                    <i class="fas fa-rotate-right me-1"></i>Refresh Status
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function refreshPage() {
+        window.location.reload();
+    }
+</script>
+{% endblock %}

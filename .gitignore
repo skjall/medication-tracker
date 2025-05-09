@@ -59,3 +59,10 @@ app/logs/*
 !app/logs/.gitkeep
 logs/*
 !logs/.gitkeep
+
+# RepoMix
+repomix-output.*
+
+# Alembic
+migrations/__pycache__/
+migrations/versions/__pycache__/

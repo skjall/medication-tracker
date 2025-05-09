@@ -270,7 +270,7 @@ def export_visits_to_csv() -> Response:
     response = Response(
         output,
         mimetype="text/csv",
-        headers={"Content-disposition": "attachment; filename=hospital_visits.csv"},
+        headers={"Content-disposition": "attachment; filename=physician_visits.csv"},
     )
 
     return response

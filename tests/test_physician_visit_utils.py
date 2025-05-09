@@ -18,7 +18,7 @@ import tzlocal
 from .test_base import BaseTestCase
 
 # Temporarily increase log level
-logger = logging.getLogger("test.physician_visit_utils")
+logger = logging.getLogger("test.hospital_visit_utils")
 logger.setLevel(logging.DEBUG)
 
 
