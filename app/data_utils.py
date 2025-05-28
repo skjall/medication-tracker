@@ -196,7 +196,7 @@ def export_orders_to_csv() -> Response:
             writer.writerow(
                 [
                     order.id,
-                    format_date(order.hospital_visit.visit_date),
+                    format_date(order.physician_visit.visit_date),
                     order.status,
                     format_datetime(order.created_date),
                     item.medication.name,
@@ -769,11 +769,11 @@ def import_orders_from_csv(
                             if existing_order and override:
                                 order = existing_order
                             else:
-                                order = Order(hospital_visit_id=visit.id)
+                                order = Order(physician_visit_id=visit.id)
                                 db.session.add(order)
                         else:
                             # Create new order
-                            order = Order(hospital_visit_id=visit.id)
+                            order = Order(physician_visit_id=visit.id)
                             db.session.add(order)
 
                         # Update order fields

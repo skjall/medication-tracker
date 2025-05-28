@@ -1,354 +1,418 @@
-{% extends "layout.html" %}
-
-{% block title %}{{ medication.name }} - Medication Tracker{% endblock %}
-
-{% block content %}
+{% extends "layout.html" %} {% block title %}{{ medication.name }} -
+Medication Tracker{% endblock %} {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>
-        <i class="fas fa-pills me-2"></i>{{ medication.name }}
-    </h1>
-    <div>
-        <a href="{{ url_for('medications.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to List
-        </a>
-        <a href="{{ url_for('medications.edit', id=medication.id) }}" class="btn btn-primary ms-2">
-            <i class="fas fa-pen-to-square me-1"></i>Edit
-        </a>
-    </div>
+  <h1><i class="fas fa-pills me-2"></i>{{ medication.name }}</h1>
+  <div>
+    <a
+      href="{{ url_for('medications.index') }}"
+      class="btn btn-outline-secondary"
+    >
+      <i class="fas fa-arrow-left me-1"></i>Back to List
+    </a>
+    <a
+      href="{{ url_for('medications.edit', id=medication.id) }}"
+      class="btn btn-primary ms-2"
+    >
+      <i class="fas fa-pen-to-square me-1"></i>Edit
+    </a>
+  </div>
 </div>
 
 <!-- Medication Schedule Card - Moved here to make it more prominent -->
 <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="fas fa-calendar-alt me-2"></i>Medication Schedule
-            </h5>
-            <a href="{{ url_for('schedules.index', medication_id=medication.id) }}" class="btn btn-light btn-sm">
-                <i class="fas fa-cog me-1"></i>Manage Schedules
-            </a>
-        </div>
+  <div class="card-header bg-primary text-white">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="fas fa-calendar-alt me-2"></i>Medication Schedule
+      </h5>
+      <a
+        href="{{ url_for('schedules.index', medication_id=medication.id) }}"
+        class="btn btn-light btn-sm"
+      >
+        <i class="fas fa-cog me-1"></i>Manage Schedules
+      </a>
     </div>
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <p class="mb-0">
-                    <strong>Current Status:</strong>
-                    {% if medication.auto_deduction_enabled %}
-                        <span class="text-success">
-                            <i class="fas fa-check-circle"></i> Automatic deduction enabled
-                        </span>
-                    {% else %}
-                        <span class="text-secondary">
-                            <i class="fas fa-times-circle"></i> Automatic deduction disabled
-                        </span>
-                    {% endif %}
-                </p>
+  </div>
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <p class="mb-0">
+          <strong>Current Status:</strong>
+          {% if medication.auto_deduction_enabled %}
+          <span class="text-success">
+            <i class="fas fa-check-circle"></i> Automatic deduction
+            enabled
+          </span>
+          {% else %}
+          <span class="text-secondary">
+            <i class="fas fa-times-circle"></i> Automatic deduction
+            disabled
+          </span>
+          {% endif %}
+        </p>
 
-                <p class="mt-2 mb-0">
-                    <strong>Daily Usage:</strong> {{ medication.daily_usage|round(2) }} units
-                    {% if medication.schedules %}
-                        (based on {{ medication.schedules|length }} schedule{{ 's' if medication.schedules|length != 1 }})
-                    {% else %}
-                        (no schedules defined)
-                    {% endif %}
-                </p>
-            </div>
+        <p class="mt-2 mb-0">
+          <strong>Daily Usage:</strong> {{
+          medication.daily_usage|round(2) }} units {% if
+          medication.schedules %} (based on {{
+          medication.schedules|length }} schedule{{ 's' if
+          medication.schedules|length != 1 }}) {% else %} (no
+          schedules defined) {% endif %}
+        </p>
+      </div>
 
-            <div>
-                <form method="POST" action="{{ url_for('schedules.toggle_auto_deduction', medication_id=medication.id) }}">
-                    <button type="submit" class="btn {% if medication.auto_deduction_enabled %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
-                        {% if medication.auto_deduction_enabled %}
-                            <i class="fas fa-toggle-off me-1"></i>Disable Auto-Deduction
-                        {% else %}
-                            <i class="fas fa-toggle-on me-1"></i>Enable Auto-Deduction
-                        {% endif %}
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        {% if medication.schedules %}
-            <div class="mt-4">
-                <h6>Active Schedules:</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover">
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Details</th>
-                                <th>Times</th>
-                                <th>Dose</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for schedule in medication.schedules %}
-                                <tr>
-                                    <td>
-                                        {% if schedule.schedule_type.value == 'daily' %}
-                                            <span class="badge bg-success">Daily</span>
-                                        {% elif schedule.schedule_type.value == 'interval' %}
-                                            <span class="badge bg-info">Every {{ schedule.interval_days }} day(s)</span>
-                                        {% elif schedule.schedule_type.value == 'weekdays' %}
-                                            <span class="badge bg-primary">Selected Days</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if schedule.schedule_type.value == 'weekdays' %}
-                                            {% set day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] %}
-                                            {% for day_num in schedule.formatted_weekdays %}
-                                                <span class="badge bg-light text-dark">{{ day_names[day_num] }}</span>
-                                            {% endfor %}
-                                        {% elif schedule.schedule_type.value == 'interval' %}
-                                            <span class="text-muted">Every {{ schedule.interval_days }} day(s)</span>
-                                        {% else %}
-                                            <span class="text-muted">Every day</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% for time in schedule.formatted_times %}
-                                            <span class="badge bg-secondary">{{ time }}</span>
-                                            {% if not loop.last %}<br>{% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td>{{ schedule.units_per_dose }} units</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        {% else %}
-            <div class="alert alert-info mt-3">
-                <i class="fas fa-info-circle me-2"></i>
-                No detailed schedules defined yet. Define schedules to enable automatic inventory deduction and precise daily usage calculation.
-                <div class="mt-2">
-                    <a href="{{ url_for('schedules.new', medication_id=medication.id) }}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus me-1"></i>Add First Schedule
-                    </a>
-                </div>
-            </div>
-        {% endif %}
+      <div>
+        <form
+          method="POST"
+          action="{{ url_for('schedules.toggle_auto_deduction', medication_id=medication.id) }}"
+        >
+          <button
+            type="submit"
+            class="btn {% if medication.auto_deduction_enabled %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+          >
+            {% if medication.auto_deduction_enabled %}
+            <i class="fas fa-toggle-off me-1"></i>Disable
+            Auto-Deduction {% else %}
+            <i class="fas fa-toggle-on me-1"></i>Enable Auto-Deduction
+            {% endif %}
+          </button>
+        </form>
+      </div>
     </div>
+
+    {% if medication.schedules %}
+    <div class="mt-4">
+      <h6>Active Schedules:</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Details</th>
+              <th>Times</th>
+              <th>Dose</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for schedule in medication.schedules %}
+            <tr>
+              <td>
+                {% if schedule.schedule_type.value == 'daily' %}
+                <span class="badge bg-success">Daily</span>
+                {% elif schedule.schedule_type.value == 'interval' %}
+                <span class="badge bg-info"
+                  >Every {{ schedule.interval_days }} day(s)</span
+                >
+                {% elif schedule.schedule_type.value == 'weekdays' %}
+                <span class="badge bg-primary">Selected Days</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if schedule.schedule_type.value == 'weekdays' %} {%
+                set day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri',
+                'Sat', 'Sun'] %} {% for day_num in
+                schedule.formatted_weekdays %}
+                <span class="badge bg-light text-dark"
+                  >{{ day_names[day_num] }}</span
+                >
+                {% endfor %} {% elif schedule.schedule_type.value ==
+                'interval' %}
+                <span class="text-muted"
+                  >Every {{ schedule.interval_days }} day(s)</span
+                >
+                {% else %}
+                <span class="text-muted">Every day</span>
+                {% endif %}
+              </td>
+              <td>
+                {% for time in schedule.formatted_times %}
+                <span class="badge bg-secondary">{{ time }}</span>
+                {% if not loop.last %}<br />{% endif %} {% endfor %}
+              </td>
+              <td>{{ schedule.units_per_dose }} units</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-3">
+      <i class="fas fa-info-circle me-2"></i>
+      No detailed schedules defined yet. Define schedules to enable
+      automatic inventory deduction and precise daily usage
+      calculation.
+      <div class="mt-2">
+        <a
+          href="{{ url_for('schedules.new', medication_id=medication.id) }}"
+          class="btn btn-sm btn-primary"
+        >
+          <i class="fas fa-plus me-1"></i>Add First Schedule
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
 </div>
 
 <!-- Medication Details Card -->
 <div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Medication Information</h5>
-            </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h6>Daily Usage:</h6>
-                        <p>
-                            {% if medication.daily_usage > 0 %}
-                                {{ medication.daily_usage|round(1) }} units per day
-                            {% else %}
-                                <span class="text-warning">No schedules defined</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Schedules:</h6>
-                        <p>
-                            {% if medication.schedules|length > 0 %}
-                                {{ medication.schedules|length }} schedule{{ 's' if medication.schedules|length != 1 }}
-                            {% else %}
-                                <span class="text-warning">None</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
-
-                <h6>Daily Usage:</h6>
-                <p class="mb-4">{{ medication.daily_usage|round(1) }} units per day</p>
-
-                {% if medication.notes %}
-                    <h6>Notes:</h6>
-                    <p class="mb-4">{{ medication.notes }}</p>
-                {% endif %}
-
-                <h6>Package Sizes:</h6>
-                <div class="row mb-4">
-                    {% if medication.package_size_n1 %}
-                        <div class="col-md-4">
-                            <div class="package-box n1">
-                                <strong>N1:</strong> {{ medication.package_size_n1 }} units
-                            </div>
-                        </div>
-                    {% endif %}
-                    {% if medication.package_size_n2 %}
-                        <div class="col-md-4">
-                            <div class="package-box n2">
-                                <strong>N2:</strong> {{ medication.package_size_n2 }} units
-                            </div>
-                        </div>
-                    {% endif %}
-                    {% if medication.package_size_n3 %}
-                        <div class="col-md-4">
-                            <div class="package-box n3">
-                                <strong>N3:</strong> {{ medication.package_size_n3 }} units
-                            </div>
-                        </div>
-                    {% endif %}
-                    {% if not medication.package_size_n1 and not medication.package_size_n2 and not medication.package_size_n3 %}
-                        <div class="col-12">
-                            <p class="text-muted">No package sizes defined</p>
-                        </div>
-                    {% endif %}
-                </div>
-
-                <h6>Inventory Settings:</h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Min Threshold:</strong> {{ medication.min_threshold }} units</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>Safety Margin:</strong> {{ medication.safety_margin_days }} days</p>
-                    </div>
-                </div>
-            </div>
+  <div class="col-md-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Medication Information</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <h6>Daily Usage:</h6>
+            <p>
+              {% if medication.daily_usage > 0 %} {{
+              medication.daily_usage|round(1) }} units per day {% else
+              %}
+              <span class="text-warning">No schedules defined</span>
+              {% endif %}
+            </p>
+          </div>
+          <div class="col-md-6">
+            <h6>Schedules:</h6>
+            <p>
+              {% if medication.schedules|length > 0 %} {{
+              medication.schedules|length }} schedule{{ 's' if
+              medication.schedules|length != 1 }} {% else %}
+              <span class="text-warning">None</span>
+              {% endif %}
+            </p>
+          </div>
         </div>
-    </div>
 
-    <!-- Inventory Status Card -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100 {% if medication.inventory and medication.inventory.is_low %}border-danger{% else %}border-success{% endif %}">
-            <div class="card-header {% if medication.inventory and medication.inventory.is_low %}bg-danger{% else %}bg-success{% endif %} text-white">
-                <h5 class="mb-0">Inventory Status</h5>
+        <h6>Daily Usage:</h6>
+        <p class="mb-4">
+          {{ medication.daily_usage|round(1) }} units per day
+        </p>
+
+        {% if medication.notes %}
+        <h6>Notes:</h6>
+        <p class="mb-4">{{ medication.notes }}</p>
+        {% endif %}
+
+        <h6>Package Sizes:</h6>
+        <div class="row mb-4">
+          {% if medication.package_size_n1 %}
+          <div class="col-md-4">
+            <div class="package-box n1">
+              <strong>N1:</strong> {{ medication.package_size_n1 }}
+              units
             </div>
-            <div class="card-body">
-                {% if medication.inventory %}
-                    <div class="text-center mb-4">
-                        <div class="display-1 {% if medication.inventory.is_low %}text-danger{% else %}text-success{% endif %}">
-                            {{ medication.inventory.current_count }}
-                        </div>
-                        <p class="lead">Current Units</p>
-                        <div class="progress mt-2">
-                            {% set percent = 100 if not medication.min_threshold else (medication.inventory.current_count / (medication.min_threshold * 2) * 100)|round %}
-                            <div class="progress-bar {% if medication.inventory.is_low %}bg-danger{% elif percent < 50 %}bg-warning{% else %}bg-success{% endif %}"
-                                 role="progressbar"
-                                 style="width: {{ min(100, percent) }}%"
-                                 aria-valuenow="{{ medication.inventory.current_count }}"
-                                 aria-valuemin="0"
-                                 aria-valuemax="{{ medication.min_threshold * 2 }}">
-                            </div>
-                        </div>
-                        <small class="text-muted">Minimum threshold: {{ medication.min_threshold }} units</small>
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col-md-6 text-center">
-                            <h3 class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}">
-                                {% if medication.days_remaining %}
-                                    {{ medication.days_remaining|round(1) }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </h3>
-                            <p>Days Remaining</p>
-                        </div>
-                        <div class="col-md-6 text-center">
-                            {% if medication.depletion_date %}
-                                <h3 class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}">
-                                    {{ medication.depletion_date.strftime('%d.%m.%Y') }}
-                                </h3>
-                                <p>Depletion Date</p>
-                            {% else %}
-                                <h3>-</h3>
-                                <p>Depletion Date</p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('inventory.show', id=medication.inventory.id) }}" class="btn btn-primary">
-                            <i class="fas fa-boxes me-1"></i>Manage Inventory
-                        </a>
-                    </div>
-                {% else %}
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        No inventory record found for this medication.
-                    </div>
-                    <p>An inventory record should have been created automatically. Please contact the administrator.</p>
-                {% endif %}
+          </div>
+          {% endif %} {% if medication.package_size_n2 %}
+          <div class="col-md-4">
+            <div class="package-box n2">
+              <strong>N2:</strong> {{ medication.package_size_n2 }}
+              units
             </div>
+          </div>
+          {% endif %} {% if medication.package_size_n3 %}
+          <div class="col-md-4">
+            <div class="package-box n3">
+              <strong>N3:</strong> {{ medication.package_size_n3 }}
+              units
+            </div>
+          </div>
+          {% endif %} {% if not medication.package_size_n1 and not
+          medication.package_size_n2 and not
+          medication.package_size_n3 %}
+          <div class="col-12">
+            <p class="text-muted">No package sizes defined</p>
+          </div>
+          {% endif %}
         </div>
+
+        <h6>Inventory Settings:</h6>
+        <div class="row">
+          <div class="col-md-6">
+            <p>
+              <strong>Min Threshold:</strong> {{
+              medication.min_threshold }} units
+            </p>
+          </div>
+          <div class="col-md-6">
+            <p>
+              <strong>Safety Margin:</strong> {{
+              medication.safety_margin_days }} days
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <!-- Inventory Status Card -->
+  <div class="col-md-6 mb-4">
+    <div
+      class="card h-100 {% if medication.inventory and medication.inventory.is_low %}border-danger{% else %}border-success{% endif %}"
+    >
+      <div
+        class="card-header {% if medication.inventory and medication.inventory.is_low %}bg-danger{% else %}bg-success{% endif %} text-white"
+      >
+        <h5 class="mb-0">Inventory Status</h5>
+      </div>
+      <div class="card-body">
+        {% if medication.inventory %}
+        <div class="text-center mb-4">
+          <div
+            class="display-1 {% if medication.inventory.is_low %}text-danger{% else %}text-success{% endif %}"
+          >
+            {{ medication.inventory.current_count }}
+          </div>
+          <p class="lead">Current Units</p>
+          <div class="progress mt-2">
+            {% set percent = 100 if not medication.min_threshold else
+            (medication.inventory.current_count /
+            (medication.min_threshold * 2) * 100)|round %}
+            <div
+              class="progress-bar {% if medication.inventory.is_low %}bg-danger{% elif percent < 50 %}bg-warning{% else %}bg-success{% endif %}"
+              role="progressbar"
+              style="width: {{ min(100, percent) }}%"
+              aria-valuenow="{{ medication.inventory.current_count }}"
+              aria-valuemin="0"
+              aria-valuemax="{{ medication.min_threshold * 2 }}"
+            ></div>
+          </div>
+          <small class="text-muted"
+            >Minimum threshold: {{ medication.min_threshold }}
+            units</small
+          >
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-md-6 text-center">
+            <h3
+              class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}"
+            >
+              {% if medication.days_remaining %} {{
+              medication.days_remaining|round(1) }} {% else %} - {%
+              endif %}
+            </h3>
+            <p>Days Remaining</p>
+          </div>
+          <div class="col-md-6 text-center">
+            {% if medication.depletion_date %}
+            <h3
+              class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}"
+            >
+              {{ medication.depletion_date.strftime('%d.%m.%Y') }}
+            </h3>
+            <p>Depletion Date</p>
+            {% else %}
+            <h3>-</h3>
+            <p>Depletion Date</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <a
+            href="{{ url_for('inventory.show', id=medication.inventory.id) }}"
+            class="btn btn-primary"
+          >
+            <i class="fas fa-boxes me-1"></i>Manage Inventory
+          </a>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          No inventory record found for this medication.
+        </div>
+        <p>
+          An inventory record should have been created automatically.
+          Please contact the administrator.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Associated Orders Card -->
 <div class="card">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Order History</h5>
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">Order History</h5>
+  </div>
+  <div class="card-body">
+    {% if medication.order_items %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Visit Date</th>
+            <th>Order Status</th>
+            <th>Quantity</th>
+            <th>Packages</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in medication.order_items %}
+          <tr>
+            <td>{{ item.order.id }}</td>
+            <td>
+              {{
+              item.order.physician_visit.visit_date.strftime('%d.%m.%Y')
+              }}
+            </td>
+            <td>
+              <span
+                class="badge {% if item.order.status == 'planned' %}bg-primary{% elif item.order.status == 'printed' %}bg-info{% elif item.order.status == 'fulfilled' %}bg-success{% endif %}"
+              >
+                {{ item.order.status|capitalize }}
+              </span>
+            </td>
+            <td>{{ item.quantity_needed }} units</td>
+            <td>
+              <small>
+                {% if item.packages_n1 > 0 %} N1: {{ item.packages_n1
+                }}{% if item.packages_n2 > 0 or item.packages_n3 > 0
+                %}<br />{% endif %} {% endif %} {% if item.packages_n2
+                > 0 %} N2: {{ item.packages_n2 }}{% if
+                item.packages_n3 > 0 %}<br />{% endif %} {% endif %}
+                {% if item.packages_n3 > 0 %} N3: {{ item.packages_n3
+                }} {% endif %}
+              </small>
+            </td>
+            <td>
+              <a
+                href="{{ url_for('orders.show', id=item.order.id) }}"
+                class="btn btn-sm btn-outline-primary"
+              >
+                <i class="fas fa-eye"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    <div class="card-body">
-        {% if medication.order_items %}
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Order #</th>
-                            <th>Visit Date</th>
-                            <th>Order Status</th>
-                            <th>Quantity</th>
-                            <th>Packages</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in medication.order_items %}
-                            <tr>
-                                <td>{{ item.order.id }}</td>
-                                <td>{{ item.order.hospital_visit.visit_date.strftime('%d.%m.%Y') }}</td>
-                                <td>
-                                    <span class="badge {% if item.order.status == 'planned' %}bg-primary{% elif item.order.status == 'printed' %}bg-info{% elif item.order.status == 'fulfilled' %}bg-success{% endif %}">
-                                        {{ item.order.status|capitalize }}
-                                    </span>
-                                </td>
-                                <td>{{ item.quantity_needed }} units</td>
-                                <td>
-                                    <small>
-                                        {% if item.packages_n1 > 0 %}
-                                            N1: {{ item.packages_n1 }}{% if item.packages_n2 > 0 or item.packages_n3 > 0 %}<br>{% endif %}
-                                        {% endif %}
-                                        {% if item.packages_n2 > 0 %}
-                                            N2: {{ item.packages_n2 }}{% if item.packages_n3 > 0 %}<br>{% endif %}
-                                        {% endif %}
-                                        {% if item.packages_n3 > 0 %}
-                                            N3: {{ item.packages_n3 }}
-                                        {% endif %}
-                                    </small>
-                                </td>
-                                <td>
-                                    <a href="{{ url_for('orders.show', id=item.order.id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                No orders found for this medication.
-            </div>
-        {% endif %}
+    {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i>
+      No orders found for this medication.
     </div>
+    {% endif %}
+  </div>
 </div>
 
 <!-- Delete Button -->
 <div class="mt-4">
-    <form method="POST" action="{{ url_for('medications.delete', id=medication.id) }}" onsubmit="return confirm('Are you sure you want to delete this medication? This cannot be undone.');">
-        <button type="submit" class="btn btn-danger">
-            <i class="fas fa-trash-alt me-1"></i>Delete Medication
-        </button>
-    </form>
+  <form
+    method="POST"
+    action="{{ url_for('medications.delete', id=medication.id) }}"
+    onsubmit="return confirm('Are you sure you want to delete this medication? This cannot be undone.');"
+  >
+    <button type="submit" class="btn btn-danger">
+      <i class="fas fa-trash-alt me-1"></i>Delete Medication
+    </button>
+  </form>
 </div>
 {% endblock %}

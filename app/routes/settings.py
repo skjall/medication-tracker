@@ -83,7 +83,7 @@ def physician_visits():
         return redirect(url_for("settings.physician_visits"))
 
     # Calculate actual average interval for information purposes
-    from hospital_visit_utils import calculate_days_between_visits
+    from physician_visit_utils import calculate_days_between_visits
 
     actual_interval = calculate_days_between_visits()
 

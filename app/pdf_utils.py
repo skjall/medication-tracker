@@ -138,8 +138,8 @@ def generate_prescription_pdf(
         # Create data for the form
         form_data = {
             # Add patient-specific fields here
-            "datum": order.hospital_visit.visit_date.strftime("%d.%m.%Y"),
-            "name": order.hospital_visit.notes
+            "datum": order.physician_visit.visit_date.strftime("%d.%m.%Y"),
+            "name": order.physician_visit.notes
             or "",  # You might want to add patient name fields
         }
 
