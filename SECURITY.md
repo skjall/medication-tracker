@@ -25,11 +25,15 @@ The following versions of Medication Tracker are currently supported with securi
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in Medication Tracker, please help us keep the project secure by following these guidelines:
+If you discover a security vulnerability in Medication Tracker, please help us keep the project secure by reporting it responsibly.
 
 ### How to Report
-- **Email**: Create an issue on GitHub with the "security" label, or contact the maintainer directly if the vulnerability is critical
-- **Do not** post security vulnerabilities in public issues or discussions
+**Use GitHub Security Advisories**: [Report a vulnerability](https://github.com/Skjall/medication-tracker/security/advisories/new)
+
+GitHub Security Advisories provide a secure, private channel for reporting vulnerabilities and allow for coordinated disclosure. This is the preferred method for all security reports.
+
+### Alternative Contact
+If you cannot use GitHub Security Advisories, you may contact the maintainer directly for critical vulnerabilities, but please avoid posting security issues in public GitHub issues or discussions.
 
 ### What to Include
 Please provide as much information as possible:
@@ -37,7 +41,7 @@ Please provide as much information as possible:
 - Steps to reproduce the issue
 - Potential impact assessment
 - Suggested fix (if you have one)
-- Your contact information for follow-up
+- Affected versions (if known)
 
 ### Response Timeline
 - **Acknowledgment**: Within 48 hours of report
@@ -48,7 +52,7 @@ Please provide as much information as possible:
 ### What to Expect
 - **Accepted vulnerabilities**: Will be fixed in the next release with credit given to the reporter
 - **Declined reports**: Will receive an explanation of why the issue doesn't qualify as a security vulnerability
-- **Coordination**: We'll work with you on responsible disclosure timing
+- **Coordination**: We'll work with you on responsible disclosure timing through the GitHub Security Advisory process
 
 ## Security Best Practices for Users
 
