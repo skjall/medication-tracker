@@ -56,19 +56,19 @@ def new():
         # Check if the post request has the file part
         if "template_file" not in request.files:
             flash("No file part", "error")
-            return redirect(request.url)
+            return redirect(url_for("prescriptions.new"))
 
         file = request.files["template_file"]
 
         # If user does not select file, browser may submit an empty file
         if file.filename == "":
             flash("No selected file", "error")
-            return redirect(request.url)
+            return redirect(url_for("prescriptions.new"))
 
         # Check if the file is a PDF
         if not file.filename.lower().endswith(".pdf"):
             flash("Only PDF files are allowed", "error")
-            return redirect(request.url)
+            return redirect(url_for("prescriptions.new"))
 
         # Extract form data
         name = request.form.get("name", "")
@@ -267,7 +267,7 @@ def edit(id: int):
             # Check if the file is a PDF
             if not file.filename.lower().endswith(".pdf"):
                 flash("Only PDF files are allowed", "error")
-                return redirect(request.url)
+                return redirect(url_for("prescriptions.edit", id=id))
 
             # Delete the old file
             try:
