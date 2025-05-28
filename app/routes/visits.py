@@ -119,7 +119,7 @@ def show(id: int):
     logger.debug(f"Found visit: date={visit.visit_date}")
 
     # Get orders for this visit
-    orders = Order.query.filter_by(hospital_visit_id=visit.id).all()
+    orders = Order.query.filter_by(physician_visit_id=visit.id).all()
     logger.debug(f"Found {len(orders)} orders for this visit")
 
     # Get all medications for medication needs calculation
@@ -219,7 +219,7 @@ def delete(id: int):
     logger.debug(f"Found visit: date={visit.visit_date}")
 
     # Check if there are orders associated with this visit
-    orders = Order.query.filter_by(hospital_visit_id=visit.id).all()
+    orders = Order.query.filter_by(physician_visit_id=visit.id).all()
     if orders:
         logger.warning(
             f"Cannot delete visit ID={id} with {len(orders)} associated orders"

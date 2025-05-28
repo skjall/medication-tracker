@@ -198,6 +198,7 @@ To set up a development environment:
    ```bash
    python app/main.py
    ```
+5. Then access the application at http://localhost:8087
 
 ## License
 

@@ -43,7 +43,7 @@ class PhysicianVisit(db.Model):
 
     # Relationships
     orders: Mapped[List["Order"]] = relationship(
-        "Order", back_populates="hospital_visit", cascade="all, delete-orphan"
+        "Order", back_populates="physician_visit", cascade="all, delete-orphan"
     )
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -70,7 +70,7 @@ class Order(db.Model):
     __tablename__ = "orders"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    hospital_visit_id: Mapped[int] = mapped_column(
+    physician_visit_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("physician_visits.id")
     )
     created_date: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -79,7 +79,7 @@ class Order(db.Model):
     status: Mapped[str] = mapped_column(String(20), default="planned")
 
     # Relationships
-    hospital_visit: Mapped["PhysicianVisit"] = relationship(
+    physician_visit: Mapped["PhysicianVisit"] = relationship(
         "PhysicianVisit", back_populates="orders"
     )
     order_items: Mapped[List["OrderItem"]] = relationship(
@@ -87,7 +87,7 @@ class Order(db.Model):
     )
 
     def __repr__(self) -> str:
-        return f"<Order for visit {self.hospital_visit_id}, status: {self.status}>"
+        return f"<Order for visit {self.physician_visit_id}, status: {self.status}>"
 
 
 class OrderItem(db.Model):

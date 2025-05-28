@@ -191,7 +191,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             logger.warning(
                 "Enhanced deduction service not available, using legacy auto-deduction"
             )
-            from hospital_visit_utils import auto_deduct_inventory
+            from physician_visit_utils import auto_deduct_inventory
 
             scheduler.add_task(
                 name="auto_deduction",

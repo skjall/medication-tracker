@@ -132,7 +132,7 @@ class TestModelRelationships(BaseTestCase):
         # Schedules should be gone
         self.assertEqual(self.db.session.query(MedicationSchedule).count(), 0)
 
-    def test_hospital_visit_order_relationship(self):
+    def test_physician_visit_order_relationship(self):
         """Test the relationship between PhysicianVisit and Order."""
         from app.models import PhysicianVisit, Order
 
@@ -144,10 +144,10 @@ class TestModelRelationships(BaseTestCase):
         self.db.session.flush()
 
         # Create orders
-        order1 = Order(hospital_visit=visit, status="planned")
+        order1 = Order(physician_visit=visit, status="planned")
         self.db.session.add(order1)
 
-        order2 = Order(hospital_visit=visit, status="printed")
+        order2 = Order(physician_visit=visit, status="printed")
         self.db.session.add(order2)
         self.db.session.commit()
 
@@ -174,7 +174,7 @@ class TestModelRelationships(BaseTestCase):
         self.db.session.add(visit)
         self.db.session.flush()
 
-        order = Order(hospital_visit=visit, status="planned")
+        order = Order(physician_visit=visit, status="planned")
         self.db.session.add(order)
         self.db.session.flush()
 
@@ -276,7 +276,7 @@ class TestModelRelationships(BaseTestCase):
         self.db.session.add(visit)
         self.db.session.flush()
 
-        order = Order(hospital_visit=visit, status="planned")
+        order = Order(physician_visit=visit, status="planned")
         self.db.session.add(order)
         self.db.session.flush()
 

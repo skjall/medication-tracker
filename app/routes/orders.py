@@ -91,7 +91,7 @@ def new():
 
     if request.method == "POST":
         # Create new order
-        order = Order(hospital_visit_id=visit.id, status="planned")
+        order = Order(physician_visit_id=visit.id, status="planned")
         db.session.add(order)
 
         # Get all medications
@@ -123,7 +123,7 @@ def new():
         return redirect(url_for("orders.show", id=order.id))
 
     # Get settings to check if next-but-one is enabled globally
-    from hospital_visit_utils import Settings
+    from physician_visit_utils import Settings
 
     settings = Settings.get_settings()
 
@@ -175,7 +175,7 @@ def show(id: int):
         "orders/show.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         order=order,
-        visit=order.hospital_visit,
+        visit=order.physician_visit,
         order_items=order.order_items,
     )
 
@@ -252,7 +252,7 @@ def edit(id: int):
         "orders/edit.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         order=order,
-        visit=order.hospital_visit,
+        visit=order.physician_visit,
         medications=medications,
         order_items_map=order_items_map,
     )
@@ -295,7 +295,7 @@ def printable(id: int):
             "orders/printable.html",
             local_time=to_local_timezone(datetime.now(timezone.utc)),
             order=order,
-            visit=order.hospital_visit,
+            visit=order.physician_visit,
             order_items=order.order_items,
             print_date=datetime.now(timezone.utc),
         )
