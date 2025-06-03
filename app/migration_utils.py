@@ -8,7 +8,7 @@ when the application starts or when explicitly triggered.
 # Standard library imports
 import logging
 import os
-import subprocess
+# subprocess not used
 from typing import List, Tuple
 
 # Third-party imports
@@ -156,6 +156,7 @@ def check_and_fix_version_tracking(app: Flask) -> bool:
     except Exception as e:
         logger.error(f"Error checking or fixing version tracking: {e}")
         return False
+
 
 def check_migrations_needed(app: Flask) -> bool:
     """

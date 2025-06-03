@@ -76,10 +76,10 @@ def calculate_days_until(target_date: datetime) -> int:
     """
     # Ensure target date is timezone-aware
     target_date = make_aware(target_date)
-    
+
     # Convert target date to local timezone for date comparison
     local_target = to_local_timezone(target_date)
-    
+
     # Get current time in local timezone
     now_utc = datetime.now(timezone.utc)
     local_now = to_local_timezone(now_utc)

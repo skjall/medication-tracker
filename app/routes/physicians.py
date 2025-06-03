@@ -89,7 +89,7 @@ def new():
 def show(physician_id):
     """Show physician details."""
     physician = Physician.query.get_or_404(physician_id)
-    
+
     return render_template(
         "physicians/show.html",
         physician=physician,

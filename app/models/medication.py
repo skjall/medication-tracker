@@ -35,7 +35,7 @@ class Medication(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    
+
     # Physician relationship and OTC flag
     physician_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("physicians.id"), nullable=True

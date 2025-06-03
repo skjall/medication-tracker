@@ -65,7 +65,7 @@ def new():
         # Extract form data
         visit_date_str = request.form.get("visit_date", "")
         notes = request.form.get("notes", "")
-        
+
         # Extract physician field
         physician_id = request.form.get("physician_id")
         if physician_id == "":
@@ -173,7 +173,7 @@ def edit(id: int):
         # Extract form data
         visit_date_str = request.form.get("visit_date", "")
         notes = request.form.get("notes", "")
-        
+
         # Extract physician field
         physician_id = request.form.get("physician_id")
         if physician_id == "":

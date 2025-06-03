@@ -5,7 +5,6 @@ Imports all models from submodules to make them available when importing from th
 
 # Standard library imports
 import logging
-from typing import TYPE_CHECKING
 
 # Local application imports
 from .base import db, utcnow

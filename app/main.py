@@ -6,20 +6,29 @@ Main application module for the Medication Tracker application.
 import logging
 import os
 import sys
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional
 
 # Add the app directory to the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from datetime import datetime, timedelta, timezone  # noqa: E402
+from typing import Any, Dict, Optional  # noqa: E402
+
 # Third-party imports
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request  # noqa: E402
 
 # Local application imports
-from logging_config import configure_logging
-from models import *
-from task_scheduler import TaskScheduler
-from utils import to_local_timezone
+from logging_config import configure_logging  # noqa: E402
+from models import (  # noqa: E402
+    db,
+    utcnow,
+    ensure_timezone_utc,
+    Medication,
+    PhysicianVisit,
+    Order,
+    Inventory,
+    InventoryLog
+)
+from task_scheduler import TaskScheduler  # noqa: E402
 
 
 def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
@@ -81,7 +90,6 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         # Check and fix version tracking if needed
         if check_and_fix_version_tracking(app):
             logger.info("Migration tracking fixed.")
-
 
         # Check if migrations need to be run
         if check_migrations_needed(app):

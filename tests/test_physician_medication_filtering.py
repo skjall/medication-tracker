@@ -88,32 +88,32 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
             self.med1_physician1, self.med2_physician1,
             self.med1_physician2, self.med_otc1, self.med_otc2
         ])
-        
+
         # Create inventory for all medications
-        for med in [self.med1_physician1, self.med2_physician1, 
-                   self.med1_physician2, self.med_otc1, self.med_otc2]:
+        for med in [self.med1_physician1, self.med2_physician1,
+                    self.med1_physician2, self.med_otc1, self.med_otc2]:
             inventory = Inventory(medication=med, current_count=50)
             self.db.session.add(inventory)
-        
+
         self.db.session.commit()
 
         # Create visits
         visit_date = datetime.now(timezone.utc) + timedelta(days=30)
-        
+
         # Visit with physician 1
         self.visit_physician1 = PhysicianVisit(
             physician_id=self.physician1.id,
             visit_date=visit_date,
             notes="Cardiology checkup"
         )
-        
+
         # Visit with physician 2
         self.visit_physician2 = PhysicianVisit(
             physician_id=self.physician2.id,
             visit_date=visit_date + timedelta(days=60),
             notes="Diabetes checkup"
         )
-        
+
         # Visit without physician (for OTC)
         self.visit_no_physician = PhysicianVisit(
             physician_id=None,
@@ -132,12 +132,12 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
         available_meds = self.db.session.query(Medication).filter_by(
             physician_id=self.visit_physician1.physician_id
         ).all()
-        
+
         # Should only contain physician 1's medications
         self.assertEqual(len(available_meds), 2)
         self.assertIn(self.med1_physician1, available_meds)
         self.assertIn(self.med2_physician1, available_meds)
-        
+
         # Should not contain other medications
         self.assertNotIn(self.med1_physician2, available_meds)
         self.assertNotIn(self.med_otc1, available_meds)
@@ -149,11 +149,11 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
         available_meds = self.db.session.query(Medication).filter_by(
             physician_id=self.visit_physician2.physician_id
         ).all()
-        
+
         # Should only contain physician 2's medications
         self.assertEqual(len(available_meds), 1)
         self.assertIn(self.med1_physician2, available_meds)
-        
+
         # Should not contain other medications
         self.assertNotIn(self.med1_physician1, available_meds)
         self.assertNotIn(self.med2_physician1, available_meds)
@@ -164,12 +164,12 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
         """Test that an order for visit without physician only shows OTC medications."""
         # Simulate the filtering logic from the route
         available_meds = self.db.session.query(Medication).filter_by(physician_id=None).all()
-        
+
         # Should only contain OTC medications
         self.assertEqual(len(available_meds), 2)
         self.assertIn(self.med_otc1, available_meds)
         self.assertIn(self.med_otc2, available_meds)
-        
+
         # Should not contain physician medications
         self.assertNotIn(self.med1_physician1, available_meds)
         self.assertNotIn(self.med2_physician1, available_meds)
@@ -183,7 +183,7 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
             status="planned"
         )
         self.db.session.add(order)
-        
+
         # Try to add an order item for physician 1's medication (should work)
         item1 = OrderItem(
             order=order,
@@ -195,7 +195,7 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
         )
         self.db.session.add(item1)
         self.db.session.commit()
-        
+
         # Verify it was added
         self.assertEqual(len(order.order_items), 1)
         self.assertEqual(order.order_items[0].medication_id, self.med1_physician1.id)
@@ -206,14 +206,14 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
         order1 = Order(physician_visit_id=self.visit_physician1.id, status="planned")
         order2 = Order(physician_visit_id=self.visit_physician2.id, status="planned")
         order3 = Order(physician_visit_id=self.visit_no_physician.id, status="planned")
-        
+
         self.db.session.add_all([order1, order2, order3])
         self.db.session.commit()
-        
+
         # Each order should only have access to its physician's medications
         # This would be enforced by the route filtering, not the model
         # So we're testing the conceptual separation here
-        
+
         # Verify visits have correct physician associations
         self.assertEqual(order1.physician_visit.physician_id, self.physician1.id)
         self.assertEqual(order2.physician_visit.physician_id, self.physician2.id)

@@ -73,7 +73,7 @@ def new():
             physician_id = None
         elif physician_id:
             physician_id = int(physician_id)
-        
+
         is_otc = bool(request.form.get("is_otc"))
 
         # Create new medication
@@ -164,7 +164,7 @@ def edit(id: int):
             medication.physician_id = None
         elif physician_id:
             medication.physician_id = int(physician_id)
-        
+
         medication.is_otc = bool(request.form.get("is_otc"))
 
         db.session.commit()

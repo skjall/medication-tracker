@@ -144,7 +144,7 @@ def new():
     else:
         # If visit has no physician, only show medications without physician assignment
         medications = Medication.query.filter_by(physician_id=None).all()
-    
+
     medication_needs = {}
 
     for med in medications:
