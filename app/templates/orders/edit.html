@@ -19,7 +19,7 @@
 
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Edit Order for Physician Visit on {{ visit.visit_date.strftime('%d.%m.%Y') }}</h5>
+        <h5 class="mb-0">Edit Order for Physician Visit on {{ format_date(visit.visit_date) }}</h5>
     </div>
     <div class="card-body">
         <div class="alert alert-info">
@@ -29,7 +29,14 @@
                     <p class="mb-0">
                         This order is for your physician visit in
                         <strong>{{ visit.days_until }} days</strong>
-                        on <strong>{{ visit.visit_date.strftime('%d.%m.%Y') }}</strong>.
+                        on <strong>{{ format_date(visit.visit_date) }}</strong>.
+                    </p>
+                    <p class="mt-2 mb-0">
+                        {% if visit.physician %}
+                            <i class="fas fa-user-md me-1"></i>Showing medications prescribed by <strong>{{ visit.physician.display_name }}</strong> only.
+                        {% else %}
+                            <i class="fas fa-pills me-1"></i>Showing over-the-counter medications and supplements only.
+                        {% endif %}
                     </p>
                 </div>
             </div>

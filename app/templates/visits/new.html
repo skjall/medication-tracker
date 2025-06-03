@@ -28,6 +28,20 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="physician_id" class="form-label">Physician</label>
+                        <select class="form-select" id="physician_id" name="physician_id">
+                            <option value="">Select a physician (optional)</option>
+                            {% for physician in physicians %}
+                                <option value="{{ physician.id }}">{{ physician.display_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            The physician you're visiting
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="mb-3">

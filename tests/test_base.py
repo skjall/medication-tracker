@@ -99,6 +99,7 @@ class BaseTestCase(unittest.TestCase):
             PhysicianVisit,
             Order,
             OrderItem,
+            Physician,
         )
 
         # Clean up any existing data to prevent test interference - using db session directly
@@ -110,6 +111,7 @@ class BaseTestCase(unittest.TestCase):
             self.db.session.execute(self.db.delete(PhysicianVisit))
             self.db.session.execute(self.db.delete(Order))
             self.db.session.execute(self.db.delete(OrderItem))
+            self.db.session.execute(self.db.delete(Physician))
             self.db.session.commit()
         except Exception as e:
             self.db.session.rollback()

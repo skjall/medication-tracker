@@ -21,6 +21,7 @@ from flask import (
 from models import (
     Inventory,
     Medication,
+    Physician,
     db,
 )
 from utils import to_local_timezone
@@ -66,9 +67,20 @@ def new():
         min_threshold = int(request.form.get("min_threshold", 0) or 0)
         safety_margin_days = int(request.form.get("safety_margin_days", 30) or 30)
 
+        # Extract new physician and OTC fields
+        physician_id = request.form.get("physician_id")
+        if physician_id == "":
+            physician_id = None
+        elif physician_id:
+            physician_id = int(physician_id)
+        
+        is_otc = bool(request.form.get("is_otc"))
+
         # Create new medication
         medication = Medication(
             name=name,
+            physician_id=physician_id,
+            is_otc=is_otc,
             active_ingredient=active_ingredient,
             form=form,
             dosage=dosage,  # Kept for database compatibility
@@ -93,7 +105,8 @@ def new():
         # Redirect to scheduling page instead of index
         return redirect(url_for("schedules.new", medication_id=medication.id))
 
-    return render_template("medications/new.html")
+    physicians = Physician.query.order_by(Physician.name).all()
+    return render_template("medications/new.html", physicians=physicians)
 
 
 @medication_bp.route("/<int:id>", methods=["GET"])
@@ -145,6 +158,15 @@ def edit(id: int):
             request.form.get("safety_margin_days", medication.safety_margin_days) or 30
         )
 
+        # Update physician and OTC fields
+        physician_id = request.form.get("physician_id")
+        if physician_id == "":
+            medication.physician_id = None
+        elif physician_id:
+            medication.physician_id = int(physician_id)
+        
+        medication.is_otc = bool(request.form.get("is_otc"))
+
         db.session.commit()
 
         flash(f"Medication '{medication.name}' updated successfully", "success")
@@ -155,10 +177,12 @@ def edit(id: int):
         else:
             return redirect(url_for("medications.show", id=medication.id))
 
+    physicians = Physician.query.order_by(Physician.name).all()
     return render_template(
         "medications/edit.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         medication=medication,
+        physicians=physicians,
     )
 
 

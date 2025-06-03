@@ -17,6 +17,7 @@ from utils import calculate_days_until
 
 if TYPE_CHECKING:
     from .medication import Medication
+    from .physician import Physician
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -31,6 +32,9 @@ class PhysicianVisit(db.Model):
     __tablename__ = "physician_visits"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    physician_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("physicians.id"), nullable=True
+    )
     visit_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
@@ -42,6 +46,9 @@ class PhysicianVisit(db.Model):
     )
 
     # Relationships
+    physician: Mapped[Optional["Physician"]] = relationship(
+        "Physician", back_populates="visits"
+    )
     orders: Mapped[List["Order"]] = relationship(
         "Order", back_populates="physician_visit", cascade="all, delete-orphan"
     )

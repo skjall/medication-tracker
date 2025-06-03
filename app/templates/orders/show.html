@@ -35,7 +35,7 @@
                 <p>
                     <strong>Associated Visit:</strong>
                     <a href="{{ url_for('visits.show', id=visit.id) }}">
-                        {{ visit.visit_date.strftime('%d.%m.%Y') }}
+                        {{ format_date(visit.visit_date) }}
                     </a>
                     {% if make_aware(visit.visit_date) >= now %}
                         <span class="badge bg-warning text-dark ms-2">{{ visit.days_until }} days away</span>
@@ -45,12 +45,22 @@
                 </p>
 
                 <p>
-                    <strong>Created:</strong> {{ order.created_date.strftime('%d.%m.%Y %H:%M') }}
+                    <strong>Created:</strong> {{ format_datetime(order.created_date) }}
                 </p>
 
                 <p>
                     <strong>Medications:</strong> {{ order_items|length }} item{% if order_items|length != 1 %}s{% endif %}
                 </p>
+                
+                {% if visit.physician %}
+                    <p>
+                        <strong>Physician:</strong> {{ visit.physician.display_name }}
+                    </p>
+                {% else %}
+                    <p>
+                        <strong>Type:</strong> <span class="badge bg-info">OTC/Supplements</span>
+                    </p>
+                {% endif %}
 
                 {% if order.status != 'fulfilled' %}
                     <div class="btn-group w-100 mt-4">

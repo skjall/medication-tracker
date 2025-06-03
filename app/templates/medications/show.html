@@ -301,7 +301,7 @@ Medication Tracker{% endblock %} {% block content %}
             <h3
               class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}"
             >
-              {{ medication.depletion_date.strftime('%d.%m.%Y') }}
+              {{ format_date(medication.depletion_date) }}
             </h3>
             <p>Depletion Date</p>
             {% else %}
@@ -359,7 +359,7 @@ Medication Tracker{% endblock %} {% block content %}
             <td>{{ item.order.id }}</td>
             <td>
               {{
-              item.order.physician_visit.visit_date.strftime('%d.%m.%Y')
+              format_date(item.order.physician_visit.visit_date)
               }}
             </td>
             <td>

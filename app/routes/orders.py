@@ -94,8 +94,13 @@ def new():
         order = Order(physician_visit_id=visit.id, status="planned")
         db.session.add(order)
 
-        # Get all medications
-        medications = Medication.query.all()
+        # Filter medications based on the visit's physician
+        if visit.physician_id:
+            # If visit has a physician, only show medications assigned to that physician
+            medications = Medication.query.filter_by(physician_id=visit.physician_id).all()
+        else:
+            # If visit has no physician, only show medications without physician assignment
+            medications = Medication.query.filter_by(physician_id=None).all()
 
         # Process each medication
         for med in medications:
@@ -132,8 +137,14 @@ def new():
         visit.order_for_next_but_one or settings.default_order_for_next_but_one
     )
 
-    # Calculate medication needs for the visit
-    medications = Medication.query.all()
+    # Filter medications based on the visit's physician
+    if visit.physician_id:
+        # If visit has a physician, only show medications assigned to that physician
+        medications = Medication.query.filter_by(physician_id=visit.physician_id).all()
+    else:
+        # If visit has no physician, only show medications without physician assignment
+        medications = Medication.query.filter_by(physician_id=None).all()
+    
     medication_needs = {}
 
     for med in medications:
@@ -196,8 +207,14 @@ def edit(id: int):
         if new_status in ["planned", "printed", "fulfilled"]:
             order.status = new_status
 
-        # Get all medications
-        medications = Medication.query.all()
+        # Filter medications based on the visit's physician
+        visit = order.physician_visit
+        if visit.physician_id:
+            # If visit has a physician, only show medications assigned to that physician
+            medications = Medication.query.filter_by(physician_id=visit.physician_id).all()
+        else:
+            # If visit has no physician, only show medications without physician assignment
+            medications = Medication.query.filter_by(physician_id=None).all()
 
         # Track which medications are included in the updated order
         included_med_ids = set()
@@ -242,8 +259,14 @@ def edit(id: int):
         flash("Order updated successfully", "success")
         return redirect(url_for("orders.show", id=order.id))
 
-    # Get all medications for the form
-    medications = Medication.query.all()
+    # Filter medications based on the visit's physician
+    visit = order.physician_visit
+    if visit.physician_id:
+        # If visit has a physician, only show medications assigned to that physician
+        medications = Medication.query.filter_by(physician_id=visit.physician_id).all()
+    else:
+        # If visit has no physician, only show medications without physician assignment
+        medications = Medication.query.filter_by(physician_id=None).all()
 
     # Create a lookup map for existing order items
     order_items_map = {item.medication_id: item for item in order.order_items}

@@ -24,7 +24,7 @@
             <h5 class="mb-0">Complete Inventory History</h5>
             <div>
                 <span class="me-2">Current Inventory: <strong>{{ inventory.current_count }} units</strong></span>
-                <span>Last Updated: <strong>{{ inventory.last_updated.strftime('%d.%m.%Y %H:%M') }}</strong></span>
+                <span>Last Updated: <strong>{{ format_datetime(inventory.last_updated) }}</strong></span>
             </div>
         </div>
     </div>
@@ -44,7 +44,7 @@
                     <tbody>
                         {% for log in logs.items %}
                             <tr>
-                                <td>{{ log.timestamp.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>{{ format_datetime(log.timestamp) }}</td>
                                 <td>{{ log.previous_count }}</td>
                                 <td class="{% if log.adjustment < 0 %}text-danger{% elif log.adjustment > 0 %}text-success{% endif %}">
                                     {% if log.adjustment > 0 %}+{% endif %}{{ log.adjustment }}

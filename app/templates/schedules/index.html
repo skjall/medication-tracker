@@ -104,7 +104,7 @@
                                 <td>{{ schedule.calculate_daily_usage()|round(2) }}</td>
                                 <td>
                                     {% if schedule.last_deduction %}
-                                        {{ schedule.last_deduction.strftime('%d.%m.%Y %H:%M') }}
+                                        {{ format_datetime(schedule.last_deduction) }}
                                     {% else %}
                                         <span class="text-muted">Never</span>
                                     {% endif %}

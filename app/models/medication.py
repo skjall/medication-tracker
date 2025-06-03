@@ -8,7 +8,7 @@ import logging
 from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 
 # Third-party imports
-from sqlalchemy import Boolean, DateTime, Float, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Float, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # Local application imports
@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from .inventory import Inventory
     from .visit import OrderItem
     from .schedule import MedicationSchedule
+    from .physician import Physician
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -34,6 +35,14 @@ class Medication(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
+    
+    # Physician relationship and OTC flag
+    physician_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("physicians.id"), nullable=True
+    )
+    is_otc: Mapped[bool] = mapped_column(
+        Boolean, default=False, comment="True if medication is over-the-counter"
+    )
 
     # Legacy fields - marked as deprecated but kept for database compatibility
     # These are no longer used for calculations
@@ -70,6 +79,9 @@ class Medication(db.Model):
     auto_deduction_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Relationships
+    physician: Mapped[Optional["Physician"]] = relationship(
+        "Physician", back_populates="medications"
+    )
     inventory: Mapped[Optional["Inventory"]] = relationship(
         "Inventory",
         back_populates="medication",

@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Physician Visit: {{ visit.visit_date.strftime('%d.%m.%Y') }} - Medication Tracker{% endblock %}
+{% block title %}Physician Visit: {{ format_date(visit.visit_date) }} - Medication Tracker{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -30,7 +30,7 @@
                 <div class="mb-4">
                     <h3 class="d-flex align-items-center">
                         <i class="fas fa-calendar-day me-2 text-primary"></i>
-                        {{ visit.visit_date.strftime('%d.%m.%Y') }}
+                        {{ format_date(visit.visit_date) }}
 
                         {% if make_aware(visit.visit_date) >= make_aware(now) %}
                             <span class="badge rounded-pill {% if visit.days_until < 7 %}bg-danger{% elif visit.days_until < 14 %}bg-warning{% else %}bg-success{% endif %} ms-3">
@@ -53,9 +53,9 @@
 
                 <div class="d-flex justify-content-between mt-4">
                     <small class="text-muted">
-                        Created: {{ visit.created_at.strftime('%d.%m.%Y %H:%M') }}
+                        Created: {{ format_datetime(visit.created_at) }}
                         {% if visit.updated_at != visit.created_at %}
-                            <br>Updated: {{ visit.updated_at.strftime('%d.%m.%Y %H:%M') }}
+                            <br>Updated: {{ format_datetime(visit.updated_at) }}
                         {% endif %}
                     </small>
 
@@ -91,7 +91,7 @@
                             <a href="{{ url_for('orders.show', id=order.id) }}" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1">Order #{{ order.id }}</h6>
-                                    <small class="text-muted">{{ order.created_date.strftime('%d.%m.%Y') }}</small>
+                                    <small class="text-muted">{{ format_date(order.created_date) }}</small>
                                 </div>
                                 <p class="mb-1">
                                     <span class="badge {% if order.status == 'planned' %}bg-primary{% elif order.status == 'printed' %}bg-info{% elif order.status == 'fulfilled' %}bg-success{% endif %}">

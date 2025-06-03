@@ -37,7 +37,7 @@ Medication Tracker{% endblock %} {% block content %}
                 href="{{ url_for('visits.show', id=order.physician_visit.id) }}"
               >
                 {{
-                order.physician_visit.visit_date.strftime('%d.%m.%Y')
+                format_date(order.physician_visit.visit_date)
                 }}
               </a>
             </td>
@@ -48,7 +48,7 @@ Medication Tracker{% endblock %} {% block content %}
                 {{ order.status|capitalize }}
               </span>
             </td>
-            <td>{{ order.created_date.strftime('%d.%m.%Y') }}</td>
+            <td>{{ format_date(order.created_date) }}</td>
             <td>
               {{ order.order_items|length }} medication{% if
               order.order_items|length != 1 %}s{% endif %}
@@ -136,11 +136,11 @@ Medication Tracker{% endblock %} {% block content %}
                 href="{{ url_for('visits.show', id=order.physician_visit.id) }}"
               >
                 {{
-                order.physician_visit.visit_date.strftime('%d.%m.%Y')
+                format_date(order.physician_visit.visit_date)
                 }}
               </a>
             </td>
-            <td>{{ order.created_date.strftime('%d.%m.%Y') }}</td>
+            <td>{{ format_date(order.created_date) }}</td>
             <td>
               {{ order.order_items|length }} medication{% if
               order.order_items|length != 1 %}s{% endif %}

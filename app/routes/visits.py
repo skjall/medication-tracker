@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 # Local application imports
-from models import PhysicianVisit, Medication, Order, db, utcnow
+from models import PhysicianVisit, Medication, Order, Physician, db, utcnow
 from utils import to_local_timezone
 
 # Get a logger specific to this module
@@ -65,6 +65,13 @@ def new():
         # Extract form data
         visit_date_str = request.form.get("visit_date", "")
         notes = request.form.get("notes", "")
+        
+        # Extract physician field
+        physician_id = request.form.get("physician_id")
+        if physician_id == "":
+            physician_id = None
+        elif physician_id:
+            physician_id = int(physician_id)
 
         logger.debug(f"New visit form data: date={visit_date_str}, notes={notes}")
 
@@ -80,7 +87,7 @@ def new():
             logger.debug(f"UTC visit date: {visit_date}")
 
             # Create new visit
-            visit = PhysicianVisit(visit_date=visit_date, notes=notes)
+            visit = PhysicianVisit(visit_date=visit_date, notes=notes, physician_id=physician_id)
 
             db.session.add(visit)
             db.session.commit()
@@ -104,9 +111,11 @@ def new():
             logger.error(f"Date parsing error: {e} for input '{visit_date_str}'")
             flash("Invalid date format. Please use DD.MM.YYYY format.", "error")
 
+    physicians = Physician.query.order_by(Physician.name).all()
     return render_template(
         "visits/new.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
+        physicians=physicians,
     )
 
 
@@ -164,6 +173,13 @@ def edit(id: int):
         # Extract form data
         visit_date_str = request.form.get("visit_date", "")
         notes = request.form.get("notes", "")
+        
+        # Extract physician field
+        physician_id = request.form.get("physician_id")
+        if physician_id == "":
+            physician_id = None
+        elif physician_id:
+            physician_id = int(physician_id)
 
         logger.debug(f"Edit visit form data: date={visit_date_str}, notes={notes}")
 
@@ -181,6 +197,7 @@ def edit(id: int):
             # Update visit
             visit.visit_date = visit_date
             visit.notes = notes
+            visit.physician_id = physician_id
 
             db.session.commit()
 
@@ -199,14 +216,16 @@ def edit(id: int):
     from utils import to_local_timezone
 
     local_visit_date = to_local_timezone(visit.visit_date)
-    formatted_date = local_visit_date.strftime("%d.%m.%Y")
+    formatted_date = local_visit_date.strftime("%Y-%m-%d")  # HTML date input format
     logger.debug(f"Formatted date for form: {formatted_date}")
 
+    physicians = Physician.query.order_by(Physician.name).all()
     return render_template(
         "visits/edit.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         visit=visit,
         formatted_date=formatted_date,
+        physicians=physicians,
     )
 
 

@@ -31,12 +31,12 @@
                     </dd>
 
                     <dt class="col-sm-6">Current Time (UTC):</dt>
-                    <dd class="col-sm-6">{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</dd>
+                    <dd class="col-sm-6">{{ format_datetime(now, show_seconds=true) }}</dd>
 
                     <dt class="col-sm-6">Last Deduction Check (UTC):</dt>
                     <dd class="col-sm-6">
                         {% if status.last_deduction_check %}
-                            {{ status.last_deduction_check.strftime('%d.%m.%Y %H:%M:%S') }}
+                            {{ format_datetime(status.last_deduction_check, show_seconds=true) }}
                         {% else %}
                             <span class="text-muted">Never run</span>
                         {% endif %}
@@ -135,10 +135,10 @@
             <div class="col-md-6">
                 <dl class="row">
                     <dt class="col-sm-6">Server Time:</dt>
-                    <dd class="col-sm-6">{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</dd>
+                    <dd class="col-sm-6">{{ format_datetime(now, show_seconds=true) }}</dd>
 
                     <dt class="col-sm-6">Local Time:</dt>
-                    <dd class="col-sm-6">{{ local_time.strftime('%d.%m.%Y %H:%M:%S')|default(now.strftime('%d.%m.%Y %H:%M:%S')) }}</dd>
+                    <dd class="col-sm-6">{{ format_datetime(local_time, show_seconds=true) if local_time else format_datetime(now, show_seconds=true) }}</dd>
                 </dl>
             </div>
         </div>

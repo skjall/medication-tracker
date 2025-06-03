@@ -20,6 +20,12 @@ A lightweight Python-based web application that helps track medications, invento
   - Package-based inventory management (N1, N2, N3 sizes)
   - Full history of inventory changes with timestamps
 
+- **Physician Management**:
+  - Organize medications by prescribing physician
+  - Track physician specialties, contact information, and notes
+  - Associate visits with specific physicians
+  - Mark medications as Over-The-Counter (OTC) or supplements
+
 - **Physician Visit Planning**:
   - Schedule and manage upcoming physician visits
   - Calculate medication needs until next visit
@@ -117,12 +123,20 @@ All data is stored in SQLite databases in the `/app/data` directory. To persist 
 
 ## Usage Guide
 
+### Managing Physicians
+
+1. Navigate to "Physicians" → "Add Physician"
+2. Enter physician details including name, specialty, and contact information
+3. Associate medications with specific physicians during medication creation
+4. View all medications and visits for each physician in one place
+
 ### Adding Medications
 
 1. Navigate to "Medications" → "Add Medication"
 2. Enter medication details including name, dosage, package sizes
-3. Set up medication schedules to define when and how much to take
-4. Enable automatic deduction for seamless inventory management
+3. Select the prescribing physician or mark as Over-The-Counter (OTC)
+4. Set up medication schedules to define when and how much to take
+5. Enable automatic deduction for seamless inventory management
 
 ### Managing Inventory
 
@@ -135,8 +149,9 @@ All data is stored in SQLite databases in the `/app/data` directory. To persist 
 
 1. Navigate to "Physician Visits" → "Schedule Visit"
 2. Enter the date of your upcoming visit
-3. Optionally create an order for the visit
-4. Choose between regular ordering or next-but-one planning
+3. Select the physician you're visiting
+4. Optionally create an order for the visit
+5. Choose between regular ordering or next-but-one planning
 
 ### Creating Orders
 

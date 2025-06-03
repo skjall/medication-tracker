@@ -52,7 +52,7 @@
                                     {% if days_until < 14 %}bg-danger text-white
                                     {% elif days_until < 30 %}bg-warning
                                     {% else %}bg-light{% endif %}">
-                                    <div class="timeline-item-date">{{ med.depletion_date.strftime('%d.%m.%Y') }}</div>
+                                    <div class="timeline-item-date">{{ format_date(med.depletion_date) }}</div>
                                     <div class="timeline-item-title">{{ med.name }}</div>
                                     <div class="timeline-item-days">{{ days_until }} days left</div>
                                 </div>
@@ -102,7 +102,7 @@
                                     {{ days_until }} days
                                 </td>
                                 <td class="{% if days_until < 14 %}text-danger{% elif days_until < 30 %}text-warning{% endif %}">
-                                    {{ med.depletion_date.strftime('%d.%m.%Y') }}
+                                    {{ format_date(med.depletion_date) }}
                                 </td>
                                 <td>
                                     {% if days_until < 14 %}

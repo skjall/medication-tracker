@@ -48,10 +48,10 @@
                     <dd class="col-sm-8">{{ template.medications_per_page }}</dd>
 
                     <dt class="col-sm-4">Created:</dt>
-                    <dd class="col-sm-8">{{ template.uploaded_at.strftime('%d.%m.%Y %H:%M') }}</dd>
+                    <dd class="col-sm-8">{{ format_datetime(template.uploaded_at) }}</dd>
 
                     <dt class="col-sm-4">Last Updated:</dt>
-                    <dd class="col-sm-8">{{ template.updated_at.strftime('%d.%m.%Y %H:%M') }}</dd>
+                    <dd class="col-sm-8">{{ format_datetime(template.updated_at) }}</dd>
                 </dl>
             </div>
             <div class="col-md-4">

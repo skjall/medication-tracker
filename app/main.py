@@ -92,6 +92,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
     # Register blueprints (routes)
     from routes.medications import medication_bp
+    from routes.physicians import physician_bp
     from routes.inventory import inventory_bp
     from routes.visits import visit_bp
     from routes.orders import order_bp
@@ -101,6 +102,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     from routes.system import system_bp
 
     app.register_blueprint(medication_bp)
+    app.register_blueprint(physician_bp)
     app.register_blueprint(inventory_bp)
     app.register_blueprint(visit_bp)
     app.register_blueprint(order_bp)
@@ -110,10 +112,14 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     app.register_blueprint(system_bp)
 
     # Add utility functions to Jinja
-    from utils import min_value, make_aware
+    from utils import min_value, make_aware, format_date, format_datetime, format_time, to_local_timezone
 
     app.jinja_env.globals.update(min=min_value)
     app.jinja_env.globals.update(make_aware=make_aware)
+    app.jinja_env.globals.update(format_date=format_date)
+    app.jinja_env.globals.update(format_datetime=format_datetime)
+    app.jinja_env.globals.update(format_time=format_time)
+    app.jinja_env.globals.update(to_local_timezone=to_local_timezone)
 
     # Context processor to add date/time variables to all templates
     @app.context_processor
