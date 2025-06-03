@@ -616,7 +616,7 @@ class TestPhysicianVisit(BaseTestCase):
         mock_settings.timezone_name = 'Europe/Berlin'
 
         with patch('models.Settings.get_settings', return_value=mock_settings), \
-             patch('app.utils.datetime') as mock_datetime:
+             patch('utils.datetime') as mock_datetime:
 
             # Set current time to June 3, 2025
             current = datetime(2025, 6, 3, 14, 0, 0, tzinfo=timezone.utc)
