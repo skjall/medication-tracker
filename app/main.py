@@ -80,7 +80,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     # Initialize database with migrations
     with app.app_context():
         # Import here to avoid circular imports
-        from migration_utils import check_migrations_needed, check_and_fix_version_tracking, run_migrations, initialize_migrations
+        from migration_utils import check_migrations_needed, check_and_fix_version_tracking, run_migrations_with_lock, initialize_migrations
 
         # Initialize migrations environment if needed
         if not os.path.exists(os.path.join(app.root_path, '..', 'migrations', 'versions')):
@@ -91,10 +91,14 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         if check_and_fix_version_tracking(app):
             logger.info("Migration tracking fixed.")
 
-        # Check if migrations need to be run
+        # Check if migrations need to be run and run them with lock to prevent concurrent execution
         if check_migrations_needed(app):
-            logger.info("Running database migrations")
-            run_migrations(app)
+            logger.info("Database migrations needed - attempting to run with lock")
+            success = run_migrations_with_lock(app)
+            if success:
+                logger.info("Database migrations completed successfully")
+            else:
+                logger.error("Database migrations failed or timed out")
         else:
             logger.info("Database schema is up to date")
 

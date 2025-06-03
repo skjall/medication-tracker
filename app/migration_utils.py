@@ -6,9 +6,10 @@ when the application starts or when explicitly triggered.
 """
 
 # Standard library imports
+import fcntl
 import logging
 import os
-# subprocess not used
+import time
 from typing import List, Tuple
 
 # Third-party imports
@@ -20,6 +21,100 @@ from flask import Flask
 logger = logging.getLogger(__name__)
 
 initial_revision = "d8942309667d"  # Initial revision ID for the database
+
+
+class MigrationLock:
+    """File-based lock to ensure only one process runs migrations at a time."""
+
+    def __init__(self, app: Flask):
+        self.app = app
+        self.lock_file_path = os.path.join(app.root_path, "data", ".migration_lock")
+        self.lock_file = None
+
+    def __enter__(self):
+        """Acquire the migration lock."""
+        try:
+            # Ensure data directory exists
+            os.makedirs(os.path.dirname(self.lock_file_path), exist_ok=True)
+
+            # Open lock file
+            self.lock_file = open(self.lock_file_path, 'w')
+
+            # Try to acquire exclusive lock (non-blocking)
+            fcntl.flock(self.lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+            # Write process ID to lock file
+            self.lock_file.write(str(os.getpid()))
+            self.lock_file.flush()
+
+            logger.info(f"Migration lock acquired by process {os.getpid()}")
+            return self
+
+        except (IOError, OSError) as e:
+            if self.lock_file:
+                self.lock_file.close()
+                self.lock_file = None
+            logger.info(f"Could not acquire migration lock (process {os.getpid()}): {e}")
+            raise
+
+    def __exit__(self, exc_type=None, exc_val=None, exc_tb=None):
+        """Release the migration lock."""
+        # Unused parameters are part of context manager protocol
+        _ = exc_type, exc_val, exc_tb
+        if self.lock_file:
+            try:
+                fcntl.flock(self.lock_file.fileno(), fcntl.LOCK_UN)
+                self.lock_file.close()
+                # Clean up lock file
+                if os.path.exists(self.lock_file_path):
+                    os.unlink(self.lock_file_path)
+                logger.info(f"Migration lock released by process {os.getpid()}")
+            except Exception as e:
+                logger.warning(f"Error releasing migration lock: {e}")
+            finally:
+                self.lock_file = None
+
+
+def run_migrations_with_lock(app: Flask) -> bool:
+    """
+    Run migrations with file-based locking to prevent concurrent execution.
+
+    Args:
+        app: Flask application instance
+
+    Returns:
+        True if migrations were run or not needed, False if failed
+    """
+    try:
+        # Try to acquire lock with timeout
+        max_wait_time = 60  # 60 seconds max wait
+        start_time = time.time()
+
+        while time.time() - start_time < max_wait_time:
+            try:
+                with MigrationLock(app):
+                    # Double-check if migrations are still needed (another process might have run them)
+                    if not check_migrations_needed(app):
+                        logger.info("Migrations no longer needed (completed by another process)")
+                        return True
+
+                    # Run the actual migrations
+                    logger.info(f"Process {os.getpid()} running database migrations")
+                    return run_migrations(app)
+
+            except (IOError, OSError):
+                # Lock not available, wait and retry
+                logger.info(f"Process {os.getpid()} waiting for migration lock...")
+                time.sleep(1)
+                continue
+
+        # Timeout reached
+        logger.warning(f"Process {os.getpid()} timed out waiting for migration lock")
+        return False
+
+    except Exception as e:
+        logger.error(f"Error in run_migrations_with_lock: {e}")
+        return False
 
 
 def get_alembic_config(app: Flask) -> Config:
