@@ -6,7 +6,6 @@ when the application starts or when explicitly triggered.
 """
 
 # Standard library imports
-import fcntl
 import logging
 import os
 import time
@@ -24,47 +23,75 @@ initial_revision = "d8942309667d"  # Initial revision ID for the database
 
 
 class MigrationLock:
-    """File-based lock to ensure only one process runs migrations at a time."""
+    """Atomic file-based lock to ensure only one process runs migrations at a time."""
 
     def __init__(self, app: Flask):
         self.app = app
         self.lock_file_path = os.path.join(app.root_path, "data", ".migration_lock")
-        self.lock_file = None
+        self.acquired = False
 
     def __enter__(self):
-        """Acquire the migration lock."""
+        """Acquire the migration lock using atomic file operations."""
         try:
             # Ensure data directory exists
             os.makedirs(os.path.dirname(self.lock_file_path), exist_ok=True)
 
-            # Open lock file
-            self.lock_file = open(self.lock_file_path, 'w')
+            # Try to create lock file atomically
+            # This will fail if file already exists (another process has lock)
+            import datetime
+            timestamp = datetime.datetime.now().isoformat()
+            lock_content = f"{timestamp}: PID {os.getpid()} acquired lock\n"
 
-            # Try to acquire exclusive lock (non-blocking)
-            fcntl.flock(self.lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            # Use O_CREAT | O_EXCL for atomic lock acquisition
+            try:
+                fd = os.open(self.lock_file_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+                os.write(fd, lock_content.encode())
+                os.close(fd)
+                self.acquired = True
+                logger.info(f"Migration lock acquired by process {os.getpid()}")
+                return self
+            except FileExistsError:
+                # Lock already exists, check if it's stale
+                if self._is_stale_lock():
+                    # Remove stale lock and try again
+                    try:
+                        os.unlink(self.lock_file_path)
+                        fd = os.open(self.lock_file_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+                        os.write(fd, lock_content.encode())
+                        os.close(fd)
+                        self.acquired = True
+                        logger.info(f"Migration lock acquired by process {os.getpid()} after removing stale lock")
+                        return self
+                    except (FileExistsError, OSError):
+                        pass
+                
+                # Could not acquire lock
+                logger.info(f"Could not acquire migration lock (process {os.getpid()}): file exists")
+                raise IOError("Migration lock already held")
 
-            # Write process ID to lock file
-            self.lock_file.write(str(os.getpid()))
-            self.lock_file.flush()
-
-            logger.info(f"Migration lock acquired by process {os.getpid()}")
-            return self
-
-        except (IOError, OSError) as e:
-            if self.lock_file:
-                self.lock_file.close()
-                self.lock_file = None
+        except Exception as e:
             logger.info(f"Could not acquire migration lock (process {os.getpid()}): {e}")
             raise
+
+    def _is_stale_lock(self) -> bool:
+        """Check if the lock file is stale (older than 5 minutes)."""
+        try:
+            if not os.path.exists(self.lock_file_path):
+                return False
+            
+            # Check age of lock file
+            lock_age = time.time() - os.path.getmtime(self.lock_file_path)
+            return lock_age > 300  # 5 minutes
+            
+        except OSError:
+            return True  # If we can't check, assume it's stale
 
     def __exit__(self, exc_type=None, exc_val=None, exc_tb=None):
         """Release the migration lock."""
         # Unused parameters are part of context manager protocol
         _ = exc_type, exc_val, exc_tb
-        if self.lock_file:
+        if self.acquired:
             try:
-                fcntl.flock(self.lock_file.fileno(), fcntl.LOCK_UN)
-                self.lock_file.close()
                 # Clean up lock file
                 if os.path.exists(self.lock_file_path):
                     os.unlink(self.lock_file_path)
@@ -72,7 +99,7 @@ class MigrationLock:
             except Exception as e:
                 logger.warning(f"Error releasing migration lock: {e}")
             finally:
-                self.lock_file = None
+                self.acquired = False
 
 
 def run_migrations_with_lock(app: Flask) -> bool:
@@ -94,18 +121,29 @@ def run_migrations_with_lock(app: Flask) -> bool:
             try:
                 with MigrationLock(app):
                     # Double-check if migrations are still needed (another process might have run them)
-                    if not check_migrations_needed(app):
-                        logger.info("Migrations no longer needed (completed by another process)")
-                        return True
+                    # Use a fresh app context to avoid transaction conflicts
+                    with app.app_context():
+                        if not check_migrations_needed(app):
+                            logger.info("Migrations no longer needed (completed by another process)")
+                            return True
 
-                    # Run the actual migrations
-                    logger.info(f"Process {os.getpid()} running database migrations")
-                    return run_migrations(app)
+                        # Run the actual migrations
+                        logger.info(f"Process {os.getpid()} running database migrations")
+                        success = run_migrations(app)
+                        if success:
+                            logger.info("Database migrations completed successfully")
+                        else:
+                            logger.error("Database migrations failed")
+                        return success
 
-            except (IOError, OSError):
+            except (IOError, OSError) as e:
                 # Lock not available, wait and retry
-                logger.info(f"Process {os.getpid()} waiting for migration lock...")
-                time.sleep(1)
+                logger.info(f"Process {os.getpid()} waiting for migration lock: {e}")
+                time.sleep(2)  # Increased wait time
+                continue
+            except Exception as e:
+                logger.error(f"Unexpected error in migration lock for process {os.getpid()}: {e}")
+                time.sleep(2)
                 continue
 
         # Timeout reached

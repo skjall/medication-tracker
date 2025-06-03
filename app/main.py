@@ -98,7 +98,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             if success:
                 logger.info("Database migrations completed successfully")
             else:
-                logger.error("Database migrations failed or timed out")
+                logger.warning("Database migrations failed or timed out - application will continue with current schema")
         else:
             logger.info("Database schema is up to date")
 
