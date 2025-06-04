@@ -1,0 +1,15 @@
+Name,Dosage,Frequency,Active Ingredient,Form,Notes,Package Size N1,Package Size N2,Package Size N3,Min Threshold,Safety Margin Days,Auto Deduction Enabled
+"Pan Galactic Gargle Blaster",1.0,0.033,"Janx Spirit","cocktail","Like having your brains smashed out by a slice of lemon wrapped round a large gold brick. Monthly consumption only.",6,12,42,1,7,false
+"Babel Fish",1.0,1.0,"Universal Translator","fish","Insert into ear for instant translation of any language in the galaxy.",2,6,,1,14,true
+"Jynnan Tonnyx",2.0,1.0,"Alcohol substitute","tablet","Found on every planet in the galaxy under different names. Twice daily dose.",30,90,180,10,14,true
+"Heart of Gold Pills",1.0,2.0,"Infinite Improbability","capsule","May cause sudden materialization of sperm whales and bowls of petunias.",28,84,,7,21,true
+"Vogon Poetry Antidote",3.0,1.0,"Sanity Preserver","injection","Emergency use only during Vogon poetry readings. Prevents brain damage.",5,15,,2,3,false
+"Deep Thought Supplements",1.0,1.0,"Computational Enhancement","tablet","Helps process the ultimate question to life, universe and everything.",42,126,,10,42,true
+"Towel Fiber Extract",2.0,3.0,"Confidence Booster","powder","Essential for any galactic hitchhiker. Provides sense of security.",20,60,120,5,7,true
+"Total Perspective Vortex Shield",1.0,0.014,"Ego Protection","implant","Weekly dose to prevent complete ego annihilation. Handle with care.",1,4,,1,7,true
+"Somebody Else's Problem Field",1.0,1.0,"Invisibility Inducer","spray","Makes you unnoticeable by making you someone else's problem.",10,30,,3,14,true
+"Infinite Monkey Theorem Pills",4.0,2.0,"Creativity Enhancer","tablet","Increases probability of writing Shakespeare by random chance.",50,150,,15,21,true
+"Restaurant at End of Universe Digestion Aid",1.0,1.0,"Temporal Stomach Soother","liquid","For after witnessing the end of everything. Settles cosmic indigestion.",12,36,,3,14,true
+"Magrathea Sleep Aid",2.0,1.0,"Planet Building Recovery","tablet","For those 5 million year construction projects. Induces deep sleep.",30,90,,10,30,true
+"Improbability Drive Lubricant",1.0,0.5,"Quantum Mechanics Oil","liquid","Keeps your improbability drive running smoothly. Bi-daily application.",7,21,,2,14,true
+"Hitchhiker's Guide Updates",1.0,0.1,"Information Download","data chip","Weekly updates to your electronic guide. Contains mostly harmless information.",4,12,,1,7,true

@@ -184,7 +184,10 @@ def new():
             
             # Calculate days until depletion for tooltip explanation
             from models.base import utcnow
-            days_until_depletion = (depletion_date - utcnow()).days
+            from utils import ensure_timezone_utc
+            depletion_date_utc = ensure_timezone_utc(depletion_date)
+            visit_date_utc = ensure_timezone_utc(visit_date)
+            days_until_depletion = (depletion_date_utc - utcnow()).days
             
             return {
                 "medication": med,
@@ -194,7 +197,7 @@ def new():
                 "packages": packages,
                 "calculation_type": "gap_coverage",
                 "depletion_date": depletion_date,
-                "gap_days": (visit_date - depletion_date).days,
+                "gap_days": (visit_date_utc - depletion_date_utc).days,
                 "days_until_depletion": days_until_depletion,
                 "safety_margin_days": med.safety_margin_days,
             }
@@ -211,7 +214,9 @@ def new():
 
             # Calculate breakdown for tooltip
             from models.base import utcnow
-            days_until_visit = (visit_date - utcnow()).days
+            from utils import ensure_timezone_utc
+            visit_date_utc = ensure_timezone_utc(visit_date)
+            days_until_visit = (visit_date_utc - utcnow()).days
             if consider_next_but_one:
                 from models import Settings
                 settings = Settings.get_settings()
