@@ -159,12 +159,12 @@ def new():
             depletion_date = med.depletion_date
             if not depletion_date:
                 return None
-            
+
             # Ensure both dates are timezone-aware for comparison
             from utils import ensure_timezone_utc
             depletion_date = ensure_timezone_utc(depletion_date)
             visit_date = ensure_timezone_utc(visit_date)
-            
+
             if depletion_date >= visit_date:
                 return None
 
