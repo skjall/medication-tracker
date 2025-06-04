@@ -71,8 +71,8 @@ def export_medications_to_csv() -> Response:
         ]
     )
 
-    # Write data
-    medications = Medication.query.all()
+    # Write data - order by ID to maintain consistent foreign key relationships
+    medications = Medication.query.order_by(Medication.id).all()
     for med in medications:
         writer.writerow(
             [
@@ -251,8 +251,8 @@ def export_physicians_to_csv() -> Response:
         ]
     )
 
-    # Write data
-    physicians = Physician.query.order_by(Physician.name).all()
+    # Write data - order by ID to maintain consistent foreign key relationships
+    physicians = Physician.query.order_by(Physician.id).all()
     for physician in physicians:
         writer.writerow(
             [
@@ -706,26 +706,41 @@ def import_physicians_from_csv(
 
             for row in reader:
                 try:
-                    # Check if physician with same name exists
-                    existing_physician = Physician.query.filter_by(name=row["Name"]).first()
+                    physician_id = row.get("Physician ID")
+                    existing_physician = None
+                    
+                    # First, try to find by ID if provided
+                    if physician_id and physician_id.strip():
+                        try:
+                            existing_physician = Physician.query.get(int(physician_id))
+                        except (ValueError, TypeError):
+                            errors.append(f"Invalid physician ID '{physician_id}' for {row['Name']}")
+                            continue
+                    
+                    # If not found by ID, try by name
+                    if not existing_physician:
+                        existing_physician = Physician.query.filter_by(name=row["Name"]).first()
 
                     if existing_physician and not override:
-                        errors.append(
-                            f"Physician '{row['Name']}' already exists (ID: {existing_physician.id})"
-                        )
+                        # If physician exists and we're not overriding, skip
+                        if physician_id and str(existing_physician.id) != str(physician_id):
+                            errors.append(
+                                f"Physician '{row['Name']}' exists with different ID (existing: {existing_physician.id}, CSV: {physician_id})"
+                            )
                         continue
 
                     # Update existing physician if override is True
                     if existing_physician and override:
                         physician = existing_physician
-                        # Update fields
+                        # Update fields but keep the ID
+                        physician.name = row["Name"]
                         physician.specialty = row.get("Specialty", "")
                         physician.phone = row.get("Phone", "")
                         physician.email = row.get("Email", "")
                         physician.address = row.get("Address", "")
                         physician.notes = row.get("Notes", "")
                     else:
-                        # Create new physician
+                        # Create new physician with specified ID if provided
                         physician = Physician(
                             name=row["Name"],
                             specialty=row.get("Specialty", ""),
@@ -734,6 +749,15 @@ def import_physicians_from_csv(
                             address=row.get("Address", ""),
                             notes=row.get("Notes", ""),
                         )
+                        
+                        # Set the ID if provided in CSV
+                        if physician_id and physician_id.strip():
+                            try:
+                                physician.id = int(physician_id)
+                            except (ValueError, TypeError):
+                                errors.append(f"Invalid physician ID '{physician_id}' for {row['Name']}")
+                                continue
+                        
                         db.session.add(physician)
 
                     success_count += 1
