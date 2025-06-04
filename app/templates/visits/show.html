@@ -239,7 +239,7 @@
 
                 {% set medications_will_deplete = [] %}
                 {% for med_id, data in medication_needs.items() %}
-                    {% if data.medication.depletion_date and data.medication.depletion_date < visit.visit_date %}
+                    {% if data.medication.depletion_date and make_aware(data.medication.depletion_date) < make_aware(visit.visit_date) %}
                         {% set _ = medications_will_deplete.append(data.medication) %}
                     {% endif %}
                 {% endfor %}

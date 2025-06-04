@@ -79,7 +79,15 @@
                                 <th style="width: 3%"></th>
                                 <th>Medication</th>
                                 <th>Current Stock</th>
-                                <th>Needed Until {% if consider_next_but_one %}Next-But-One{% else %}Next{% endif %} Visit</th>
+                                <th>
+                                    {% if gap_coverage %}
+                                        Needed for Gap Coverage
+                                    {% elif consider_next_but_one %}
+                                        Needed Until Next-But-One Visit
+                                    {% else %}
+                                        Needed Until Next Visit
+                                    {% endif %}
+                                </th>
                                 <th>Additional Needed</th>
                             </tr>
                         </thead>

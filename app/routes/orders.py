@@ -157,7 +157,15 @@ def new():
                 return None
 
             depletion_date = med.depletion_date
-            if not depletion_date or depletion_date >= visit_date:
+            if not depletion_date:
+                return None
+            
+            # Ensure both dates are timezone-aware for comparison
+            from utils import ensure_timezone_utc
+            depletion_date = ensure_timezone_utc(depletion_date)
+            visit_date = ensure_timezone_utc(visit_date)
+            
+            if depletion_date >= visit_date:
                 return None
 
             # Calculate how much is needed from depletion date to visit date
