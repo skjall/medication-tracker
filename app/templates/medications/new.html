@@ -40,6 +40,32 @@
                         <div class="form-text">The pharmaceutical form (e.g., tablets, capsules, solution)</div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="physician_id" class="form-label">Prescribing Physician</label>
+                                <select class="form-select" id="physician_id" name="physician_id">
+                                    <option value="">Select a physician (optional)</option>
+                                    {% for physician in physicians %}
+                                        <option value="{{ physician.id }}">{{ physician.display_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">The physician who prescribes this medication</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" id="is_otc" name="is_otc" value="1">
+                                    <label class="form-check-label" for="is_otc">
+                                        Over-the-Counter (OTC)
+                                    </label>
+                                </div>
+                                <div class="form-text">Check if this medication is available without prescription</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>Important:</strong> After creating the medication, you'll need to set up the medication schedule

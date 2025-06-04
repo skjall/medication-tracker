@@ -18,6 +18,7 @@ from .test_base import BaseTestCase
 from app.models import (
     Inventory,
     Medication,
+    Physician,
     MedicationSchedule,
     ScheduleType,
 )
@@ -34,9 +35,21 @@ class TestMedicationSchedule(BaseTestCase):
         """Set up test fixtures before each test."""
         super().setUp()
 
+        # Create a test physician
+        self.physician = Physician(
+            name="Dr. Test",
+            specialty="Cardiology",
+            phone="+1-555-0123",
+            email="dr.test@example.com"
+        )
+        self.db.session.add(self.physician)
+        self.db.session.commit()
+
         # Create a test medication for the schedule
         self.medication = Medication(
             name="Test Medication",
+            physician_id=self.physician.id,
+            is_otc=False,
             dosage=2.0,
             frequency=2.0,
             package_size_n1=30,
@@ -54,11 +67,15 @@ class TestMedicationSchedule(BaseTestCase):
             units_per_dose=1.5,
         )
 
+        self.db.session.add(self.medication)
+        self.db.session.add(self.schedule)
+        self.db.session.commit()
+
         # Current time and yesterday
         self.yesterday = self.now - timedelta(days=1)
 
         # Set up utility function mocks
-        self.to_local_patcher = patch("utils.to_local_timezone")
+        self.to_local_patcher = patch("app.utils.to_local_timezone")
         self.mock_to_local = self.to_local_patcher.start()
 
         # By default, make the local time the same as UTC for testing simplicity
@@ -218,7 +235,7 @@ class TestMedicationSchedule(BaseTestCase):
             )
 
             # Mock the weekday check
-            with patch("utils.to_local_timezone") as mock_to_local:
+            with patch("app.utils.to_local_timezone") as mock_to_local:
                 mock_dt = MagicMock()
                 mock_dt.date.return_value = current_time.date()
                 mock_dt.weekday.return_value = weekday
@@ -385,7 +402,7 @@ class TestMedication(BaseTestCase):
             + timedelta(milliseconds=10)
         )
 
-        logger.info(f"Current date: {self.now.astimezone(pytz.timezone("UTC"))}")
+        logger.info(f"Current date: {self.now.astimezone(pytz.timezone('UTC'))}")
         logger.info(f"Visit date: {visit_date}")
 
         # Calculate needs without safety margin
@@ -403,3 +420,279 @@ class TestMedication(BaseTestCase):
 
         # Expected: (30 days + 14 days) * 3.0 units per day = 132 units
         self.assertEqual(needed_with_margin, 132)
+
+
+class TestPhysician(BaseTestCase):
+    """Test cases for the Physician model."""
+
+    def setUp(self):
+        """Set up test fixtures before each test."""
+        super().setUp()
+
+    def test_physician_creation(self):
+        """Test creating a physician with all fields."""
+        physician = Physician(
+            name="Dr. Jane Smith",
+            specialty="Endocrinology",
+            phone="+1-555-9876",
+            email="dr.smith@hospital.com",
+            address="123 Medical Center Dr\nSuite 400\nCity, ST 12345",
+            notes="Diabetes specialist"
+        )
+        self.db.session.add(physician)
+        self.db.session.commit()
+
+        self.assertIsNotNone(physician.id)
+        self.assertEqual(physician.name, "Dr. Jane Smith")
+        self.assertEqual(physician.specialty, "Endocrinology")
+        self.assertEqual(physician.phone, "+1-555-9876")
+        self.assertEqual(physician.email, "dr.smith@hospital.com")
+        self.assertIn("Medical Center", physician.address)
+        self.assertEqual(physician.notes, "Diabetes specialist")
+        self.assertIsNotNone(physician.created_at)
+        self.assertIsNotNone(physician.updated_at)
+
+    def test_physician_minimal_creation(self):
+        """Test creating a physician with only required fields."""
+        physician = Physician(name="Dr. Minimal")
+        self.db.session.add(physician)
+        self.db.session.commit()
+
+        self.assertIsNotNone(physician.id)
+        self.assertEqual(physician.name, "Dr. Minimal")
+        self.assertIsNone(physician.specialty)
+        self.assertIsNone(physician.phone)
+        self.assertIsNone(physician.email)
+        self.assertIsNone(physician.address)
+        self.assertIsNone(physician.notes)
+
+    def test_physician_display_name_with_specialty(self):
+        """Test display_name property with specialty."""
+        physician = Physician(
+            name="Dr. John Doe",
+            specialty="Cardiology"
+        )
+        self.assertEqual(physician.display_name, "Dr. John Doe (Cardiology)")
+
+    def test_physician_display_name_without_specialty(self):
+        """Test display_name property without specialty."""
+        physician = Physician(name="Dr. John Doe")
+        self.assertEqual(physician.display_name, "Dr. John Doe")
+
+    def test_physician_repr(self):
+        """Test string representation of physician."""
+        physician = Physician(name="Dr. Test Physician")
+        self.assertEqual(repr(physician), "<Physician Dr. Test Physician>")
+
+    def test_physician_medication_relationship(self):
+        """Test physician-medication relationship."""
+        physician = Physician(name="Dr. Prescriber")
+        self.db.session.add(physician)
+        self.db.session.commit()
+
+        # Create medications for this physician
+        med1 = Medication(
+            name="Heart Medicine",
+            physician_id=physician.id,
+            is_otc=False,
+            dosage=1.0,
+            frequency=2.0
+        )
+        med2 = Medication(
+            name="Blood Pressure Med",
+            physician_id=physician.id,
+            is_otc=False,
+            dosage=0.5,
+            frequency=1.0
+        )
+
+        self.db.session.add(med1)
+        self.db.session.add(med2)
+        self.db.session.commit()
+
+        # Test relationship
+        self.assertEqual(len(physician.medications), 2)
+        self.assertIn(med1, physician.medications)
+        self.assertIn(med2, physician.medications)
+        self.assertEqual(med1.physician, physician)
+        self.assertEqual(med2.physician, physician)
+
+    def test_medication_without_physician(self):
+        """Test medication can exist without a physician."""
+        otc_med = Medication(
+            name="OTC Pain Relief",
+            is_otc=True,
+            dosage=500.0,
+            frequency=3.0
+        )
+        self.db.session.add(otc_med)
+        self.db.session.commit()
+
+        self.assertIsNone(otc_med.physician_id)
+        self.assertIsNone(otc_med.physician)
+        self.assertTrue(otc_med.is_otc)
+
+    def test_medication_otc_flag(self):
+        """Test medication OTC flag functionality."""
+        physician = Physician(name="Dr. OTC Test")
+        self.db.session.add(physician)
+        self.db.session.commit()
+
+        # Prescribed medication
+        prescribed = Medication(
+            name="Prescribed Med",
+            physician_id=physician.id,
+            is_otc=False,
+            dosage=1.0,
+            frequency=2.0
+        )
+
+        # OTC medication
+        otc = Medication(
+            name="OTC Med",
+            is_otc=True,
+            dosage=200.0,
+            frequency=4.0
+        )
+
+        self.db.session.add(prescribed)
+        self.db.session.add(otc)
+        self.db.session.commit()
+
+        self.assertFalse(prescribed.is_otc)
+        self.assertTrue(otc.is_otc)
+
+
+class TestPhysicianVisit(BaseTestCase):
+    """Test cases for PhysicianVisit model with physician relationship."""
+
+    def setUp(self):
+        """Set up test fixtures before each test."""
+        super().setUp()
+
+        self.physician = Physician(
+            name="Dr. Visit Test",
+            specialty="Family Medicine"
+        )
+        self.db.session.add(self.physician)
+        self.db.session.commit()
+
+    def test_visit_with_physician(self):
+        """Test creating a visit with physician."""
+        from app.models import PhysicianVisit
+
+        visit = PhysicianVisit(
+            physician_id=self.physician.id,
+            visit_date=self.now + timedelta(days=30),
+            notes="Regular checkup"
+        )
+        self.db.session.add(visit)
+        self.db.session.commit()
+
+        self.assertEqual(visit.physician, self.physician)
+        self.assertIn(visit, self.physician.visits)
+        self.assertEqual(visit.notes, "Regular checkup")
+
+    def test_visit_without_physician(self):
+        """Test creating a visit without physician."""
+        from app.models import PhysicianVisit
+
+        visit = PhysicianVisit(
+            visit_date=self.now + timedelta(days=15),
+            notes="Unassigned visit"
+        )
+        self.db.session.add(visit)
+        self.db.session.commit()
+
+        self.assertIsNone(visit.physician_id)
+        self.assertIsNone(visit.physician)
+
+    def test_days_until_calculation(self):
+        """Test days until calculation with timezone handling."""
+        from app.models import PhysicianVisit
+
+        # Mock current time and settings
+        mock_settings = MagicMock()
+        mock_settings.timezone_name = 'Europe/Berlin'
+
+        with patch('models.Settings.get_settings', return_value=mock_settings), \
+             patch('utils.datetime') as mock_datetime:
+
+            # Set current time to June 3, 2025
+            current = datetime(2025, 6, 3, 14, 0, 0, tzinfo=timezone.utc)
+            mock_datetime.now.return_value = current
+            mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
+
+            # Visit on June 23, 2025 (20 days later)
+            visit_date = datetime(2025, 6, 22, 22, 0, 0, tzinfo=timezone.utc)  # 23.06 00:00 Berlin time
+
+            visit = PhysicianVisit(
+                physician_id=self.physician.id,
+                visit_date=visit_date,
+                notes="Future visit"
+            )
+
+            # Test days until calculation
+            days = visit.days_until
+            self.assertEqual(days, 20, f"Expected 20 days until visit, got {days}")
+
+
+class TestDateCalculation(BaseTestCase):
+    """Test cases for date calculation functions."""
+
+    def test_calculate_days_until_same_day(self):
+        """Test calculation for same day."""
+        from app.utils import calculate_days_until
+
+        mock_settings = MagicMock()
+        mock_settings.timezone_name = 'UTC'
+
+        with patch('models.Settings.get_settings', return_value=mock_settings), \
+             patch('app.utils.datetime') as mock_datetime:
+
+            current = datetime(2025, 6, 3, 14, 0, 0, tzinfo=timezone.utc)
+            mock_datetime.now.return_value = current
+            mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
+
+            # Same day
+            same_day = datetime(2025, 6, 3, 18, 0, 0, tzinfo=timezone.utc)
+            self.assertEqual(calculate_days_until(same_day), 0)
+
+    def test_calculate_days_until_tomorrow(self):
+        """Test calculation for tomorrow."""
+        from app.utils import calculate_days_until
+
+        mock_settings = MagicMock()
+        mock_settings.timezone_name = 'UTC'
+
+        with patch('models.Settings.get_settings', return_value=mock_settings), \
+             patch('app.utils.datetime') as mock_datetime:
+
+            current = datetime(2025, 6, 3, 14, 0, 0, tzinfo=timezone.utc)
+            mock_datetime.now.return_value = current
+            mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
+
+            # Tomorrow
+            tomorrow = datetime(2025, 6, 4, 10, 0, 0, tzinfo=timezone.utc)
+            self.assertEqual(calculate_days_until(tomorrow), 1)
+
+    def test_calculate_days_until_timezone_handling(self):
+        """Test calculation with timezone conversion."""
+        from app.utils import calculate_days_until
+
+        mock_settings = MagicMock()
+        mock_settings.timezone_name = 'Europe/Berlin'
+
+        with patch('models.Settings.get_settings', return_value=mock_settings), \
+             patch('app.utils.datetime') as mock_datetime:
+
+            # Current time: June 3, 2025 14:00 UTC (16:00 Berlin time)
+            current = datetime(2025, 6, 3, 14, 0, 0, tzinfo=timezone.utc)
+            mock_datetime.now.return_value = current
+            mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
+
+            # Target: June 23, 2025 22:00 UTC (00:00 June 24 Berlin time, but date is June 23)
+            target = datetime(2025, 6, 22, 22, 0, 0, tzinfo=timezone.utc)  # This is June 23 midnight Berlin
+
+            days = calculate_days_until(target)
+            self.assertEqual(days, 20, f"Expected 20 days, got {days}")

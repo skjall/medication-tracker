@@ -59,7 +59,7 @@
                                 <p>
                                     Will run out on
                                     <strong class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}">
-                                        {{ medication.depletion_date.strftime('%d.%m.%Y') }}
+                                        {{ format_date(medication.depletion_date) }}
                                     </strong>
                                 </p>
                             {% endif %}
@@ -240,7 +240,7 @@
                             <tbody>
                                 {% for log in logs %}
                                     <tr>
-                                        <td>{{ log.timestamp.strftime('%d.%m.%Y %H:%M') }}</td>
+                                        <td>{{ format_datetime(log.timestamp) }}</td>
                                         <td>{{ log.previous_count }}</td>
                                         <td class="{% if log.adjustment < 0 %}text-danger{% elif log.adjustment > 0 %}text-success{% endif %}">
                                             {{ log.adjustment }}

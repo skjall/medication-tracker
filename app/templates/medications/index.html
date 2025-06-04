@@ -28,6 +28,7 @@
                     <thead>
                         <tr>
                             <th>Name</th>
+                            <th>Physician</th>
                             <th>Dosage</th>
                             <th>Frequency</th>
                             <th>Daily Usage</th>
@@ -44,6 +45,16 @@
                             <tr>
                                 <td>
                                     <strong>{{ med.name }}</strong>
+                                    {% if med.is_otc %}
+                                        <span class="badge bg-warning text-dark ms-2">OTC</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if med.physician %}
+                                        <small>{{ med.physician.display_name }}</small>
+                                    {% else %}
+                                        <em class="text-muted">Not assigned</em>
+                                    {% endif %}
                                 </td>
                                 <td>{{ med.dosage }} units</td>
                                 <td>{{ med.frequency }}/day</td>

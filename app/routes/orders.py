@@ -68,6 +68,8 @@ def new():
     """Create a new medication order."""
     # Find the visit this order is for
     visit_id = request.args.get("visit_id", None, type=int)
+    # Check if this is for gap coverage (when visit was postponed)
+    gap_coverage = request.args.get("gap_coverage", "false").strip().lower() == "true"
     visit = None
 
     if visit_id:
@@ -94,8 +96,15 @@ def new():
         order = Order(physician_visit_id=visit.id, status="planned")
         db.session.add(order)
 
-        # Get all medications
-        medications = Medication.query.all()
+        # Filter medications based on the visit's physician
+        if visit.physician_id:
+            # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+            medications = Medication.query.filter(
+                (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
+            ).all()
+        else:
+            # If visit has no physician, show no medications (can't create prescription orders without physician)
+            medications = []
 
         # Process each medication
         for med in medications:
@@ -132,15 +141,78 @@ def new():
         visit.order_for_next_but_one or settings.default_order_for_next_but_one
     )
 
-    # Calculate medication needs for the visit
-    medications = Medication.query.all()
-    medication_needs = {}
+    # Filter medications based on the visit's physician
+    if visit.physician_id:
+        # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+        medications = Medication.query.filter(
+            (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
+        ).all()
+    else:
+        # If visit has no physician, show no medications (can't create prescription orders without physician)
+        medications = []
 
-    for med in medications:
-        if med.inventory:
-            # Use the enhanced calculation that considers next-but-one setting
+    def calculate_medication_needs(med, visit_date, gap_coverage=False, consider_next_but_one=False):
+        """Helper function to calculate medication needs for both gap coverage and normal orders."""
+        if not med.inventory:
+            return None
+
+        if gap_coverage:
+            if med.daily_usage <= 0:
+                return None
+
+            depletion_date = med.depletion_date
+            if not depletion_date:
+                return None
+
+            # Ensure both dates are timezone-aware for comparison
+            from utils import ensure_timezone_utc
+            depletion_date = ensure_timezone_utc(depletion_date)
+            visit_date = ensure_timezone_utc(visit_date)
+
+            if depletion_date >= visit_date:
+                return None
+
+            # Calculate how much is needed from depletion date to visit date
+            gap_period_units = med.calculate_needed_for_period(
+                depletion_date,
+                visit_date,
+                include_safety_margin=True
+            )
+
+            if gap_period_units <= 0:
+                return None
+
+            # For gap coverage, the additional needed is the full gap period amount
+            # because we need to order enough to bridge the gap from depletion to visit
+            current = med.inventory.current_count
+            additional = gap_period_units  # Always order the full gap amount
+            packages = med.calculate_packages_needed(additional)
+            
+            logger.info(f"Gap coverage calculation for {med.name}: depletion_date={depletion_date}, visit_date={visit_date}, gap_period_units={gap_period_units}, current={current}, additional={additional}")
+            
+            # Calculate days until depletion for tooltip explanation
+            from models.base import utcnow
+            from utils import ensure_timezone_utc
+            depletion_date_utc = ensure_timezone_utc(depletion_date)
+            visit_date_utc = ensure_timezone_utc(visit_date)
+            days_until_depletion = (depletion_date_utc - utcnow()).days
+            
+            return {
+                "medication": med,
+                "needed_units": gap_period_units,
+                "current_inventory": current,
+                "additional_needed": additional,
+                "packages": packages,
+                "calculation_type": "gap_coverage",
+                "depletion_date": depletion_date,
+                "gap_days": (visit_date_utc - depletion_date_utc).days,
+                "days_until_depletion": days_until_depletion,
+                "safety_margin_days": med.safety_margin_days,
+            }
+        else:
+            # Normal order calculation
             needed = med.calculate_needed_until_visit(
-                visit.visit_date,
+                visit_date,
                 include_safety_margin=True,
                 consider_next_but_one=consider_next_but_one,
             )
@@ -148,13 +220,44 @@ def new():
             additional = max(0, needed - current)
             packages = med.calculate_packages_needed(additional)
 
-            medication_needs[med.id] = {
+            # Calculate breakdown for tooltip
+            from models.base import utcnow
+            from utils import ensure_timezone_utc
+            visit_date_utc = ensure_timezone_utc(visit_date)
+            days_until_visit = (visit_date_utc - utcnow()).days
+            if consider_next_but_one:
+                from models import Settings
+                settings = Settings.get_settings()
+                total_days = days_until_visit + settings.default_visit_interval
+                calculation_type = "next_but_one"
+            else:
+                total_days = days_until_visit
+                calculation_type = "standard"
+
+            return {
                 "medication": med,
                 "needed_units": needed,
                 "current_inventory": current,
                 "additional_needed": additional,
                 "packages": packages,
+                "calculation_type": calculation_type,
+                "days_calculated": total_days,
+                "base_days": days_until_visit,
+                "safety_margin_days": med.safety_margin_days,
             }
+
+    medication_needs = {}
+
+    # Calculate needs for all medications using the helper function
+    for med in medications:
+        needs = calculate_medication_needs(
+            med,
+            visit.visit_date,
+            gap_coverage=gap_coverage,
+            consider_next_but_one=consider_next_but_one
+        )
+        if needs:
+            medication_needs[med.id] = needs
 
     return render_template(
         "orders/new.html",
@@ -163,6 +266,7 @@ def new():
         medications=medications,
         medication_needs=medication_needs,
         consider_next_but_one=consider_next_but_one,
+        gap_coverage=gap_coverage,
     )
 
 
@@ -196,8 +300,16 @@ def edit(id: int):
         if new_status in ["planned", "printed", "fulfilled"]:
             order.status = new_status
 
-        # Get all medications
-        medications = Medication.query.all()
+        # Filter medications based on the visit's physician
+        visit = order.physician_visit
+        if visit.physician_id:
+            # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+            medications = Medication.query.filter(
+                (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
+            ).all()
+        else:
+            # If visit has no physician, show no medications (can't create prescription orders without physician)
+            medications = []
 
         # Track which medications are included in the updated order
         included_med_ids = set()
@@ -242,8 +354,16 @@ def edit(id: int):
         flash("Order updated successfully", "success")
         return redirect(url_for("orders.show", id=order.id))
 
-    # Get all medications for the form
-    medications = Medication.query.all()
+    # Filter medications based on the visit's physician
+    visit = order.physician_visit
+    if visit.physician_id:
+        # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+        medications = Medication.query.filter(
+            (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
+        ).all()
+    else:
+        # If visit has no physician, show no medications (can't create prescription orders without physician)
+        medications = []
 
     # Create a lookup map for existing order items
     order_items_map = {item.medication_id: item for item in order.order_items}

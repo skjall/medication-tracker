@@ -26,6 +26,7 @@
                     <thead>
                         <tr>
                             <th>Visit Date</th>
+                            <th>Physician</th>
                             <th>Days Away</th>
                             <th>Notes</th>
                             <th>Orders</th>
@@ -37,7 +38,21 @@
                         {% for visit in upcoming_visits %}
                             <tr>
                                 <td>
-                                    <strong>{{ visit.visit_date.strftime('%d.%m.%Y') }}</strong>
+                                    <strong>{{ format_date(visit.visit_date) }}</strong>
+                                </td>
+                                <td>
+                                    {% if visit.physician %}
+                                        <span class="text-primary">
+                                            <i class="fas fa-user-md me-1"></i>{{ visit.physician.name }}
+                                        </span>
+                                        {% if visit.physician.specialty %}
+                                            <br><small class="text-muted">{{ visit.physician.specialty }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-user-question me-1"></i>No physician assigned
+                                        </span>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <span class="badge {% if visit.days_until < 7 %}bg-danger{% elif visit.days_until < 14 %}bg-warning{% else %}bg-success{% endif %}">
@@ -109,6 +124,7 @@
                     <thead>
                         <tr>
                             <th>Visit Date</th>
+                            <th>Physician</th>
                             <th>Notes</th>
                             <th>Orders</th>
                             <th>Actions</th>
@@ -118,7 +134,21 @@
                         {% for visit in past_visits %}
                             <tr>
                                 <td>
-                                    <strong>{{ visit.visit_date.strftime('%d.%m.%Y') }}</strong>
+                                    <strong>{{ format_date(visit.visit_date) }}</strong>
+                                </td>
+                                <td>
+                                    {% if visit.physician %}
+                                        <span class="text-primary">
+                                            <i class="fas fa-user-md me-1"></i>{{ visit.physician.name }}
+                                        </span>
+                                        {% if visit.physician.specialty %}
+                                            <br><small class="text-muted">{{ visit.physician.specialty }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-user-question me-1"></i>No physician assigned
+                                        </span>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <div class="notes-ellipsis">{{ visit.notes or '' }}</div>
@@ -176,9 +206,18 @@
                         <div class="timeline-marker" style="left: {{ visit_percent }}%">
                             <div class="timeline-item">
                                 <div class="timeline-item-content bg-primary text-white">
-                                    <div class="timeline-item-title">Physician Visit</div>
-                                    <div class="timeline-item-date">{{ visit.visit_date.strftime('%d.%m.%Y') }}</div>
+                                    <div class="timeline-item-title">
+                                        {% if visit.physician %}
+                                            <i class="fas fa-user-md me-1"></i>{{ visit.physician.name }}
+                                        {% else %}
+                                            <i class="fas fa-user-question me-1"></i>Physician Visit
+                                        {% endif %}
+                                    </div>
+                                    <div class="timeline-item-date">{{ format_date(visit.visit_date) }}</div>
                                     <div class="timeline-item-days">{{ visit.days_until }} days away</div>
+                                    {% if visit.physician and visit.physician.specialty %}
+                                        <div class="timeline-item-specialty">{{ visit.physician.specialty }}</div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -265,6 +304,12 @@
 
     .timeline-item-days {
         font-size: 0.9rem;
+    }
+
+    .timeline-item-specialty {
+        font-size: 0.75rem;
+        opacity: 0.9;
+        font-style: italic;
     }
 </style>
 {% endblock %}

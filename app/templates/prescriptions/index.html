@@ -28,7 +28,7 @@
                         <strong>First Field Tab Index:</strong> {{ active_template.first_field_tab_index }}<br>
                         <strong>Medications Per Page:</strong> {{ active_template.medications_per_page }}<br>
                         <strong>Template File:</strong> {{ active_template.template_file }}<br>
-                        <strong>Last Updated:</strong> {{ active_template.updated_at.strftime('%d.%m.%Y %H:%M') }}
+                        <strong>Last Updated:</strong> {{ format_datetime(active_template.updated_at) }}
                     </p>
                 </div>
                 <div class="col-md-4 text-end">
@@ -83,7 +83,7 @@
                                         <span class="badge bg-secondary">Inactive</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ template.uploaded_at.strftime('%d.%m.%Y') }}</td>
+                                <td>{{ format_date(template.uploaded_at) }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ url_for('prescriptions.show', id=template.id) }}" class="btn btn-outline-primary" title="View">

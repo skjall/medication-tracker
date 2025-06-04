@@ -13,6 +13,7 @@ down_revision: Union[str, None] = 'd8942309667d'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
+
 def upgrade() -> None:
     """Upgrade schema."""
     # Explicitly disable foreign key support temporarily
@@ -24,19 +25,19 @@ def upgrade() -> None:
     fk_name = None
     for fk in foreign_keys:
         if fk['referred_table'] == 'hospital_visits':
-            fk_name = fk.get('name')
+            fk_name = fk.get('name')  # noqa: F841
             break
 
     # Create the new table with exact same structure
     op.create_table('physician_visits',
-        sa.Column('id', sa.Integer(), nullable=False, primary_key=True),
-        sa.Column('visit_date', sa.DateTime(), nullable=False),
-        sa.Column('notes', sa.Text(), nullable=True),
-        sa.Column('order_for_next_but_one', sa.Boolean(), nullable=False,
-                 comment='If true, orders for this visit should last until the next-but-one visit'),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False)
-    )
+                    sa.Column('id', sa.Integer(), nullable=False, primary_key=True),
+                    sa.Column('visit_date', sa.DateTime(), nullable=False),
+                    sa.Column('notes', sa.Text(), nullable=True),
+                    sa.Column('order_for_next_but_one', sa.Boolean(), nullable=False,
+                              comment='If true, orders for this visit should last until the next-but-one visit'),
+                    sa.Column('created_at', sa.DateTime(), nullable=False),
+                    sa.Column('updated_at', sa.DateTime(), nullable=False)
+                    )
 
     # Force data transfer with explicit column names
     op.execute('''
@@ -113,6 +114,7 @@ def upgrade() -> None:
     # Turn foreign keys back on
     op.execute('PRAGMA foreign_keys = ON')
 
+
 def downgrade() -> None:
     """Downgrade schema."""
     # Explicitly disable foreign key support temporarily
@@ -120,13 +122,13 @@ def downgrade() -> None:
 
     # Recreate the original hospital_visits table
     op.create_table('hospital_visits',
-        sa.Column('id', sa.INTEGER(), nullable=False, primary_key=True),
-        sa.Column('visit_date', sa.DATETIME(), nullable=False),
-        sa.Column('notes', sa.TEXT(), nullable=True),
-        sa.Column('order_for_next_but_one', sa.BOOLEAN(), nullable=False),
-        sa.Column('created_at', sa.DATETIME(), nullable=False),
-        sa.Column('updated_at', sa.DATETIME(), nullable=False)
-    )
+                    sa.Column('id', sa.INTEGER(), nullable=False, primary_key=True),
+                    sa.Column('visit_date', sa.DATETIME(), nullable=False),
+                    sa.Column('notes', sa.TEXT(), nullable=True),
+                    sa.Column('order_for_next_but_one', sa.BOOLEAN(), nullable=False),
+                    sa.Column('created_at', sa.DATETIME(), nullable=False),
+                    sa.Column('updated_at', sa.DATETIME(), nullable=False)
+                    )
 
     # Transfer data back to hospital_visits
     op.execute('''

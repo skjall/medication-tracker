@@ -19,28 +19,47 @@
 
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Order for Physician Visit on {{ visit.visit_date.strftime('%d.%m.%Y') }}</h5>
+        <h5 class="mb-0">Order for Physician Visit on {{ format_date(visit.visit_date) }}</h5>
     </div>
     <div class="card-body">
-        <div class="alert alert-info">
+        <div class="alert {% if gap_coverage %}alert-warning{% else %}alert-info{% endif %}">
             <div class="d-flex align-items-center">
-                <i class="fas fa-info-circle me-3 fa-2x"></i>
+                <i class="fas {% if gap_coverage %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} me-3 fa-2x"></i>
                 <div>
-                    <p class="mb-0">
-                        This order is for your physician visit in
-                        <strong>{{ visit.days_until }} days</strong>
-                        on <strong>{{ visit.visit_date.strftime('%d.%m.%Y') }}</strong>.
-                    </p>
-                    <p class="mb-0 mt-2">
-                        {% if consider_next_but_one %}
-                            <span class="badge bg-primary">Next-But-One Planning</span>
-                            <span class="ms-2">Medication needs are calculated to last until your <strong>next-but-one</strong> visit</span>
+                    {% if gap_coverage %}
+                        <h5 class="mb-2">Gap Coverage Order</h5>
+                        <p class="mb-0">
+                            <strong>This is a gap coverage order.</strong> Some medications will run out before your visit on
+                            <strong>{{ format_date(visit.visit_date) }}</strong> (in {{ visit.days_until }} days).
+                        </p>
+                        <p class="mb-0 mt-2">
+                            Only medications that will deplete before the visit are shown below, with quantities calculated
+                            to bridge the gap between when they run out and your visit date.
+                        </p>
+                    {% else %}
+                        <p class="mb-0">
+                            This order is for your physician visit in
+                            <strong>{{ visit.days_until }} days</strong>
+                            on <strong>{{ format_date(visit.visit_date) }}</strong>.
+                        </p>
+                        <p class="mb-0 mt-2">
+                            {% if consider_next_but_one %}
+                                <span class="badge bg-primary">Next-But-One Planning</span>
+                                <span class="ms-2">Medication needs are calculated to last until your <strong>next-but-one</strong> visit</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Standard Planning</span>
+                                <span class="ms-2">Medication needs are calculated to last until your next visit only</span>
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                    <p class="mt-2 mb-0">
+                        {% if visit.physician %}
+                            <i class="fas fa-user-md me-1"></i>Showing medications prescribed by <strong>{{ visit.physician.display_name }}</strong> only.
                         {% else %}
-                            <span class="badge bg-secondary">Standard Planning</span>
-                            <span class="ms-2">Medication needs are calculated to last until your next visit only</span>
+                            <i class="fas fa-pills me-1"></i>Showing over-the-counter medications and supplements only.
                         {% endif %}
                     </p>
-                    <p class="mt-2 mb-0">
+                    <p class="mt-1 mb-0">
                         Select the medications you need and adjust quantities as necessary.
                     </p>
                 </div>
@@ -60,7 +79,15 @@
                                 <th style="width: 3%"></th>
                                 <th>Medication</th>
                                 <th>Current Stock</th>
-                                <th>Needed Until {% if consider_next_but_one %}Next-But-One{% else %}Next{% endif %} Visit</th>
+                                <th>
+                                    {% if gap_coverage %}
+                                        Needed for Gap Coverage
+                                    {% elif consider_next_but_one %}
+                                        Needed Until Next-But-One Visit
+                                    {% else %}
+                                        Needed Until Next Visit
+                                    {% endif %}
+                                </th>
                                 <th>Additional Needed</th>
                             </tr>
                         </thead>
@@ -74,7 +101,7 @@
                                                 <input class="form-check-input medication-checkbox" type="checkbox"
                                                        id="include_{{ med.id }}" name="include_{{ med.id }}"
                                                        data-medication-id="{{ med.id }}"
-                                                       {% if med_need.additional_needed > 0 %}checked{% endif %}>
+                                                       {% if gap_coverage or med_need.additional_needed > 0 %}checked{% endif %}>
                                             </div>
                                         </td>
                                         <td>
@@ -90,12 +117,26 @@
                                                 <span class="text-muted">No inventory</span>
                                             {% endif %}
                                         </td>
-                                        <td>{{ med_need.needed_units }} units</td>
+                                        <td>
+                                            <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true"
+                                                  title="{% if med_need.calculation_type == 'gap_coverage' %}Visit in {{ visit.days_until }} days, depletes in {{ med_need.days_until_depletion }} days = {{ med_need.gap_days }} days gap<br>Gap coverage: {{ med.daily_usage|round(1) }}/day × {{ med_need.gap_days }} days = {{ (med.daily_usage * med_need.gap_days)|round(1) }} units{% if med_need.safety_margin_days > 0 %}<br>Safety margin: {{ med.daily_usage|round(1) }}/day × {{ med_need.safety_margin_days }} days = {{ (med.daily_usage * med_need.safety_margin_days)|round(1) }} units<br><strong>Total: {{ med_need.needed_units }} units</strong>{% endif %}{% elif med_need.calculation_type == 'next_but_one' %}Until visit: {{ med.daily_usage|round(1) }}/day × {{ med_need.base_days }} days = {{ (med.daily_usage * med_need.base_days)|round(1) }} units<br>Until next visit: {{ med.daily_usage|round(1) }}/day × {{ med_need.days_calculated - med_need.base_days }} days = {{ (med.daily_usage * (med_need.days_calculated - med_need.base_days))|round(1) }} units{% if med_need.safety_margin_days > 0 %}<br>Safety margin: {{ med.daily_usage|round(1) }}/day × {{ med_need.safety_margin_days }} days = {{ (med.daily_usage * med_need.safety_margin_days)|round(1) }} units{% endif %}<br><strong>Total: {{ med_need.needed_units }} units</strong>{% else %}Until visit: {{ med.daily_usage|round(1) }}/day × {{ med_need.days_calculated }} days = {{ (med.daily_usage * med_need.days_calculated)|round(1) }} units{% if med_need.safety_margin_days > 0 %}<br>Safety margin: {{ med.daily_usage|round(1) }}/day × {{ med_need.safety_margin_days }} days = {{ (med.daily_usage * med_need.safety_margin_days)|round(1) }} units<br><strong>Total: {{ med_need.needed_units }} units</strong>{% endif %}{% endif %}">
+                                                {{ med_need.needed_units }} units
+                                                <i class="fas fa-info-circle text-muted ms-1"></i>
+                                            </span>
+                                        </td>
                                         <td class="{% if med_need.additional_needed > 0 %}text-danger{% endif %}">
                                             {% if med_need.additional_needed > 0 %}
-                                                <span class="text-danger">+{{ med_need.additional_needed }} units</span>
+                                                <span class="text-danger d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true"
+                                                      title="Total needed:<br>{{ med_need.needed_units }} units<br>Current stock: {{ med_need.current_inventory }} units<br><strong>To order: {{ med_need.additional_needed }} units</strong>">
+                                                    +{{ med_need.additional_needed }} units
+                                                    <i class="fas fa-info-circle text-muted ms-1"></i>
+                                                </span>
                                             {% else %}
-                                                <span class="text-success">Sufficient</span>
+                                                <span class="text-success d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true"
+                                                      title="Total needed:<br>{{ med_need.needed_units }} units<br>Current stock: {{ med_need.current_inventory }} units<br><strong>Sufficient stock</strong>">
+                                                    Sufficient
+                                                    <i class="fas fa-check-circle text-muted ms-1"></i>
+                                                </span>
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -176,9 +217,26 @@
 </div>
 {% endblock %}
 
+{% block head_extra %}
+<style>
+    /* Make tooltips wider to prevent unnecessary line breaks */
+    .tooltip-inner {
+        max-width: 450px !important;
+        width: max-content;
+        text-align: left;
+    }
+</style>
+{% endblock %}
+
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
         // Setup checkboxes for medication selection
         setupOrderItemSelection();
 

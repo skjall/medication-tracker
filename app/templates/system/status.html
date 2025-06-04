@@ -31,12 +31,12 @@
                     </dd>
 
                     <dt class="col-sm-6">Current Time (UTC):</dt>
-                    <dd class="col-sm-6">{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</dd>
+                    <dd class="col-sm-6">{{ format_datetime(now, show_seconds=true) }}</dd>
 
                     <dt class="col-sm-6">Last Deduction Check (UTC):</dt>
                     <dd class="col-sm-6">
                         {% if status.last_deduction_check %}
-                            {{ status.last_deduction_check.strftime('%d.%m.%Y %H:%M:%S') }}
+                            {{ format_datetime(status.last_deduction_check, show_seconds=true) }}
                         {% else %}
                             <span class="text-muted">Never run</span>
                         {% endif %}
@@ -135,10 +135,10 @@
             <div class="col-md-6">
                 <dl class="row">
                     <dt class="col-sm-6">Server Time:</dt>
-                    <dd class="col-sm-6">{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</dd>
+                    <dd class="col-sm-6">{{ format_datetime(now, show_seconds=true) }}</dd>
 
                     <dt class="col-sm-6">Local Time:</dt>
-                    <dd class="col-sm-6">{{ local_time.strftime('%d.%m.%Y %H:%M:%S')|default(now.strftime('%d.%m.%Y %H:%M:%S')) }}</dd>
+                    <dd class="col-sm-6">{{ format_datetime(local_time, show_seconds=true) if local_time else format_datetime(now, show_seconds=true) }}</dd>
                 </dl>
             </div>
         </div>
@@ -174,6 +174,23 @@
                 <button class="btn btn-outline-primary w-100" onclick="refreshPage()" type="button">
                     <i class="fas fa-rotate-right me-1"></i>Refresh Status
                 </button>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <a href="{{ url_for('system.detect_pipe_times') }}" class="btn btn-outline-warning w-100">
+                    <i class="fas fa-search me-1"></i>Detect Pipe-Separated Times
+                </a>
+                <small class="text-muted">Scan for corrupted medication schedule times</small>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <a href="{{ url_for('system.fix_pipe_times') }}" class="btn btn-outline-danger w-100" 
+                   onclick="return confirm('This will permanently fix corrupted time data in the database. Continue?')">
+                    <i class="fas fa-wrench me-1"></i>Fix Pipe-Separated Times
+                </a>
+                <small class="text-muted">Automatically repair corrupted medication schedule times</small>
             </div>
         </div>
     </div>

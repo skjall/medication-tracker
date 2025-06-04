@@ -23,7 +23,7 @@
             <div class="card-body">
                 {% if upcoming_visit %}
                     <h3 class="text-primary">
-                        {{ upcoming_visit.visit_date.strftime('%d.%m.%Y') }}
+                        {{ format_date(upcoming_visit.visit_date) }}
                         <small class="text-muted ms-2">({{ upcoming_visit.days_until }} days away)</small>
                     </h3>
                     {% if upcoming_visit.notes %}
@@ -93,6 +93,65 @@
     </div>
 </div>
 
+<!-- Gap Coverage Warnings -->
+{% for gap_info in gap_coverage_by_visit %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Gap Coverage Warning
+                    {% if gap_info.visit.physician %}
+                        - {{ gap_info.visit.physician.name }}
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>{{ gap_info.medications|length }} medication(s)</strong> will run out before your visit
+                    {% if gap_info.visit.physician %}with {{ gap_info.visit.physician.name }}{% endif %}
+                    on <strong>{{ format_date(gap_info.visit.visit_date) }}</strong> ({{ gap_info.visit.days_until }} days away).
+                </p>
+                <div class="row">
+                    <div class="col-md-8">
+                        <ul class="list-group">
+                            {% for med in gap_info.medications[:5] %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ med.name }}</strong>
+                                        <span class="text-warning ms-2">
+                                            <i class="fas fa-calendar-times"></i>
+                                            Runs out {{ format_date(med.depletion_date) }}
+                                        </span>
+                                    </div>
+                                    <span class="badge bg-warning text-dark">
+                                        {{ med.inventory.current_count }} units left
+                                    </span>
+                                </li>
+                            {% endfor %}
+                            {% if gap_info.medications|length > 5 %}
+                                <li class="list-group-item text-muted">
+                                    <i class="fas fa-ellipsis-h me-2"></i>
+                                    And {{ gap_info.medications|length - 5 }} more medication(s)
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <div class="col-md-4 d-flex flex-column justify-content-center">
+                        <a href="{{ url_for('visits.show', id=gap_info.visit.id) }}" class="btn btn-warning mb-2">
+                            <i class="fas fa-hospital me-1"></i>View Visit Details
+                        </a>
+                        <a href="{{ url_for('orders.new', visit_id=gap_info.visit.id, gap_coverage='true') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-clipboard-list me-1"></i>Create Gap Coverage Order
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
 <div class="row">
     <!-- Medications Summary Card -->
     <div class="col-12 mb-4">
@@ -141,7 +200,7 @@
                                         </td>
                                         <td>
                                             {% if med.depletion_date %}
-                                                {{ med.depletion_date.strftime('%d.%m.%Y') }}
+                                                {{ format_date(med.depletion_date) }}
                                             {% else %}
                                                 <span class="text-muted">N/A</span>
                                             {% endif %}

@@ -83,7 +83,26 @@ class MedicationSchedule(db.Model):
     def formatted_times(self) -> List[str]:
         """Return the list of times from the JSON string."""
         if isinstance(self.times_of_day, str):
-            return json.loads(self.times_of_day)
+            try:
+                parsed = json.loads(self.times_of_day)
+                if isinstance(parsed, list):
+                    # Check if any individual time contains pipe separators (legacy data corruption)
+                    result = []
+                    for time_str in parsed:
+                        if isinstance(time_str, str) and '|' in time_str:
+                            # Split pipe-separated times
+                            logger.warning(f"Pipe-separated time detected in schedule {self.id}: {time_str}")
+                            result.extend(time_str.split('|'))
+                        else:
+                            result.append(time_str)
+                    return result
+                return parsed
+            except json.JSONDecodeError:
+                # Handle case where raw data contains pipes
+                if '|' in self.times_of_day:
+                    logger.warning(f"Raw pipe-separated times detected in schedule {self.id}: {self.times_of_day}")
+                    return self.times_of_day.split('|')
+                return [self.times_of_day]
         return self.times_of_day
 
     @property

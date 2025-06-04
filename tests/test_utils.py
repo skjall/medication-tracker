@@ -105,10 +105,10 @@ class TestTimezoneUtils(BaseTestCase):
 
     def test_calculate_days_until(self):
         """Test calculation of days until a target date."""
-        # Today should return 1 (tomorrow)
+        # Today should return 0
         today = self.now.astimezone(pytz.timezone("UTC"))
         result = calculate_days_until(today)
-        self.assertEqual(result, 1)
+        self.assertEqual(result, 0)
 
         # Tomorrow should return 1
         tomorrow = today + timedelta(days=1)

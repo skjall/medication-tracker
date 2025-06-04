@@ -1,6 +1,7 @@
 from flask import Flask
 from .models.base import db
 
+
 def create_app(config_name=None):
     """
     Create and configure the Flask application.

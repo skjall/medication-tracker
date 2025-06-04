@@ -20,6 +20,7 @@ from sqlalchemy import func
 # Local application imports
 from models import (
     PhysicianVisit,
+    Physician,
     Inventory,
     Medication,
     MedicationSchedule,
@@ -52,6 +53,9 @@ def export_medications_to_csv() -> Response:
         [
             "ID",
             "Name",
+            "Physician ID",
+            "Physician Name",
+            "Is OTC",
             "Dosage",
             "Frequency",
             "Daily Usage",
@@ -74,6 +78,9 @@ def export_medications_to_csv() -> Response:
             [
                 med.id,
                 med.name,
+                med.physician_id or "",
+                med.physician.name if med.physician else "",
+                "Yes" if med.is_otc else "No",
                 med.dosage,
                 med.frequency,
                 med.daily_usage,
@@ -219,6 +226,60 @@ def export_orders_to_csv() -> Response:
     return response
 
 
+def export_physicians_to_csv() -> Response:
+    """
+    Export all physicians to a CSV file.
+
+    Returns:
+        Flask Response object with CSV data
+    """
+    si = StringIO()
+    writer = csv.writer(si)
+
+    # Write header
+    writer.writerow(
+        [
+            "Physician ID",
+            "Name",
+            "Specialty",
+            "Phone",
+            "Email",
+            "Address",
+            "Notes",
+            "Created At",
+            "Updated At",
+        ]
+    )
+
+    # Write data
+    physicians = Physician.query.order_by(Physician.name).all()
+    for physician in physicians:
+        writer.writerow(
+            [
+                physician.id,
+                physician.name,
+                physician.specialty or "",
+                physician.phone or "",
+                physician.email or "",
+                physician.address or "",
+                physician.notes or "",
+                format_datetime(physician.created_at),
+                format_datetime(physician.updated_at),
+            ]
+        )
+
+    output = si.getvalue()
+
+    # Create response
+    response = Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=physicians.csv"},
+    )
+
+    return response
+
+
 def export_visits_to_csv() -> Response:
     """
     Export all physician visits to a CSV file.
@@ -236,6 +297,8 @@ def export_visits_to_csv() -> Response:
     writer.writerow(
         [
             "Visit ID",
+            "Physician ID",
+            "Physician Name",
             "Visit Date",
             "Days Until",
             "Notes",
@@ -255,6 +318,8 @@ def export_visits_to_csv() -> Response:
         writer.writerow(
             [
                 visit.id,
+                visit.physician_id or "",
+                visit.physician.name if visit.physician else "",
                 format_date(visit.visit_date),
                 days_until if visit_date >= now else "Past visit",
                 visit.notes or "",
@@ -334,10 +399,28 @@ def import_medications_from_csv(
                         )
                         continue
 
+                    # Handle physician reference with backward compatibility
+                    physician_id = None
+                    is_otc = False
+
+                    # Try to get physician info - backward compatible
+                    if "Physician ID" in row and row["Physician ID"]:
+                        physician_id = int(row["Physician ID"])
+                    elif "Physician Name" in row and row["Physician Name"]:
+                        physician = Physician.query.filter_by(name=row["Physician Name"]).first()
+                        if physician:
+                            physician_id = physician.id
+
+                    # Handle OTC flag - backward compatible
+                    if "Is OTC" in row:
+                        is_otc = row.get("Is OTC", "").lower() in ["yes", "true", "1"]
+
                     # Update existing medication if override is True
                     if existing_med and override:
                         med = existing_med
                         # Update fields
+                        med.physician_id = physician_id
+                        med.is_otc = is_otc
                         med.dosage = float(row["Dosage"]) if row.get("Dosage") else 1.0
                         med.frequency = (
                             float(row["Frequency"]) if row.get("Frequency") else 1.0
@@ -370,6 +453,8 @@ def import_medications_from_csv(
                         # Create new medication
                         med = Medication(
                             name=row["Name"],
+                            physician_id=physician_id,
+                            is_otc=is_otc,
                             dosage=float(row["Dosage"]) if row.get("Dosage") else 1.0,
                             frequency=(
                                 float(row["Frequency"]) if row.get("Frequency") else 1.0
@@ -599,6 +684,76 @@ def import_inventory_from_csv(
     return success_count, errors
 
 
+def import_physicians_from_csv(
+    file_path: str, override: bool = False
+) -> Tuple[int, List[str]]:
+    """
+    Import physicians from a CSV file.
+
+    Args:
+        file_path: Path to the CSV file
+        override: If True, update existing physicians with the same name
+
+    Returns:
+        Tuple of (number of records imported/updated, list of error messages)
+    """
+    success_count = 0
+    errors = []
+
+    try:
+        with open(file_path, "r", newline="") as csvfile:
+            reader = csv.DictReader(csvfile)
+
+            for row in reader:
+                try:
+                    # Check if physician with same name exists
+                    existing_physician = Physician.query.filter_by(name=row["Name"]).first()
+
+                    if existing_physician and not override:
+                        errors.append(
+                            f"Physician '{row['Name']}' already exists (ID: {existing_physician.id})"
+                        )
+                        continue
+
+                    # Update existing physician if override is True
+                    if existing_physician and override:
+                        physician = existing_physician
+                        # Update fields
+                        physician.specialty = row.get("Specialty", "")
+                        physician.phone = row.get("Phone", "")
+                        physician.email = row.get("Email", "")
+                        physician.address = row.get("Address", "")
+                        physician.notes = row.get("Notes", "")
+                    else:
+                        # Create new physician
+                        physician = Physician(
+                            name=row["Name"],
+                            specialty=row.get("Specialty", ""),
+                            phone=row.get("Phone", ""),
+                            email=row.get("Email", ""),
+                            address=row.get("Address", ""),
+                            notes=row.get("Notes", ""),
+                        )
+                        db.session.add(physician)
+
+                    success_count += 1
+
+                except Exception as e:
+                    errors.append(
+                        f"Error importing '{row.get('Name', 'unknown')}': {str(e)}"
+                    )
+
+            # Commit all changes
+            if success_count > 0:
+                db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        errors.append(f"Global import error: {str(e)}")
+
+    return success_count, errors
+
+
 def import_visits_from_csv(
     file_path: str, override: bool = False
 ) -> Tuple[int, List[str]]:
@@ -647,6 +802,15 @@ def import_visits_from_csv(
                         errors.append(f"Could not parse visit date: {visit_date_str}")
                         continue
 
+                    # Handle physician reference with backward compatibility
+                    physician_id = None
+                    if "Physician ID" in row and row["Physician ID"]:
+                        physician_id = int(row["Physician ID"])
+                    elif "Physician Name" in row and row["Physician Name"]:
+                        physician = Physician.query.filter_by(name=row["Physician Name"]).first()
+                        if physician:
+                            physician_id = physician.id
+
                     # Check if visit exists with same date
                     existing_visit = PhysicianVisit.query.filter(
                         func.date(PhysicianVisit.visit_date) == func.date(visit_date)
@@ -661,8 +825,9 @@ def import_visits_from_csv(
                     # Create or update visit
                     if existing_visit and override:
                         visit = existing_visit
+                        visit.physician_id = physician_id
                     else:
-                        visit = PhysicianVisit(visit_date=visit_date)
+                        visit = PhysicianVisit(visit_date=visit_date, physician_id=physician_id)
                         db.session.add(visit)
 
                     # Update fields
@@ -981,7 +1146,7 @@ def export_schedules_to_csv() -> Response:
         output,
         mimetype="text/csv",
         headers={
-            "Content-disposition": "attachment; filename=medication_schedules.csv"
+            "Content-disposition": "attachment; filename=schedules.csv"
         },
     )
 
@@ -1111,6 +1276,35 @@ def import_schedules_from_csv(
         errors.append(f"Global import error: {str(e)}")
 
     return success_count, errors
+
+
+def reset_physicians_data() -> int:
+    """
+    Reset physician data by deleting all physician records.
+
+    Returns:
+        Number of records deleted
+    """
+    try:
+        # First clear physician references from related tables
+        # Set physician_id to None for medications
+        medications = Medication.query.filter(Medication.physician_id.isnot(None)).all()
+        for med in medications:
+            med.physician_id = None
+        
+        # Set physician_id to None for visits  
+        visits = PhysicianVisit.query.filter(PhysicianVisit.physician_id.isnot(None)).all()
+        for visit in visits:
+            visit.physician_id = None
+        
+        # Delete physicians
+        count = Physician.query.delete()
+        db.session.commit()
+
+        return count
+    except Exception as e:
+        db.session.rollback()
+        raise e
 
 
 def reset_schedules_data() -> int:

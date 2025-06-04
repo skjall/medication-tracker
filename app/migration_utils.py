@@ -8,7 +8,7 @@ when the application starts or when explicitly triggered.
 # Standard library imports
 import logging
 import os
-import subprocess
+import time
 from typing import List, Tuple
 
 # Third-party imports
@@ -20,6 +20,137 @@ from flask import Flask
 logger = logging.getLogger(__name__)
 
 initial_revision = "d8942309667d"  # Initial revision ID for the database
+
+
+class MigrationLock:
+    """Atomic file-based lock to ensure only one process runs migrations at a time."""
+
+    def __init__(self, app: Flask):
+        self.app = app
+        self.lock_file_path = os.path.join(app.root_path, "data", ".migration_lock")
+        self.acquired = False
+
+    def __enter__(self):
+        """Acquire the migration lock using atomic file operations."""
+        try:
+            # Ensure data directory exists
+            os.makedirs(os.path.dirname(self.lock_file_path), exist_ok=True)
+
+            # Try to create lock file atomically
+            # This will fail if file already exists (another process has lock)
+            import datetime
+            timestamp = datetime.datetime.now().isoformat()
+            lock_content = f"{timestamp}: PID {os.getpid()} acquired lock\n"
+
+            # Use O_CREAT | O_EXCL for atomic lock acquisition
+            try:
+                fd = os.open(self.lock_file_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+                os.write(fd, lock_content.encode())
+                os.close(fd)
+                self.acquired = True
+                logger.info(f"Migration lock acquired by process {os.getpid()}")
+                return self
+            except FileExistsError:
+                # Lock already exists, check if it's stale
+                if self._is_stale_lock():
+                    # Remove stale lock and try again
+                    try:
+                        os.unlink(self.lock_file_path)
+                        fd = os.open(self.lock_file_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+                        os.write(fd, lock_content.encode())
+                        os.close(fd)
+                        self.acquired = True
+                        logger.info(f"Migration lock acquired by process {os.getpid()} after removing stale lock")
+                        return self
+                    except (FileExistsError, OSError):
+                        pass
+
+                # Could not acquire lock
+                logger.info(f"Could not acquire migration lock (process {os.getpid()}): file exists")
+                raise IOError("Migration lock already held")
+
+        except Exception as e:
+            logger.info(f"Could not acquire migration lock (process {os.getpid()}): {e}")
+            raise
+
+    def _is_stale_lock(self) -> bool:
+        """Check if the lock file is stale (older than 5 minutes)."""
+        try:
+            if not os.path.exists(self.lock_file_path):
+                return False
+            # Check age of lock file
+            lock_age = time.time() - os.path.getmtime(self.lock_file_path)
+            return lock_age > 300  # 5 minutes
+        except OSError:
+            return True  # If we can't check, assume it's stale
+
+    def __exit__(self, exc_type=None, exc_val=None, exc_tb=None):
+        """Release the migration lock."""
+        # Unused parameters are part of context manager protocol
+        _ = exc_type, exc_val, exc_tb
+        if self.acquired:
+            try:
+                # Clean up lock file
+                if os.path.exists(self.lock_file_path):
+                    os.unlink(self.lock_file_path)
+                logger.info(f"Migration lock released by process {os.getpid()}")
+            except Exception as e:
+                logger.warning(f"Error releasing migration lock: {e}")
+            finally:
+                self.acquired = False
+
+
+def run_migrations_with_lock(app: Flask) -> bool:
+    """
+    Run migrations with file-based locking to prevent concurrent execution.
+
+    Args:
+        app: Flask application instance
+
+    Returns:
+        True if migrations were run or not needed, False if failed
+    """
+    try:
+        # Try to acquire lock with timeout
+        max_wait_time = 60  # 60 seconds max wait
+        start_time = time.time()
+
+        while time.time() - start_time < max_wait_time:
+            try:
+                with MigrationLock(app):
+                    # Double-check if migrations are still needed (another process might have run them)
+                    # Use a fresh app context to avoid transaction conflicts
+                    with app.app_context():
+                        if not check_migrations_needed(app):
+                            logger.info("Migrations no longer needed (completed by another process)")
+                            return True
+
+                        # Run the actual migrations
+                        logger.info(f"Process {os.getpid()} running database migrations")
+                        success = run_migrations(app)
+                        if success:
+                            logger.info("Database migrations completed successfully")
+                        else:
+                            logger.error("Database migrations failed")
+                        return success
+
+            except (IOError, OSError) as e:
+                # Lock not available, wait and retry
+                logger.info(f"Process {os.getpid()} waiting for migration lock: {e}")
+                time.sleep(2)  # Increased wait time
+                continue
+            except Exception as e:
+                logger.error(f"Unexpected error in migration lock for process {os.getpid()}: {e}")
+                time.sleep(2)
+                continue
+
+        # Timeout reached
+        logger.warning(f"Process {os.getpid()} timed out waiting for migration lock")
+        return False
+
+    except Exception as e:
+        logger.error(f"Error in run_migrations_with_lock: {e}")
+        return False
 
 
 def get_alembic_config(app: Flask) -> Config:
@@ -156,6 +287,7 @@ def check_and_fix_version_tracking(app: Flask) -> bool:
     except Exception as e:
         logger.error(f"Error checking or fixing version tracking: {e}")
         return False
+
 
 def check_migrations_needed(app: Flask) -> bool:
     """

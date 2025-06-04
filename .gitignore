@@ -37,6 +37,7 @@ instance/
 .venv
 venv/
 ENV/
+C*.md
 
 # IDE
 .idea/

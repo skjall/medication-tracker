@@ -21,7 +21,7 @@
             </div>
             <div class="card-body">
                 <p>The application currently uses timezone: <strong>{{ settings.timezone_name }}</strong></p>
-                <p>Current time in this timezone: <strong>{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</strong></p>
+                <p>Current time in this timezone: <strong>{{ format_datetime(now, show_seconds=true) }}</strong></p>
 
                 <form action="{{ url_for('settings.update_timezone') }}" method="POST">
                     <div class="mb-3">
@@ -154,7 +154,7 @@
                     <dt class="col-sm-6">Last Deduction Check:</dt>
                     <dd class="col-sm-6">
                         {% if settings.last_deduction_check %}
-                            {{ settings.last_deduction_check.strftime('%d.%m.%Y %H:%M') }}
+                            {{ format_datetime(settings.last_deduction_check) }}
                         {% else %}
                             <span class="text-muted">Never</span>
                         {% endif %}

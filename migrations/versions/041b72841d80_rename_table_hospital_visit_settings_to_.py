@@ -13,6 +13,7 @@ down_revision: Union[str, None] = '339f7d43eac9'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
+
 def upgrade() -> None:
     """Upgrade schema."""
     # Explicitly disable foreign key support temporarily
@@ -31,15 +32,15 @@ def upgrade() -> None:
 
     # Create the new table with the same structure
     op.create_table('physician_visit_settings',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('default_visit_interval', sa.Integer(), nullable=False),
-        sa.Column('auto_schedule_visits', sa.Boolean(), nullable=False),
-        sa.Column('default_order_for_next_but_one', sa.Boolean(), nullable=False),
-        sa.Column('timezone_name', sa.String(length=50), nullable=False),
-        sa.Column('last_deduction_check', sa.DateTime(), nullable=True),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
-        sa.PrimaryKeyConstraint('id')
-    )
+                    sa.Column('id', sa.Integer(), nullable=False),
+                    sa.Column('default_visit_interval', sa.Integer(), nullable=False),
+                    sa.Column('auto_schedule_visits', sa.Boolean(), nullable=False),
+                    sa.Column('default_order_for_next_but_one', sa.Boolean(), nullable=False),
+                    sa.Column('timezone_name', sa.String(length=50), nullable=False),
+                    sa.Column('last_deduction_check', sa.DateTime(), nullable=True),
+                    sa.Column('updated_at', sa.DateTime(), nullable=False),
+                    sa.PrimaryKeyConstraint('id')
+                    )
 
     # Force data transfer with explicit column names
     op.execute('''
@@ -70,23 +71,23 @@ def upgrade() -> None:
     # Turn foreign keys back on
     op.execute('PRAGMA foreign_keys = ON')
 
+
 def downgrade() -> None:
     """Downgrade schema."""
     # Explicitly disable foreign key support temporarily
     op.execute('PRAGMA foreign_keys = OFF')
 
-
     # Recreate the original hospital_visit_settings table
     op.create_table('hospital_visit_settings',
-        sa.Column('id', sa.INTEGER(), nullable=False),
-        sa.Column('default_visit_interval', sa.INTEGER(), nullable=False),
-        sa.Column('auto_schedule_visits', sa.BOOLEAN(), nullable=False),
-        sa.Column('default_order_for_next_but_one', sa.BOOLEAN(), nullable=False),
-        sa.Column('timezone_name', sa.VARCHAR(length=50), nullable=False),
-        sa.Column('last_deduction_check', sa.DATETIME(), nullable=True),
-        sa.Column('updated_at', sa.DATETIME(), nullable=False),
-        sa.PrimaryKeyConstraint('id')
-    )
+                    sa.Column('id', sa.INTEGER(), nullable=False),
+                    sa.Column('default_visit_interval', sa.INTEGER(), nullable=False),
+                    sa.Column('auto_schedule_visits', sa.BOOLEAN(), nullable=False),
+                    sa.Column('default_order_for_next_but_one', sa.BOOLEAN(), nullable=False),
+                    sa.Column('timezone_name', sa.VARCHAR(length=50), nullable=False),
+                    sa.Column('last_deduction_check', sa.DATETIME(), nullable=True),
+                    sa.Column('updated_at', sa.DATETIME(), nullable=False),
+                    sa.PrimaryKeyConstraint('id')
+                    )
 
     # Transfer data back to hospital_visit_settings
     op.execute('''

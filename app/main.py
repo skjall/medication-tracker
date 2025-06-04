@@ -6,20 +6,29 @@ Main application module for the Medication Tracker application.
 import logging
 import os
 import sys
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional
 
 # Add the app directory to the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from datetime import datetime, timedelta, timezone  # noqa: E402
+from typing import Any, Dict, Optional  # noqa: E402
+
 # Third-party imports
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request  # noqa: E402
 
 # Local application imports
-from logging_config import configure_logging
-from models import *
-from task_scheduler import TaskScheduler
-from utils import to_local_timezone
+from logging_config import configure_logging  # noqa: E402
+from models import (  # noqa: E402
+    db,
+    utcnow,
+    ensure_timezone_utc,
+    Medication,
+    PhysicianVisit,
+    Order,
+    Inventory,
+    InventoryLog
+)
+from task_scheduler import TaskScheduler  # noqa: E402
 
 
 def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
@@ -71,7 +80,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     # Initialize database with migrations
     with app.app_context():
         # Import here to avoid circular imports
-        from migration_utils import check_migrations_needed, check_and_fix_version_tracking, run_migrations, initialize_migrations
+        from migration_utils import check_migrations_needed, check_and_fix_version_tracking, run_migrations_with_lock, initialize_migrations
 
         # Initialize migrations environment if needed
         if not os.path.exists(os.path.join(app.root_path, '..', 'migrations', 'versions')):
@@ -82,16 +91,20 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         if check_and_fix_version_tracking(app):
             logger.info("Migration tracking fixed.")
 
-
-        # Check if migrations need to be run
+        # Check if migrations need to be run and run them with lock to prevent concurrent execution
         if check_migrations_needed(app):
-            logger.info("Running database migrations")
-            run_migrations(app)
+            logger.info("Database migrations needed - attempting to run with lock")
+            success = run_migrations_with_lock(app)
+            if success:
+                logger.info("Database migrations completed successfully")
+            else:
+                logger.warning("Database migrations failed or timed out - application will continue with current schema")
         else:
             logger.info("Database schema is up to date")
 
     # Register blueprints (routes)
     from routes.medications import medication_bp
+    from routes.physicians import physician_bp
     from routes.inventory import inventory_bp
     from routes.visits import visit_bp
     from routes.orders import order_bp
@@ -101,6 +114,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     from routes.system import system_bp
 
     app.register_blueprint(medication_bp)
+    app.register_blueprint(physician_bp)
     app.register_blueprint(inventory_bp)
     app.register_blueprint(visit_bp)
     app.register_blueprint(order_bp)
@@ -110,10 +124,14 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     app.register_blueprint(system_bp)
 
     # Add utility functions to Jinja
-    from utils import min_value, make_aware
+    from utils import min_value, make_aware, format_date, format_datetime, format_time, to_local_timezone
 
     app.jinja_env.globals.update(min=min_value)
     app.jinja_env.globals.update(make_aware=make_aware)
+    app.jinja_env.globals.update(format_date=format_date)
+    app.jinja_env.globals.update(format_datetime=format_datetime)
+    app.jinja_env.globals.update(format_time=format_time)
+    app.jinja_env.globals.update(to_local_timezone=to_local_timezone)
 
     # Context processor to add date/time variables to all templates
     @app.context_processor
@@ -144,17 +162,44 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         """Render the dashboard/home page."""
         logger.debug("Rendering dashboard page")
         medications = Medication.query.all()
-        # Using the same filter as the visit page to ensure consistency
-        upcoming_visit = (
+        # Get ALL upcoming visits, not just the first one
+        upcoming_visits = (
             PhysicianVisit.query.filter(PhysicianVisit.visit_date >= utcnow())
             .order_by(PhysicianVisit.visit_date)
-            .first()
+            .all()
         )
+        
+        # Keep the first visit for backward compatibility with templates
+        upcoming_visit = upcoming_visits[0] if upcoming_visits else None
 
         low_inventory = []
+        gap_coverage_by_visit = []  # List of dicts: {visit: visit_obj, medications: [med1, med2]}
+        
         for med in medications:
             if med.inventory and med.inventory.is_low:
                 low_inventory.append(med)
+        
+        # Check for gap coverage needs for each upcoming visit
+        if upcoming_visits:
+            from utils import ensure_timezone_utc
+            
+            for visit in upcoming_visits:
+                visit_gap_medications = []
+                
+                for med in medications:
+                    if (med.inventory and med.depletion_date and 
+                        not med.is_otc and  # Exclude OTC medications
+                        med.physician_id == visit.physician_id):  # Only medications for this specific physician
+                        # Check if medication will run out before this visit
+                        if ensure_timezone_utc(med.depletion_date) < ensure_timezone_utc(visit.visit_date):
+                            visit_gap_medications.append(med)
+                
+                # Only add visits that have gap coverage needs
+                if visit_gap_medications:
+                    gap_coverage_by_visit.append({
+                        'visit': visit,
+                        'medications': visit_gap_medications
+                    })
 
         return render_template(
             "index.html",
@@ -162,6 +207,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             medications=medications,
             upcoming_visit=upcoming_visit,
             low_inventory=low_inventory,
+            gap_coverage_by_visit=gap_coverage_by_visit,
         )
 
     # Handle 404 errors

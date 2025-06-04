@@ -107,6 +107,76 @@ def restart_scheduler():
     else:
         flash("Task scheduler not available", "error")
 
+
+@system_bp.route("/detect_pipe_times")
+def detect_pipe_times():
+    """
+    Detect and display medication schedules with pipe-separated times.
+    This is a diagnostic tool for identifying data corruption issues.
+    """
+    from deduction_service import detect_pipe_separated_schedules
+
+    try:
+        problematic_schedules = detect_pipe_separated_schedules()
+
+        if problematic_schedules:
+            flash(f"Found {len(problematic_schedules)} schedules with pipe-separated times. Check logs for details.", "warning")
+            for schedule_id, med_name, times_data in problematic_schedules:
+                logger.warning(f"Schedule {schedule_id} ({med_name}): {times_data}")
+        else:
+            flash("No pipe-separated times detected in medication schedules.", "success")
+
+    except Exception as e:
+        logger.error(f"Error detecting pipe-separated times: {e}")
+        flash(f"Error running detection: {e}", "error")
+
+    return redirect(url_for("system.status"))
+
+
+@system_bp.route("/fix_pipe_times")
+def fix_pipe_times():
+    """
+    Detect and automatically fix medication schedules with pipe-separated times.
+    This will permanently update the database to fix data corruption.
+    """
+    from deduction_service import detect_pipe_separated_schedules, get_and_fix_scheduled_times
+    from models import MedicationSchedule
+
+    try:
+        # First detect all problematic schedules
+        problematic_schedules = detect_pipe_separated_schedules()
+
+        if not problematic_schedules:
+            flash("No pipe-separated times detected in medication schedules.", "info")
+            return redirect(url_for("system.status"))
+
+        fixed_count = 0
+        failed_count = 0
+
+        for schedule_id, med_name, times_data in problematic_schedules:
+            try:
+                schedule = MedicationSchedule.query.get(schedule_id)
+                if schedule:
+                    # This will automatically detect and fix the pipe-separated times
+                    corrected_times = get_and_fix_scheduled_times(schedule)
+                    logger.info(f"Fixed schedule {schedule_id} ({med_name}): {corrected_times}")
+                    fixed_count += 1
+                else:
+                    logger.error(f"Schedule {schedule_id} not found")
+                    failed_count += 1
+            except Exception as e:
+                logger.error(f"Failed to fix schedule {schedule_id}: {e}")
+                failed_count += 1
+
+        if fixed_count > 0:
+            flash(f"Successfully fixed {fixed_count} schedules with pipe-separated times.", "success")
+        if failed_count > 0:
+            flash(f"Failed to fix {failed_count} schedules. Check logs for details.", "warning")
+
+    except Exception as e:
+        logger.error(f"Error fixing pipe-separated times: {e}")
+        flash(f"Error running fix: {e}", "error")
+
     return redirect(url_for("system.status"))
 
 

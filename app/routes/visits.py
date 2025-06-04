@@ -10,8 +10,8 @@ from datetime import datetime, timezone
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 # Local application imports
-from models import PhysicianVisit, Medication, Order, db, utcnow
-from utils import to_local_timezone
+from models import PhysicianVisit, Medication, Order, Physician, db, utcnow
+from utils import to_local_timezone, ensure_timezone_utc
 
 # Get a logger specific to this module
 logger = logging.getLogger(__name__)
@@ -66,6 +66,13 @@ def new():
         visit_date_str = request.form.get("visit_date", "")
         notes = request.form.get("notes", "")
 
+        # Extract physician field
+        physician_id = request.form.get("physician_id")
+        if physician_id == "":
+            physician_id = None
+        elif physician_id:
+            physician_id = int(physician_id)
+
         logger.debug(f"New visit form data: date={visit_date_str}, notes={notes}")
 
         try:
@@ -80,7 +87,7 @@ def new():
             logger.debug(f"UTC visit date: {visit_date}")
 
             # Create new visit
-            visit = PhysicianVisit(visit_date=visit_date, notes=notes)
+            visit = PhysicianVisit(visit_date=visit_date, notes=notes, physician_id=physician_id)
 
             db.session.add(visit)
             db.session.commit()
@@ -104,9 +111,11 @@ def new():
             logger.error(f"Date parsing error: {e} for input '{visit_date_str}'")
             flash("Invalid date format. Please use DD.MM.YYYY format.", "error")
 
+    physicians = Physician.query.order_by(Physician.name).all()
     return render_template(
         "visits/new.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
+        physicians=physicians,
     )
 
 
@@ -122,8 +131,20 @@ def show(id: int):
     orders = Order.query.filter_by(physician_visit_id=visit.id).all()
     logger.debug(f"Found {len(orders)} orders for this visit")
 
-    # Get all medications for medication needs calculation
-    medications = Medication.query.all()
+    # Get medications for this physician only (prescribed by this physician)
+    if visit.physician_id:
+        # Show ONLY medications explicitly prescribed by this specific physician
+        medications = Medication.query.filter(
+            Medication.physician_id == visit.physician_id
+        ).all()
+        logger.debug(f"Visit has physician_id={visit.physician_id}, showing {len(medications)} medications")
+    else:
+        # For visits without a physician, show only unassigned OTC medications
+        medications = Medication.query.filter(
+            (Medication.physician_id.is_(None)) & (Medication.is_otc.is_(True))
+        ).all()
+        logger.debug(f"Visit has no physician, showing {len(medications)} OTC medications only")
+    
     medication_needs = {}
 
     for med in medications:
@@ -133,12 +154,34 @@ def show(id: int):
             additional = max(0, needed - current)
             packages = med.calculate_packages_needed(additional)
 
+            # Calculate if medication will run out before visit (without safety margin)
+            # Use depletion_date which is based on current_count / daily_usage (no safety margin)
+            will_deplete_before_visit = (
+                med.depletion_date is not None and 
+                ensure_timezone_utc(med.depletion_date) < ensure_timezone_utc(visit.visit_date)
+            )
+            
+            # Calculate needed WITHOUT safety margin to determine if truly running out
+            needed_without_margin = med.calculate_needed_until_visit(visit.visit_date, include_safety_margin=False)
+            additional_without_margin = max(0, needed_without_margin - current)
+            
+            # Categorize: truly running out vs. in safety margin
+            # If it needs additional WITHOUT margin = truly running out
+            # If it will deplete but doesn't need additional WITHOUT margin = in safety margin
+            is_truly_running_out = will_deplete_before_visit and additional_without_margin > 0
+            is_in_safety_margin = will_deplete_before_visit and additional_without_margin == 0
+            
+            logger.info(f"Gap coverage check for {med.name}: current={current}, needed_without_margin={needed_without_margin}, additional_without_margin={additional_without_margin}, will_deplete={will_deplete_before_visit}, truly_running_out={is_truly_running_out}, in_safety_margin={is_in_safety_margin}")
+
             medication_needs[med.id] = {
                 "medication": med,
                 "needed_units": needed,
                 "current_inventory": current,
                 "additional_needed": additional,
                 "packages": packages,
+                "will_deplete_before_visit": will_deplete_before_visit,
+                "is_truly_running_out": is_truly_running_out,
+                "is_in_safety_margin": is_in_safety_margin,
             }
 
     logger.debug(f"Calculated needs for {len(medication_needs)} medications")
@@ -165,6 +208,13 @@ def edit(id: int):
         visit_date_str = request.form.get("visit_date", "")
         notes = request.form.get("notes", "")
 
+        # Extract physician field
+        physician_id = request.form.get("physician_id")
+        if physician_id == "":
+            physician_id = None
+        elif physician_id:
+            physician_id = int(physician_id)
+
         logger.debug(f"Edit visit form data: date={visit_date_str}, notes={notes}")
 
         try:
@@ -181,6 +231,7 @@ def edit(id: int):
             # Update visit
             visit.visit_date = visit_date
             visit.notes = notes
+            visit.physician_id = physician_id
 
             db.session.commit()
 
@@ -199,14 +250,16 @@ def edit(id: int):
     from utils import to_local_timezone
 
     local_visit_date = to_local_timezone(visit.visit_date)
-    formatted_date = local_visit_date.strftime("%d.%m.%Y")
+    formatted_date = local_visit_date.strftime("%Y-%m-%d")  # HTML date input format
     logger.debug(f"Formatted date for form: {formatted_date}")
 
+    physicians = Physician.query.order_by(Physician.name).all()
     return render_template(
         "visits/edit.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         visit=visit,
         formatted_date=formatted_date,
+        physicians=physicians,
     )
 
 

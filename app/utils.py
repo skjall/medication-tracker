@@ -72,24 +72,27 @@ def calculate_days_until(target_date: datetime) -> int:
         target_date: The target date
 
     Returns:
-        Number of days until the target date (minimum 1 for tomorrow)
+        Number of days until the target date
     """
-    # Ensure both datetimes are timezone-aware before comparison
+    # Ensure target date is timezone-aware
     target_date = make_aware(target_date)
-    now = datetime.now(timezone.utc)
 
-    # Reset time component to get accurate day difference
-    target_date_day = datetime(
-        target_date.year, target_date.month, target_date.day, tzinfo=timezone.utc
-    )
-    now_day = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
+    # Convert target date to local timezone for date comparison
+    local_target = to_local_timezone(target_date)
+
+    # Get current time in local timezone
+    now_utc = datetime.now(timezone.utc)
+    local_now = to_local_timezone(now_utc)
+
+    # Compare dates only (not times)
+    target_date_only = local_target.date()
+    now_date_only = local_now.date()
 
     # Calculate the difference in days
-    delta = target_date_day - now_day
+    delta = target_date_only - now_date_only
     days_diff = delta.days
 
-    # Return at least 1 for tomorrow (instead of 0)
-    return max(1, days_diff) if days_diff >= 0 else 0
+    return days_diff
 
 
 def get_color_for_inventory_level(
