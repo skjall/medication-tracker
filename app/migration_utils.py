@@ -64,7 +64,7 @@ class MigrationLock:
                         return self
                     except (FileExistsError, OSError):
                         pass
-                
+
                 # Could not acquire lock
                 logger.info(f"Could not acquire migration lock (process {os.getpid()}): file exists")
                 raise IOError("Migration lock already held")
@@ -78,11 +78,9 @@ class MigrationLock:
         try:
             if not os.path.exists(self.lock_file_path):
                 return False
-            
             # Check age of lock file
             lock_age = time.time() - os.path.getmtime(self.lock_file_path)
             return lock_age > 300  # 5 minutes
-            
         except OSError:
             return True  # If we can't check, assume it's stale
 

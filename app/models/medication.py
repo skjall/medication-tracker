@@ -242,6 +242,31 @@ class Medication(db.Model):
 
         return int(total_days * self.daily_usage)
 
+    def calculate_needed_for_period(self, start_date: datetime, end_date: datetime, include_safety_margin: bool = True) -> int:
+        """
+        Calculate how many units of medication are needed for a specific period.
+
+        Args:
+            start_date: The start date of the period
+            end_date: The end date of the period
+            include_safety_margin: Whether to include the safety margin days
+
+        Returns:
+            The number of units needed
+        """
+        # Ensure dates are timezone-aware
+        start_date = ensure_timezone_utc(start_date)
+        end_date = ensure_timezone_utc(end_date)
+        # Calculate days in period
+        period_days = (end_date - start_date).days
+        if period_days < 0:
+            period_days = 0
+        # Add safety margin if requested
+        total_days = period_days
+        if include_safety_margin:
+            total_days += self.safety_margin_days
+        return int(total_days * self.daily_usage)
+
     def calculate_packages_needed(self, units_needed: int) -> Dict[str, int]:
         """
         Convert required units into package quantities, using only a single package type.

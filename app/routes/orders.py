@@ -68,6 +68,8 @@ def new():
     """Create a new medication order."""
     # Find the visit this order is for
     visit_id = request.args.get("visit_id", None, type=int)
+    # Check if this is for gap coverage (when visit was postponed)
+    gap_coverage = request.args.get("gap_coverage", "false").strip().lower() == "true"
     visit = None
 
     if visit_id:
@@ -145,13 +147,43 @@ def new():
         # If visit has no physician, only show medications without physician assignment
         medications = Medication.query.filter_by(physician_id=None).all()
 
-    medication_needs = {}
+    def calculate_medication_needs(med, visit_date, gap_coverage=False, consider_next_but_one=False):
+        """Helper function to calculate medication needs for both gap coverage and normal orders."""
+        if not med.inventory:
+            return None
 
-    for med in medications:
-        if med.inventory:
-            # Use the enhanced calculation that considers next-but-one setting
+        if gap_coverage:
+            if med.daily_usage <= 0:
+                return None
+
+            depletion_date = med.depletion_date
+            if not depletion_date or depletion_date >= visit_date:
+                return None
+
+            # Calculate how much is needed from depletion date to visit date
+            gap_period_units = med.calculate_needed_for_period(
+                depletion_date,
+                visit_date,
+                include_safety_margin=True
+            )
+
+            if gap_period_units <= 0:
+                return None
+
+            packages = med.calculate_packages_needed(gap_period_units)
+            return {
+                "medication": med,
+                "needed_units": gap_period_units,
+                "current_inventory": med.inventory.current_count,
+                "additional_needed": gap_period_units,
+                "packages": packages,
+                "depletion_date": depletion_date,
+                "gap_days": (visit_date - depletion_date).days,
+            }
+        else:
+            # Normal order calculation
             needed = med.calculate_needed_until_visit(
-                visit.visit_date,
+                visit_date,
                 include_safety_margin=True,
                 consider_next_but_one=consider_next_but_one,
             )
@@ -159,13 +191,26 @@ def new():
             additional = max(0, needed - current)
             packages = med.calculate_packages_needed(additional)
 
-            medication_needs[med.id] = {
+            return {
                 "medication": med,
                 "needed_units": needed,
                 "current_inventory": current,
                 "additional_needed": additional,
                 "packages": packages,
             }
+
+    medication_needs = {}
+
+    # Calculate needs for all medications using the helper function
+    for med in medications:
+        needs = calculate_medication_needs(
+            med,
+            visit.visit_date,
+            gap_coverage=gap_coverage,
+            consider_next_but_one=consider_next_but_one
+        )
+        if needs:
+            medication_needs[med.id] = needs
 
     return render_template(
         "orders/new.html",
@@ -174,6 +219,7 @@ def new():
         medications=medications,
         medication_needs=medication_needs,
         consider_next_but_one=consider_next_but_one,
+        gap_coverage=gap_coverage,
     )
 
 

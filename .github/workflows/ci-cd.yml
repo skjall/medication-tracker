@@ -37,8 +37,35 @@ jobs:
         run: |
           pytest --cov=app tests/
 
-  docker:
+  integration-test:
     needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image for testing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: medication-tracker:test
+          build-args: |
+            VERSION=test-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Ensure integration test script is executable
+        run: chmod +x scripts/integration-test.sh
+
+      - name: Run integration tests
+        run: ./scripts/integration-test.sh
+
+  docker:
+    needs: [test, integration-test]
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
 
