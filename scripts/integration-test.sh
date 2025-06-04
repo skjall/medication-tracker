@@ -203,7 +203,7 @@ main() {
     
     # Check for critical errors in logs
     log_info "Checking application logs..."
-    error_logs=$(docker logs "$CONTAINER_NAME" 2>&1 | grep -E " - ERROR - | - CRITICAL - |Exception|Traceback" | grep -v "404\|favicon\|GET.*404" | head -5)
+    error_logs=$(docker logs "$CONTAINER_NAME" 2>&1 | grep -E " - ERROR - | - CRITICAL - |Exception|Traceback" | grep -v "404\|favicon\|GET.*404" | head -5 || true)
     
     if [ -n "$error_logs" ]; then
         log_warn "Found critical errors in logs:"
