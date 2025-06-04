@@ -131,8 +131,18 @@ def show(id: int):
     orders = Order.query.filter_by(physician_visit_id=visit.id).all()
     logger.debug(f"Found {len(orders)} orders for this visit")
 
-    # Get all medications for medication needs calculation
-    medications = Medication.query.all()
+    # Get medications for this physician only (prescribed by this physician or OTC)
+    if visit.physician_id:
+        # Show medications prescribed by this physician OR over-the-counter medications
+        medications = Medication.query.filter(
+            (Medication.physician_id == visit.physician_id) | (Medication.is_otc == True)
+        ).all()
+        logger.debug(f"Visit has physician_id={visit.physician_id}, showing {len(medications)} medications")
+    else:
+        # For visits without a physician, show only over-the-counter medications
+        medications = Medication.query.filter(Medication.is_otc == True).all()
+        logger.debug(f"Visit has no physician, showing {len(medications)} OTC medications only")
+    
     medication_needs = {}
 
     for med in medications:
