@@ -44,6 +44,29 @@
                     </h3>
                 </div>
 
+                <div class="mb-4">
+                    <h6><i class="fas fa-user-md me-2"></i>Physician:</h6>
+                    {% if visit.physician %}
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <strong class="text-primary">{{ visit.physician.name }}</strong>
+                                {% if visit.physician.specialty %}
+                                    <div class="text-muted">{{ visit.physician.specialty }}</div>
+                                {% endif %}
+                                {% if visit.physician.phone %}
+                                    <div class="small text-muted">
+                                        <i class="fas fa-phone me-1"></i>{{ visit.physician.phone }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>No physician assigned to this visit.
+                        </div>
+                    {% endif %}
+                </div>
+
                 {% if visit.notes %}
                     <div class="mb-4">
                         <h6>Notes:</h6>

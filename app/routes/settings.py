@@ -31,15 +31,18 @@ from data_utils import (
     export_inventory_to_csv,
     export_medications_to_csv,
     export_orders_to_csv,
+    export_physicians_to_csv,
     export_schedules_to_csv,
     export_visits_to_csv,
     import_medications_from_csv,
+    import_physicians_from_csv,
     optimize_database,
 )
 from models import (
     Inventory,
     InventoryLog,
     PhysicianVisit,
+    Physician,
     Medication,
     MedicationSchedule,
     Order,
@@ -191,6 +194,8 @@ def export_data(data_type: str):
         return export_visits_to_csv()
     elif data_type == "schedules":
         return export_schedules_to_csv()
+    elif data_type == "physicians":
+        return export_physicians_to_csv()
     else:
         flash(f"Unknown export type: {data_type}", "error")
         return redirect(url_for("settings.advanced"))
@@ -363,6 +368,7 @@ def data_management():
     med_count = Medication.query.count()
     inventory_count = Inventory.query.count()
     visit_count = PhysicianVisit.query.count()
+    physician_count = Physician.query.count()
     order_count = Order.query.count()
     order_item_count = OrderItem.query.count()
     schedule_count = MedicationSchedule.query.count()
@@ -384,6 +390,7 @@ def data_management():
         med_count=med_count,
         inventory_count=inventory_count,
         visit_count=visit_count,
+        physician_count=physician_count,
         order_count=order_count,
         order_item_count=order_item_count,
         schedule_count=schedule_count,
@@ -439,6 +446,8 @@ def import_data_type(data_type: str):
             from data_utils import import_schedules_from_csv
 
             success_count, errors = import_schedules_from_csv(file_path, override)
+        elif data_type == "physicians":
+            success_count, errors = import_physicians_from_csv(file_path, override)
         else:
             flash(f"Unknown import type: {data_type}", "error")
             return redirect(url_for("settings.data_management"))
@@ -523,6 +532,12 @@ def reset_data_type(data_type: str):
 
             count = reset_schedules_data()
             flash(f"All schedule data has been reset ({count} records)", "success")
+
+        elif data_type == "physicians":
+            from data_utils import reset_physicians_data
+
+            count = reset_physicians_data()
+            flash(f"All physician data has been reset ({count} records)", "success")
 
         else:
             flash(f"Unknown data type: {data_type}", "error")
