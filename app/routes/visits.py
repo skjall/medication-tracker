@@ -11,7 +11,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 # Local application imports
 from models import PhysicianVisit, Medication, Order, Physician, db, utcnow
-from utils import to_local_timezone
+from utils import to_local_timezone, ensure_timezone_utc
 
 # Get a logger specific to this module
 logger = logging.getLogger(__name__)
@@ -131,16 +131,18 @@ def show(id: int):
     orders = Order.query.filter_by(physician_visit_id=visit.id).all()
     logger.debug(f"Found {len(orders)} orders for this visit")
 
-    # Get medications for this physician only (prescribed by this physician or OTC)
+    # Get medications for this physician only (prescribed by this physician)
     if visit.physician_id:
-        # Show medications prescribed by this physician OR over-the-counter medications
+        # Show ONLY medications explicitly prescribed by this specific physician
         medications = Medication.query.filter(
-            (Medication.physician_id == visit.physician_id) | (Medication.is_otc == True)
+            Medication.physician_id == visit.physician_id
         ).all()
         logger.debug(f"Visit has physician_id={visit.physician_id}, showing {len(medications)} medications")
     else:
-        # For visits without a physician, show only over-the-counter medications
-        medications = Medication.query.filter(Medication.is_otc == True).all()
+        # For visits without a physician, show only unassigned OTC medications
+        medications = Medication.query.filter(
+            (Medication.physician_id.is_(None)) & (Medication.is_otc.is_(True))
+        ).all()
         logger.debug(f"Visit has no physician, showing {len(medications)} OTC medications only")
     
     medication_needs = {}
@@ -152,12 +154,34 @@ def show(id: int):
             additional = max(0, needed - current)
             packages = med.calculate_packages_needed(additional)
 
+            # Calculate if medication will run out before visit (without safety margin)
+            # Use depletion_date which is based on current_count / daily_usage (no safety margin)
+            will_deplete_before_visit = (
+                med.depletion_date is not None and 
+                ensure_timezone_utc(med.depletion_date) < ensure_timezone_utc(visit.visit_date)
+            )
+            
+            # Calculate needed WITHOUT safety margin to determine if truly running out
+            needed_without_margin = med.calculate_needed_until_visit(visit.visit_date, include_safety_margin=False)
+            additional_without_margin = max(0, needed_without_margin - current)
+            
+            # Categorize: truly running out vs. in safety margin
+            # If it needs additional WITHOUT margin = truly running out
+            # If it will deplete but doesn't need additional WITHOUT margin = in safety margin
+            is_truly_running_out = will_deplete_before_visit and additional_without_margin > 0
+            is_in_safety_margin = will_deplete_before_visit and additional_without_margin == 0
+            
+            logger.info(f"Gap coverage check for {med.name}: current={current}, needed_without_margin={needed_without_margin}, additional_without_margin={additional_without_margin}, will_deplete={will_deplete_before_visit}, truly_running_out={is_truly_running_out}, in_safety_margin={is_in_safety_margin}")
+
             medication_needs[med.id] = {
                 "medication": med,
                 "needed_units": needed,
                 "current_inventory": current,
                 "additional_needed": additional,
                 "packages": packages,
+                "will_deplete_before_visit": will_deplete_before_visit,
+                "is_truly_running_out": is_truly_running_out,
+                "is_in_safety_margin": is_in_safety_margin,
             }
 
     logger.debug(f"Calculated needs for {len(medication_needs)} medications")

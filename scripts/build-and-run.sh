@@ -56,4 +56,5 @@ docker run --rm \
   -v "$(pwd)/data:/app/data" \
   -v "$(pwd)/logs:/app/logs" \
   -e SECRET_KEY=your_secure_secret_key \
+  -e LOG_LEVEL=DEBUG \
   medication-tracker

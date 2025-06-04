@@ -162,17 +162,44 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         """Render the dashboard/home page."""
         logger.debug("Rendering dashboard page")
         medications = Medication.query.all()
-        # Using the same filter as the visit page to ensure consistency
-        upcoming_visit = (
+        # Get ALL upcoming visits, not just the first one
+        upcoming_visits = (
             PhysicianVisit.query.filter(PhysicianVisit.visit_date >= utcnow())
             .order_by(PhysicianVisit.visit_date)
-            .first()
+            .all()
         )
+        
+        # Keep the first visit for backward compatibility with templates
+        upcoming_visit = upcoming_visits[0] if upcoming_visits else None
 
         low_inventory = []
+        gap_coverage_by_visit = []  # List of dicts: {visit: visit_obj, medications: [med1, med2]}
+        
         for med in medications:
             if med.inventory and med.inventory.is_low:
                 low_inventory.append(med)
+        
+        # Check for gap coverage needs for each upcoming visit
+        if upcoming_visits:
+            from utils import ensure_timezone_utc
+            
+            for visit in upcoming_visits:
+                visit_gap_medications = []
+                
+                for med in medications:
+                    if (med.inventory and med.depletion_date and 
+                        not med.is_otc and  # Exclude OTC medications
+                        med.physician_id == visit.physician_id):  # Only medications for this specific physician
+                        # Check if medication will run out before this visit
+                        if ensure_timezone_utc(med.depletion_date) < ensure_timezone_utc(visit.visit_date):
+                            visit_gap_medications.append(med)
+                
+                # Only add visits that have gap coverage needs
+                if visit_gap_medications:
+                    gap_coverage_by_visit.append({
+                        'visit': visit,
+                        'medications': visit_gap_medications
+                    })
 
         return render_template(
             "index.html",
@@ -180,6 +207,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             medications=medications,
             upcoming_visit=upcoming_visit,
             low_inventory=low_inventory,
+            gap_coverage_by_visit=gap_coverage_by_visit,
         )
 
     # Handle 404 errors

@@ -101,7 +101,7 @@
                                                 <input class="form-check-input medication-checkbox" type="checkbox"
                                                        id="include_{{ med.id }}" name="include_{{ med.id }}"
                                                        data-medication-id="{{ med.id }}"
-                                                       {% if med_need.additional_needed > 0 %}checked{% endif %}>
+                                                       {% if gap_coverage or med_need.additional_needed > 0 %}checked{% endif %}>
                                             </div>
                                         </td>
                                         <td>

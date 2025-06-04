@@ -98,11 +98,13 @@ def new():
 
         # Filter medications based on the visit's physician
         if visit.physician_id:
-            # If visit has a physician, only show medications assigned to that physician
-            medications = Medication.query.filter_by(physician_id=visit.physician_id).all()
+            # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+            medications = Medication.query.filter(
+                (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
+            ).all()
         else:
-            # If visit has no physician, only show medications without physician assignment
-            medications = Medication.query.filter_by(physician_id=None).all()
+            # If visit has no physician, show no medications (can't create prescription orders without physician)
+            medications = []
 
         # Process each medication
         for med in medications:
@@ -141,11 +143,13 @@ def new():
 
     # Filter medications based on the visit's physician
     if visit.physician_id:
-        # If visit has a physician, only show medications assigned to that physician
-        medications = Medication.query.filter_by(physician_id=visit.physician_id).all()
+        # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+        medications = Medication.query.filter(
+            (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
+        ).all()
     else:
-        # If visit has no physician, only show medications without physician assignment
-        medications = Medication.query.filter_by(physician_id=None).all()
+        # If visit has no physician, show no medications (can't create prescription orders without physician)
+        medications = []
 
     def calculate_medication_needs(med, visit_date, gap_coverage=False, consider_next_but_one=False):
         """Helper function to calculate medication needs for both gap coverage and normal orders."""
@@ -178,9 +182,13 @@ def new():
             if gap_period_units <= 0:
                 return None
 
+            # For gap coverage, the additional needed is the full gap period amount
+            # because we need to order enough to bridge the gap from depletion to visit
             current = med.inventory.current_count
-            additional = max(0, gap_period_units - current)
+            additional = gap_period_units  # Always order the full gap amount
             packages = med.calculate_packages_needed(additional)
+            
+            logger.info(f"Gap coverage calculation for {med.name}: depletion_date={depletion_date}, visit_date={visit_date}, gap_period_units={gap_period_units}, current={current}, additional={additional}")
             
             # Calculate days until depletion for tooltip explanation
             from models.base import utcnow
@@ -295,11 +303,13 @@ def edit(id: int):
         # Filter medications based on the visit's physician
         visit = order.physician_visit
         if visit.physician_id:
-            # If visit has a physician, only show medications assigned to that physician
-            medications = Medication.query.filter_by(physician_id=visit.physician_id).all()
+            # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+            medications = Medication.query.filter(
+                (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
+            ).all()
         else:
-            # If visit has no physician, only show medications without physician assignment
-            medications = Medication.query.filter_by(physician_id=None).all()
+            # If visit has no physician, show no medications (can't create prescription orders without physician)
+            medications = []
 
         # Track which medications are included in the updated order
         included_med_ids = set()
@@ -347,11 +357,13 @@ def edit(id: int):
     # Filter medications based on the visit's physician
     visit = order.physician_visit
     if visit.physician_id:
-        # If visit has a physician, only show medications assigned to that physician
-        medications = Medication.query.filter_by(physician_id=visit.physician_id).all()
+        # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+        medications = Medication.query.filter(
+            (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
+        ).all()
     else:
-        # If visit has no physician, only show medications without physician assignment
-        medications = Medication.query.filter_by(physician_id=None).all()
+        # If visit has no physician, show no medications (can't create prescription orders without physician)
+        medications = []
 
     # Create a lookup map for existing order items
     order_items_map = {item.medication_id: item for item in order.order_items}

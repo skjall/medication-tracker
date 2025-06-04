@@ -238,20 +238,30 @@
                 </a>
 
                 {% set medications_will_deplete = [] %}
+                {% set medications_in_safety_margin = [] %}
                 {% for med_id, data in medication_needs.items() %}
-                    {% if data.medication.depletion_date and make_aware(data.medication.depletion_date) < make_aware(visit.visit_date) %}
+                    {% if data.is_truly_running_out %}
                         {% set _ = medications_will_deplete.append(data.medication) %}
+                    {% elif data.is_in_safety_margin %}
+                        {% set _ = medications_in_safety_margin.append(data.medication) %}
                     {% endif %}
                 {% endfor %}
 
-                {% if medications_will_deplete %}
+                {% if medications_will_deplete or medications_in_safety_margin %}
                     <a href="{{ url_for('orders.new', visit_id=visit.id, gap_coverage='true') }}" class="btn btn-warning ms-2">
                         <i class="fas fa-exclamation-triangle me-1"></i>Create Gap Coverage Order
                     </a>
                     <div class="alert alert-warning mt-3">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Warning:</strong> {{ medications_will_deplete|length }} medication(s) will run out before this visit.
-                        Consider creating a gap coverage order to bridge the supply gap.
+                        <strong>Warning:</strong>
+                        {% if medications_will_deplete|length > 0 %}
+                            {{ medications_will_deplete|length }} medication(s) will run out before this visit.
+                        {% endif %}
+                        {% if medications_in_safety_margin|length > 0 %}
+                            {% if medications_will_deplete|length > 0 %} Additionally, {% endif %}
+                            {{ medications_in_safety_margin|length }} medication(s) are in the safety margin.
+                        {% endif %}
+                        Please consider creating a gap coverage order to bridge the supply gap.
                     </div>
                 {% endif %}
             </div>
