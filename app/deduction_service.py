@@ -8,6 +8,7 @@ This module provides improved medication deduction tracking, including:
 """
 
 # Standard library imports
+import json
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -26,6 +27,221 @@ from utils import from_local_timezone, get_application_timezone, to_local_timezo
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
+
+
+def get_and_fix_scheduled_times(schedule: MedicationSchedule) -> List[str]:
+    """
+    Get scheduled times from a medication schedule, detecting and fixing
+    pipe-separated time formats that may exist in legacy data.
+    
+    Args:
+        schedule: The medication schedule to get times from
+        
+    Returns:
+        List of time strings in HH:MM format
+    """
+    try:
+        # First, try to get times using the standard property
+        times = schedule.formatted_times
+        
+        # Validate that all times are in correct HH:MM format
+        for time_str in times:
+            if not isinstance(time_str, str):
+                logger.warning(f"Non-string time found in schedule {schedule.id}: {time_str}")
+                continue
+            
+            # Check for pipe separator in individual time string (legacy data corruption)
+            if '|' in time_str:
+                logger.warning(f"Pipe-separated time detected in schedule {schedule.id}: {time_str}")
+                
+                # Split by pipe and fix the data
+                pipe_split_times = time_str.split('|')
+                
+                # Validate each sub-time
+                valid_times = []
+                for sub_time in pipe_split_times:
+                    sub_time = sub_time.strip()
+                    if _validate_time_format(sub_time):
+                        valid_times.append(sub_time)
+                    else:
+                        logger.error(f"Invalid time format after pipe split: {sub_time}")
+                
+                if valid_times:
+                    # Fix the database entry
+                    _fix_pipe_separated_times_in_db(schedule, valid_times)
+                    return valid_times
+                else:
+                    logger.error(f"No valid times found after pipe split in schedule {schedule.id}")
+                    return ["09:00"]  # Default fallback
+            
+            # Validate normal time format
+            if not _validate_time_format(time_str):
+                logger.error(f"Invalid time format in schedule {schedule.id}: {time_str}")
+                continue
+        
+        return times
+        
+    except (json.JSONDecodeError, TypeError) as e:
+        logger.error(f"Error parsing times for schedule {schedule.id}: {e}")
+        
+        # Try to access raw data and fix it
+        raw_times = schedule.times_of_day
+        logger.info(f"Raw times_of_day data: {raw_times}")
+        
+        if isinstance(raw_times, str):
+            # Check if it's a pipe-separated string stored as a single item
+            if '|' in raw_times:
+                logger.warning(f"Pipe-separated times detected in raw data: {raw_times}")
+                
+                # Try to parse as a malformed JSON array with pipe-separated string
+                try:
+                    parsed = json.loads(raw_times)
+                    if isinstance(parsed, list) and len(parsed) == 1 and '|' in parsed[0]:
+                        # This is the case: ["08:00|12:00|18:00"]
+                        pipe_separated_string = parsed[0]
+                        times = pipe_separated_string.split('|')
+                        
+                        # Validate each time
+                        valid_times = []
+                        for time_str in times:
+                            time_str = time_str.strip()
+                            if _validate_time_format(time_str):
+                                valid_times.append(time_str)
+                        
+                        if valid_times:
+                            _fix_pipe_separated_times_in_db(schedule, valid_times)
+                            return valid_times
+                        
+                except json.JSONDecodeError:
+                    # Raw string with pipes, not JSON
+                    times = raw_times.split('|')
+                    valid_times = []
+                    for time_str in times:
+                        time_str = time_str.strip()
+                        if _validate_time_format(time_str):
+                            valid_times.append(time_str)
+                    
+                    if valid_times:
+                        _fix_pipe_separated_times_in_db(schedule, valid_times)
+                        return valid_times
+        
+        # Fallback for any parsing errors
+        logger.error(f"Using fallback time for schedule {schedule.id}")
+        return ["09:00"]
+
+
+def _validate_time_format(time_str: str) -> bool:
+    """
+    Validate that a time string is in HH:MM format.
+    
+    Args:
+        time_str: Time string to validate
+        
+    Returns:
+        True if valid HH:MM format, False otherwise
+    """
+    if not isinstance(time_str, str):
+        return False
+    
+    try:
+        # Check basic format
+        if ':' not in time_str:
+            return False
+        
+        parts = time_str.split(':')
+        if len(parts) != 2:
+            return False
+        
+        hour, minute = parts
+        hour_int = int(hour)
+        minute_int = int(minute)
+        
+        # Validate ranges
+        if not (0 <= hour_int <= 23):
+            return False
+        if not (0 <= minute_int <= 59):
+            return False
+        
+        # Validate format (should be zero-padded)
+        if len(hour) != 2 or len(minute) != 2:
+            return False
+        
+        return True
+        
+    except (ValueError, IndexError):
+        return False
+
+
+def _fix_pipe_separated_times_in_db(schedule: MedicationSchedule, corrected_times: List[str]):
+    """
+    Fix pipe-separated times in the database by updating with proper JSON format.
+    
+    Args:
+        schedule: The medication schedule to fix
+        corrected_times: List of corrected time strings in HH:MM format
+    """
+    try:
+        old_value = schedule.times_of_day
+        new_value = json.dumps(corrected_times)
+        
+        logger.info(f"Fixing pipe-separated times in schedule {schedule.id}")
+        logger.info(f"  Old value: {old_value}")
+        logger.info(f"  New value: {new_value}")
+        
+        schedule.times_of_day = new_value
+        db.session.commit()
+        
+        logger.info(f"Successfully fixed pipe-separated times for schedule {schedule.id}")
+        
+    except Exception as e:
+        logger.error(f"Failed to fix pipe-separated times for schedule {schedule.id}: {e}")
+        db.session.rollback()
+
+
+def detect_pipe_separated_schedules() -> List[Tuple[int, str, str]]:
+    """
+    Detect all medication schedules with pipe-separated times.
+    
+    Returns:
+        List of tuples (schedule_id, medication_name, problematic_times)
+    """
+    from models import MedicationSchedule
+    
+    logger.info("Scanning for medication schedules with pipe-separated times")
+    
+    problematic_schedules = []
+    
+    all_schedules = MedicationSchedule.query.all()
+    
+    for schedule in all_schedules:
+        try:
+            raw_times = schedule.times_of_day
+            
+            # Check for pipes in the raw data
+            if isinstance(raw_times, str) and '|' in raw_times:
+                medication_name = schedule.medication.name if schedule.medication else "Unknown"
+                problematic_schedules.append((schedule.id, medication_name, raw_times))
+                logger.warning(f"Found pipe-separated times in schedule {schedule.id} for {medication_name}: {raw_times}")
+            
+            # Also check parsed data for pipe-separated individual entries
+            try:
+                times = schedule.formatted_times
+                for time_str in times:
+                    if isinstance(time_str, str) and '|' in time_str:
+                        medication_name = schedule.medication.name if schedule.medication else "Unknown"
+                        problematic_schedules.append((schedule.id, medication_name, str(times)))
+                        logger.warning(f"Found pipe in individual time for schedule {schedule.id}: {time_str}")
+                        break
+            except:
+                # If formatted_times fails, we already logged it above
+                pass
+                
+        except Exception as e:
+            logger.error(f"Error checking schedule {schedule.id}: {e}")
+    
+    logger.info(f"Scan complete. Found {len(problematic_schedules)} schedules with pipe-separated times")
+    
+    return problematic_schedules
 
 
 def calculate_missed_deductions(
@@ -74,8 +290,8 @@ def calculate_missed_deductions(
         f"Current time after timezone conversion to local: {local_current_time.isoformat()}"
     )
 
-    # Get scheduled times in HH:MM format
-    scheduled_times = schedule.formatted_times
+    # Get scheduled times in HH:MM format, with automatic pipe-separator fix
+    scheduled_times = get_and_fix_scheduled_times(schedule)
 
     logger.debug(f"Scheduled times: {scheduled_times}")
 

@@ -176,6 +176,23 @@
                 </button>
             </div>
         </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <a href="{{ url_for('system.detect_pipe_times') }}" class="btn btn-outline-warning w-100">
+                    <i class="fas fa-search me-1"></i>Detect Pipe-Separated Times
+                </a>
+                <small class="text-muted">Scan for corrupted medication schedule times</small>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <a href="{{ url_for('system.fix_pipe_times') }}" class="btn btn-outline-danger w-100" 
+                   onclick="return confirm('This will permanently fix corrupted time data in the database. Continue?')">
+                    <i class="fas fa-wrench me-1"></i>Fix Pipe-Separated Times
+                </a>
+                <small class="text-muted">Automatically repair corrupted medication schedule times</small>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

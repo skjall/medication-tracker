@@ -178,15 +178,25 @@ def new():
             if gap_period_units <= 0:
                 return None
 
-            packages = med.calculate_packages_needed(gap_period_units)
+            current = med.inventory.current_count
+            additional = max(0, gap_period_units - current)
+            packages = med.calculate_packages_needed(additional)
+            
+            # Calculate days until depletion for tooltip explanation
+            from models.base import utcnow
+            days_until_depletion = (depletion_date - utcnow()).days
+            
             return {
                 "medication": med,
                 "needed_units": gap_period_units,
-                "current_inventory": med.inventory.current_count,
-                "additional_needed": gap_period_units,
+                "current_inventory": current,
+                "additional_needed": additional,
                 "packages": packages,
+                "calculation_type": "gap_coverage",
                 "depletion_date": depletion_date,
                 "gap_days": (visit_date - depletion_date).days,
+                "days_until_depletion": days_until_depletion,
+                "safety_margin_days": med.safety_margin_days,
             }
         else:
             # Normal order calculation
@@ -199,12 +209,28 @@ def new():
             additional = max(0, needed - current)
             packages = med.calculate_packages_needed(additional)
 
+            # Calculate breakdown for tooltip
+            from models.base import utcnow
+            days_until_visit = (visit_date - utcnow()).days
+            if consider_next_but_one:
+                from models import Settings
+                settings = Settings.get_settings()
+                total_days = days_until_visit + settings.default_visit_interval
+                calculation_type = "next_but_one"
+            else:
+                total_days = days_until_visit
+                calculation_type = "standard"
+
             return {
                 "medication": med,
                 "needed_units": needed,
                 "current_inventory": current,
                 "additional_needed": additional,
                 "packages": packages,
+                "calculation_type": calculation_type,
+                "days_calculated": total_days,
+                "base_days": days_until_visit,
+                "safety_margin_days": med.safety_margin_days,
             }
 
     medication_needs = {}
