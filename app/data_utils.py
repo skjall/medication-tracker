@@ -135,8 +135,8 @@ def export_inventory_to_csv() -> Response:
         ]
     )
 
-    # Write data
-    inventories = Inventory.query.all()
+    # Write data - order by medication_id to maintain consistent foreign key relationships
+    inventories = Inventory.query.order_by(Inventory.medication_id).all()
     for inv in inventories:
         depletion_date = inv.medication.depletion_date
         writer.writerow(
@@ -196,8 +196,8 @@ def export_orders_to_csv() -> Response:
         ]
     )
 
-    # Write data
-    orders = Order.query.all()
+    # Write data - order by ID to maintain consistent foreign key relationships
+    orders = Order.query.order_by(Order.id).all()
     for order in orders:
         for item in order.order_items:
             writer.writerow(
@@ -390,13 +390,27 @@ def import_medications_from_csv(
 
             for row in reader:
                 try:
-                    # Check if medication with same name exists
-                    existing_med = Medication.query.filter_by(name=row["Name"]).first()
+                    medication_id = row.get("ID")
+                    existing_med = None
+                    
+                    # First, try to find by ID if provided
+                    if medication_id and medication_id.strip():
+                        try:
+                            existing_med = Medication.query.get(int(medication_id))
+                        except (ValueError, TypeError):
+                            errors.append(f"Invalid medication ID '{medication_id}' for {row['Name']}")
+                            continue
+                    
+                    # If not found by ID, try by name
+                    if not existing_med:
+                        existing_med = Medication.query.filter_by(name=row["Name"]).first()
 
                     if existing_med and not override:
-                        errors.append(
-                            f"Medication '{row['Name']}' already exists (ID: {existing_med.id})"
-                        )
+                        # If medication exists and we're not overriding, check ID consistency
+                        if medication_id and str(existing_med.id) != str(medication_id):
+                            errors.append(
+                                f"Medication '{row['Name']}' exists with different ID (existing: {existing_med.id}, CSV: {medication_id})"
+                            )
                         continue
 
                     # Handle physician reference with backward compatibility
@@ -418,7 +432,8 @@ def import_medications_from_csv(
                     # Update existing medication if override is True
                     if existing_med and override:
                         med = existing_med
-                        # Update fields
+                        # Update fields but keep the ID
+                        med.name = row["Name"]
                         med.physician_id = physician_id
                         med.is_otc = is_otc
                         med.dosage = float(row["Dosage"]) if row.get("Dosage") else 1.0
@@ -450,7 +465,7 @@ def import_medications_from_csv(
                             else 30
                         )
                     else:
-                        # Create new medication
+                        # Create new medication with specified ID if provided
                         med = Medication(
                             name=row["Name"],
                             physician_id=physician_id,
@@ -486,6 +501,15 @@ def import_medications_from_csv(
                                 else 30
                             ),
                         )
+                        
+                        # Set the ID if provided in CSV
+                        if medication_id and medication_id.strip():
+                            try:
+                                med.id = int(medication_id)
+                            except (ValueError, TypeError):
+                                errors.append(f"Invalid medication ID '{medication_id}' for {row['Name']}")
+                                continue
+                        
                         db.session.add(med)
                         db.session.flush()  # Get the ID without committing
 
@@ -801,6 +825,17 @@ def import_visits_from_csv(
 
             for row in reader:
                 try:
+                    visit_id = row.get("Visit ID")
+                    existing_visit = None
+                    
+                    # First, try to find by ID if provided
+                    if visit_id and visit_id.strip():
+                        try:
+                            existing_visit = PhysicianVisit.query.get(int(visit_id))
+                        except (ValueError, TypeError):
+                            errors.append(f"Invalid visit ID '{visit_id}' for visit on {row.get('Visit Date', 'unknown date')}")
+                            continue
+                    
                     # Parse visit date
                     visit_date_str = row.get("Visit Date")
                     if not visit_date_str:
@@ -835,23 +870,38 @@ def import_visits_from_csv(
                         if physician:
                             physician_id = physician.id
 
-                    # Check if visit exists with same date
-                    existing_visit = PhysicianVisit.query.filter(
-                        func.date(PhysicianVisit.visit_date) == func.date(visit_date)
-                    ).first()
+                    # If not found by ID, check if visit exists with same date
+                    if not existing_visit:
+                        existing_visit = PhysicianVisit.query.filter(
+                            func.date(PhysicianVisit.visit_date) == func.date(visit_date)
+                        ).first()
 
                     if existing_visit and not override:
-                        errors.append(
-                            f"Visit on {visit_date_str} already exists. Use override to update."
-                        )
+                        # If visit exists and we're not overriding, check ID consistency
+                        if visit_id and str(existing_visit.id) != str(visit_id):
+                            errors.append(
+                                f"Visit on {visit_date_str} exists with different ID (existing: {existing_visit.id}, CSV: {visit_id})"
+                            )
                         continue
 
                     # Create or update visit
                     if existing_visit and override:
                         visit = existing_visit
+                        # Update fields but keep the ID
+                        visit.visit_date = visit_date
                         visit.physician_id = physician_id
                     else:
+                        # Create new visit with specified ID if provided
                         visit = PhysicianVisit(visit_date=visit_date, physician_id=physician_id)
+                        
+                        # Set the ID if provided in CSV
+                        if visit_id and visit_id.strip():
+                            try:
+                                visit.id = int(visit_id)
+                            except (ValueError, TypeError):
+                                errors.append(f"Invalid visit ID '{visit_id}' for visit on {visit_date_str}")
+                                continue
+                        
                         db.session.add(visit)
 
                     # Update fields
@@ -946,23 +996,36 @@ def import_orders_from_csv(
                         order = processed_orders[order_id]
                     else:
                         # Check if order exists
-                        if order_id and order_id.isdigit():
-                            existing_order = Order.query.get(int(order_id))
-
-                            if existing_order and not override:
-                                errors.append(
-                                    f"Order #{order_id} already exists. Use override to update."
-                                )
+                        existing_order = None
+                        if order_id and order_id.strip():
+                            try:
+                                existing_order = Order.query.get(int(order_id))
+                            except (ValueError, TypeError):
+                                errors.append(f"Invalid order ID '{order_id}' for order")
                                 continue
 
-                            if existing_order and override:
-                                order = existing_order
-                            else:
-                                order = Order(physician_visit_id=visit.id)
-                                db.session.add(order)
+                        if existing_order and not override:
+                            errors.append(
+                                f"Order #{order_id} already exists. Use override to update."
+                            )
+                            continue
+
+                        if existing_order and override:
+                            order = existing_order
+                            # Update visit reference in case it changed
+                            order.physician_visit_id = visit.id
                         else:
-                            # Create new order
+                            # Create new order with specified ID if provided
                             order = Order(physician_visit_id=visit.id)
+                            
+                            # Set the ID if provided in CSV
+                            if order_id and order_id.strip():
+                                try:
+                                    order.id = int(order_id)
+                                except (ValueError, TypeError):
+                                    errors.append(f"Invalid order ID '{order_id}' for order")
+                                    continue
+                            
                             db.session.add(order)
 
                         # Update order fields
@@ -1136,8 +1199,8 @@ def export_schedules_to_csv() -> Response:
         ]
     )
 
-    # Write data
-    schedules = MedicationSchedule.query.all()
+    # Write data - order by ID to maintain consistent foreign key relationships
+    schedules = MedicationSchedule.query.order_by(MedicationSchedule.id).all()
     for schedule in schedules:
         writer.writerow(
             [
@@ -1235,8 +1298,20 @@ def import_schedules_from_csv(
                     # Create or update schedule
                     if existing_schedule and override:
                         schedule = existing_schedule
+                        # Update medication_id in case it changed
+                        schedule.medication_id = medication.id
                     else:
+                        # Create new schedule with specified ID if provided
                         schedule = MedicationSchedule(medication_id=medication.id)
+                        
+                        # Set the ID if provided in CSV
+                        if schedule_id and schedule_id.strip():
+                            try:
+                                schedule.id = int(schedule_id)
+                            except (ValueError, TypeError):
+                                errors.append(f"Invalid schedule ID '{schedule_id}' for medication {medication.name}")
+                                continue
+                        
                         db.session.add(schedule)
 
                     # Update schedule fields
