@@ -15,6 +15,7 @@ from flask import (
     request,
     url_for,
 )
+from flask_babel import gettext as _
 
 # Local application imports
 from models import (
@@ -97,7 +98,7 @@ def adjust(id: int):
     db.session.commit()
 
     flash(
-        f"Inventory for {inventory.medication.name} adjusted by {adjustment}", "success"
+        _("Inventory for {} adjusted by {}").format(inventory.medication.name, adjustment), "success"
     )
 
     # Check if referer is provided
@@ -167,7 +168,7 @@ def update_packages(id: int):
     db.session.add(log)
     db.session.commit()
 
-    flash(f"Inventory updated for {inventory.medication.name}", "success")
+    flash(_("Inventory updated for {}").format(inventory.medication.name), "success")
     return redirect(url_for("inventory.show", id=inventory.id))
 
 

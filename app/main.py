@@ -14,7 +14,8 @@ from datetime import datetime, timedelta, timezone  # noqa: E402
 from typing import Any, Dict, Optional  # noqa: E402
 
 # Third-party imports
-from flask import Flask, render_template, request  # noqa: E402
+from flask import Flask, render_template, request, session  # noqa: E402
+from flask_babel import Babel, get_locale, gettext, ngettext  # noqa: E402
 
 # Local application imports
 from logging_config import configure_logging  # noqa: E402
@@ -70,6 +71,115 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     logger = configure_logging(app)
 
     db.init_app(app)
+    
+    def discover_languages():
+        """Dynamically discover available languages from translations directory."""
+        languages = {'en': 'English'}  # Always include English
+        
+        # Language name mapping
+        language_names = {
+            'de': 'Deutsch',
+            'es': 'Español', 
+            'fr': 'Français',
+            'it': 'Italiano',
+            'pt': 'Português',
+            'nl': 'Nederlands',
+            'pl': 'Polski',
+            'ru': 'Русский',
+            'ja': '日本語',
+            'zh': '中文',
+            'ko': '한국어',
+            'ar': 'العربية',
+            'hi': 'हिन्दी',
+            'tr': 'Türkçe',
+            'sv': 'Svenska',
+            'da': 'Dansk',
+            'no': 'Norsk',
+            'fi': 'Suomi',
+            'cs': 'Čeština',
+            'sk': 'Slovenčina',
+            'hu': 'Magyar',
+            'ro': 'Română',
+            'bg': 'Български',
+            'hr': 'Hrvatski',
+            'sl': 'Slovenščina',
+            'et': 'Eesti',
+            'lv': 'Latviešu',
+            'lt': 'Lietuvių',
+            'uk': 'Українська',
+            'he': 'עברית',
+            'th': 'ไทย',
+            'vi': 'Tiếng Việt',
+            'id': 'Bahasa Indonesia',
+            'ms': 'Bahasa Melayu',
+            'tl': 'Filipino',
+        }
+        
+        # Scan translations directory for language folders
+        if os.path.exists(translations_dir):
+            for item in os.listdir(translations_dir):
+                lang_path = os.path.join(translations_dir, item)
+                po_file = os.path.join(lang_path, 'LC_MESSAGES', 'messages.po')
+                
+                # Check if it's a valid language directory with .po file
+                if (os.path.isdir(lang_path) and 
+                    item != 'en' and  # Skip English (already included)
+                    len(item) == 2 and  # Two-letter language codes
+                    os.path.exists(po_file)):
+                    
+                    # Use mapped name or fallback to code
+                    language_name = language_names.get(item, item.upper())
+                    languages[item] = language_name
+                    logger.debug(f"Discovered language: {item} ({language_name})")
+        
+        return languages
+
+    # Configure languages dynamically
+    app.config['LANGUAGES'] = discover_languages()
+    
+    def get_locale():
+        # 1. Check URL parameter
+        if request.args.get('lang'):
+            session['language'] = request.args.get('lang')
+            logger.debug(f"Locale set from URL parameter: {session['language']}")
+        
+        # 2. Check user session
+        if 'language' in session and session['language'] in app.config['LANGUAGES']:
+            logger.debug(f"Using session language: {session['language']}")
+            return session['language']
+        
+        # 3. Use browser's preferred language
+        browser_lang = request.accept_languages.best_match(app.config['LANGUAGES'].keys()) or 'en'
+        logger.debug(f"Using browser language fallback: {browser_lang}")
+        return browser_lang
+    
+    # Debug: Check if translations directory exists  
+    translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
+    
+    # Configure Babel to use the translations directory BEFORE initializing
+    app.config['BABEL_TRANSLATION_DIRECTORIES'] = translations_dir
+    
+    # Initialize Babel for i18n support with locale selector
+    babel = Babel()
+    babel.init_app(app, locale_selector=get_locale)
+    logger.debug(f"App root path: {app.root_path}")
+    logger.debug(f"Translations directory path: {translations_dir}")
+    logger.debug(f"Translations directory exists: {os.path.exists(translations_dir)}")
+    
+    # Debug: List what's actually in the app directory
+    logger.debug(f"Contents of app root path ({app.root_path}): {os.listdir(app.root_path) if os.path.exists(app.root_path) else 'Does not exist'}")
+    parent_dir = os.path.dirname(app.root_path)
+    logger.debug(f"Contents of parent directory ({parent_dir}): {os.listdir(parent_dir) if os.path.exists(parent_dir) else 'Does not exist'}")
+    
+    if os.path.exists(translations_dir):
+        logger.debug(f"Translations directory contents: {os.listdir(translations_dir)}")
+        de_dir = os.path.join(translations_dir, 'de', 'LC_MESSAGES')
+        if os.path.exists(de_dir):
+            logger.debug(f"German translations directory contents: {os.listdir(de_dir)}")
+            mo_file = os.path.join(de_dir, 'messages.mo')
+            logger.debug(f"German .mo file exists: {os.path.exists(mo_file)}")
+    
+    logger.debug(f"Babel translation directories: {app.config.get('BABEL_TRANSLATION_DIRECTORIES')}")
 
     # Set up the database URI for SQLAlchemy
     app.db = db
@@ -176,11 +286,117 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             "settings": settings,  # Application settings for templates
         }
 
+    def calculate_translation_coverage(language_code):
+        """Calculate translation coverage percentage for a language."""
+        if language_code == 'en':
+            return 1.0  # English is always 100%
+        
+        try:
+            import babel.messages.pofile as pofile
+            po_path = os.path.join(translations_dir, language_code, 'LC_MESSAGES', 'messages.po')
+            
+            if not os.path.exists(po_path):
+                return 0.0
+            
+            with open(po_path, 'r', encoding='utf-8') as f:
+                catalog = pofile.read_po(f)
+            
+            if len(catalog) == 0:
+                return 0.0
+            
+            # Count non-empty translations (excluding header)
+            translated = len([msg for msg in catalog if msg.id and msg.string])
+            total = len([msg for msg in catalog if msg.id])  # Exclude header
+            
+            return translated / total if total > 0 else 0.0
+            
+        except Exception as e:
+            logger.warning(f"Could not calculate coverage for {language_code}: {e}")
+            return 0.0
+
+    def get_available_languages():
+        """Return only languages with >80% translation coverage."""
+        available = {}
+        coverage_threshold = 0.8
+        
+        # Get current languages (dynamically discovered)
+        all_languages = app.config['LANGUAGES']
+        logger.debug(f"All discovered languages: {list(all_languages.keys())}")
+        
+        for code, name in all_languages.items():
+            if code == 'en':  # Always show English
+                available[code] = name
+                logger.debug(f"Language {code} ({name}): Always available (base language)")
+                continue
+                
+            coverage = calculate_translation_coverage(code)
+            logger.debug(f"Language {code} ({name}) coverage: {coverage:.1%}")
+            
+            if coverage >= coverage_threshold:
+                available[code] = name
+                logger.debug(f"Language {code} ({name}): AVAILABLE - {coverage:.1%} >= {coverage_threshold:.0%}")
+            else:
+                logger.debug(f"Language {code} ({name}): HIDDEN - {coverage:.1%} < {coverage_threshold:.0%}")
+        
+        logger.debug(f"Available languages for navigation: {list(available.keys())}")
+        return available
+
+    # Language switching route
+    @app.route('/set_language/<language>')
+    def set_language(language=None):
+        from flask import redirect, url_for
+        session['language'] = language
+        return redirect(request.referrer or url_for('index'))
+    
+    # Debug route for translation coverage (admin use)
+    @app.route('/debug/translation-coverage')
+    def debug_translation_coverage():
+        from flask import jsonify
+        coverage_data = {}
+        
+        for code, name in app.config['LANGUAGES'].items():
+            coverage = calculate_translation_coverage(code)
+            coverage_data[code] = {
+                'name': name,
+                'coverage': round(coverage * 100, 1),
+                'available': coverage >= 0.8 or code == 'en'
+            }
+        
+        return jsonify({
+            'languages': coverage_data,
+            'threshold': 80,
+            'available_in_nav': list(get_available_languages().keys())
+        })
+    
+    # Make available in templates
+    @app.context_processor
+    def inject_conf_vars():
+        return {
+            'LANGUAGES': get_available_languages(),  # Only show available languages
+            'ALL_LANGUAGES': app.config['LANGUAGES'],  # All configured languages for admin
+            'CURRENT_LANGUAGE': session.get('language', 'en')
+        }
+    
+    # Add translation functions to template globals
+    app.jinja_env.globals['_'] = gettext
+    app.jinja_env.globals['_n'] = ngettext
+
     # Home route
     @app.route("/")
     def index():
         """Render the dashboard/home page."""
-        logger.debug("Rendering dashboard page")
+        from flask_babel import get_locale
+        current_locale = get_locale()
+        logger.debug(f"Rendering dashboard page with locale: {current_locale}")
+        logger.debug(f"Session data: {dict(session)}")
+        logger.debug(f"URL args: {dict(request.args)}")
+        
+        # Test translation within request context
+        from flask_babel import gettext
+        test_translation = gettext('Dashboard')
+        test_translation2 = gettext('No upcoming physician visits scheduled.')
+        logger.debug(f"Translation test - 'Dashboard': '{test_translation}'")
+        logger.debug(f"Translation test - 'No upcoming physician visits scheduled.': '{test_translation2}'")
         medications = Medication.query.all()
         # Get ALL upcoming visits, not just the first one
         upcoming_visits = (

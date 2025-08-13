@@ -1,56 +1,56 @@
 {% extends "layout.html" %}
 
-{% block title %}Edit {{ medication.name }} - Medication Tracker{% endblock %}
+{% block title %}{{ _('Edit') }} {{ medication.name }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-pen-to-square me-2"></i>Edit Medication
+        <i class="fas fa-pen-to-square me-2"></i>{{ _('Edit Medication') }}
     </h1>
     <div>
         <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Details
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Details') }}
         </a>
         <a href="{{ url_for('medications.index') }}" class="btn btn-outline-secondary ms-2">
-            <i class="fas fa-list me-1"></i>All Medications
+            <i class="fas fa-list me-1"></i>{{ _('All Medications') }}
         </a>
     </div>
 </div>
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Edit {{ medication.name }}</h5>
+        <h5 class="mb-0">{{ _('Edit') }} {{ medication.name }}</h5>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('medications.edit', id=medication.id) }}">
             <div class="row">
                 <!-- Basic Information -->
                 <div class="col-md-6">
-                    <h5 class="mb-3">Basic Information</h5>
+                    <h5 class="mb-3">{{ _('Basic Information') }}</h5>
 
                     <div class="mb-3">
-                        <label for="name" class="form-label">Medication Name <span class="text-danger">*</span></label>
+                        <label for="name" class="form-label">{{ _('Medication Name') }} <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="name" name="name" value="{{ medication.name }}" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="active_ingredient" class="form-label">Active Ingredient</label>
+                        <label for="active_ingredient" class="form-label">{{ _('Active Ingredient') }}</label>
                         <input type="text" class="form-control" id="active_ingredient" name="active_ingredient" value="{{ medication.active_ingredient or '' }}">
-                        <div class="form-text">The active pharmaceutical ingredient (Wirkstoff)</div>
+                        <div class="form-text">{{ _('The active pharmaceutical ingredient (Wirkstoff)') }}</div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="form" class="form-label">Form</label>
+                        <label for="form" class="form-label">{{ _('Form') }}</label>
                         <input type="text" class="form-control" id="form" name="form" value="{{ medication.form or '' }}">
-                        <div class="form-text">The pharmaceutical form (e.g., tablets, capsules, solution)</div>
+                        <div class="form-text">{{ _('The pharmaceutical form (e.g., tablets, capsules, solution)') }}</div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-8">
                             <div class="mb-3">
-                                <label for="physician_id" class="form-label">Prescribing Physician</label>
+                                <label for="physician_id" class="form-label">{{ _('Prescribing Physician') }}</label>
                                 <select class="form-select" id="physician_id" name="physician_id">
-                                    <option value="">Select a physician (optional)</option>
+                                    <option value="">{{ _('Select a physician (optional)') }}</option>
                                     {% for physician in physicians %}
                                         <option value="{{ physician.id }}" 
                                                 {% if medication.physician_id == physician.id %}selected{% endif %}>
@@ -58,7 +58,7 @@
                                         </option>
                                     {% endfor %}
                                 </select>
-                                <div class="form-text">The physician who prescribes this medication</div>
+                                <div class="form-text">{{ _('The physician who prescribes this medication') }}</div>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -67,10 +67,10 @@
                                     <input class="form-check-input" type="checkbox" id="is_otc" name="is_otc" value="1"
                                            {% if medication.is_otc %}checked{% endif %}>
                                     <label class="form-check-label" for="is_otc">
-                                        Over-the-Counter (OTC)
+                                        {{ _('Over-the-Counter (OTC)') }}
                                     </label>
                                 </div>
-                                <div class="form-text">Check if this medication is available without prescription</div>
+                                <div class="form-text">{{ _('Check if this medication is available without prescription') }}</div>
                             </div>
                         </div>
                     </div>
@@ -80,53 +80,53 @@
                     <input type="hidden" name="frequency" value="{{ medication.frequency }}">
 
                     <div class="mb-3">
-                        <label for="notes" class="form-label">Notes</label>
+                        <label for="notes" class="form-label">{{ _('Notes') }}</label>
                         <textarea class="form-control" id="notes" name="notes" rows="3">{{ medication.notes or '' }}</textarea>
-                        <div class="form-text">Optional information about this medication</div>
+                        <div class="form-text">{{ _('Optional information about this medication') }}</div>
                     </div>
                 </div>
 
                 <!-- Package Sizes & Thresholds -->
                 <div class="col-md-6">
-                    <h5 class="mb-3">Package Sizes</h5>
-                    <p class="text-muted small">Enter the number of units/pills in each package size (N1, N2, N3)</p>
+                    <h5 class="mb-3">{{ _('Package Sizes') }}</h5>
+                    <p class="text-muted small">{{ _('Enter the number of units/pills in each package size (N1, N2, N3)') }}</p>
 
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="package_size_n1" class="form-label">N1 Package</label>
+                                <label for="package_size_n1" class="form-label">{{ _('N1 Package') }}</label>
                                 <input type="number" class="form-control" id="package_size_n1" name="package_size_n1" min="1" value="{{ medication.package_size_n1 or '' }}">
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="package_size_n2" class="form-label">N2 Package</label>
+                                <label for="package_size_n2" class="form-label">{{ _('N2 Package') }}</label>
                                 <input type="number" class="form-control" id="package_size_n2" name="package_size_n2" min="1" value="{{ medication.package_size_n2 or '' }}">
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="package_size_n3" class="form-label">N3 Package</label>
+                                <label for="package_size_n3" class="form-label">{{ _('N3 Package') }}</label>
                                 <input type="number" class="form-control" id="package_size_n3" name="package_size_n3" min="1" value="{{ medication.package_size_n3 or '' }}">
                             </div>
                         </div>
                     </div>
 
-                    <h5 class="mt-4 mb-3">Inventory Settings</h5>
+                    <h5 class="mt-4 mb-3">{{ _('Inventory Settings') }}</h5>
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="min_threshold" class="form-label">Minimum Threshold</label>
+                                <label for="min_threshold" class="form-label">{{ _('Minimum Threshold') }}</label>
                                 <input type="number" class="form-control" id="min_threshold" name="min_threshold" min="0" value="{{ medication.min_threshold }}">
-                                <div class="form-text">Alert when stock falls below this level</div>
+                                <div class="form-text">{{ _('Alert when stock falls below this level') }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="safety_margin_days" class="form-label">Safety Margin (days)</label>
+                                <label for="safety_margin_days" class="form-label">{{ _('Safety Margin (days)') }}</label>
                                 <input type="number" class="form-control" id="safety_margin_days" name="safety_margin_days" min="0" value="{{ medication.safety_margin_days }}">
-                                <div class="form-text">Extra days to add when calculating needs</div>
+                                <div class="form-text">{{ _('Extra days to add when calculating needs') }}</div>
                             </div>
                         </div>
                     </div>
@@ -135,24 +135,24 @@
 
             <div class="card mt-4 mb-4">
                 <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Medication Scheduling</h5>
+                    <h5 class="mb-0">{{ _('Medication Scheduling') }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="mb-0">
-                                <strong>Daily Usage:</strong>
+                                <strong>{{ _('Daily Usage:') }}</strong>
                                 {% if medication.schedules %}
-                                    <span class="text-primary">{{ medication.daily_usage|round(1) }} units per day</span>
-                                    (based on {{ medication.schedules|length }} schedule{{ 's' if medication.schedules|length != 1 }})
+                                    <span class="text-primary">{{ medication.daily_usage|round(1) }} {{ _('units per day') }}</span>
+                                    ({{ _('based on') }} {{ medication.schedules|length }} {{ _('schedule') }}{{ 's' if medication.schedules|length != 1 }})
                                 {% else %}
-                                    <span class="text-warning">No schedules defined</span>
+                                    <span class="text-warning">{{ _('No schedules defined') }}</span>
                                 {% endif %}
                             </p>
                         </div>
                         <div>
                             <a href="{{ url_for('schedules.index', medication_id=medication.id) }}" class="btn btn-primary">
-                                <i class="fas fa-calendar-alt me-1"></i>Manage Medication Schedules
+                                <i class="fas fa-calendar-alt me-1"></i>{{ _('Manage Medication Schedules') }}
                             </a>
                         </div>
                     </div>
@@ -162,10 +162,10 @@
                             <table class="table table-sm table-bordered">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Type</th>
-                                        <th>Details</th>
-                                        <th>Times</th>
-                                        <th>Dose</th>
+                                        <th>{{ _('Type') }}</th>
+                                        <th>{{ _('Details') }}</th>
+                                        <th>{{ _('Times') }}</th>
+                                        <th>{{ _('Dose') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -173,11 +173,11 @@
                                         <tr>
                                             <td>
                                                 {% if schedule.schedule_type.value == 'daily' %}
-                                                    <span class="badge bg-success">Daily</span>
+                                                    <span class="badge bg-success">{{ _('Daily') }}</span>
                                                 {% elif schedule.schedule_type.value == 'interval' %}
-                                                    <span class="badge bg-info">Every {{ schedule.interval_days }} day(s)</span>
+                                                    <span class="badge bg-info">{{ _('Every') }} {{ schedule.interval_days }} {{ _('day(s)') }}</span>
                                                 {% elif schedule.schedule_type.value == 'weekdays' %}
-                                                    <span class="badge bg-primary">Selected Days</span>
+                                                    <span class="badge bg-primary">{{ _('Selected Days') }}</span>
                                                 {% endif %}
                                             </td>
                                             <td>
@@ -187,9 +187,9 @@
                                                         <span class="badge bg-light text-dark">{{ day_names[day_num] }}</span>
                                                     {% endfor %}
                                                 {% elif schedule.schedule_type.value == 'interval' %}
-                                                    <span class="text-muted">Every {{ schedule.interval_days }} day(s)</span>
+                                                    <span class="text-muted">{{ _('Every') }} {{ schedule.interval_days }} {{ _('day(s)') }}</span>
                                                 {% else %}
-                                                    <span class="text-muted">Every day</span>
+                                                    <span class="text-muted">{{ _('Every day') }}</span>
                                                 {% endif %}
                                             </td>
                                             <td>
@@ -198,7 +198,7 @@
                                                     {% if not loop.last %}<br>{% endif %}
                                                 {% endfor %}
                                             </td>
-                                            <td>{{ schedule.units_per_dose }} units</td>
+                                            <td>{{ schedule.units_per_dose }} {{ _('units') }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -207,7 +207,7 @@
                     {% else %}
                         <div class="alert alert-warning mt-3">
                             <i class="fas fa-exclamation-triangle me-2"></i>
-                            No medication schedules defined. Please set up schedules to define when to take this medication.
+                            {{ _('No medication schedules defined. Please set up schedules to define when to take this medication.') }}
                         </div>
                     {% endif %}
                 </div>
@@ -215,15 +215,15 @@
 
             <div class="mt-4 d-flex justify-content-between">
                 <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-times me-1"></i>Cancel
+                    <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
                 </a>
                 <div>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>Update Medication
+                        <i class="fas fa-save me-1"></i>{{ _('Update Medication') }}
                     </button>
                     {% if not medication.schedules %}
                         <a href="{{ url_for('schedules.new', medication_id=medication.id) }}" class="btn btn-success ms-2">
-                            <i class="fas fa-calendar-plus me-1"></i>Add Schedule
+                            <i class="fas fa-calendar-plus me-1"></i>{{ _('Add Schedule') }}
                         </a>
                     {% endif %}
                 </div>

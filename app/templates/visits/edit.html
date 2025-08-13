@@ -1,43 +1,43 @@
 {% extends "layout.html" %}
 
-{% block title %}Edit Physician Visit - Medication Tracker{% endblock %}
+{% block title %}{{ _('Edit Physician Visit') }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-pen-to-square me-2"></i>Edit Physician Visit
+        <i class="fas fa-pen-to-square me-2"></i>{{ _('Edit Physician Visit') }}
     </h1>
     <div>
         <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Visit
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Visit') }}
         </a>
         <a href="{{ url_for('visits.index') }}" class="btn btn-outline-secondary ms-2">
-            <i class="fas fa-list me-1"></i>All Visits
+            <i class="fas fa-list me-1"></i>{{ _('All Visits') }}
         </a>
     </div>
 </div>
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Edit Visit on {{ format_date(visit.visit_date) }}</h5>
+        <h5 class="mb-0">{{ _('Edit Visit on') }} {{ format_date(visit.visit_date) }}</h5>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('visits.edit', id=visit.id) }}">
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="visit_date" class="form-label">Visit Date <span class="text-danger">*</span></label>
+                        <label for="visit_date" class="form-label">{{ _('Visit Date') }} <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="visit_date" name="visit_date" value="{{ formatted_date }}" required>
                         <div class="form-text">
-                            Enter the date of your upcoming physician visit
+                            {{ _('Enter the date of your upcoming physician visit') }}
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="physician_id" class="form-label">Physician</label>
+                        <label for="physician_id" class="form-label">{{ _('Physician') }}</label>
                         <select class="form-select" id="physician_id" name="physician_id">
-                            <option value="">Select a physician (optional)</option>
+                            <option value="">{{ _('Select a physician (optional)') }}</option>
                             {% for physician in physicians %}
                                 <option value="{{ physician.id }}"
                                         {% if visit.physician_id == physician.id %}selected{% endif %}>
@@ -46,15 +46,15 @@
                             {% endfor %}
                         </select>
                         <div class="form-text">
-                            The physician you're visiting
+                            {{ _('The physician you\'re visiting') }}
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="mb-3">
-                <label for="notes" class="form-label">Notes</label>
-                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Optional notes about this visit">{{ visit.notes or '' }}</textarea>
+                <label for="notes" class="form-label">{{ _('Notes') }}</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="{{ _('Optional notes about this visit') }}">{{ visit.notes or '' }}</textarea>
             </div>
 
             <div class="alert alert-warning" id="warning-message" style="display: none;">
@@ -64,10 +64,10 @@
 
             <div class="mt-4 d-flex justify-content-between">
                 <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-times me-1"></i>Cancel
+                    <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
                 </a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i>Update Visit
+                    <i class="fas fa-save me-1"></i>{{ _('Update Visit') }}
                 </button>
             </div>
         </form>
@@ -90,7 +90,7 @@
 
                 // Check if date is in the past
                 if (selectedDate < today) {
-                    warningText.textContent = 'You have selected a date in the past. This is allowed but may affect medication calculations.';
+                    warningText.textContent = '{{ _('You have selected a date in the past. This is allowed but may affect medication calculations.') }}';
                     warningMessage.style.display = 'block';
                 } else {
                     warningMessage.style.display = 'none';
@@ -98,7 +98,7 @@
 
                 // Check if there are orders associated with this visit
                 {% if orders %}
-                    warningText.textContent = 'Warning: This visit has associated orders. Changing the date may affect medication calculations.';
+                    warningText.textContent = '{{ _('Warning: This visit has associated orders. Changing the date may affect medication calculations.') }}';
                     warningMessage.style.display = 'block';
                 {% endif %}
             });

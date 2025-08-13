@@ -15,6 +15,7 @@ from flask import (
     request,
     url_for,
 )
+from flask_babel import gettext as _
 
 # Local application imports
 from models import (
@@ -55,7 +56,7 @@ def new():
 
         # Validate required fields
         if not name:
-            flash("Physician name is required.", "error")
+            flash(_("Physician name is required."), "error")
             return render_template("physicians/new.html")
 
         try:
@@ -72,14 +73,14 @@ def new():
             db.session.add(physician)
             db.session.commit()
 
-            flash(f"Physician '{name}' has been created successfully.", "success")
+            flash(_("Physician '{}' has been created successfully.").format(name), "success")
             logger.info(f"Created new physician: {name}")
 
             return redirect(url_for("physicians.index"))
 
         except Exception as e:
             db.session.rollback()
-            flash(f"Error creating physician: {str(e)}", "error")
+            flash(_("Error creating physician: {}").format(str(e)), "error")
             logger.error(f"Error creating physician: {str(e)}")
 
     return render_template("physicians/new.html")
@@ -113,7 +114,7 @@ def edit(physician_id):
 
         # Validate required fields
         if not name:
-            flash("Physician name is required.", "error")
+            flash(_("Physician name is required."), "error")
             return render_template("physicians/edit.html", physician=physician)
 
         try:
@@ -127,14 +128,14 @@ def edit(physician_id):
 
             db.session.commit()
 
-            flash(f"Physician '{name}' has been updated successfully.", "success")
+            flash(_("Physician '{}' has been updated successfully.").format(name), "success")
             logger.info(f"Updated physician: {name}")
 
             return redirect(url_for("physicians.show", physician_id=physician.id))
 
         except Exception as e:
             db.session.rollback()
-            flash(f"Error updating physician: {str(e)}", "error")
+            flash(_("Error updating physician: {}").format(str(e)), "error")
             logger.error(f"Error updating physician: {str(e)}")
 
     return render_template("physicians/edit.html", physician=physician)
@@ -149,7 +150,7 @@ def delete(physician_id):
         # Check if physician has associated medications or visits
         if physician.medications or physician.visits:
             flash(
-                "Cannot delete physician who has associated medications or visits. Please reassign them first.",
+                _("Cannot delete physician who has associated medications or visits. Please reassign them first."),
                 "error"
             )
             return redirect(url_for("physicians.show", physician_id=physician.id))
@@ -158,13 +159,13 @@ def delete(physician_id):
         db.session.delete(physician)
         db.session.commit()
 
-        flash(f"Physician '{physician_name}' has been deleted successfully.", "success")
+        flash(_("Physician '{}' has been deleted successfully.").format(physician_name), "success")
         logger.info(f"Deleted physician: {physician_name}")
 
         return redirect(url_for("physicians.index"))
 
     except Exception as e:
         db.session.rollback()
-        flash(f"Error deleting physician: {str(e)}", "error")
+        flash(_("Error deleting physician: {}").format(str(e)), "error")
         logger.error(f"Error deleting physician: {str(e)}")
         return redirect(url_for("physicians.show", physician_id=physician.id))

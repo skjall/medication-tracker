@@ -18,6 +18,7 @@ from flask import (
     send_file,
     url_for,
 )
+from flask_babel import gettext as _
 
 # Local application imports
 from models import (
@@ -87,7 +88,7 @@ def new():
 
     if not visit:
         flash(
-            "No upcoming physician visit found. Please schedule a visit first.",
+            _("No upcoming physician visit found. Please schedule a visit first."),
             "warning",
         )
         return redirect(url_for("visits.new"))
@@ -129,7 +130,7 @@ def new():
 
         db.session.commit()
 
-        flash("Order created successfully", "success")
+        flash(_("Order created successfully"), "success")
         return redirect(url_for("orders.show", id=order.id))
 
     # Get settings to check if next-but-one is enabled globally
@@ -292,7 +293,7 @@ def edit(id: int):
 
     # Don't allow editing fulfilled orders
     if order.status == "fulfilled":
-        flash("Cannot edit fulfilled orders", "error")
+        flash(_("Cannot edit fulfilled orders"), "error")
         return redirect(url_for("orders.show", id=order.id))
 
     if request.method == "POST":
@@ -352,7 +353,7 @@ def edit(id: int):
 
         db.session.commit()
 
-        flash("Order updated successfully", "success")
+        flash(_("Order updated successfully"), "success")
         return redirect(url_for("orders.show", id=order.id))
 
     # Filter medications based on the visit's physician
@@ -386,7 +387,7 @@ def delete(id: int):
 
     # Don't allow deleting fulfilled orders
     if order.status == "fulfilled":
-        flash("Cannot delete fulfilled orders", "error")
+        flash(_("Cannot delete fulfilled orders"), "error")
         return redirect(url_for("orders.show", id=order.id))
 
     # Delete all associated order items
@@ -396,7 +397,7 @@ def delete(id: int):
     db.session.delete(order)
     db.session.commit()
 
-    flash("Order deleted successfully", "success")
+    flash(_("Order deleted successfully"), "success")
     return redirect(url_for("orders.index"))
 
 
@@ -440,7 +441,7 @@ def toggle_fulfillment(id: int):
         for item in order.order_items:
             item.fulfillment_status = "pending"
             item.fulfilled_at = None
-        flash("Order marked as unfulfilled", "info")
+        flash(_("Order marked as unfulfilled"), "info")
     else:
         # Get fulfillment type from form
         fulfillment_type = request.form.get("fulfillment_type", "mark_only")
@@ -466,9 +467,9 @@ def toggle_fulfillment(id: int):
                     )
         
         if update_inventory:
-            flash(f"Order marked as fulfilled and {fulfilled_count} items added to inventory", "success")
+            flash(_("Order marked as fulfilled and {} items added to inventory").format(fulfilled_count), "success")
         else:
-            flash("Order marked as fulfilled", "success")
+            flash(_("Order marked as fulfilled"), "success")
     
     db.session.commit()
     
@@ -491,7 +492,7 @@ def fulfill_item(id: int, item_id: int):
     item = OrderItem.query.get_or_404(item_id)
     
     if item.order_id != order.id:
-        flash("Item does not belong to this order", "error")
+        flash(_("Item does not belong to this order"), "error")
         return redirect(url_for("orders.show", id=order.id))
     
     # Get form data
@@ -532,7 +533,7 @@ def fulfill_item(id: int, item_id: int):
     order.update_status_from_items()
     db.session.commit()
     
-    flash(f"Item {item.medication.name if item.medication else 'Unknown'} marked as {status}", "success")
+    flash(_("Item {} marked as {}").format(item.medication.name if item.medication else _("Unknown"), status), "success")
     return redirect(url_for("orders.show", id=order.id))
 
 
@@ -564,7 +565,7 @@ def bulk_fulfill(id: int):
     order.update_status_from_items()
     db.session.commit()
     
-    flash(f"Successfully fulfilled {fulfilled_count} items", "success")
+    flash(_("Successfully fulfilled {} items").format(fulfilled_count), "success")
     return redirect(url_for("orders.show", id=order.id))
 
 
@@ -580,7 +581,7 @@ def prescription(id: int):
 
     if not active_template:
         flash(
-            "No active prescription template found. Please configure a template first.",
+            _("No active prescription template found. Please configure a template first."),
             "warning",
         )
         return redirect(url_for("prescriptions.index"))
@@ -595,5 +596,5 @@ def prescription(id: int):
         # Return the file for download
         return send_file(pdf_path, download_name=filename, as_attachment=True)
     else:
-        flash("Error generating prescription PDF", "error")
+        flash(_("Error generating prescription PDF"), "error")
         return redirect(url_for("orders.show", id=id))

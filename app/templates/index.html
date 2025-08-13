@@ -1,12 +1,12 @@
 {% extends "layout.html" %}
 
-{% block title %}Dashboard - Medication Tracker{% endblock %}
+{% block title %}{{ _('Dashboard') }} - Medication Tracker{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
     <div class="col">
         <h1>
-            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            <i class="fas fa-tachometer-alt me-2"></i>{{ _('Dashboard') }}
         </h1>
     </div>
 </div>
@@ -17,7 +17,7 @@
         <div class="card h-100">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-calendar-alt me-2"></i>Next Physician Visit
+                    <i class="fas fa-calendar-alt me-2"></i>{{ _('Next Physician Visit') }}
                 </h5>
             </div>
             <div class="card-body">
@@ -28,21 +28,21 @@
                     </h3>
                     {% if upcoming_visit.notes %}
                         <p class="card-text mt-3">
-                            <strong>Notes:</strong> {{ upcoming_visit.notes }}
+                            <strong>{{ _('Notes') }}:</strong> {{ upcoming_visit.notes }}
                         </p>
                     {% endif %}
                     <div class="mt-4">
                         <a href="{{ url_for('visits.show', id=upcoming_visit.id) }}" class="btn btn-outline-primary">
-                            <i class="fas fa-eye me-1"></i>View Details
+                            <i class="fas fa-eye me-1"></i>{{ _('View Details') }}
                         </a>
                         <a href="{{ url_for('orders.new', visit_id=upcoming_visit.id) }}" class="btn btn-outline-primary ms-2">
-                            <i class="fas fa-plus me-1"></i>Create Order
+                            <i class="fas fa-plus me-1"></i>{{ _('Create Order') }}
                         </a>
                     </div>
                 {% else %}
-                    <p class="card-text">No upcoming physician visits scheduled.</p>
+                    <p class="card-text">{{ _('No upcoming physician visits scheduled.') }}</p>
                     <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
-                        <i class="fas fa-calendar-plus me-1"></i>Schedule a Visit
+                        <i class="fas fa-calendar-plus me-1"></i>{{ _('Schedule a Visit') }}
                     </a>
                 {% endif %}
             </div>

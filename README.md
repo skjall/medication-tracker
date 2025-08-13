@@ -1,12 +1,80 @@
-
 <p align="center">
   <img src="resources/img/logo.png" alt="Medication Tracker" title="Medication Tracker">
 </p>
 
-A lightweight Python-based web application that helps track medications, inventory levels, and prepare for physician visits, using SQLite for data storage.
+<p align="center">
+  A lightweight Python-based web application that helps track medications, inventory levels, and prepare for physician visits, using SQLite for data storage.
+</p>
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/skjall/medication-tracker)](https://hub.docker.com/r/skjall/medication-tracker)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <a href="https://hub.docker.com/r/skjall/medication-tracker">
+    <img src="https://img.shields.io/docker/pulls/skjall/medication-tracker" alt="Docker Pulls">
+  </a>
+  <a href="https://github.com/skjall/medication-tracker/releases">
+    <img src="https://img.shields.io/github/v/release/skjall/medication-tracker" alt="Latest Release">
+  </a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+  </a>
+  <a href="https://github.com/skjall/medication-tracker/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/skjall/medication-tracker/ci.yml?branch=main" alt="Build Status">
+  </a>
+  <a href="https://crowdin.com/project/medication-tracker">
+    <img src="https://badges.crowdin.net/medication-tracker/localized.svg" alt="Crowdin Translation Progress">
+  </a>
+  <a href="https://github.com/skjall/medication-tracker/issues">
+    <img src="https://img.shields.io/github/issues/skjall/medication-tracker" alt="GitHub Issues">
+  </a>
+  <a href="https://github.com/skjall/medication-tracker/stargazers">
+    <img src="https://img.shields.io/github/stars/skjall/medication-tracker?style=social" alt="GitHub Stars">
+  </a>
+</p>
+
+## 🌍 Multi-Language Support
+
+Medication Tracker is available in multiple languages with professional translations managed through [Crowdin](https://crowdin.com/project/medication-tracker). Languages are automatically enabled when translation completion reaches 80%.
+
+**Currently Available Languages:**
+- 🇺🇸 **English** - Base language (100%)
+- 🇩🇪 **Deutsch** - Available when >80% complete
+- 🇪🇸 **Español** - Available when >80% complete  
+- 🇫🇷 **Français** - Available when >80% complete
+
+### 🤝 Help Translate
+
+We welcome contributions to make Medication Tracker accessible to more users worldwide!
+
+#### **For Translators:**
+1. **Join our Crowdin project**: [crowdin.com/project/medication-tracker](https://crowdin.com/project/medication-tracker)
+2. **Select your language** from the list or request a new one
+3. **Start translating** using Crowdin's intuitive web interface
+4. **No technical knowledge required** - just help make the app accessible!
+
+#### **Translation Benefits:**
+- 🌐 **Web-based interface** - No software installation needed
+- 💡 **Context provided** - See exactly where text appears in the app
+- 🔄 **Translation memory** - Reuse previous translations for consistency
+- 👥 **Collaborative** - Work with other translators and reviewers
+- ✅ **Quality assurance** - Built-in checks for translation quality
+
+#### **For Developers/Advanced Users:**
+```bash
+# Extract new translatable strings
+cd app && pybabel extract -F ../babel.cfg -k _ -o ../translations/messages.pot .
+
+# Update existing translations
+pybabel update -i translations/messages.pot -d translations
+
+# Check translation coverage
+./scripts/translation-coverage.sh
+
+# Upload to Crowdin (requires API token)
+crowdin upload sources
+```
+
+**Language automatically appears in the navigation menu when 80% translation is complete!**
+
+---
 
 ## Features
 
@@ -42,6 +110,11 @@ A lightweight Python-based web application that helps track medications, invento
   - CSV import/export for medications, inventory, visits, and orders
   - Database backup and optimization tools
 
+- **Multi-Language Support**:
+  - Professional translation management via Crowdin
+  - Automatic language switching based on completion
+  - Support for 25+ languages with proper localization
+
 ## Access Warning
 
 ⚠️ **This software has no access protection. Users are advised to not expose any sensitive information and to only deploy it on local networks or behind appropriate security measures. The application is intended for personal use and should not be publicly accessible.**
@@ -60,7 +133,7 @@ A lightweight Python-based web application that helps track medications, invento
 ### Physician Visits
 ![Physician Visits](resources/img/screenshots/visits.png)
 
-# Running the application
+# 🚀 Running the application
 
 ## Using Docker
 
@@ -97,6 +170,7 @@ services:
       - FLASK_ENV=production
       - SECRET_KEY=change_me_in_production
       - LOG_LEVEL=INFO
+      - FLASK_DEFAULT_LANGUAGE=en  # Optional: set default language
 
 volumes:
   medication_tracker_data:
@@ -116,12 +190,22 @@ docker-compose up -d
 - `SECRET_KEY`: Secret key for session signing (required in production)
 - `FLASK_ENV`: Set to `production` for production use
 - `LOG_LEVEL`: Set logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`, or `CRITICAL`)
+- `FLASK_DEFAULT_LANGUAGE`: Default language for new users (`en`, `de`, `es`, `fr`, etc.)
 
 ## Data Persistence
 
 All data is stored in SQLite databases in the `/app/data` directory. To persist your data, mount this directory as a volume.
 
-## Usage Guide
+## 📚 Usage Guide
+
+### Changing Language
+
+1. **Click the globe icon** 🌍 in the top navigation bar
+2. **Select your preferred language** from the dropdown
+3. **Language preference is saved** for your browser session
+4. **Only languages with >80% translation completion** are shown
+
+You can also switch languages by adding `?lang=de` (or your language code) to any URL.
 
 ### Managing Physicians
 
@@ -161,7 +245,7 @@ All data is stored in SQLite databases in the `/app/data` directory. To persist 
 4. Generate a printable order form for your physician visit
 5. Mark as fulfilled when medications are received to update inventory
 
-## Building from Source
+## 🛠️ Building from Source
 
 If you want to build the Docker image yourself:
 
@@ -171,7 +255,7 @@ cd medication-tracker
 docker buildx build -t medication-tracker --build-arg VERSION=$(cat version.txt) .
 ```
 
-## Versioning
+## 📋 Versioning
 
 The application follows semantic versioning:
 
@@ -195,7 +279,7 @@ To update the version:
 ./scripts/update_version.sh patch --commit --tag
 ```
 
-## Development Setup
+## 🔧 Development Setup
 
 To set up a development environment:
 
@@ -213,8 +297,55 @@ To set up a development environment:
    ```bash
    python app/main.py
    ```
-5. Then access the application at http://localhost:8087
+5. Access the application at http://localhost:8087
 
-## License
+### Translation Development
+
+```bash
+# Check translation coverage
+./scripts/translation-coverage.sh
+
+# Prime Crowdin (first-time setup)
+./scripts/crowdin-prime.sh
+
+# Check Crowdin status
+./scripts/crowdin-status.sh
+
+# View translation debug info
+curl http://localhost:8087/debug/translation-coverage
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Here are some ways you can help:
+
+### 🌐 **Translations** (No coding required!)
+- Join our [Crowdin project](https://crowdin.com/project/medication-tracker)
+- Help translate the app into your language
+- Review and improve existing translations
+
+### 💻 **Code Contributions**
+- Report bugs and suggest features via [GitHub Issues](https://github.com/skjall/medication-tracker/issues)
+- Submit pull requests for bug fixes and improvements
+- Help improve documentation
+
+### 📖 **Documentation**
+- Improve user guides and documentation
+- Add screenshots and usage examples
+- Translate documentation into other languages
+
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+---
+
+<p align="center">
+  Made with ❤️ for better medication management
+</p>
+
+<p align="center">
+  <a href="https://crowdin.com/project/medication-tracker">🌍 Help translate</a> •
+  <a href="https://github.com/skjall/medication-tracker/issues">🐛 Report bug</a> •
+  <a href="https://github.com/skjall/medication-tracker/discussions">💬 Discussions</a>
+</p>

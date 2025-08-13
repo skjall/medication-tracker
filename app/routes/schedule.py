@@ -16,6 +16,7 @@ from flask import (
     request,
     url_for,
 )
+from flask_babel import gettext as _
 
 # Local application imports
 from models import (
@@ -64,7 +65,7 @@ def new(medication_id: int):
         # Parse times of day (array of HH:MM values)
         times_of_day = request.form.getlist("times_of_day[]")
         if not times_of_day:
-            flash("Please add at least one time for the medication", "error")
+            flash(_("Please add at least one time for the medication"), "error")
             return render_template(
                 "schedules/new.html",
                 local_time=to_local_timezone(datetime.now(timezone.utc)),
@@ -97,7 +98,7 @@ def new(medication_id: int):
         db.session.add(schedule)
         db.session.commit()
 
-        flash("Schedule added successfully", "success")
+        flash(_("Schedule added successfully"), "success")
         return redirect(url_for("schedules.index", medication_id=medication.id))
 
     return render_template(
@@ -124,7 +125,7 @@ def edit(id: int):
         # Parse times of day
         times_of_day = request.form.getlist("times_of_day[]")
         if not times_of_day:
-            flash("Please add at least one time for the medication", "error")
+            flash(_("Please add at least one time for the medication"), "error")
             return render_template(
                 "schedules/edit.html",
                 local_time=to_local_timezone(datetime.now(timezone.utc)),
@@ -148,7 +149,7 @@ def edit(id: int):
         # Save changes
         db.session.commit()
 
-        flash("Schedule updated successfully", "success")
+        flash(_("Schedule updated successfully"), "success")
         return redirect(url_for("schedules.index", medication_id=medication.id))
 
     return render_template(
@@ -170,7 +171,7 @@ def delete(id: int):
     db.session.delete(schedule)
     db.session.commit()
 
-    flash("Schedule deleted successfully", "success")
+    flash(_("Schedule deleted successfully"), "success")
     return redirect(url_for("schedules.index", medication_id=medication_id))
 
 
@@ -187,7 +188,7 @@ def toggle_auto_deduction(medication_id: int):
     db.session.commit()
 
     status = "enabled" if medication.auto_deduction_enabled else "disabled"
-    flash(f"Automatic deduction {status} for {medication.name}", "success")
+    flash(_("Automatic deduction {} for {}").format(status, medication.name), "success")
 
     return redirect(url_for("medications.show", id=medication_id))
 
@@ -201,7 +202,7 @@ def check_deductions():
     from physician_visit_utils import auto_deduct_inventory
 
     auto_deduct_inventory()
-    flash("Medication deductions checked successfully", "success")
+    flash(_("Medication deductions checked successfully"), "success")
 
     # Get the referer to return to the previous page
     referer = request.headers.get("Referer")

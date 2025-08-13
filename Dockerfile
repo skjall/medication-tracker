@@ -53,8 +53,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY app/ ./
 
 # Copy migration files
-COPY migrations/ ../migrations/
-COPY alembic.ini ../
+COPY migrations/ ./migrations/
+COPY alembic.ini ./
+
+# Copy translation files
+COPY translations/ ./translations/
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1

@@ -1,44 +1,44 @@
 {% extends "layout.html" %}
 
-{% block title %}System Status - Medication Tracker{% endblock %}
+{% block title %}{{ _('System Status') }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-server me-2"></i>System Status
+        <i class="fas fa-server me-2"></i>{{ _('System Status') }}
     </h1>
     <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
-        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+        <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Dashboard') }}
     </a>
 </div>
 
 <!-- Scheduler Status Card -->
 <div class="card mb-4">
     <div class="card-header {% if status.scheduler_running %}bg-primary{% else %}bg-danger{% endif %} text-white">
-        <h5 class="mb-0">Task Scheduler</h5>
+        <h5 class="mb-0">{{ _('Task Scheduler') }}</h5>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-6">
                 <dl class="row">
-                    <dt class="col-sm-6">Current Status:</dt>
+                    <dt class="col-sm-6">{{ _('Current Status:') }}</dt>
                     <dd class="col-sm-6">
                         {% if status.scheduler_running %}
-                            <span class="text-success">Running</span>
+                            <span class="text-success">{{ _('Running') }}</span>
                         {% else %}
-                            <span class="text-danger">Stopped</span>
+                            <span class="text-danger">{{ _('Stopped') }}</span>
                         {% endif %}
                     </dd>
 
-                    <dt class="col-sm-6">Current Time (UTC):</dt>
+                    <dt class="col-sm-6">{{ _('Current Time (UTC):') }}</dt>
                     <dd class="col-sm-6">{{ format_datetime(now, show_seconds=true) }}</dd>
 
-                    <dt class="col-sm-6">Last Deduction Check (UTC):</dt>
+                    <dt class="col-sm-6">{{ _('Last Deduction Check (UTC):') }}</dt>
                     <dd class="col-sm-6">
                         {% if status.last_deduction_check %}
                             {{ format_datetime(status.last_deduction_check, show_seconds=true) }}
                         {% else %}
-                            <span class="text-muted">Never run</span>
+                            <span class="text-muted">{{ _('Never run') }}</span>
                         {% endif %}
                     </dd>
                 </dl>
@@ -50,15 +50,15 @@
 <!-- Database Status Card -->
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Database Status</h5>
+        <h5 class="mb-0">{{ _('Database Status') }}</h5>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-12">
                 <a href="{{ url_for('system.migrations') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-database me-1"></i>Database Migrations
+                    <i class="fas fa-database me-1"></i>{{ _('Database Migrations') }}
                 </a>
-                <span class="ms-3">View migration status and history</span>
+                <span class="ms-3">{{ _('View migration status and history') }}</span>
             </div>
         </div>
     </div>
@@ -67,7 +67,7 @@
 <!-- Task Status Card -->
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Scheduled Tasks</h5>
+        <h5 class="mb-0">{{ _('Scheduled Tasks') }}</h5>
     </div>
     <div class="card-body">
         {% if status.tasks %}
@@ -75,29 +75,29 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Task Name</th>
-                            <th>Interval</th>
-                            <th>Last Run</th>
-                            <th>Status</th>
+                            <th>{{ _('Task Name') }}</th>
+                            <th>{{ _('Interval') }}</th>
+                            <th>{{ _('Last Run') }}</th>
+                            <th>{{ _('Status') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for task in status.tasks %}
                             <tr>
                                 <td>{{ task.name }}</td>
-                                <td>{{ task.interval }} seconds</td>
+                                <td>{{ task.interval }} {{ _('seconds') }}</td>
                                 <td>
                                     {% if task.last_run %}
                                         {{ task.last_run|truncate(19, True, '') }} <!-- Truncate to eliminate fractional seconds -->
                                     {% else %}
-                                        <span class="text-muted">Never</span>
+                                        <span class="text-muted">{{ _('Never') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if task.is_running %}
-                                        <span class="badge bg-info">Running</span>
+                                        <span class="badge bg-info">{{ _('Running') }}</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">Idle</span>
+                                        <span class="badge bg-secondary">{{ _('Idle') }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -107,7 +107,7 @@
             </div>
         {% else %}
             <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle me-2"></i>No scheduled tasks found.
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ _('No scheduled tasks found.') }}
             </div>
         {% endif %}
     </div>
@@ -116,28 +116,28 @@
 <!-- System Information Card -->
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">System Information</h5>
+        <h5 class="mb-0">{{ _('System Information') }}</h5>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-6">
                 <dl class="row">
-                    <dt class="col-sm-6">Python Version:</dt>
+                    <dt class="col-sm-6">{{ _('Python Version:') }}</dt>
                     <dd class="col-sm-6">{{ python_version|default('3.x') }}</dd>
 
-                    <dt class="col-sm-6">Flask Version:</dt>
+                    <dt class="col-sm-6">{{ _('Flask Version:') }}</dt>
                     <dd class="col-sm-6">{{ flask_version|default('3.x') }}</dd>
 
-                    <dt class="col-sm-6">Timezone:</dt>
+                    <dt class="col-sm-6">{{ _('Timezone:') }}</dt>
                     <dd class="col-sm-6">{{ settings.timezone_name }}</dd>
                 </dl>
             </div>
             <div class="col-md-6">
                 <dl class="row">
-                    <dt class="col-sm-6">Server Time:</dt>
+                    <dt class="col-sm-6">{{ _('Server Time:') }}</dt>
                     <dd class="col-sm-6">{{ format_datetime(now, show_seconds=true) }}</dd>
 
-                    <dt class="col-sm-6">Local Time:</dt>
+                    <dt class="col-sm-6">{{ _('Local Time:') }}</dt>
                     <dd class="col-sm-6">{{ format_datetime(local_time, show_seconds=true) if local_time else format_datetime(now, show_seconds=true) }}</dd>
                 </dl>
             </div>
@@ -145,8 +145,8 @@
 
         <div class="alert alert-info mt-3">
             <i class="fas fa-info-circle me-2"></i>
-            The task scheduler runs background tasks including automatic inventory deduction.
-            If the scheduler is not running, automatic deduction will not occur.
+            {{ _('The task scheduler runs background tasks including automatic inventory deduction.') }}
+            {{ _('If the scheduler is not running, automatic deduction will not occur.') }}
         </div>
     </div>
 </div>
@@ -154,25 +154,25 @@
 <!-- Debug Actions -->
 <div class="card mt-4">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Debug Actions</h5>
+        <h5 class="mb-0">{{ _('Debug Actions') }}</h5>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-4 mb-3">
                 <a href="{{ url_for('schedules.check_deductions') }}" class="btn btn-outline-primary w-100">
-                    <i class="fas fa-rotate me-1"></i>Run Deduction Check Now
+                    <i class="fas fa-rotate me-1"></i>{{ _('Run Deduction Check Now') }}
                 </a>
             </div>
 
             <div class="col-md-4 mb-3">
                 <a href="{{ url_for('system.restart_scheduler')}}" class="btn btn-outline-primary w-100">
-                    <i class="fas fa-power-off me-1"></i>Restart Scheduler
+                    <i class="fas fa-power-off me-1"></i>{{ _('Restart Scheduler') }}
                 </a>
             </div>
 
             <div class="col-md-4 mb-3">
                 <button class="btn btn-outline-primary w-100" onclick="refreshPage()" type="button">
-                    <i class="fas fa-rotate-right me-1"></i>Refresh Status
+                    <i class="fas fa-rotate-right me-1"></i>{{ _('Refresh Status') }}
                 </button>
             </div>
         </div>
@@ -180,17 +180,17 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <a href="{{ url_for('system.detect_pipe_times') }}" class="btn btn-outline-primary w-100">
-                    <i class="fas fa-search me-1"></i>Detect Pipe-Separated Times
+                    <i class="fas fa-search me-1"></i>{{ _('Detect Pipe-Separated Times') }}
                 </a>
-                <small class="text-muted">Scan for corrupted medication schedule times</small>
+                <small class="text-muted">{{ _('Scan for corrupted medication schedule times') }}</small>
             </div>
 
             <div class="col-md-6 mb-3">
                 <a href="{{ url_for('system.fix_pipe_times') }}" class="btn btn-outline-danger w-100" 
-                   onclick="return confirm('This will permanently fix corrupted time data in the database. Continue?')">
-                    <i class="fas fa-wrench me-1"></i>Fix Pipe-Separated Times
+                   onclick="return confirm('{{ _('This will permanently fix corrupted time data in the database. Continue?') }}')")>
+                    <i class="fas fa-wrench me-1"></i>{{ _('Fix Pipe-Separated Times') }}
                 </a>
-                <small class="text-muted">Automatically repair corrupted medication schedule times</small>
+                <small class="text-muted">{{ _('Automatically repair corrupted medication schedule times') }}</small>
             </div>
         </div>
     </div>

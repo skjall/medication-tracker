@@ -16,6 +16,7 @@ from flask import (
     render_template,
     url_for,
 )
+from flask_babel import gettext as _
 
 # Local application imports
 from utils import format_date, format_datetime, format_time, to_local_timezone
@@ -103,9 +104,9 @@ def restart_scheduler():
     """
     if hasattr(current_app, "scheduler"):
         current_app.scheduler.restart()
-        flash("Task scheduler has been restarted", "success")
+        flash(_("Task scheduler has been restarted"), "success")
     else:
-        flash("Task scheduler not available", "error")
+        flash(_("Task scheduler not available"), "error")
 
 
 @system_bp.route("/detect_pipe_times")
@@ -120,15 +121,15 @@ def detect_pipe_times():
         problematic_schedules = detect_pipe_separated_schedules()
 
         if problematic_schedules:
-            flash(f"Found {len(problematic_schedules)} schedules with pipe-separated times. Check logs for details.", "warning")
+            flash(_("Found {} schedules with pipe-separated times. Check logs for details.").format(len(problematic_schedules)), "warning")
             for schedule_id, med_name, times_data in problematic_schedules:
                 logger.warning(f"Schedule {schedule_id} ({med_name}): {times_data}")
         else:
-            flash("No pipe-separated times detected in medication schedules.", "success")
+            flash(_("No pipe-separated times detected in medication schedules."), "success")
 
     except Exception as e:
         logger.error(f"Error detecting pipe-separated times: {e}")
-        flash(f"Error running detection: {e}", "error")
+        flash(_("Error running detection: {}").format(e), "error")
 
     return redirect(url_for("system.status"))
 
@@ -147,7 +148,7 @@ def fix_pipe_times():
         problematic_schedules = detect_pipe_separated_schedules()
 
         if not problematic_schedules:
-            flash("No pipe-separated times detected in medication schedules.", "info")
+            flash(_("No pipe-separated times detected in medication schedules."), "info")
             return redirect(url_for("system.status"))
 
         fixed_count = 0
@@ -169,13 +170,13 @@ def fix_pipe_times():
                 failed_count += 1
 
         if fixed_count > 0:
-            flash(f"Successfully fixed {fixed_count} schedules with pipe-separated times.", "success")
+            flash(_("Successfully fixed {} schedules with pipe-separated times.").format(fixed_count), "success")
         if failed_count > 0:
-            flash(f"Failed to fix {failed_count} schedules. Check logs for details.", "warning")
+            flash(_("Failed to fix {} schedules. Check logs for details.").format(failed_count), "warning")
 
     except Exception as e:
         logger.error(f"Error fixing pipe-separated times: {e}")
-        flash(f"Error running fix: {e}", "error")
+        flash(_("Error running fix: {}").format(e), "error")
 
     return redirect(url_for("system.status"))
 
@@ -213,8 +214,8 @@ def run_db_migrations():
     success = run_migrations(current_app)
 
     if success:
-        flash("Database migrations completed successfully", "success")
+        flash(_("Database migrations completed successfully"), "success")
     else:
-        flash("Error running database migrations", "error")
+        flash(_("Error running database migrations"), "error")
 
     return redirect(url_for("system.migrations"))

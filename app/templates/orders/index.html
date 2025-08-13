@@ -1,16 +1,16 @@
-{% extends "layout.html" %} {% block title %}Medication Orders -
-Medication Tracker{% endblock %} {% block content %}
+{% extends "layout.html" %} {% block title %}{{ _('Medication Orders') }} -
+{{ _('Medication Tracker') }}{% endblock %} {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h1><i class="fas fa-clipboard-list me-2"></i>Medication Orders</h1>
+  <h1><i class="fas fa-clipboard-list me-2"></i>{{ _('Medication Orders') }}</h1>
   <a href="{{ url_for('orders.new') }}" class="btn btn-primary">
-    <i class="fas fa-plus me-1"></i>Create Order
+    <i class="fas fa-plus me-1"></i>{{ _('Create Order') }}
   </a>
 </div>
 
 <!-- Pending Orders Card -->
 <div class="card mb-4">
   <div class="card-header bg-primary text-white">
-    <h5 class="mb-0">Pending Orders</h5>
+    <h5 class="mb-0">{{ _('Pending Orders') }}</h5>
   </div>
   <div class="card-body">
     {% if pending_orders %}
@@ -18,12 +18,12 @@ Medication Tracker{% endblock %} {% block content %}
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>Order #</th>
-            <th>Visit Date</th>
-            <th>Status</th>
-            <th>Created Date</th>
-            <th>Medications</th>
-            <th class="text-end">Actions</th>
+            <th>{{ _('Order #') }}</th>
+            <th>{{ _('Visit Date') }}</th>
+            <th>{{ _('Status') }}</th>
+            <th>{{ _('Created Date') }}</th>
+            <th>{{ _('Medications') }}</th>
+            <th class="text-end">{{ _('Actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -50,29 +50,28 @@ Medication Tracker{% endblock %} {% block content %}
             </td>
             <td>{{ format_date(order.created_date) }}</td>
             <td>
-              {{ order.order_items|length }} medication{% if
-              order.order_items|length != 1 %}s{% endif %}
+              {{ order.order_items|length }} {% if order.order_items|length == 1 %}{{ _('medication') }}{% else %}{{ _('medications') }}{% endif %}
             </td>
             <td class="text-end">
               <div class="btn-group btn-group-sm">
                 <a
                   href="{{ url_for('orders.show', id=order.id) }}"
                   class="btn btn-outline-primary"
-                  title="View"
+                  title="{{ _('View') }}"
                 >
                   <i class="fas fa-eye"></i>
                 </a>
                 <a
                   href="{{ url_for('orders.edit', id=order.id) }}"
                   class="btn btn-outline-primary"
-                  title="Edit"
+                  title="{{ _('Edit') }}"
                 >
                   <i class="fas fa-pen-to-square"></i>
                 </a>
                 <a
                   href="{{ url_for('orders.printable', id=order.id) }}"
                   class="btn btn-outline-primary"
-                  title="Printable Version"
+                  title="{{ _('Printable Version') }}"
                   target="_blank"
                 >
                   <i class="fas fa-print"></i>
@@ -81,7 +80,7 @@ Medication Tracker{% endblock %} {% block content %}
                 <button
                   type="button"
                   class="btn btn-outline-primary"
-                  title="Fulfill Order"
+                  title="{{ _('Fulfill Order') }}"
                   data-bs-toggle="modal"
                   data-bs-target="#fulfillModal"
                   data-order-id="{{ order.id }}"
@@ -98,10 +97,10 @@ Medication Tracker{% endblock %} {% block content %}
     </div>
     {% else %}
     <div class="alert alert-info">
-      <i class="fas fa-info-circle me-2"></i>No pending orders found.
+      <i class="fas fa-info-circle me-2"></i>{{ _('No pending orders found.') }}
     </div>
     <a href="{{ url_for('orders.new') }}" class="btn btn-primary">
-      <i class="fas fa-plus me-1"></i>Create New Order
+      <i class="fas fa-plus me-1"></i>{{ _('Create New Order') }}
     </a>
     {% endif %}
   </div>
@@ -110,7 +109,7 @@ Medication Tracker{% endblock %} {% block content %}
 <!-- Fulfilled Orders Card -->
 <div class="card">
   <div class="card-header bg-success text-white">
-    <h5 class="mb-0">Fulfilled Orders</h5>
+    <h5 class="mb-0">{{ _('Fulfilled Orders') }}</h5>
   </div>
   <div class="card-body">
     {% if fulfilled_orders %}
@@ -118,11 +117,11 @@ Medication Tracker{% endblock %} {% block content %}
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>Order #</th>
-            <th>Visit Date</th>
-            <th>Created Date</th>
-            <th>Medications</th>
-            <th class="text-end">Actions</th>
+            <th>{{ _('Order #') }}</th>
+            <th>{{ _('Visit Date') }}</th>
+            <th>{{ _('Created Date') }}</th>
+            <th>{{ _('Medications') }}</th>
+            <th class="text-end">{{ _('Actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -142,22 +141,21 @@ Medication Tracker{% endblock %} {% block content %}
             </td>
             <td>{{ format_date(order.created_date) }}</td>
             <td>
-              {{ order.order_items|length }} medication{% if
-              order.order_items|length != 1 %}s{% endif %}
+              {{ order.order_items|length }} {% if order.order_items|length == 1 %}{{ _('medication') }}{% else %}{{ _('medications') }}{% endif %}
             </td>
             <td class="text-end">
               <div class="btn-group btn-group-sm">
                 <a
                   href="{{ url_for('orders.show', id=order.id) }}"
                   class="btn btn-outline-primary"
-                  title="View"
+                  title="{{ _('View') }}"
                 >
                   <i class="fas fa-eye"></i>
                 </a>
                 <a
                   href="{{ url_for('orders.printable', id=order.id) }}"
                   class="btn btn-outline-primary"
-                  title="Printable Version"
+                  title="{{ _('Printable Version') }}"
                   target="_blank"
                 >
                   <i class="fas fa-print"></i>
@@ -171,8 +169,7 @@ Medication Tracker{% endblock %} {% block content %}
     </div>
     {% else %}
     <div class="alert alert-info">
-      <i class="fas fa-info-circle me-2"></i>No fulfilled orders
-      found.
+      <i class="fas fa-info-circle me-2"></i>{{ _('No fulfilled orders found.') }}
     </div>
     {% endif %}
   </div>

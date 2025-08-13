@@ -1,25 +1,25 @@
 {% extends "layout.html" %}
 
-{% block title %}Edit Order #{{ order.id }} - Medication Tracker{% endblock %}
+{% block title %}{{ _('Edit Order #%(order_id)s', order_id=order.id) }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-pen-to-square me-2"></i>Edit Order #{{ order.id }}
+        <i class="fas fa-pen-to-square me-2"></i>{{ _('Edit Order #%(order_id)s', order_id=order.id) }}
     </h1>
     <div>
         <a href="{{ url_for('orders.show', id=order.id) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Order
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Order') }}
         </a>
         <a href="{{ url_for('orders.index') }}" class="btn btn-outline-secondary ms-2">
-            <i class="fas fa-list me-1"></i>All Orders
+            <i class="fas fa-list me-1"></i>{{ _('All Orders') }}
         </a>
     </div>
 </div>
 
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Edit Order for Physician Visit on {{ format_date(visit.visit_date) }}</h5>
+        <h5 class="mb-0">{{ _('Edit Order for Physician Visit on %(date)s', date=format_date(visit.visit_date)) }}</h5>
     </div>
     <div class="card-body">
         <div class="alert alert-info">
@@ -27,15 +27,13 @@
                 <i class="fas fa-info-circle me-3 fa-2x"></i>
                 <div>
                     <p class="mb-0">
-                        This order is for your physician visit in
-                        <strong>{{ visit.days_until }} days</strong>
-                        on <strong>{{ format_date(visit.visit_date) }}</strong>.
+                        {{ _('This order is for your physician visit in %(days)s days on %(date)s.', days=visit.days_until|safe, date=format_date(visit.visit_date)|safe) }}
                     </p>
                     <p class="mt-2 mb-0">
                         {% if visit.physician %}
-                            <i class="fas fa-user-md me-1"></i>Showing medications prescribed by <strong>{{ visit.physician.display_name }}</strong> only.
+                            <i class="fas fa-user-md me-1"></i>{{ _('Showing medications prescribed by %(physician)s only.', physician=visit.physician.display_name|safe) }}
                         {% else %}
-                            <i class="fas fa-pills me-1"></i>Showing over-the-counter medications and supplements only.
+                            <i class="fas fa-pills me-1"></i>{{ _('Showing over-the-counter medications and supplements only.') }}
                         {% endif %}
                     </p>
                 </div>
@@ -45,25 +43,25 @@
         <form method="POST" action="{{ url_for('orders.edit', id=order.id) }}">
             <!-- Order Status -->
             <div class="mb-4">
-                <label for="status" class="form-label">Order Status</label>
+                <label for="status" class="form-label">{{ _('Order Status') }}</label>
                 <select class="form-select" id="status" name="status">
-                    <option value="planned" {% if order.status == 'planned' %}selected{% endif %}>Planned</option>
-                    <option value="printed" {% if order.status == 'printed' %}selected{% endif %}>Printed</option>
-                    <option value="fulfilled" {% if order.status == 'fulfilled' %}selected{% endif %}>Fulfilled</option>
+                    <option value="planned" {% if order.status == 'planned' %}selected{% endif %}>{{ _('Planned') }}</option>
+                    <option value="printed" {% if order.status == 'printed' %}selected{% endif %}>{{ _('Printed') }}</option>
+                    <option value="fulfilled" {% if order.status == 'fulfilled' %}selected{% endif %}>{{ _('Fulfilled') }}</option>
                 </select>
             </div>
 
             <!-- Medication Selection -->
             <div class="mt-4">
-                <h5>Select Medications</h5>
+                <h5>{{ _('Select Medications') }}</h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th style="width: 3%"></th>
-                                <th>Medication</th>
-                                <th>Current Stock</th>
-                                <th class="text-end">Actions</th>
+                                <th>{{ _('Medication') }}</th>
+                                <th>{{ _('Current Stock') }}</th>
+                                <th class="text-end">{{ _('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,14 +82,14 @@
                                     </td>
                                     <td>
                                         {% if med.inventory %}
-                                            {{ med.inventory.current_count }} units
+                                            {{ _('%(units)s units', units=med.inventory.current_count) }}
                                         {% else %}
-                                            <span class="text-muted">No inventory</span>
+                                            <span class="text-muted">{{ _('No inventory') }}</span>
                                         {% endif %}
                                     </td>
                                     <td class="text-end">
                                         <button type="button" class="btn btn-sm btn-outline-primary calculate-packages-btn" data-medication-id="{{ med.id }}">
-                                            <i class="fas fa-calculator me-1"></i>Calculate Needs
+                                            <i class="fas fa-calculator me-1"></i>{{ _('Calculate Needs') }}
                                         </button>
                                     </td>
                                 </tr>
@@ -102,7 +100,7 @@
                                         <div class="row mx-2 my-3">
                                             <div class="col-md-4">
                                                 <div class="mb-3">
-                                                    <label for="quantity_{{ med.id }}" class="form-label">Quantity Needed</label>
+                                                    <label for="quantity_{{ med.id }}" class="form-label">{{ _('Quantity Needed') }}</label>
                                                     <input type="number" class="form-control" id="quantity_{{ med.id }}" name="quantity_{{ med.id }}" min="0"
                                                            value="{{ order_items_map[med.id].quantity_needed if med.id in order_items_map else 0 }}">
                                                 </div>
@@ -111,9 +109,9 @@
                                             <div class="col-md-8">
                                                 <div class="mb-3">
                                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <label class="form-label">Package Quantities</label>
+                                                        <label class="form-label">{{ _('Package Quantities') }}</label>
                                                         <button type="button" class="btn btn-sm btn-outline-primary calculate-packages-btn" data-medication-id="{{ med.id }}">
-                                                            <i class="fas fa-calculator me-1"></i>Calculate
+                                                            <i class="fas fa-calculator me-1"></i>{{ _('Calculate') }}
                                                         </button>
                                                     </div>
 
@@ -125,7 +123,7 @@
                                                                     <input type="number" class="form-control" id="packages_n1_{{ med.id }}" name="packages_n1_{{ med.id }}" min="0"
                                                                            value="{{ order_items_map[med.id].packages_n1 if med.id in order_items_map else 0 }}">
                                                                 </div>
-                                                                <small class="text-muted">{{ med.package_size_n1 }} units each</small>
+                                                                <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n1) }}</small>
                                                             </div>
                                                         {% endif %}
 
@@ -136,7 +134,7 @@
                                                                     <input type="number" class="form-control" id="packages_n2_{{ med.id }}" name="packages_n2_{{ med.id }}" min="0"
                                                                            value="{{ order_items_map[med.id].packages_n2 if med.id in order_items_map else 0 }}">
                                                                 </div>
-                                                                <small class="text-muted">{{ med.package_size_n2 }} units each</small>
+                                                                <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n2) }}</small>
                                                             </div>
                                                         {% endif %}
 
@@ -147,7 +145,7 @@
                                                                     <input type="number" class="form-control" id="packages_n3_{{ med.id }}" name="packages_n3_{{ med.id }}" min="0"
                                                                            value="{{ order_items_map[med.id].packages_n3 if med.id in order_items_map else 0 }}">
                                                                 </div>
-                                                                <small class="text-muted">{{ med.package_size_n3 }} units each</small>
+                                                                <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n3) }}</small>
                                                             </div>
                                                         {% endif %}
                                                     </div>
@@ -164,10 +162,10 @@
 
             <div class="mt-4 d-flex justify-content-between">
                 <a href="{{ url_for('orders.show', id=order.id) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-times me-1"></i>Cancel
+                    <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
                 </a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i>Update Order
+                    <i class="fas fa-save me-1"></i>{{ _('Update Order') }}
                 </button>
             </div>
         </form>
@@ -213,7 +211,7 @@
             const form = document.querySelector('form');
             const warning = document.createElement('div');
             warning.className = 'alert alert-warning mt-3';
-            warning.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>This order has been fulfilled and cannot be edited.';
+            warning.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>{{ _("This order has been fulfilled and cannot be edited.") }}';
             form.prepend(warning);
         }
     });

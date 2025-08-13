@@ -16,6 +16,7 @@ from flask import (
     request,
     url_for,
 )
+from flask_babel import gettext as _
 
 # Local application imports
 from models import (
@@ -100,7 +101,7 @@ def new():
         db.session.add(inventory)
         db.session.commit()
 
-        flash(f"Medication '{name}' added successfully", "success")
+        flash(_("Medication '{}' added successfully").format(name), "success")
 
         # Redirect to scheduling page instead of index
         return redirect(url_for("schedules.new", medication_id=medication.id))
@@ -169,7 +170,7 @@ def edit(id: int):
 
         db.session.commit()
 
-        flash(f"Medication '{medication.name}' updated successfully", "success")
+        flash(_("Medication '{}' updated successfully").format(medication.name), "success")
 
         # If medication has no schedules, redirect to scheduling page
         if not medication.schedules:
@@ -194,7 +195,7 @@ def delete(id: int):
     # Check if can be deleted (e.g., no active orders)
     if medication.order_items:
         flash(
-            f"Cannot delete '{medication.name}' because it has associated orders",
+            _("Cannot delete '{}' because it has associated orders").format(medication.name),
             "error",
         )
         return redirect(url_for("medications.show", id=medication.id))
@@ -206,7 +207,7 @@ def delete(id: int):
     db.session.delete(medication)
     db.session.commit()
 
-    flash(f"Medication '{medication.name}' deleted successfully", "success")
+    flash(_("Medication '{}' deleted successfully").format(medication.name), "success")
     return redirect(url_for("medications.index"))
 
 

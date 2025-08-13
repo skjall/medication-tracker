@@ -19,6 +19,7 @@ from flask import (
     send_file,
     url_for,
 )
+from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 
 # Local application imports
@@ -55,19 +56,19 @@ def new():
     if request.method == "POST":
         # Check if the post request has the file part
         if "template_file" not in request.files:
-            flash("No file part", "error")
+            flash(_("No file part"), "error")
             return redirect(url_for("prescriptions.new"))
 
         file = request.files["template_file"]
 
         # If user does not select file, browser may submit an empty file
         if file.filename == "":
-            flash("No selected file", "error")
+            flash(_("No selected file"), "error")
             return redirect(url_for("prescriptions.new"))
 
         # Check if the file is a PDF
         if not file.filename.lower().endswith(".pdf"):
-            flash("Only PDF files are allowed", "error")
+            flash(_("Only PDF files are allowed"), "error")
             return redirect(url_for("prescriptions.new"))
 
         # Extract form data
@@ -115,7 +116,7 @@ def new():
         db.session.add(template)
         db.session.commit()
 
-        flash(f"Prescription template '{name}' added successfully", "success")
+        flash(_("Prescription template '{}' added successfully").format(name), "success")
         return redirect(url_for("prescriptions.index"))
 
     # Get available field mappings for the dropdown
@@ -180,7 +181,7 @@ def activate(id: int):
     template = PrescriptionTemplate.query.get_or_404(id)
     template.activate()
 
-    flash(f"Prescription template '{template.name}' activated", "success")
+    flash(_("Prescription template '{}' activated").format(template.name), "success")
     return redirect(url_for("prescriptions.index"))
 
 
@@ -191,7 +192,7 @@ def delete(id: int):
 
     # If this is the active template, we can't delete it
     if template.is_active:
-        flash("Cannot delete the active template", "error")
+        flash(_("Cannot delete the active template"), "error")
         return redirect(url_for("prescriptions.index"))
 
     # Delete the template file
@@ -209,7 +210,7 @@ def delete(id: int):
     db.session.delete(template)
     db.session.commit()
 
-    flash(f"Prescription template '{template.name}' deleted", "success")
+    flash(_("Prescription template '{}' deleted").format(template.name), "success")
     return redirect(url_for("prescriptions.index"))
 
 
@@ -226,7 +227,7 @@ def download(id: int):
         )
     except Exception as e:
         logger.error(f"Error downloading template file: {e}")
-        flash("Error downloading template file", "error")
+        flash(_("Error downloading template file"), "error")
         return redirect(url_for("prescriptions.show", id=id))
 
 
@@ -266,7 +267,7 @@ def edit(id: int):
 
             # Check if the file is a PDF
             if not file.filename.lower().endswith(".pdf"):
-                flash("Only PDF files are allowed", "error")
+                flash(_("Only PDF files are allowed"), "error")
                 return redirect(url_for("prescriptions.edit", id=id))
 
             # Delete the old file
@@ -301,7 +302,7 @@ def edit(id: int):
         # Save changes
         db.session.commit()
 
-        flash(f"Prescription template '{name}' updated successfully", "success")
+        flash(_("Prescription template '{}' updated successfully").format(name), "success")
         return redirect(url_for("prescriptions.show", id=template.id))
 
     # Get available field mappings for the dropdown

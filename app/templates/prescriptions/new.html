@@ -1,21 +1,21 @@
 <!-- File: app/templates/prescriptions/new.html -->
 {% extends "layout.html" %}
 
-{% block title %}New Prescription Template - Medication Tracker{% endblock %}
+{% block title %}{{ _('New Prescription Template') }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-file-prescription me-2"></i>New Prescription Template
+        <i class="fas fa-file-prescription me-2"></i>{{ _('New Prescription Template') }}
     </h1>
     <a href="{{ url_for('prescriptions.index') }}" class="btn btn-outline-primary">
-        <i class="fas fa-arrow-left me-1"></i>Back to Templates
+        <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Templates') }}
     </a>
 </div>
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Upload Prescription Template</h5>
+        <h5 class="mb-0">{{ _('Upload Prescription Template') }}</h5>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('prescriptions.new') }}" enctype="multipart/form-data">

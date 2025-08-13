@@ -26,6 +26,7 @@ from flask import (
     send_file,
     url_for,
 )
+from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 
 # Local application imports
@@ -87,7 +88,7 @@ def physician_visits():
 
         db.session.commit()
 
-        flash("Physician visit settings updated successfully", "success")
+        flash(_("Physician visit settings updated successfully"), "success")
         return redirect(url_for("settings.physician_visits"))
 
     # Calculate actual average interval for information purposes
@@ -117,9 +118,9 @@ def update_visit_order_planning(visit_id: int):
     db.session.commit()
 
     if visit.order_for_next_but_one:
-        message = "Orders for this visit will now be planned to last until the next-but-one visit"
+        message = _("Orders for this visit will now be planned to last until the next-but-one visit")
     else:
-        message = "Orders for this visit will now be planned to last until the next visit only"
+        message = _("Orders for this visit will now be planned to last until the next visit only")
 
     flash(message, "success")
     return redirect(url_for("visits.show", id=visit_id))
@@ -187,7 +188,7 @@ def export_data(data_type: str):
     elif data_type == "physicians":
         return export_physicians_to_csv()
     else:
-        flash(f"Unknown export type: {data_type}", "error")
+        flash(_("Unknown export type: {}").format(data_type), "error")
         return redirect(url_for("settings.system"))
 
 
@@ -208,7 +209,7 @@ def backup_database():
         )
     except Exception as e:
         logger.error(f"Error creating backup: {str(e)}")
-        flash(f"Error creating backup: {str(e)}", "error")
+        flash(_("Error creating backup: {}").format(str(e)), "error")
         return redirect(url_for("settings.system"))
 
 
@@ -219,23 +220,23 @@ def restore_database():
     
     # Check if user confirmed the restore
     if not request.form.get("confirm_restore"):
-        flash("You must confirm that you understand the restore will replace all current data", "error")
+        flash(_("You must confirm that you understand the restore will replace all current data"), "error")
         return redirect(url_for("settings.data_management"))
     
     if "restore_file" not in request.files:
-        flash("No file provided for restore", "error")
+        flash(_("No file provided for restore"), "error")
         return redirect(url_for("settings.data_management"))
     
     file = request.files["restore_file"]
     if file.filename == "":
-        flash("No file selected", "error")
+        flash(_("No file selected"), "error")
         return redirect(url_for("settings.data_management"))
     
     # Validate file extension
     allowed_extensions = {'.db', '.sqlite', '.sqlite3'}
     file_ext = os.path.splitext(file.filename)[1].lower()
     if file_ext not in allowed_extensions:
-        flash(f"Invalid file type. Please upload a database file ({', '.join(allowed_extensions)})", "error")
+        flash(_("Invalid file type. Please upload a database file ({})").format(', '.join(allowed_extensions)), "error")
         return redirect(url_for("settings.data_management"))
     
     try:
@@ -251,11 +252,11 @@ def restore_database():
             # Check if it has the expected tables
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='medications'")
             if not cursor.fetchone():
-                flash("Invalid database file: missing required tables", "error")
+                flash(_("Invalid database file: missing required tables"), "error")
                 return redirect(url_for("settings.data_management"))
             conn.close()
         except sqlite3.Error as e:
-            flash(f"Invalid database file: {str(e)}", "error")
+            flash(_("Invalid database file: {}").format(str(e)), "error")
             return redirect(url_for("settings.data_management"))
         
         # Create backup of current database before restore
@@ -299,17 +300,17 @@ def restore_database():
                 
         except Exception as migration_error:
             logger.error(f"Error running migrations after restore: {migration_error}")
-            flash(f"Database restored but migration failed: {migration_error}", "warning")
+            flash(_("Database restored but migration failed: {}").format(migration_error), "warning")
             return redirect(url_for("settings.data_management"))
         
-        flash("Database successfully restored and migrations applied!", "success")
+        flash(_("Database successfully restored and migrations applied!"), "success")
         logger.info("Database restore completed successfully with migrations")
         
         return redirect(url_for("settings.data_management"))
         
     except Exception as e:
         logger.error(f"Error restoring database: {str(e)}")
-        flash(f"Error restoring database: {str(e)}", "error")
+        flash(_("Error restoring database: {}").format(str(e)), "error")
         return redirect(url_for("settings.data_management"))
 
 
@@ -319,12 +320,12 @@ def import_data():
     logger.info("Handling data import")
 
     if "file" not in request.files:
-        flash("No file part", "error")
+        flash(_("No file part"), "error")
         return redirect(url_for("settings.system"))
 
     file = request.files["file"]
     if file.filename == "":
-        flash("No file selected", "error")
+        flash(_("No file selected"), "error")
         return redirect(url_for("settings.system"))
 
     # Save the file to a temporary location
@@ -342,14 +343,14 @@ def import_data():
             for error in errors[:5]:  # Show first 5 errors
                 flash(error, "warning")
             if len(errors) > 5:
-                flash(f"...and {len(errors) - 5} more errors", "warning")
+                flash(_("...and {} more errors").format(len(errors) - 5), "warning")
 
         if success_count > 0:
-            flash(f"Successfully imported {success_count} medications", "success")
+            flash(_("Successfully imported {} medications").format(success_count), "success")
         else:
-            flash("No medications were imported", "warning")
+            flash(_("No medications were imported"), "warning")
     else:
-        flash(f"Import of {import_type} is not yet implemented", "warning")
+        flash(_("Import of {} is not yet implemented").format(import_type), "warning")
 
     # Clean up temporary file
     os.unlink(file_path)
@@ -380,12 +381,12 @@ def clear_logs():
     logger.info(f"Clearing logs older than {days_to_keep} days")
 
     if days_to_keep < 30:
-        flash("Please keep at least 30 days of logs", "warning")
+        flash(_("Please keep at least 30 days of logs"), "warning")
         return redirect(url_for("settings.data_management"))
 
     deleted_count = clear_old_inventory_logs(days_to_keep)
 
-    flash(f"Successfully removed {deleted_count} old inventory logs", "success")
+    flash(_("Successfully removed {} old inventory logs").format(deleted_count), "success")
     return redirect(url_for("settings.data_management"))
 
 
@@ -396,13 +397,13 @@ def reset_data():
     logger.warning(f"Data reset requested. Verification: '{verification}'")
 
     if verification.lower() != "reset all data":
-        flash("Verification text doesn't match. Data was not reset.", "warning")
+        flash(_("Verification text doesn't match. Data was not reset."), "warning")
         return redirect(url_for("settings.system"))
 
     try:
         # Backup the database first
         backup_path = create_database_backup()
-        flash(f"Backup created at {backup_path}", "info")
+        flash(_("Backup created at {}").format(backup_path), "info")
 
         # Drop all tables and recreate them
         db.drop_all()
@@ -410,12 +411,12 @@ def reset_data():
 
         logger.warning("All data has been reset")
         flash(
-            "All data has been reset. The application has been restored to initial state.",
+            _("All data has been reset. The application has been restored to initial state."),
             "success",
         )
     except Exception as e:
         logger.error(f"Error resetting data: {str(e)}")
-        flash(f"Error resetting data: {str(e)}", "error")
+        flash(_("Error resetting data: {}").format(str(e)), "error")
 
     return redirect(url_for("index"))
 
@@ -437,14 +438,14 @@ def update_timezone():
         pytz.timezone(timezone_name)
     except Exception as e:
         logger.error(f"Invalid timezone: {timezone_name}. Error: {e}")
-        flash(f"Invalid timezone: {timezone_name}", "error")
+        flash(_("Invalid timezone: {}").format(timezone_name), "error")
         return redirect(url_for("settings.system"))
 
     settings = Settings.get_settings()
     settings.timezone_name = timezone_name
     db.session.commit()
 
-    flash(f"Application timezone updated to {timezone_name}", "success")
+    flash(_("Application timezone updated to {}").format(timezone_name), "success")
     return redirect(url_for("settings.system"))
 
 
@@ -514,12 +515,12 @@ def import_data_type(data_type: str):
     logger.info(f"Handling data import for type: {data_type}")
 
     if "file" not in request.files:
-        flash("No file part", "error")
+        flash(_("No file part"), "error")
         return redirect(url_for("settings.data_management"))
 
     file = request.files["file"]
     if file.filename == "":
-        flash("No file selected", "error")
+        flash(_("No file selected"), "error")
         return redirect(url_for("settings.data_management"))
 
     # Save the file to a temporary location
@@ -553,24 +554,24 @@ def import_data_type(data_type: str):
         elif data_type == "physicians":
             success_count, errors = import_physicians_from_csv(file_path, override)
         else:
-            flash(f"Unknown import type: {data_type}", "error")
+            flash(_("Unknown import type: {}").format(data_type), "error")
             return redirect(url_for("settings.data_management"))
 
         if errors:
             for error in errors[:5]:  # Show first 5 errors
                 flash(error, "warning")
             if len(errors) > 5:
-                flash(f"...and {len(errors) - 5} more errors", "warning")
+                flash(_("...and {} more errors").format(len(errors) - 5), "warning")
 
         if success_count > 0:
             flash(
-                f"Successfully imported {success_count} {data_type} records", "success"
+                _("Successfully imported {} {} records").format(success_count, data_type), "success"
             )
         else:
-            flash(f"No {data_type} were imported", "warning")
+            flash(_("No {} were imported").format(data_type), "warning")
     except Exception as e:
         logger.error(f"Error during import: {str(e)}")
-        flash(f"Error during import: {str(e)}", "error")
+        flash(_("Error during import: {}").format(str(e)), "error")
     finally:
         # Clean up temporary file
         os.unlink(file_path)
@@ -630,7 +631,7 @@ def check_updates():
             return jsonify({
                 "success": False,
                 "current_version": current_version,
-                "error": "Unable to check for updates"
+                "error": _("Unable to check for updates")
             })
             
     except requests.exceptions.Timeout:
@@ -638,7 +639,7 @@ def check_updates():
         return jsonify({
             "success": False,
             "current_version": current_version,
-            "error": "Connection timeout"
+            "error": _("Connection timeout")
         })
     except Exception as e:
         logger.error(f"Error checking for updates: {e}")
@@ -664,7 +665,7 @@ def reset_data_type(data_type: str):
 
     if verification.lower() != expected_text:
         flash(
-            f"Verification text doesn't match. Expected '{expected_text}'. Data was not reset.",
+            _("Verification text doesn't match. Expected '{}'. Data was not reset.").format(expected_text),
             "warning",
         )
         return redirect(url_for("settings.data_management"))
@@ -681,44 +682,44 @@ def reset_data_type(data_type: str):
             Medication.query.delete()
             db.session.commit()
 
-            flash("All medication data has been reset", "success")
+            flash(_("All medication data has been reset"), "success")
 
         elif data_type == "inventory":
             from data_utils import reset_inventory_data
 
             count = reset_inventory_data()
-            flash(f"All inventory data has been reset ({count} records)", "success")
+            flash(_("All inventory data has been reset ({} records)").format(count), "success")
 
         elif data_type == "orders":
             from data_utils import reset_orders_data
 
             count = reset_orders_data()
-            flash(f"All order data has been reset ({count} records)", "success")
+            flash(_("All order data has been reset ({} records)").format(count), "success")
 
         elif data_type == "visits":
             from data_utils import reset_visits_data
 
             count = reset_visits_data()
-            flash(f"All visit data has been reset ({count} records)", "success")
+            flash(_("All visit data has been reset ({} records)").format(count), "success")
 
         elif data_type == "schedules":
             from data_utils import reset_schedules_data
 
             count = reset_schedules_data()
-            flash(f"All schedule data has been reset ({count} records)", "success")
+            flash(_("All schedule data has been reset ({} records)").format(count), "success")
 
         elif data_type == "physicians":
             from data_utils import reset_physicians_data
 
             count = reset_physicians_data()
-            flash(f"All physician data has been reset ({count} records)", "success")
+            flash(_("All physician data has been reset ({} records)").format(count), "success")
 
         else:
-            flash(f"Unknown data type: {data_type}", "error")
+            flash(_("Unknown data type: {}").format(data_type), "error")
 
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error resetting {data_type}: {str(e)}")
-        flash(f"Error resetting {data_type}: {str(e)}", "error")
+        flash(_("Error resetting {}: {}").format(data_type, str(e)), "error")
 
     return redirect(url_for("settings.data_management"))

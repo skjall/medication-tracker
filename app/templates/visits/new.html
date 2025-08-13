@@ -1,67 +1,67 @@
 {% extends "layout.html" %}
 
-{% block title %}Schedule Physician Visit - Medication Tracker{% endblock %}
+{% block title %}{{ _('Schedule Physician Visit') }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-calendar-plus me-2"></i>Schedule Physician Visit
+        <i class="fas fa-calendar-plus me-2"></i>{{ _('Schedule Physician Visit') }}
     </h1>
     <a href="{{ url_for('visits.index') }}" class="btn btn-outline-primary">
-        <i class="fas fa-arrow-left me-1"></i>Back to Visits
+        <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Visits') }}
     </a>
 </div>
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">New Physician Visit</h5>
+        <h5 class="mb-0">{{ _('New Physician Visit') }}</h5>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('visits.new') }}">
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="visit_date" class="form-label">Visit Date <span class="text-danger">*</span></label>
+                        <label for="visit_date" class="form-label">{{ _('Visit Date') }} <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="visit_date" name="visit_date" required>
                         <div class="form-text">
-                            Enter the date of your upcoming physician visit
+                            {{ _('Enter the date of your upcoming physician visit') }}
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="physician_id" class="form-label">Physician</label>
+                        <label for="physician_id" class="form-label">{{ _('Physician') }}</label>
                         <select class="form-select" id="physician_id" name="physician_id">
-                            <option value="">Select a physician (optional)</option>
+                            <option value="">{{ _('Select a physician (optional)') }}</option>
                             {% for physician in physicians %}
                                 <option value="{{ physician.id }}">{{ physician.display_name }}</option>
                             {% endfor %}
                         </select>
                         <div class="form-text">
-                            The physician you're visiting
+                            {{ _('The physician you\'re visiting') }}
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="mb-3">
-                <label for="notes" class="form-label">Notes</label>
-                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Optional notes about this visit"></textarea>
+                <label for="notes" class="form-label">{{ _('Notes') }}</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="{{ _('Optional notes about this visit') }}"></textarea>
             </div>
 
             <div class="mb-3 form-check">
                 <input type="checkbox" class="form-check-input" id="create_order" name="create_order" value="yes">
                 <label class="form-check-label" for="create_order">
-                    Create medication order after scheduling the visit
+                    {{ _('Create medication order after scheduling the visit') }}
                 </label>
             </div>
 
             <div class="mt-4 d-flex justify-content-between">
                 <button type="reset" class="btn btn-outline-primary">
-                    <i class="fas fa-undo me-1"></i>Reset
+                    <i class="fas fa-undo me-1"></i>{{ _('Reset') }}
                 </button>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-calendar-check me-1"></i>Schedule Visit
+                    <i class="fas fa-calendar-check me-1"></i>{{ _('Schedule Visit') }}
                 </button>
             </div>
         </form>

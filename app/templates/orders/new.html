@@ -1,25 +1,25 @@
 {% extends "layout.html" %}
 
-{% block title %}Create Order - Medication Tracker{% endblock %}
+{% block title %}{{ _('Create Order') }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-clipboard-list me-2"></i>Create Medication Order
+        <i class="fas fa-clipboard-list me-2"></i>{{ _('Create Medication Order') }}
     </h1>
     <div>
         <a href="{{ url_for('orders.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Orders
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Orders') }}
         </a>
         <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary ms-2">
-            <i class="fas fa-hospital me-1"></i>Visit Details
+            <i class="fas fa-hospital me-1"></i>{{ _('Visit Details') }}
         </a>
     </div>
 </div>
 
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Order for Physician Visit on {{ format_date(visit.visit_date) }}</h5>
+        <h5 class="mb-0">{{ _('Order for Physician Visit on %(date)s', date=format_date(visit.visit_date)) }}</h5>
     </div>
     <div class="card-body">
         <div class="alert {% if gap_coverage %}alert-warning{% else %}alert-info{% endif %}">
@@ -27,40 +27,36 @@
                 <i class="fas {% if gap_coverage %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} me-3 fa-2x"></i>
                 <div>
                     {% if gap_coverage %}
-                        <h5 class="mb-2">Gap Coverage Order</h5>
+                        <h5 class="mb-2">{{ _('Gap Coverage Order') }}</h5>
                         <p class="mb-0">
-                            <strong>This is a gap coverage order.</strong> Some medications will run out before your visit on
-                            <strong>{{ format_date(visit.visit_date) }}</strong> (in {{ visit.days_until }} days).
+                            <strong>{{ _('This is a gap coverage order.') }}</strong> {{ _('Some medications will run out before your visit on %(date)s (in %(days)s days).', date=format_date(visit.visit_date)|safe, days=visit.days_until) }}
                         </p>
                         <p class="mb-0 mt-2">
-                            Only medications that will deplete before the visit are shown below, with quantities calculated
-                            to bridge the gap between when they run out and your visit date.
+                            {{ _('Only medications that will deplete before the visit are shown below, with quantities calculated to bridge the gap between when they run out and your visit date.') }}
                         </p>
                     {% else %}
                         <p class="mb-0">
-                            This order is for your physician visit in
-                            <strong>{{ visit.days_until }} days</strong>
-                            on <strong>{{ format_date(visit.visit_date) }}</strong>.
+                            {{ _('This order is for your physician visit in %(days)s days on %(date)s.', days=visit.days_until|safe, date=format_date(visit.visit_date)|safe) }}
                         </p>
                         <p class="mb-0 mt-2">
                             {% if consider_next_but_one %}
-                                <span class="badge bg-primary">Next-But-One Planning</span>
-                                <span class="ms-2">Medication needs are calculated to last until your <strong>next-but-one</strong> visit</span>
+                                <span class="badge bg-primary">{{ _('Next-But-One Planning') }}</span>
+                                <span class="ms-2">{{ _('Medication needs are calculated to last until your next-but-one visit') }}</span>
                             {% else %}
-                                <span class="badge bg-secondary">Standard Planning</span>
-                                <span class="ms-2">Medication needs are calculated to last until your next visit only</span>
+                                <span class="badge bg-secondary">{{ _('Standard Planning') }}</span>
+                                <span class="ms-2">{{ _('Medication needs are calculated to last until your next visit only') }}</span>
                             {% endif %}
                         </p>
                     {% endif %}
                     <p class="mt-2 mb-0">
                         {% if visit.physician %}
-                            <i class="fas fa-user-md me-1"></i>Showing medications prescribed by <strong>{{ visit.physician.display_name }}</strong> only.
+                            <i class="fas fa-user-md me-1"></i>{{ _('Showing medications prescribed by %(physician)s only.', physician=visit.physician.display_name|safe) }}
                         {% else %}
-                            <i class="fas fa-pills me-1"></i>Showing over-the-counter medications and supplements only.
+                            <i class="fas fa-pills me-1"></i>{{ _('Showing over-the-counter medications and supplements only.') }}
                         {% endif %}
                     </p>
                     <p class="mt-1 mb-0">
-                        Select the medications you need and adjust quantities as necessary.
+                        {{ _('Select the medications you need and adjust quantities as necessary.') }}
                     </p>
                 </div>
             </div>
@@ -71,24 +67,24 @@
 
             <!-- Medication Selection -->
             <div class="mt-4">
-                <h5>Select Medications</h5>
+                <h5>{{ _('Select Medications') }}</h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th style="width: 3%"></th>
-                                <th>Medication</th>
-                                <th>Current Stock</th>
+                                <th>{{ _('Medication') }}</th>
+                                <th>{{ _('Current Stock') }}</th>
                                 <th>
                                     {% if gap_coverage %}
-                                        Needed for Gap Coverage
+                                        {{ _('Needed for Gap Coverage') }}
                                     {% elif consider_next_but_one %}
-                                        Needed Until Next-But-One Visit
+                                        {{ _('Needed Until Next-But-One Visit') }}
                                     {% else %}
-                                        Needed Until Next Visit
+                                        {{ _('Needed Until Next Visit') }}
                                     {% endif %}
                                 </th>
-                                <th>Additional Needed</th>
+                                <th>{{ _('Additional Needed') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -107,34 +103,34 @@
                                         <td>
                                             <label for="include_{{ med.id }}" class="form-check-label">
                                                 <strong>{{ med.name }}</strong>
-                                                <div class="small text-muted">{{ med.daily_usage|round(1) }} units/day</div>
+                                                <div class="small text-muted">{{ _('%(usage)s units/day', usage=med.daily_usage|round(1)) }}</div>
                                             </label>
                                         </td>
                                         <td>
                                             {% if med.inventory %}
-                                                {{ med_need.current_inventory }} units
+                                                {{ _('%(units)s units', units=med_need.current_inventory) }}
                                             {% else %}
-                                                <span class="text-muted">No inventory</span>
+                                                <span class="text-muted">{{ _('No inventory') }}</span>
                                             {% endif %}
                                         </td>
                                         <td>
                                             <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true"
-                                                  title="{% if med_need.calculation_type == 'gap_coverage' %}Visit in {{ visit.days_until }} days, depletes in {{ med_need.days_until_depletion }} days = {{ med_need.gap_days }} days gap<br>Gap coverage: {{ med.daily_usage|round(1) }}/day × {{ med_need.gap_days }} days = {{ (med.daily_usage * med_need.gap_days)|round(1) }} units{% if med_need.safety_margin_days > 0 %}<br>Safety margin: {{ med.daily_usage|round(1) }}/day × {{ med_need.safety_margin_days }} days = {{ (med.daily_usage * med_need.safety_margin_days)|round(1) }} units<br><strong>Total: {{ med_need.needed_units }} units</strong>{% endif %}{% elif med_need.calculation_type == 'next_but_one' %}Until visit: {{ med.daily_usage|round(1) }}/day × {{ med_need.base_days }} days = {{ (med.daily_usage * med_need.base_days)|round(1) }} units<br>Until next visit: {{ med.daily_usage|round(1) }}/day × {{ med_need.days_calculated - med_need.base_days }} days = {{ (med.daily_usage * (med_need.days_calculated - med_need.base_days))|round(1) }} units{% if med_need.safety_margin_days > 0 %}<br>Safety margin: {{ med.daily_usage|round(1) }}/day × {{ med_need.safety_margin_days }} days = {{ (med.daily_usage * med_need.safety_margin_days)|round(1) }} units{% endif %}<br><strong>Total: {{ med_need.needed_units }} units</strong>{% else %}Until visit: {{ med.daily_usage|round(1) }}/day × {{ med_need.days_calculated }} days = {{ (med.daily_usage * med_need.days_calculated)|round(1) }} units{% if med_need.safety_margin_days > 0 %}<br>Safety margin: {{ med.daily_usage|round(1) }}/day × {{ med_need.safety_margin_days }} days = {{ (med.daily_usage * med_need.safety_margin_days)|round(1) }} units<br><strong>Total: {{ med_need.needed_units }} units</strong>{% endif %}{% endif %}">
-                                                {{ med_need.needed_units }} units
+                                                  title="{% if med_need.calculation_type == 'gap_coverage' %}{{ _('Visit in %(visit_days)s days, depletes in %(depletion_days)s days = %(gap_days)s days gap', visit_days=visit.days_until, depletion_days=med_need.days_until_depletion, gap_days=med_need.gap_days) }}<br>{{ _('Gap coverage: %(usage)s/day × %(days)s days = %(units)s units', usage=med.daily_usage|round(1), days=med_need.gap_days, units=(med.daily_usage * med_need.gap_days)|round(1)) }}{% if med_need.safety_margin_days > 0 %}<br>{{ _('Safety margin: %(usage)s/day × %(days)s days = %(units)s units', usage=med.daily_usage|round(1), days=med_need.safety_margin_days, units=(med.daily_usage * med_need.safety_margin_days)|round(1)) }}<br><strong>{{ _('Total: %(units)s units', units=med_need.needed_units) }}</strong>{% endif %}{% elif med_need.calculation_type == 'next_but_one' %}{{ _('Until visit: %(usage)s/day × %(days)s days = %(units)s units', usage=med.daily_usage|round(1), days=med_need.base_days, units=(med.daily_usage * med_need.base_days)|round(1)) }}<br>{{ _('Until next visit: %(usage)s/day × %(days)s days = %(units)s units', usage=med.daily_usage|round(1), days=med_need.days_calculated - med_need.base_days, units=(med.daily_usage * (med_need.days_calculated - med_need.base_days))|round(1)) }}{% if med_need.safety_margin_days > 0 %}<br>{{ _('Safety margin: %(usage)s/day × %(days)s days = %(units)s units', usage=med.daily_usage|round(1), days=med_need.safety_margin_days, units=(med.daily_usage * med_need.safety_margin_days)|round(1)) }}{% endif %}<br><strong>{{ _('Total: %(units)s units', units=med_need.needed_units) }}</strong>{% else %}{{ _('Until visit: %(usage)s/day × %(days)s days = %(units)s units', usage=med.daily_usage|round(1), days=med_need.days_calculated, units=(med.daily_usage * med_need.days_calculated)|round(1)) }}{% if med_need.safety_margin_days > 0 %}<br>{{ _('Safety margin: %(usage)s/day × %(days)s days = %(units)s units', usage=med.daily_usage|round(1), days=med_need.safety_margin_days, units=(med.daily_usage * med_need.safety_margin_days)|round(1)) }}<br><strong>{{ _('Total: %(units)s units', units=med_need.needed_units) }}</strong>{% endif %}{% endif %}">
+                                                {{ _('%(units)s units', units=med_need.needed_units) }}
                                                 <i class="fas fa-info-circle text-muted ms-1"></i>
                                             </span>
                                         </td>
                                         <td class="{% if med_need.additional_needed > 0 %}text-danger{% endif %}">
                                             {% if med_need.additional_needed > 0 %}
                                                 <span class="text-danger d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true"
-                                                      title="Total needed:<br>{{ med_need.needed_units }} units<br>Current stock: {{ med_need.current_inventory }} units<br><strong>To order: {{ med_need.additional_needed }} units</strong>">
-                                                    +{{ med_need.additional_needed }} units
+                                                      title="{{ _('Total needed') }}:<br>{{ _('%(units)s units', units=med_need.needed_units) }}<br>{{ _('Current stock: %(units)s units', units=med_need.current_inventory) }}<br><strong>{{ _('To order: %(units)s units', units=med_need.additional_needed) }}</strong>">
+                                                    +{{ _('%(units)s units', units=med_need.additional_needed) }}
                                                     <i class="fas fa-info-circle text-muted ms-1"></i>
                                                 </span>
                                             {% else %}
                                                 <span class="text-success d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true"
-                                                      title="Total needed:<br>{{ med_need.needed_units }} units<br>Current stock: {{ med_need.current_inventory }} units<br><strong>Sufficient stock</strong>">
-                                                    Sufficient
+                                                      title="{{ _('Total needed') }}:<br>{{ _('%(units)s units', units=med_need.needed_units) }}<br>{{ _('Current stock: %(units)s units', units=med_need.current_inventory) }}<br><strong>{{ _('Sufficient stock') }}</strong>">
+                                                    {{ _('Sufficient') }}
                                                     <i class="fas fa-check-circle text-muted ms-1"></i>
                                                 </span>
                                             {% endif %}
@@ -147,7 +143,7 @@
                                             <div class="row mx-2 my-3">
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label for="quantity_{{ med.id }}" class="form-label">Quantity Needed</label>
+                                                        <label for="quantity_{{ med.id }}" class="form-label">{{ _('Quantity Needed') }}</label>
                                                         <input type="number" class="form-control" id="quantity_{{ med.id }}" name="quantity_{{ med.id }}" min="0" value="{{ med_need.additional_needed if med_need.additional_needed > 0 else 0 }}">
                                                     </div>
                                                 </div>
@@ -155,9 +151,9 @@
                                                 <div class="col-md-8">
                                                     <div class="mb-3">
                                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                                            <label class="form-label">Package Quantities</label>
+                                                            <label class="form-label">{{ _('Package Quantities') }}</label>
                                                             <button type="button" class="btn btn-sm btn-outline-primary calculate-packages-btn" data-medication-id="{{ med.id }}">
-                                                                <i class="fas fa-calculator me-1"></i>Calculate
+                                                                <i class="fas fa-calculator me-1"></i>{{ _('Calculate') }}
                                                             </button>
                                                         </div>
 
@@ -168,7 +164,7 @@
                                                                         <span class="input-group-text">N1</span>
                                                                         <input type="number" class="form-control" id="packages_n1_{{ med.id }}" name="packages_n1_{{ med.id }}" min="0" value="{{ med_need.packages.N1 if med_need.additional_needed > 0 else 0 }}">
                                                                     </div>
-                                                                    <small class="text-muted">{{ med.package_size_n1 }} units each</small>
+                                                                    <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n1) }}</small>
                                                                 </div>
                                                             {% endif %}
 
@@ -178,7 +174,7 @@
                                                                         <span class="input-group-text">N2</span>
                                                                         <input type="number" class="form-control" id="packages_n2_{{ med.id }}" name="packages_n2_{{ med.id }}" min="0" value="{{ med_need.packages.N2 if med_need.additional_needed > 0 else 0 }}">
                                                                     </div>
-                                                                    <small class="text-muted">{{ med.package_size_n2 }} units each</small>
+                                                                    <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n2) }}</small>
                                                                 </div>
                                                             {% endif %}
 
@@ -188,7 +184,7 @@
                                                                         <span class="input-group-text">N3</span>
                                                                         <input type="number" class="form-control" id="packages_n3_{{ med.id }}" name="packages_n3_{{ med.id }}" min="0" value="{{ med_need.packages.N3 if med_need.additional_needed > 0 else 0 }}">
                                                                     </div>
-                                                                    <small class="text-muted">{{ med.package_size_n3 }} units each</small>
+                                                                    <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n3) }}</small>
                                                                 </div>
                                                             {% endif %}
                                                         </div>
@@ -206,10 +202,10 @@
 
             <div class="mt-4 d-flex justify-content-between">
                 <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-times me-1"></i>Cancel
+                    <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
                 </a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i>Create Order
+                    <i class="fas fa-save me-1"></i>{{ _('Create Order') }}
                 </button>
             </div>
         </form>

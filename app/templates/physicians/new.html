@@ -1,20 +1,20 @@
 {% extends "layout.html" %}
 
-{% block title %}Add Physician - Medication Tracker{% endblock %}
+{% block title %}{{ _('Add Physician') }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-user-md me-2"></i>Add New Physician
+        <i class="fas fa-user-md me-2"></i>{{ _('Add New Physician') }}
     </h1>
     <a href="{{ url_for('physicians.index') }}" class="btn btn-outline-primary">
-        <i class="fas fa-arrow-left me-1"></i>Back to Physicians
+        <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Physicians') }}
     </a>
 </div>
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Physician Information</h5>
+        <h5 class="mb-0">{{ _('Physician Information') }}</h5>
     </div>
     <div class="card-body">
         <form method="POST">
@@ -22,20 +22,20 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="name" class="form-label">
-                            <i class="fas fa-user me-1"></i>Name <span class="text-danger">*</span>
+                            <i class="fas fa-user me-1"></i>{{ _('Name') }} <span class="text-danger">*</span>
                         </label>
                         <input type="text" class="form-control" id="name" name="name" required maxlength="200" autocomplete="name">
-                        <div class="form-text">Full name of the physician</div>
+                        <div class="form-text">{{ _('Full name of the physician') }}</div>
                     </div>
                 </div>
                 
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="specialty" class="form-label">
-                            <i class="fas fa-stethoscope me-1"></i>Specialty
+                            <i class="fas fa-stethoscope me-1"></i>{{ _('Specialty') }}
                         </label>
                         <input type="text" class="form-control" id="specialty" name="specialty" maxlength="100" autocomplete="organization-title">
-                        <div class="form-text">Medical specialty (e.g., Cardiology, Gynecology)</div>
+                        <div class="form-text">{{ _('Medical specialty (e.g., Cardiology, Gynecology)') }}</div>
                     </div>
                 </div>
             </div>
@@ -44,46 +44,46 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="phone" class="form-label">
-                            <i class="fas fa-phone me-1"></i>Phone
+                            <i class="fas fa-phone me-1"></i>{{ _('Phone') }}
                         </label>
                         <input type="tel" class="form-control" id="phone" name="phone" maxlength="50" autocomplete="tel">
-                        <div class="form-text">Contact phone number</div>
+                        <div class="form-text">{{ _('Contact phone number') }}</div>
                     </div>
                 </div>
                 
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="email" class="form-label">
-                            <i class="fas fa-envelope me-1"></i>Email
+                            <i class="fas fa-envelope me-1"></i>{{ _('Email') }}
                         </label>
                         <input type="email" class="form-control" id="email" name="email" maxlength="200" autocomplete="email">
-                        <div class="form-text">Email address</div>
+                        <div class="form-text">{{ _('Email address') }}</div>
                     </div>
                 </div>
             </div>
 
             <div class="mb-3">
                 <label for="address" class="form-label">
-                    <i class="fas fa-map-marker-alt me-1"></i>Address
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ _('Address') }}
                 </label>
                 <textarea class="form-control" id="address" name="address" rows="3" autocomplete="street-address"></textarea>
-                <div class="form-text">Office or clinic address</div>
+                <div class="form-text">{{ _('Office or clinic address') }}</div>
             </div>
 
             <div class="mb-3">
                 <label for="notes" class="form-label">
-                    <i class="fas fa-sticky-note me-1"></i>Notes
+                    <i class="fas fa-sticky-note me-1"></i>{{ _('Notes') }}
                 </label>
                 <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
-                <div class="form-text">Additional notes or information</div>
+                <div class="form-text">{{ _('Additional notes or information') }}</div>
             </div>
 
             <div class="d-flex justify-content-between">
                 <a href="{{ url_for('physicians.index') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-times me-1"></i>Cancel
+                    <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
                 </a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i>Save Physician
+                    <i class="fas fa-save me-1"></i>{{ _('Save Physician') }}
                 </button>
             </div>
         </form>

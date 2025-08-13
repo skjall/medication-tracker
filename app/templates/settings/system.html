@@ -1,14 +1,14 @@
 {% extends "layout.html" %}
 
-{% block title %}System Settings - Medication Tracker{% endblock %}
+{% block title %}{{ _('System Settings') }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-cogs me-2"></i>System Settings
+        <i class="fas fa-cogs me-2"></i>{{ _('System Settings') }}
     </h1>
     <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
-        <i class="fas fa-home me-1"></i>Dashboard
+        <i class="fas fa-home me-1"></i>{{ _('Dashboard') }}
     </a>
 </div>
 
@@ -21,23 +21,23 @@
         <!-- Timezone Settings Card -->
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-globe me-2"></i>Timezone Settings</h5>
+                <h5 class="mb-0"><i class="fas fa-globe me-2"></i>{{ _('Timezone Settings') }}</h5>
             </div>
             <div class="card-body">
-                <p>Current timezone: <strong>{{ settings.timezone_name }}</strong></p>
-                <p>Local time: <strong>{{ format_datetime(now, show_seconds=true) }}</strong></p>
+                <p>{{ _('Current timezone') }}: <strong>{{ settings.timezone_name }}</strong></p>
+                <p>{{ _('Local time') }}: <strong>{{ format_datetime(now, show_seconds=true) }}</strong></p>
 
                 <form action="{{ url_for('settings.update_timezone') }}" method="POST">
                     <div class="mb-3">
-                        <label for="timezone_search" class="form-label">Search Timezone</label>
-                        <input type="text" class="form-control" id="timezone_search" placeholder="Start typing to search (e.g. 'Berlin', 'New York')">
+                        <label for="timezone_search" class="form-label">{{ _('Search Timezone') }}</label>
+                        <input type="text" class="form-control" id="timezone_search" placeholder="{{ _('Start typing to search (e.g. \'Berlin\', \'New York\')') }}">
                     </div>
 
                     <div class="mb-3">
-                        <label for="timezone_name" class="form-label">Select Timezone</label>
+                        <label for="timezone_name" class="form-label">{{ _('Select Timezone') }}</label>
                         <select class="form-select" id="timezone_name" name="timezone_name" size="10">
                             <option value="{{ settings.timezone_name }}" selected>
-                                {{ settings.timezone_name }} (Current)
+                                {{ settings.timezone_name }} ({{ _('Current') }})
                             </option>
 
                             {% set regions = timezone_info | groupby('region') %}
@@ -64,7 +64,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>Update Timezone
+                        <i class="fas fa-save me-1"></i>{{ _('Update Timezone') }}
                     </button>
                 </form>
             </div>
@@ -73,19 +73,19 @@
         <!-- Automatic Deduction Settings Card -->
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Automatic Inventory Deduction</h5>
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>{{ _('Automatic Inventory Deduction') }}</h5>
             </div>
             <div class="card-body">
-                <p>The system automatically deducts medication from your inventory based on your defined schedules.</p>
+                <p>{{ _('The system automatically deducts medication from your inventory based on your defined schedules.') }}</p>
                 
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
-                    Automatic deduction runs hourly to check if any medications are due to be taken.
+                    {{ _('Automatic deduction runs hourly to check if any medications are due to be taken.') }}
                 </div>
 
-                <p>You can manually trigger the deduction check for testing:</p>
+                <p>{{ _('You can manually trigger the deduction check for testing:') }}</p>
                 <a href="{{ url_for('schedules.check_deductions') }}" class="btn btn-primary">
-                    <i class="fas fa-check-double me-1"></i>Run Deduction Check Now
+                    <i class="fas fa-check-double me-1"></i>{{ _('Run Deduction Check Now') }}
                 </a>
             </div>
         </div>
@@ -93,7 +93,7 @@
         <!-- Related Settings Links Card -->
         <div class="card">
             <div class="card-header bg-secondary text-white">
-                <h5 class="mb-0"><i class="fas fa-link me-2"></i>Related Settings</h5>
+                <h5 class="mb-0"><i class="fas fa-link me-2"></i>{{ _('Related Settings') }}</h5>
             </div>
             <div class="card-body">
                 <div class="list-group">
@@ -101,8 +101,8 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <i class="fas fa-user-md me-2 text-primary"></i>
-                                <strong>Visit Planning Settings</strong>
-                                <p class="mb-0 small text-muted">Configure visit intervals and order planning</p>
+                                <strong>{{ _('Visit Planning Settings') }}</strong>
+                                <p class="mb-0 small text-muted">{{ _('Configure visit intervals and order planning') }}</p>
                             </div>
                             <i class="fas fa-chevron-right text-muted"></i>
                         </div>
@@ -111,8 +111,8 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <i class="fas fa-database me-2 text-success"></i>
-                                <strong>Data Management</strong>
-                                <p class="mb-0 small text-muted">Backup, restore, import and export data</p>
+                                <strong>{{ _('Data Management') }}</strong>
+                                <p class="mb-0 small text-muted">{{ _('Backup, restore, import and export data') }}</p>
                             </div>
                             <i class="fas fa-chevron-right text-muted"></i>
                         </div>
@@ -121,8 +121,8 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <i class="fas fa-code-branch me-2 text-info"></i>
-                                <strong>Database Migrations</strong>
-                                <p class="mb-0 small text-muted">View and manage database updates</p>
+                                <strong>{{ _('Database Migrations') }}</strong>
+                                <p class="mb-0 small text-muted">{{ _('View and manage database updates') }}</p>
                             </div>
                             <i class="fas fa-chevron-right text-muted"></i>
                         </div>
@@ -137,28 +137,28 @@
         <!-- System Status Card -->
         <div class="card mb-4">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>System Status</h5>
+                <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>{{ _('System Status') }}</h5>
             </div>
             <div class="card-body">
                 <div class="text-center mb-3">
                     <i class="fas fa-check-circle fa-3x text-success"></i>
-                    <h6 class="mt-2">Operating Normally</h6>
+                    <h6 class="mt-2">{{ _('Operating Normally') }}</h6>
                 </div>
                 
                 <dl class="row mb-0">
-                    <dt class="col-7">Last Deduction:</dt>
+                    <dt class="col-7">{{ _('Last Deduction:') }}</dt>
                     <dd class="col-5 text-end">
                         {% if settings.last_deduction_check %}
                             {{ format_datetime(settings.last_deduction_check) }}
                         {% else %}
-                            <span class="text-muted">Never</span>
+                            <span class="text-muted">{{ _('Never') }}</span>
                         {% endif %}
                     </dd>
                     
-                    <dt class="col-7">Active Schedules:</dt>
+                    <dt class="col-7">{{ _('Active Schedules:') }}</dt>
                     <dd class="col-5 text-end">{{ schedule_count }}</dd>
                     
-                    <dt class="col-7">Upcoming Visits:</dt>
+                    <dt class="col-7">{{ _('Upcoming Visits:') }}</dt>
                     <dd class="col-5 text-end">{{ upcoming_visits_count }}</dd>
                 </dl>
             </div>
@@ -167,18 +167,18 @@
         <!-- Quick Actions Card -->
         <div class="card">
             <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>{{ _('Quick Actions') }}</h5>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
                     <a href="{{ url_for('settings.backup_database') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-download me-1"></i>Download Backup
+                        <i class="fas fa-download me-1"></i>{{ _('Download Backup') }}
                     </a>
                     <a href="{{ url_for('settings.data_management') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-database me-1"></i>Manage Data
+                        <i class="fas fa-database me-1"></i>{{ _('Manage Data') }}
                     </a>
                     <button type="button" class="btn btn-outline-primary" onclick="checkForUpdates()">
-                        <i class="fas fa-sync me-1"></i>Check Updates
+                        <i class="fas fa-sync me-1"></i>{{ _('Check Updates') }}
                     </button>
                 </div>
             </div>
@@ -187,7 +187,7 @@
         <!-- Version Info Card -->
         <div class="card mt-3" id="versionCard" style="display: none;">
             <div class="card-header" id="versionHeader">
-                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Version Information</h5>
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>{{ _('Version Information') }}</h5>
             </div>
             <div class="card-body" id="versionBody">
                 <!-- Version info will be inserted here -->

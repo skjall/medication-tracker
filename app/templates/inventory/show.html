@@ -1,18 +1,18 @@
 {% extends "layout.html" %}
 
-{% block title %}Inventory: {{ medication.name }} - Medication Tracker{% endblock %}
+{% block title %}{{ _('Inventory') }}: {{ medication.name }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-boxes me-2"></i>Inventory: {{ medication.name }}
+        <i class="fas fa-boxes me-2"></i>{{ _('Inventory') }}: {{ medication.name }}
     </h1>
     <div>
         <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Inventory
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Inventory') }}
         </a>
         <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-primary ms-2">
-            <i class="fas fa-pills me-1"></i>Medication Details
+            <i class="fas fa-pills me-1"></i>{{ _('Medication Details') }}
         </a>
     </div>
 </div>
@@ -22,7 +22,7 @@
     <div class="col-12 mb-4">
         <div class="card {% if inventory.is_low %}border-danger{% else %}border-success{% endif %}">
             <div class="card-header {% if inventory.is_low %}bg-danger{% else %}bg-success{% endif %} text-white">
-                <h5 class="mb-0">Current Inventory Status</h5>
+                <h5 class="mb-0">{{ _('Current Inventory Status') }}</h5>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -31,7 +31,7 @@
                             <div class="display-4 mb-0 {% if inventory.is_low %}text-danger{% else %}text-success{% endif %}">
                                 {{ inventory.current_count }}
                             </div>
-                            <p class="lead">Current Units</p>
+                            <p class="lead">{{ _('Current Units') }}</p>
                             <div class="progress mt-2">
                                 {% set percent = 100 if not medication.min_threshold else (inventory.current_count / (medication.min_threshold * 2) * 100)|round %}
                                 <div class="progress-bar {% if inventory.is_low %}bg-danger{% elif percent < 50 %}bg-warning{% else %}bg-success{% endif %}"
@@ -42,7 +42,7 @@
                                      aria-valuemax="{{ medication.min_threshold * 2 }}">
                                 </div>
                             </div>
-                            <small class="text-muted">Minimum threshold: {{ medication.min_threshold }} units</small>
+                            <small class="text-muted">{{ _('Minimum threshold') }}: {{ medication.min_threshold }} {{ _('units') }}</small>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -54,10 +54,10 @@
                                     -
                                 {% endif %}
                             </div>
-                            <p class="lead">Days Remaining</p>
+                            <p class="lead">{{ _('Days Remaining') }}</p>
                             {% if medication.depletion_date %}
                                 <p>
-                                    Will run out on
+                                    {{ _('Will run out on') }}
                                     <strong class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}">
                                         {{ format_date(medication.depletion_date) }}
                                     </strong>
@@ -68,10 +68,10 @@
                     <div class="col-md-4">
                         <div class="text-center">
                             <div class="display-4 mb-0">{{ medication.daily_usage|round(1) }}</div>
-                            <p class="lead">Daily Usage</p>
+                            <p class="lead">{{ _('Daily Usage') }}</p>
                             <p>
-                                Dosage: <strong>{{ medication.dosage }} units</strong><br>
-                                Frequency: <strong>{{ medication.frequency }} per day</strong>
+                                {{ _('Dosage') }}: <strong>{{ medication.dosage }} {{ _('units') }}</strong><br>
+                                {{ _('Frequency') }}: <strong>{{ medication.frequency }} {{ _('per day') }}</strong>
                             </p>
                         </div>
                     </div>
@@ -86,34 +86,34 @@
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-plus-minus me-2"></i>Adjust Inventory (Relative)</h5>
+                <h5 class="mb-0"><i class="fas fa-plus-minus me-2"></i>{{ _('Adjust Inventory (Relative)') }}</h5>
             </div>
             <div class="card-body">
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
-                    Use this form to <strong>add or subtract</strong> units from your current inventory.
+                    {{ _('Use this form to') }} <strong>{{ _('add or subtract') }}</strong> {{ _('units from your current inventory.') }}
                 </div>
                 
                 <form method="POST" action="{{ url_for('inventory.adjust', id=inventory.id) }}">
                     <!-- Direct Adjustment Input -->
                     <div class="mb-4">
-                        <label for="adjustment" class="form-label">Adjustment Amount Directly</label>
+                        <label for="adjustment" class="form-label">{{ _('Adjustment Amount Directly') }}</label>
                         <div class="input-group">
-                            <input type="number" class="form-control" id="adjustment" name="adjustment" value="0" placeholder="Enter adjustment amount">
-                            <span class="input-group-text">units</span>
+                            <input type="number" class="form-control" id="adjustment" name="adjustment" value="0" placeholder="{{ _('Enter adjustment amount') }}">
+                            <span class="input-group-text">{{ _('units') }}</span>
                         </div>
                         <div class="form-text">
-                            Enter a positive number to add units, or a negative number to subtract units
+                            {{ _('Enter a positive number to add units, or a negative number to subtract units') }}
                         </div>
                     </div>
 
                     <!-- Package-based Adjustments -->
                     <div class="mt-4 mb-4">
-                        <h6>Or Adjust by Package Quantities</h6>
+                        <h6>{{ _('Or Adjust by Package Quantities') }}</h6>
                         <div class="row">
                             {% if medication.package_size_n1 %}
                                 <div class="col-md-4 mb-3">
-                                    <label for="adj_packages_n1" class="form-label">N1 Packages</label>
+                                    <label for="adj_packages_n1" class="form-label">{{ _('N1 Packages') }}</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="adj_packages_n1" name="adj_packages_n1" value="0">
                                         <span class="input-group-text">× {{ medication.package_size_n1 }}</span>
@@ -123,7 +123,7 @@
 
                             {% if medication.package_size_n2 %}
                                 <div class="col-md-4 mb-3">
-                                    <label for="adj_packages_n2" class="form-label">N2 Packages</label>
+                                    <label for="adj_packages_n2" class="form-label">{{ _('N2 Packages') }}</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="adj_packages_n2" name="adj_packages_n2" value="0">
                                         <span class="input-group-text">× {{ medication.package_size_n2 }}</span>
@@ -133,7 +133,7 @@
 
                             {% if medication.package_size_n3 %}
                                 <div class="col-md-4 mb-3">
-                                    <label for="adj_packages_n3" class="form-label">N3 Packages</label>
+                                    <label for="adj_packages_n3" class="form-label">{{ _('N3 Packages') }}</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="adj_packages_n3" name="adj_packages_n3" value="0">
                                         <span class="input-group-text">× {{ medication.package_size_n3 }}</span>
@@ -145,8 +145,8 @@
 
                     <!-- Notes Section -->
                     <div class="mb-4">
-                        <label for="adj_notes" class="form-label">Notes (Optional)</label>
-                        <textarea class="form-control" id="adj_notes" name="notes" rows="2" placeholder="Optional notes about this adjustment"></textarea>
+                        <label for="adj_notes" class="form-label">{{ _('Notes (Optional)') }}</label>
+                        <textarea class="form-control" id="adj_notes" name="notes" rows="2" placeholder="{{ _('Optional notes about this adjustment') }}"></textarea>
                     </div>
 
                     <!-- Result Preview -->
@@ -154,14 +154,14 @@
                         <div class="d-flex align-items-center">
                             <i class="fas fa-calculator me-2"></i>
                             <div>
-                                Current: <strong>{{ inventory.current_count }} units</strong> → 
-                                New total: <strong><span id="preview-total">{{ inventory.current_count }}</span> units</strong>
+                                {{ _('Current') }}: <strong>{{ inventory.current_count }} {{ _('units') }}</strong> → 
+                                {{ _('New total') }}: <strong><span id="preview-total">{{ inventory.current_count }}</span> {{ _('units') }}</strong>
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus-minus me-1"></i>Apply Adjustment
+                        <i class="fas fa-plus-minus me-1"></i>{{ _('Apply Adjustment') }}
                     </button>
                 </form>
             </div>
@@ -172,33 +172,33 @@
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-pen-to-square me-2"></i>Set Inventory (Absolute)</h5>
+                <h5 class="mb-0"><i class="fas fa-pen-to-square me-2"></i>{{ _('Set Inventory (Absolute)') }}</h5>
             </div>
             <div class="card-body">
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
-                    Use this form to <strong>set absolute values</strong> for your inventory quantities.
+                    {{ _('Use this form to') }} <strong>{{ _('set absolute values') }}</strong> {{ _('for your inventory quantities.') }}
                 </div>
 
                 <form method="POST" action="{{ url_for('inventory.update_packages', id=inventory.id) }}">
                     <!-- Total units direct input -->
                     <div class="mb-4">
-                        <label for="direct_units" class="form-label">Set Total Units Directly</label>
+                        <label for="direct_units" class="form-label">{{ _('Set Total Units Directly') }}</label>
                         <div class="input-group">
                             <input type="number" class="form-control" id="direct_units" name="direct_units" min="0" value="{{ inventory.current_count }}">
-                            <span class="input-group-text">units</span>
+                            <span class="input-group-text">{{ _('units') }}</span>
                         </div>
                         <div class="form-text">
-                            Enter the total number of units you currently have
+                            {{ _('Enter the total number of units you currently have') }}
                         </div>
                     </div>
 
                     <div class="mt-4 mb-4">
-                        <h6>Or Set Package Quantities</h6>
+                        <h6>{{ _('Or Set Package Quantities') }}</h6>
                         <div class="row">
                             {% if medication.package_size_n1 %}
                                 <div class="col-md-4 mb-3">
-                                    <label for="packages_n1" class="form-label">N1 Packages</label>
+                                    <label for="packages_n1" class="form-label">{{ _('N1 Packages') }}</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="packages_n1" name="packages_n1" min="0" value="{{ inventory.packages_n1 }}">
                                         <span class="input-group-text">× {{ medication.package_size_n1 }}</span>
@@ -208,7 +208,7 @@
 
                             {% if medication.package_size_n2 %}
                                 <div class="col-md-4 mb-3">
-                                    <label for="packages_n2" class="form-label">N2 Packages</label>
+                                    <label for="packages_n2" class="form-label">{{ _('N2 Packages') }}</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="packages_n2" name="packages_n2" min="0" value="{{ inventory.packages_n2 }}">
                                         <span class="input-group-text">× {{ medication.package_size_n2 }}</span>
@@ -218,7 +218,7 @@
 
                             {% if medication.package_size_n3 %}
                                 <div class="col-md-4 mb-3">
-                                    <label for="packages_n3" class="form-label">N3 Packages</label>
+                                    <label for="packages_n3" class="form-label">{{ _('N3 Packages') }}</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="packages_n3" name="packages_n3" min="0" value="{{ inventory.packages_n3 }}">
                                         <span class="input-group-text">× {{ medication.package_size_n3 }}</span>
@@ -230,8 +230,8 @@
 
                     <!-- Notes Section -->
                     <div class="mb-4">
-                        <label for="set_notes" class="form-label">Notes (Optional)</label>
-                        <textarea class="form-control" id="set_notes" name="notes" rows="2" placeholder="Optional notes about this inventory update"></textarea>
+                        <label for="set_notes" class="form-label">{{ _('Notes (Optional)') }}</label>
+                        <textarea class="form-control" id="set_notes" name="notes" rows="2" placeholder="{{ _('Optional notes about this inventory update') }}"></textarea>
                     </div>
 
                     <!-- Result Preview -->
@@ -239,14 +239,14 @@
                         <div class="d-flex align-items-center">
                             <i class="fas fa-calculator me-2"></i>
                             <div>
-                                Current: <strong>{{ inventory.current_count }} units</strong> → 
-                                New total: <strong><span id="set-preview-total">{{ inventory.current_count }}</span> units</strong>
+                                {{ _('Current') }}: <strong>{{ inventory.current_count }} {{ _('units') }}</strong> → 
+                                {{ _('New total') }}: <strong><span id="set-preview-total">{{ inventory.current_count }}</span> {{ _('units') }}</strong>
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-pen-to-square me-1"></i>Update Inventory
+                        <i class="fas fa-pen-to-square me-1"></i>{{ _('Update Inventory') }}
                     </button>
                 </form>
             </div>
@@ -260,9 +260,9 @@
         <div class="card">
             <div class="card-header bg-primary text-white">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Inventory History</h5>
+                    <h5 class="mb-0">{{ _('Inventory History') }}</h5>
                     <a href="{{ url_for('inventory.logs', id=inventory.id) }}" class="btn btn-sm btn-light">
-                        <i class="fas fa-history me-1"></i>View Full History
+                        <i class="fas fa-history me-1"></i>{{ _('View Full History') }}
                     </a>
                 </div>
             </div>
@@ -272,11 +272,11 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Date & Time</th>
-                                    <th>Previous Count</th>
-                                    <th>Adjustment</th>
-                                    <th>New Count</th>
-                                    <th>Notes</th>
+                                    <th>{{ _('Date & Time') }}</th>
+                                    <th>{{ _('Previous Count') }}</th>
+                                    <th>{{ _('Adjustment') }}</th>
+                                    <th>{{ _('New Count') }}</th>
+                                    <th>{{ _('Notes') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -295,7 +295,7 @@
                         </table>
                     </div>
                 {% else %}
-                    <p class="card-text">No inventory adjustments recorded yet.</p>
+                    <p class="card-text">{{ _('No inventory adjustments recorded yet.') }}</p>
                 {% endif %}
             </div>
         </div>
