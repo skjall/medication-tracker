@@ -1,0 +1,95 @@
+name: PR Image Cleanup
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  packages: write
+
+jobs:
+  cleanup-pr-images:
+    runs-on: medication-tracker
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete PR images from Docker Hub
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          TAG="pr-${PR_NUMBER}"
+          
+          echo "Deleting Docker Hub image: skjall/medication-tracker:${TAG}"
+          
+          # Get Docker Hub token
+          TOKEN=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"username":"'${{ secrets.DOCKERHUB_USERNAME }}'","password":"'${{ secrets.DOCKERHUB_TOKEN }}'"}' \
+            https://hub.docker.com/v2/users/login/ | jq -r .token)
+          
+          if [ ! -z "$TOKEN" ]; then
+            # Delete the specific tag
+            curl -X DELETE \
+              -H "Authorization: Bearer ${TOKEN}" \
+              "https://hub.docker.com/v2/repositories/skjall/medication-tracker/tags/${TAG}/"
+            
+            echo "Docker Hub image tag ${TAG} deletion requested"
+          else
+            echo "Failed to authenticate with Docker Hub"
+          fi
+
+      - name: Delete PR images from GitHub Container Registry
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          TAG="pr-${PR_NUMBER}"
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          
+          echo "Deleting GitHub Container Registry image: ghcr.io/${REPO_NAME}:${TAG}"
+          
+          # Get package versions for the PR tag
+          PACKAGE_VERSION_ID=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/user/packages/container/$(basename ${REPO_NAME})/versions" \
+            --jq '.[] | select(.metadata.container.tags[] | contains("'${TAG}'")) | .id' \
+            2>/dev/null || echo "")
+          
+          if [ ! -z "$PACKAGE_VERSION_ID" ]; then
+            echo "Found package version ID: ${PACKAGE_VERSION_ID}"
+            
+            # Delete the package version
+            gh api \
+              --method DELETE \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "/user/packages/container/$(basename ${REPO_NAME})/versions/${PACKAGE_VERSION_ID}"
+            
+            echo "GitHub Container Registry image deleted successfully"
+          else
+            echo "No matching package version found for tag ${TAG} (may have been already deleted or doesn't exist)"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          echo "### PR Image Cleanup Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Cleaned up images for PR #${PR_NUMBER}:" >> $GITHUB_STEP_SUMMARY
+          echo "- Docker Hub: \`skjall/medication-tracker:pr-${PR_NUMBER}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- GitHub Container Registry: \`ghcr.io/${{ github.repository }}:pr-${PR_NUMBER}\`" >> $GITHUB_STEP_SUMMARY
