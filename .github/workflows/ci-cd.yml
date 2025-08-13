@@ -64,6 +64,66 @@ jobs:
       - name: Run integration tests
         run: ./scripts/integration-test.sh
 
+  docker-pr:
+    needs: [test, integration-test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set PR Docker tags
+        id: pr_tags
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          echo "tags=skjall/medication-tracker:pr-${PR_NUMBER},ghcr.io/${REPO_NAME}:pr-${PR_NUMBER}" >> $GITHUB_OUTPUT
+
+      - name: Add metadata labels to images
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            skjall/medication-tracker
+            ghcr.io/${{ github.repository }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=Medication Tracker Application (PR #${{ github.event.pull_request.number }})
+            org.opencontainers.image.licenses=MIT
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.pr_tags.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=pr-${{ github.event.pull_request.number }}
+          cache-from: type=registry,ref=skjall/medication-tracker:buildcache
+          cache-to: type=registry,ref=skjall/medication-tracker:buildcache,mode=max
+
   docker:
     needs: [test, integration-test]
     runs-on: ubuntu-latest
