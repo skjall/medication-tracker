@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: medication-tracker
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -39,7 +39,7 @@ jobs:
 
   integration-test:
     needs: test
-    runs-on: medication-tracker
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -66,7 +66,7 @@ jobs:
 
   docker-pr:
     needs: [test, integration-test]
-    runs-on: medication-tracker
+    runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
 
     steps:
@@ -126,7 +126,7 @@ jobs:
 
   docker:
     needs: [test, integration-test]
-    runs-on: medication-tracker
+    runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
 
     steps:
@@ -222,7 +222,7 @@ jobs:
 
   create-release:
     needs: docker
-    runs-on: medication-tracker
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
     steps:
