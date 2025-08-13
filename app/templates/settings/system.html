@@ -1,0 +1,258 @@
+{% extends "layout.html" %}
+
+{% block title %}System Settings - Medication Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-cogs me-2"></i>System Settings
+    </h1>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-home me-1"></i>Dashboard
+    </a>
+</div>
+
+
+
+<!-- Main Settings Sections -->
+<div class="row">
+    <!-- Settings Column -->
+    <div class="col-md-8">
+        <!-- Timezone Settings Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-globe me-2"></i>Timezone Settings</h5>
+            </div>
+            <div class="card-body">
+                <p>Current timezone: <strong>{{ settings.timezone_name }}</strong></p>
+                <p>Local time: <strong>{{ format_datetime(now, show_seconds=true) }}</strong></p>
+
+                <form action="{{ url_for('settings.update_timezone') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="timezone_search" class="form-label">Search Timezone</label>
+                        <input type="text" class="form-control" id="timezone_search" placeholder="Start typing to search (e.g. 'Berlin', 'New York')">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="timezone_name" class="form-label">Select Timezone</label>
+                        <select class="form-select" id="timezone_name" name="timezone_name" size="10">
+                            <option value="{{ settings.timezone_name }}" selected>
+                                {{ settings.timezone_name }} (Current)
+                            </option>
+
+                            {% set regions = timezone_info | groupby('region') %}
+                            {% for region, timezones in regions %}
+                                {% if region %}
+                                    <optgroup label="{{ region }}">
+                                        {% for tz in timezones %}
+                                            {% if tz.name != settings.timezone_name %}
+                                                <option value="{{ tz.name }}">{{ tz.display_name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endif %}
+                            {% endfor %}
+
+                            <optgroup label="Other">
+                                {% for tz in timezone_info %}
+                                    {% if not tz.region and tz.name != settings.timezone_name %}
+                                        <option value="{{ tz.name }}">{{ tz.display_name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Update Timezone
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Automatic Deduction Settings Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Automatic Inventory Deduction</h5>
+            </div>
+            <div class="card-body">
+                <p>The system automatically deducts medication from your inventory based on your defined schedules.</p>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Automatic deduction runs hourly to check if any medications are due to be taken.
+                </div>
+
+                <p>You can manually trigger the deduction check for testing:</p>
+                <a href="{{ url_for('schedules.check_deductions') }}" class="btn btn-primary">
+                    <i class="fas fa-check-double me-1"></i>Run Deduction Check Now
+                </a>
+            </div>
+        </div>
+
+        <!-- Related Settings Links Card -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-link me-2"></i>Related Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{{ url_for('settings.physician_visits') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-user-md me-2 text-primary"></i>
+                                <strong>Visit Planning Settings</strong>
+                                <p class="mb-0 small text-muted">Configure visit intervals and order planning</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('settings.data_management') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-database me-2 text-success"></i>
+                                <strong>Data Management</strong>
+                                <p class="mb-0 small text-muted">Backup, restore, import and export data</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('system.migrations') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-code-branch me-2 text-info"></i>
+                                <strong>Database Migrations</strong>
+                                <p class="mb-0 small text-muted">View and manage database updates</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Column -->
+    <div class="col-md-4">
+        <!-- System Status Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>System Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-check-circle fa-3x text-success"></i>
+                    <h6 class="mt-2">Operating Normally</h6>
+                </div>
+                
+                <dl class="row mb-0">
+                    <dt class="col-7">Last Deduction:</dt>
+                    <dd class="col-5 text-end">
+                        {% if settings.last_deduction_check %}
+                            {{ format_datetime(settings.last_deduction_check) }}
+                        {% else %}
+                            <span class="text-muted">Never</span>
+                        {% endif %}
+                    </dd>
+                    
+                    <dt class="col-7">Active Schedules:</dt>
+                    <dd class="col-5 text-end">{{ schedule_count }}</dd>
+                    
+                    <dt class="col-7">Upcoming Visits:</dt>
+                    <dd class="col-5 text-end">{{ upcoming_visits_count }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('settings.backup_database') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-download me-1"></i>Download Backup
+                    </a>
+                    <a href="{{ url_for('settings.data_management') }}" class="btn btn-outline-success">
+                        <i class="fas fa-database me-1"></i>Manage Data
+                    </a>
+                    <a href="{{ url_for('system.migrations') }}" class="btn btn-outline-info">
+                        <i class="fas fa-code-branch me-1"></i>Check Updates
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Timezone search functionality
+        const searchInput = document.getElementById('timezone_search');
+        const timezoneSelect = document.getElementById('timezone_name');
+
+        if (searchInput && timezoneSelect) {
+            const originalOptions = Array.from(timezoneSelect.options);
+            const originalOptgroups = Array.from(timezoneSelect.getElementsByTagName('optgroup'));
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+
+                // Reset select to original state
+                while (timezoneSelect.firstChild) {
+                    timezoneSelect.removeChild(timezoneSelect.firstChild);
+                }
+
+                if (searchTerm.length === 0) {
+                    // Restore original options and groups
+                    originalOptgroups.forEach(group => {
+                        timezoneSelect.appendChild(group.cloneNode(true));
+                    });
+
+                    // Make sure current timezone is still selected
+                    for (let i = 0; i < timezoneSelect.options.length; i++) {
+                        if (timezoneSelect.options[i].value === "{{ settings.timezone_name }}") {
+                            timezoneSelect.options[i].selected = true;
+                            break;
+                        }
+                    }
+                } else {
+                    // Filter options based on search term
+                    const matchingOptions = originalOptions.filter(option =>
+                        option.text.toLowerCase().includes(searchTerm)
+                    );
+
+                    // Add filtered options directly to select without optgroups
+                    matchingOptions.forEach(option => {
+                        const newOption = option.cloneNode(true);
+                        timezoneSelect.appendChild(newOption);
+
+                        // Keep current timezone selected
+                        if (newOption.value === "{{ settings.timezone_name }}") {
+                            newOption.selected = true;
+                        }
+                    });
+
+                    // If no matches found, add a placeholder option
+                    if (matchingOptions.length === 0) {
+                        const noMatchOption = document.createElement('option');
+                        noMatchOption.text = 'No matches found';
+                        noMatchOption.disabled = true;
+                        timezoneSelect.appendChild(noMatchOption);
+                    }
+                }
+            });
+
+            // Select the timezone when clicking on an option
+            timezoneSelect.addEventListener('change', function() {
+                const selectedOption = timezoneSelect.options[timezoneSelect.selectedIndex];
+                searchInput.value = selectedOption.text;
+            });
+        }
+    });
+</script>
+{% endblock %}

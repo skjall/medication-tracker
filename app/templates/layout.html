@@ -84,14 +84,15 @@
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-cog me-1"></i>System Settings
+                            <i class="fas fa-cog me-1"></i>System
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('system.status') }}">Status</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('system.migrations') }}">Database Migrations</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('settings.advanced') }}">Advanced Settings</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('system.status') }}">System Status</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('settings.system') }}">System Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('settings.physician_visits') }}">Visit Planning</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('settings.data_management') }}">Data Management</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('settings.physician_visits') }}">Physician Visit Settings</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('system.migrations') }}">Database Updates</a></li>
                             <!-- <li><a class="dropdown-item" href="{{ url_for('prescriptions.index') }}">Prescription Templates</a></li> -->
 
                         </ul>
@@ -102,18 +103,28 @@
     </nav>
 
     <div class="container mt-4 mb-5">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 70px;">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    {% set toast_class = 'text-bg-success' if category == 'success' else 'text-bg-danger' if category in ['error', 'danger'] else 'text-bg-warning' if category == 'warning' else 'text-bg-info' %}
+                    {% set icon = 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' if category in ['error', 'danger'] else 'fa-exclamation-triangle' if category == 'warning' else 'fa-info-circle' %}
+                    <div class="toast align-items-center {{ toast_class }} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas {{ icon }} me-2"></i>
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-
-        {% block content %}{% endblock %}
     </div>
 
     <!-- Footer section for layout.html with local_time fallback -->
@@ -135,6 +146,74 @@
 
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <!-- Initialize Toasts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all toasts
+            const toastElList = document.querySelectorAll('.toast');
+            const toastList = [...toastElList].map(toastEl => {
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+                return toast;
+            });
+
+            // Function to show a toast programmatically
+            window.showToast = function(message, category = 'info') {
+                const toastContainer = document.querySelector('.toast-container');
+                
+                // Determine toast styling based on category
+                let toastClass = 'text-bg-info';
+                let icon = 'fa-info-circle';
+                
+                if (category === 'success') {
+                    toastClass = 'text-bg-success';
+                    icon = 'fa-check-circle';
+                } else if (category === 'error' || category === 'danger') {
+                    toastClass = 'text-bg-danger';
+                    icon = 'fa-exclamation-circle';
+                } else if (category === 'warning') {
+                    toastClass = 'text-bg-warning';
+                    icon = 'fa-exclamation-triangle';
+                }
+                
+                // Create toast HTML
+                const toastHtml = `
+                    <div class="toast align-items-center ${toastClass} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${icon} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+                
+                // Add toast to container
+                const toastElement = document.createElement('div');
+                toastElement.innerHTML = toastHtml;
+                const toastNode = toastElement.firstElementChild;
+                toastContainer.appendChild(toastNode);
+                
+                // Initialize and show the toast
+                const toast = new bootstrap.Toast(toastNode);
+                toast.show();
+                
+                // Add hiding animation before removal
+                toastNode.addEventListener('hide.bs.toast', function() {
+                    toastNode.classList.add('hiding');
+                });
+                
+                // Remove toast from DOM after it's hidden
+                toastNode.addEventListener('hidden.bs.toast', function() {
+                    setTimeout(() => {
+                        toastNode.remove();
+                    }, 300); // Wait for animation to complete
+                });
+            };
+        });
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>

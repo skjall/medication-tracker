@@ -123,36 +123,21 @@ def update_visit_order_planning(visit_id: int):
     return redirect(url_for("visits.show", id=visit_id))
 
 
-@settings_bp.route("/advanced", methods=["GET"])
-def advanced():
+@settings_bp.route("/system", methods=["GET"])
+def system():
     """
-    Advanced settings page (e.g., backup/restore, system settings).
+    System settings page focusing on timezone and automatic deduction settings.
     """
-    logger.info("Loading advanced settings page")
+    logger.info("Loading system settings page")
 
-    # Get physician visit settings
+    # Get settings
     settings = Settings.get_settings()
 
-    # Get database statistics
-    med_count = Medication.query.count()
+    # Get basic statistics for system status
     schedule_count = MedicationSchedule.query.count()
     upcoming_visits_count = PhysicianVisit.query.filter(
         PhysicianVisit.visit_date >= datetime.now(timezone.utc)
     ).count()
-
-    # Get inventory logs count
-    inventory_logs_count = InventoryLog.query.count()
-
-    # Get database path for display
-    db_path = os.path.join("data", "medication_tracker.db")
-
-    # Get database size
-    db_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), db_path)
-    db_size_mb = (
-        round(os.path.getsize(db_file_path) / (1024 * 1024), 2)
-        if os.path.exists(db_file_path)
-        else 0
-    )
 
     # Import timezone helper for getting timezone information
     logger.info("Getting timezone display information")
@@ -164,15 +149,11 @@ def advanced():
         timezone_info = []
 
     return render_template(
-        "settings/advanced.html",
+        "settings/system.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         settings=settings,
-        med_count=med_count,
         schedule_count=schedule_count,
         upcoming_visits_count=upcoming_visits_count,
-        inventory_logs_count=inventory_logs_count,
-        db_path=db_path,
-        db_size_mb=db_size_mb,
         timezone_info=timezone_info,
     )
 
@@ -201,7 +182,7 @@ def export_data(data_type: str):
         return export_physicians_to_csv()
     else:
         flash(f"Unknown export type: {data_type}", "error")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.system"))
 
 
 @settings_bp.route("/backup")
@@ -222,7 +203,7 @@ def backup_database():
     except Exception as e:
         logger.error(f"Error creating backup: {str(e)}")
         flash(f"Error creating backup: {str(e)}", "error")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.system"))
 
 
 @settings_bp.route("/restore", methods=["POST"])
@@ -233,23 +214,23 @@ def restore_database():
     # Check if user confirmed the restore
     if not request.form.get("confirm_restore"):
         flash("You must confirm that you understand the restore will replace all current data", "error")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.data_management"))
     
     if "restore_file" not in request.files:
         flash("No file provided for restore", "error")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.data_management"))
     
     file = request.files["restore_file"]
     if file.filename == "":
         flash("No file selected", "error")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.data_management"))
     
     # Validate file extension
     allowed_extensions = {'.db', '.sqlite', '.sqlite3'}
     file_ext = os.path.splitext(file.filename)[1].lower()
     if file_ext not in allowed_extensions:
         flash(f"Invalid file type. Please upload a database file ({', '.join(allowed_extensions)})", "error")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.data_management"))
     
     try:
         # Save uploaded file to temporary location
@@ -265,11 +246,11 @@ def restore_database():
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='medications'")
             if not cursor.fetchone():
                 flash("Invalid database file: missing required tables", "error")
-                return redirect(url_for("settings.advanced"))
+                return redirect(url_for("settings.data_management"))
             conn.close()
         except sqlite3.Error as e:
             flash(f"Invalid database file: {str(e)}", "error")
-            return redirect(url_for("settings.advanced"))
+            return redirect(url_for("settings.data_management"))
         
         # Create backup of current database before restore
         backup_dir = os.path.join(current_app.root_path, "data", "backups")
@@ -301,12 +282,12 @@ def restore_database():
         
         # Note: In production, you might want to restart the application here
         # For now, we'll just redirect and let the user refresh
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.data_management"))
         
     except Exception as e:
         logger.error(f"Error restoring database: {str(e)}")
         flash(f"Error restoring database: {str(e)}", "error")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.data_management"))
 
 
 @settings_bp.route("/import", methods=["POST"])
@@ -316,12 +297,12 @@ def import_data():
 
     if "file" not in request.files:
         flash("No file part", "error")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.system"))
 
     file = request.files["file"]
     if file.filename == "":
         flash("No file selected", "error")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.system"))
 
     # Save the file to a temporary location
     temp_dir = tempfile.mkdtemp()
@@ -351,7 +332,7 @@ def import_data():
     os.unlink(file_path)
     os.rmdir(temp_dir)
 
-    return redirect(url_for("settings.advanced"))
+    return redirect(url_for("settings.system"))
 
 
 @settings_bp.route("/optimize", methods=["POST"])
@@ -366,7 +347,7 @@ def optimize_db():
     else:
         flash(message, "error")
 
-    return redirect(url_for("settings.advanced"))
+    return redirect(url_for("settings.data_management"))
 
 
 @settings_bp.route("/clear_logs", methods=["POST"])
@@ -377,12 +358,12 @@ def clear_logs():
 
     if days_to_keep < 30:
         flash("Please keep at least 30 days of logs", "warning")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.data_management"))
 
     deleted_count = clear_old_inventory_logs(days_to_keep)
 
     flash(f"Successfully removed {deleted_count} old inventory logs", "success")
-    return redirect(url_for("settings.advanced"))
+    return redirect(url_for("settings.data_management"))
 
 
 @settings_bp.route("/reset_data", methods=["POST"])
@@ -393,7 +374,7 @@ def reset_data():
 
     if verification.lower() != "reset all data":
         flash("Verification text doesn't match. Data was not reset.", "warning")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.system"))
 
     try:
         # Backup the database first
@@ -434,14 +415,14 @@ def update_timezone():
     except Exception as e:
         logger.error(f"Invalid timezone: {timezone_name}. Error: {e}")
         flash(f"Invalid timezone: {timezone_name}", "error")
-        return redirect(url_for("settings.advanced"))
+        return redirect(url_for("settings.system"))
 
     settings = Settings.get_settings()
     settings.timezone_name = timezone_name
     db.session.commit()
 
     flash(f"Application timezone updated to {timezone_name}", "success")
-    return redirect(url_for("settings.advanced"))
+    return redirect(url_for("settings.system"))
 
 
 @settings_bp.route("/data_management")
@@ -459,6 +440,7 @@ def data_management():
     order_count = Order.query.count()
     order_item_count = OrderItem.query.count()
     schedule_count = MedicationSchedule.query.count()
+    inventory_logs_count = InventoryLog.query.count()
 
     # Get database path for display
     db_path = os.path.join("data", "medication_tracker.db")
@@ -481,6 +463,7 @@ def data_management():
         order_count=order_count,
         order_item_count=order_item_count,
         schedule_count=schedule_count,
+        inventory_logs_count=inventory_logs_count,
         db_path=db_path,
         db_size_mb=db_size_mb,
     )

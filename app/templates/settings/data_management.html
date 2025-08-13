@@ -7,78 +7,112 @@
     <h1>
         <i class="fas fa-database me-2"></i>Data Management
     </h1>
-    <div>
-        <a href="{{ url_for('settings.advanced') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Advanced Settings
-        </a>
-        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary ms-2">
-            <i class="fas fa-home me-1"></i>Dashboard
-        </a>
+    <a href="{{ url_for('settings.system') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to System Settings
+    </a>
+</div>
+
+<!-- Quick Actions Row -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-download fa-3x text-primary mb-3"></i>
+                <h6>Backup Database</h6>
+                <p class="small text-muted">Download complete database backup</p>
+                <a href="{{ url_for('settings.backup_database') }}" class="btn btn-primary btn-sm w-100">
+                    <i class="fas fa-download me-1"></i>Download Backup
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-upload fa-3x text-success mb-3"></i>
+                <h6>Restore Database</h6>
+                <p class="small text-muted">Restore from backup file</p>
+                <button type="button" class="btn btn-success btn-sm w-100" data-bs-toggle="modal" data-bs-target="#restoreModal">
+                    <i class="fas fa-upload me-1"></i>Restore Backup
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-bolt fa-3x text-warning mb-3"></i>
+                <h6>Optimize Database</h6>
+                <p class="small text-muted">Improve database performance</p>
+                <form action="{{ url_for('settings.optimize_db') }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-warning btn-sm w-100">
+                        <i class="fas fa-bolt me-1"></i>Optimize Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-eraser fa-3x text-danger mb-3"></i>
+                <h6>Clear Old Logs</h6>
+                <p class="small text-muted">Free up database space</p>
+                <button type="button" class="btn btn-danger btn-sm w-100" data-bs-toggle="modal" data-bs-target="#clearLogsModal">
+                    <i class="fas fa-eraser me-1"></i>Clear Logs
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- Database Overview Card -->
 <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Database Overview</h5>
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Database Statistics</h5>
     </div>
     <div class="card-body">
         <div class="row">
-            <div class="col-md-6">
-                <dl class="row">
-                    <dt class="col-sm-6">Database Path:</dt>
-                    <dd class="col-sm-6"><code>{{ db_path }}</code></dd>
-
-                    <dt class="col-sm-6">Database Size:</dt>
-                    <dd class="col-sm-6">{{ db_size_mb }} MB</dd>
-                </dl>
+            <div class="col-md-4">
+                <div class="text-center mb-3">
+                    <i class="fas fa-database fa-2x text-info mb-2"></i>
+                    <h6>Database Info</h6>
+                    <p class="mb-1"><strong>Size:</strong> {{ db_size_mb }} MB</p>
+                    <p class="mb-0"><small class="text-muted">{{ db_path }}</small></p>
+                </div>
             </div>
-            <div class="col-md-6">
-                <dl class="row">
-                    <dt class="col-sm-6">Total Medications:</dt>
-                    <dd class="col-sm-6">{{ med_count }}</dd>
-
-                    <dt class="col-sm-6">Physicians:</dt>
-                    <dd class="col-sm-6">{{ physician_count }}</dd>
-
-                    <dt class="col-sm-6">Medication Schedules:</dt>
-                    <dd class="col-sm-6">{{ schedule_count }}</dd>
-
-                    <dt class="col-sm-6">Inventory Records:</dt>
-                    <dd class="col-sm-6">{{ inventory_count }}</dd>
-
-                    <dt class="col-sm-6">Physician Visits:</dt>
-                    <dd class="col-sm-6">{{ visit_count }}</dd>
-
-                    <dt class="col-sm-6">Orders:</dt>
-                    <dd class="col-sm-6">{{ order_count }} ({{ order_item_count }} items)</dd>
-
-                </dl>
+            <div class="col-md-4">
+                <div class="text-center mb-3">
+                    <i class="fas fa-pills fa-2x text-primary mb-2"></i>
+                    <h6>Medical Data</h6>
+                    <p class="mb-0"><strong>{{ med_count }}</strong> Medications</p>
+                    <p class="mb-0"><strong>{{ schedule_count }}</strong> Schedules</p>
+                    <p class="mb-0"><strong>{{ inventory_count }}</strong> Inventory Items</p>
+                </div>
             </div>
-        </div>
-
-        <div class="alert alert-info mt-3">
-            <div class="d-flex">
-                <i class="fas fa-info-circle me-3 fa-2x"></i>
-                <div>
-                    <p class="mb-0">
-                        This page allows you to manage your application data. You can:
-                    </p>
-                    <ul class="mb-0 mt-2">
-                        <li>Import data from CSV files</li>
-                        <li>Export data to CSV files for backup</li>
-                        <li>Reset specific data types</li>
-                    </ul>
+            <div class="col-md-4">
+                <div class="text-center mb-3">
+                    <i class="fas fa-user-md fa-2x text-success mb-2"></i>
+                    <h6>Clinical Data</h6>
+                    <p class="mb-0"><strong>{{ physician_count }}</strong> Physicians</p>
+                    <p class="mb-0"><strong>{{ visit_count }}</strong> Visits</p>
+                    <p class="mb-0"><strong>{{ order_count }}</strong> Orders</p>
                 </div>
             </div>
         </div>
+        {% if inventory_logs_count %}
+        <div class="alert alert-info mt-3 mb-0">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>{{ inventory_logs_count }}</strong> inventory log entries in database. Consider clearing old logs to save space.
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<!-- Data Management Matrix Card -->
+<!-- Data Import/Export Card -->
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Data Management Matrix</h5>
+        <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Import & Export Data</h5>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -229,16 +263,10 @@
             </table>
         </div>
 
-        <div class="alert alert-warning mt-4">
-            <div class="d-flex">
-                <i class="fas fa-exclamation-triangle me-3 fa-2x"></i>
-                <div>
-                    <p class="mb-0">
-                        <strong>Warning:</strong> Resetting data will permanently delete all records of that type.
-                        Import operations may cause duplicates if not used carefully.
-                        Always back up your data before performing these operations.
-                    </p>
-                </div>
+        <div class="mt-4">
+            <div class="alert alert-warning mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Important:</strong> Always backup your database before importing data or resetting records. Import operations may create duplicates if not used carefully.
             </div>
         </div>
     </div>
@@ -292,6 +320,86 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Import Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Database Modal -->
+<div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="restoreModalLabel">Restore Database</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('settings.restore_database') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Critical Warning:</strong> Restoring a database will completely replace your current database with the backup file. All current data will be lost!
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="restore_file" class="form-label">Database Backup File</label>
+                        <input class="form-control" type="file" id="restore_file" name="restore_file" accept=".db,.sqlite,.sqlite3" required>
+                        <div class="form-text">
+                            Select a database backup file (.db, .sqlite, or .sqlite3)
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirm_restore" name="confirm_restore" required>
+                        <label class="form-check-label text-danger" for="confirm_restore">
+                            I understand that this will permanently replace all current data
+                        </label>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Recommended:</strong> Create a backup of your current database before restoring.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Restore Database</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Clear Logs Modal -->
+<div class="modal fade" id="clearLogsModal" tabindex="-1" aria-labelledby="clearLogsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clearLogsModalLabel">Clear Old Inventory Logs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('settings.clear_logs') }}" method="POST">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This will permanently delete old inventory logs.
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="days_to_keep" class="form-label">Keep logs from the last:</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="days_to_keep" name="days_to_keep" value="90" min="30" max="365">
+                            <span class="input-group-text">days</span>
+                        </div>
+                        <div class="form-text">
+                            Logs older than this will be permanently deleted. Minimum: 30 days.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Clear Old Logs</button>
                 </div>
             </form>
         </div>
