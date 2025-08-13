@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-13 20:44+0200\n"
+"POT-Creation-Date: 2025-08-14 00:28+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,12 +17,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: main.py:312 templates/index.html:3 templates/index.html:9
+#: main.py:423 templates/index.html:3 templates/index.html:9
 #: templates/layout.html:32 templates/settings/system.html:11
 msgid "Dashboard"
 msgstr ""
 
-#: main.py:313 templates/index.html:43 templates/visits/index.html:104
+#: main.py:424 templates/index.html:43 templates/visits/index.html:104
 msgid "No upcoming physician visits scheduled."
 msgstr ""
 
@@ -159,43 +159,43 @@ msgstr ""
 msgid "Error deleting physician: {}"
 msgstr ""
 
-#: routes/prescription_templates.py:59 routes/settings.py:323
+#: routes/prescription_templates.py:61 routes/settings.py:323
 #: routes/settings.py:518
 msgid "No file part"
 msgstr ""
 
-#: routes/prescription_templates.py:66
+#: routes/prescription_templates.py:68
 msgid "No selected file"
 msgstr ""
 
-#: routes/prescription_templates.py:71 routes/prescription_templates.py:270
+#: routes/prescription_templates.py:73 routes/prescription_templates.py:294
 msgid "Only PDF files are allowed"
 msgstr ""
 
-#: routes/prescription_templates.py:119
+#: routes/prescription_templates.py:128
 #, python-brace-format
 msgid "Prescription template '{}' added successfully"
 msgstr ""
 
-#: routes/prescription_templates.py:184
+#: routes/prescription_templates.py:196
 #, python-brace-format
 msgid "Prescription template '{}' activated"
 msgstr ""
 
-#: routes/prescription_templates.py:195
+#: routes/prescription_templates.py:209
 msgid "Cannot delete the active template"
 msgstr ""
 
-#: routes/prescription_templates.py:213
+#: routes/prescription_templates.py:228
 #, python-brace-format
 msgid "Prescription template '{}' deleted"
 msgstr ""
 
-#: routes/prescription_templates.py:230
+#: routes/prescription_templates.py:247
 msgid "Error downloading template file"
 msgstr ""
 
-#: routes/prescription_templates.py:305
+#: routes/prescription_templates.py:335
 #, python-brace-format
 msgid "Prescription template '{}' updated successfully"
 msgstr ""
@@ -498,15 +498,16 @@ msgstr ""
 msgid "Page Not Found"
 msgstr ""
 
-#: templates/404.html:3 templates/inventory/depletion.html:3
-#: templates/inventory/index.html:3 templates/inventory/low.html:3
-#: templates/inventory/show.html:3 templates/layout.html:6
-#: templates/medications/edit.html:3 templates/medications/index.html:3
-#: templates/medications/new.html:3 templates/medications/show.html:2
-#: templates/orders/edit.html:3 templates/orders/index.html:2
-#: templates/orders/new.html:3 templates/orders/show.html:3
-#: templates/physicians/index.html:3 templates/physicians/new.html:3
-#: templates/prescriptions/index.html:4 templates/prescriptions/new.html:4
+#: templates/404.html:3 templates/index.html:3
+#: templates/inventory/depletion.html:3 templates/inventory/index.html:3
+#: templates/inventory/low.html:3 templates/inventory/show.html:3
+#: templates/layout.html:6 templates/medications/edit.html:3
+#: templates/medications/index.html:3 templates/medications/new.html:2
+#: templates/medications/show.html:2 templates/orders/edit.html:3
+#: templates/orders/index.html:2 templates/orders/new.html:3
+#: templates/orders/show.html:3 templates/physicians/index.html:3
+#: templates/physicians/new.html:3 templates/prescriptions/index.html:4
+#: templates/prescriptions/new.html:4 templates/prescriptions/show.html:4
 #: templates/schedules/edit.html:4 templates/schedules/index.html:4
 #: templates/schedules/new.html:4 templates/settings/data_management.html:3
 #: templates/settings/physician_visits.html:4 templates/settings/system.html:3
@@ -528,11 +529,18 @@ msgstr ""
 msgid "Next Physician Visit"
 msgstr ""
 
+#: templates/index.html:27 templates/index.html:113
+#, python-format
+msgid "%(count)d day away"
+msgid_plural "%(count)d days away"
+msgstr[0] ""
+msgstr[1] ""
+
 #: templates/index.html:31 templates/inventory/index.html:162
 #: templates/inventory/show.html:279 templates/medications/edit.html:83
-#: templates/medications/new.html:79 templates/physicians/edit.html:85
+#: templates/medications/new.html:134 templates/physicians/edit.html:85
 #: templates/physicians/new.html:75 templates/physicians/show.html:86
-#: templates/physicians/show.html:203 templates/visits/edit.html:56
+#: templates/physicians/show.html:206 templates/visits/edit.html:56
 #: templates/visits/index.html:31 templates/visits/index.html:128
 #: templates/visits/new.html:48 templates/visits/show.html:72
 msgid "Notes"
@@ -555,141 +563,242 @@ msgstr ""
 msgid "Schedule a Visit"
 msgstr ""
 
-#: templates/layout.html:38 templates/medications/index.html:3
-#: templates/medications/index.html:8 templates/orders/index.html:25
-#: templates/orders/index.html:123 templates/orders/show.html:55
-#: templates/physicians/index.html:34 templates/physicians/show.html:109
-#: templates/settings/data_management.html:88
-#: templates/settings/data_management.html:133
-msgid "Medications"
+#: templates/index.html:57
+msgid "Low Inventory Alert"
 msgstr ""
 
-#: templates/layout.html:41 templates/medications/edit.html:15
-#: templates/medications/index.html:18
-msgid "All Medications"
+#: templates/index.html:62
+msgid "The following medications are below minimum threshold:"
 msgstr ""
 
-#: templates/layout.html:42 templates/medications/index.html:11
-#: templates/medications/new.html:3
-msgid "Add Medication"
+#: templates/index.html:70 templates/index.html:189
+#: templates/physicians/show.html:155
+#, python-format
+msgid "%(count)d unit"
+msgid_plural "%(count)d units"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/index.html:74
+msgid "Update"
 msgstr ""
 
-#: templates/inventory/depletion.html:3 templates/inventory/depletion.html:8
-#: templates/inventory/index.html:17 templates/layout.html:44
-#: templates/layout.html:63
-msgid "Depletion Forecast"
+#: templates/index.html:81
+msgid "View All Low Stock"
 msgstr ""
 
-#: templates/layout.html:49 templates/physicians/index.html:3
-#: templates/physicians/index.html:8 templates/settings/data_management.html:97
-#: templates/settings/data_management.html:155
-msgid "Physicians"
+#: templates/index.html:87
+msgid "All medications are above minimum threshold levels."
 msgstr ""
 
-#: templates/layout.html:52 templates/physicians/edit.html:16
-#: templates/physicians/index.html:18
-msgid "All Physicians"
+#: templates/index.html:103
+msgid "Gap Coverage Warning"
 msgstr ""
 
-#: templates/layout.html:53 templates/physicians/index.html:11
-#: templates/physicians/index.html:85 templates/physicians/new.html:3
-msgid "Add Physician"
+#: templates/index.html:111
+#, python-format
+msgid "%(count)d medication"
+msgid_plural "%(count)d medications"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/index.html:111
+msgid "will run out before your visit"
 msgstr ""
 
-#: templates/inventory/index.html:3 templates/inventory/index.html:8
-#: templates/inventory/show.html:3 templates/inventory/show.html:8
-#: templates/layout.html:58 templates/medications/index.html:100
-#: templates/settings/data_management.html:199
-msgid "Inventory"
+#: templates/index.html:112
+msgid "with"
 msgstr ""
 
-#: templates/inventory/index.html:25 templates/layout.html:61
-msgid "Inventory Overview"
+#: templates/index.html:113
+msgid "on"
 msgstr ""
 
-#: templates/inventory/index.html:104 templates/layout.html:62
-#: templates/medications/index.html:84 templates/physicians/show.html:163
+#: templates/index.html:124
+msgid "Runs out"
+msgstr ""
+
+#: templates/index.html:128
+#, python-format
+msgid "%(count)d unit left"
+msgid_plural "%(count)d units left"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/index.html:135
+#, python-format
+msgid "And %(count)d more medication"
+msgid_plural "And %(count)d more medications"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/index.html:142
+msgid "View Visit Details"
+msgstr ""
+
+#: templates/index.html:145 templates/visits/show.html:252
+msgid "Create Gap Coverage Order"
+msgstr ""
+
+#: templates/index.html:161
+msgid "Medications Overview"
+msgstr ""
+
+#: templates/index.html:170 templates/inventory/depletion.html:83
+#: templates/inventory/index.html:37 templates/inventory/low.html:33
+#: templates/orders/edit.html:62 templates/orders/new.html:76
+#: templates/orders/show.html:118 templates/physicians/show.html:135
+#: templates/visits/show.html:162
+msgid "Medication"
+msgstr ""
+
+#: templates/index.html:171 templates/inventory/depletion.html:84
+#: templates/inventory/index.html:38 templates/inventory/low.html:34
+#: templates/inventory/show.html:71 templates/medications/index.html:34
+#: templates/physicians/show.html:136 templates/visits/show.html:163
+msgid "Daily Usage"
+msgstr ""
+
+#: templates/index.html:172
+msgid "Current Inventory"
+msgstr ""
+
+#: templates/index.html:173 templates/inventory/depletion.html:86
+#: templates/inventory/index.html:41 templates/inventory/low.html:37
+msgid "Days Left"
+msgstr ""
+
+#: templates/index.html:174 templates/inventory/depletion.html:87
+#: templates/inventory/index.html:42 templates/inventory/low.html:38
+#: templates/medications/show.html:300 templates/medications/show.html:303
+msgid "Depletion Date"
+msgstr ""
+
+#: templates/index.html:175 templates/inventory/depletion.html:88
+#: templates/inventory/index.html:43 templates/medications/index.html:38
+#: templates/orders/index.html:23 templates/orders/show.html:122
+#: templates/physicians/show.html:138 templates/prescriptions/index.html:66
+#: templates/system/status.html:81
+msgid "Status"
+msgstr ""
+
+#: templates/index.html:176 templates/inventory/depletion.html:89
+#: templates/inventory/index.html:44 templates/inventory/low.html:40
+#: templates/medications/index.html:39 templates/medications/show.html:346
+#: templates/orders/edit.html:64 templates/orders/index.html:26
+#: templates/orders/index.html:124 templates/orders/show.html:123
+#: templates/physicians/index.html:36 templates/physicians/show.html:139
+#: templates/physicians/show.html:207 templates/prescriptions/index.html:68
+#: templates/schedules/index.html:70 templates/visits/index.html:34
+#: templates/visits/index.html:130 templates/visits/show.html:169
+msgid "Actions"
+msgstr ""
+
+#: templates/index.html:186 templates/inventory/depletion.html:99
+#: templates/inventory/depletion.html:100 templates/inventory/index.html:54
+#: templates/inventory/index.html:57 templates/inventory/low.html:49
+#: templates/inventory/low.html:52 templates/inventory/low.html:70
+#: templates/inventory/show.html:45 templates/inventory/show.html:73
+#: templates/inventory/show.html:103 templates/inventory/show.html:157
+#: templates/inventory/show.html:158 templates/inventory/show.html:189
+#: templates/inventory/show.html:242 templates/inventory/show.html:243
+#: templates/medications/edit.html:201 templates/medications/index.html:59
+#: templates/medications/index.html:61 templates/medications/index.html:75
+#: templates/medications/show.html:54 templates/medications/show.html:128
+#: templates/medications/show.html:199 templates/medications/show.html:206
+#: templates/medications/show.html:213 templates/medications/show.html:230
+#: templates/medications/show.html:278 templates/medications/show.html:365
+#: templates/orders/show.html:241 templates/physicians/show.html:152
+#: templates/schedules/edit.html:40 templates/schedules/new.html:40
+#: templates/visits/show.html:178
+msgid "units"
+msgstr ""
+
+#: templates/index.html:191 templates/inventory/index.html:59
+#: templates/medications/index.html:77 templates/orders/edit.html:87
+#: templates/orders/new.html:113 templates/physicians/show.html:157
+msgid "No inventory"
+msgstr ""
+
+#: templates/index.html:196
+#, python-format
+msgid "%(count)d day"
+msgid_plural "%(count)d days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/index.html:198 templates/index.html:205
+#: templates/inventory/index.html:79 templates/inventory/index.html:86
+#: templates/inventory/index.html:95 templates/inventory/low.html:58
+#: templates/inventory/low.html:65
+msgid "N/A"
+msgstr ""
+
+#: templates/index.html:210 templates/inventory/index.html:100
+#: templates/medications/index.html:82
+msgid "No Data"
+msgstr ""
+
+#: templates/index.html:212 templates/inventory/depletion.html:109
+#: templates/inventory/index.html:102
+msgid "Critical"
+msgstr ""
+
+#: templates/index.html:214 templates/inventory/index.html:104
+#: templates/layout.html:62 templates/medications/index.html:84
+#: templates/physicians/show.html:163
 msgid "Low Stock"
 msgstr ""
 
-#: templates/layout.html:68 templates/settings/data_management.html:221
-#: templates/visits/index.html:3 templates/visits/index.html:8
-msgid "Physician Visits"
+#: templates/index.html:216 templates/inventory/index.html:106
+#: templates/medications/index.html:86 templates/physicians/show.html:165
+msgid "Running Low"
 msgstr ""
 
-#: templates/layout.html:71 templates/visits/edit.html:15
-msgid "All Visits"
+#: templates/index.html:218 templates/inventory/depletion.html:115
+#: templates/inventory/index.html:108 templates/medications/index.html:88
+msgid "OK"
 msgstr ""
 
-#: templates/layout.html:72 templates/visits/new.html:64
-msgid "Schedule Visit"
+#: templates/index.html:239
+msgid "No medications found in the system."
 msgstr ""
 
-#: templates/layout.html:73
-msgid "Next Visit"
+#: templates/index.html:241 templates/layout.html:42
+#: templates/medications/index.html:11 templates/medications/new.html:1
+msgid "Add Medication"
 msgstr ""
 
-#: templates/layout.html:78 templates/settings/data_management.html:99
-#: templates/settings/data_management.html:243 templates/visits/index.html:32
-#: templates/visits/index.html:129
-msgid "Orders"
+#: templates/index.html:248
+msgid "Manage Medications"
 msgstr ""
 
-#: templates/layout.html:81 templates/orders/edit.html:15
-msgid "All Orders"
+#: templates/index.html:251
+msgid "Inventory Detail"
 msgstr ""
 
-#: templates/layout.html:82
-msgid "New Order"
+#: templates/index.html:266 templates/settings/system.html:170
+msgid "Quick Actions"
 msgstr ""
 
-#: templates/layout.html:87
-msgid "System"
+#: templates/index.html:274 templates/medications/new.html:5
+msgid "Add New Medication"
 msgstr ""
 
-#: templates/layout.html:90 templates/settings/system.html:140
-#: templates/system/status.html:3 templates/system/status.html:8
-msgid "System Status"
+#: templates/index.html:280 templates/visits/new.html:3
+#: templates/visits/new.html:8
+msgid "Schedule Physician Visit"
 msgstr ""
 
-#: templates/layout.html:91 templates/settings/system.html:3
-#: templates/settings/system.html:8
-msgid "System Settings"
+#: templates/index.html:286 templates/orders/index.html:103
+msgid "Create New Order"
 msgstr ""
 
-#: templates/layout.html:93
-msgid "Visit Planning"
-msgstr ""
-
-#: templates/layout.html:94 templates/settings/data_management.html:3
-#: templates/settings/data_management.html:8 templates/settings/system.html:114
-msgid "Data Management"
-msgstr ""
-
-#: templates/layout.html:95
-msgid "Database Updates"
-msgstr ""
-
-#: templates/inventory/index.html:146 templates/layout.html:139
-#: templates/layout.html:205 templates/orders/_fulfill_modal.html:11
-#: templates/orders/show.html:222 templates/schedules/index.html:161
-#: templates/settings/data_management.html:281
-#: templates/settings/data_management.html:335
-#: templates/settings/data_management.html:380
-#: templates/settings/data_management.html:415
-msgid "Close"
-msgstr ""
-
-#: templates/layout.html:152
-msgid "Timezone"
-msgstr ""
-
-#: templates/layout.html:153 templates/settings/system.html:28
-msgid "Local time"
+#: templates/index.html:292
+msgid "View Depletion Forecast"
 msgstr ""
 
 #: templates/inventory/depletion.html:12 templates/inventory/low.html:12
-#: templates/inventory/show.html:12
 msgid "Back to Inventory"
 msgstr ""
 
@@ -697,7 +806,7 @@ msgstr ""
 msgid "Medication Depletion Timeline"
 msgstr ""
 
-#: templates/inventory/depletion.html:30 templates/physicians/show.html:216
+#: templates/inventory/depletion.html:30 templates/physicians/show.html:219
 #: templates/visits/index.html:199
 msgid "Today"
 msgstr ""
@@ -730,20 +839,6 @@ msgstr ""
 msgid "Sorted by Depletion Date"
 msgstr ""
 
-#: templates/inventory/depletion.html:83 templates/inventory/index.html:37
-#: templates/inventory/low.html:33 templates/orders/edit.html:62
-#: templates/orders/new.html:76 templates/orders/show.html:118
-#: templates/physicians/show.html:135 templates/visits/show.html:162
-msgid "Medication"
-msgstr ""
-
-#: templates/inventory/depletion.html:84 templates/inventory/index.html:38
-#: templates/inventory/low.html:34 templates/inventory/show.html:71
-#: templates/medications/index.html:34 templates/physicians/show.html:136
-#: templates/visits/show.html:163
-msgid "Daily Usage"
-msgstr ""
-
 #: templates/inventory/depletion.html:85 templates/inventory/index.html:39
 #: templates/inventory/low.html:36 templates/medications/index.html:37
 #: templates/orders/edit.html:63 templates/orders/new.html:77
@@ -751,67 +846,13 @@ msgstr ""
 msgid "Current Stock"
 msgstr ""
 
-#: templates/inventory/depletion.html:86 templates/inventory/index.html:41
-#: templates/inventory/low.html:37
-msgid "Days Left"
-msgstr ""
-
-#: templates/inventory/depletion.html:87 templates/inventory/index.html:42
-#: templates/inventory/low.html:38 templates/medications/show.html:300
-#: templates/medications/show.html:303
-msgid "Depletion Date"
-msgstr ""
-
-#: templates/inventory/depletion.html:88 templates/inventory/index.html:43
-#: templates/medications/index.html:38 templates/orders/index.html:23
-#: templates/orders/show.html:122 templates/physicians/show.html:138
-#: templates/prescriptions/index.html:66 templates/system/status.html:81
-msgid "Status"
-msgstr ""
-
-#: templates/inventory/depletion.html:89 templates/inventory/index.html:44
-#: templates/inventory/low.html:40 templates/medications/index.html:39
-#: templates/medications/show.html:346 templates/orders/edit.html:64
-#: templates/orders/index.html:26 templates/orders/index.html:124
-#: templates/orders/show.html:123 templates/physicians/index.html:36
-#: templates/physicians/show.html:139 templates/physicians/show.html:204
-#: templates/prescriptions/index.html:68 templates/schedules/index.html:70
-#: templates/visits/index.html:34 templates/visits/index.html:130
-#: templates/visits/show.html:169
-msgid "Actions"
-msgstr ""
-
-#: templates/inventory/depletion.html:99 templates/inventory/depletion.html:100
-#: templates/inventory/index.html:54 templates/inventory/index.html:57
-#: templates/inventory/low.html:49 templates/inventory/low.html:52
-#: templates/inventory/low.html:70 templates/inventory/show.html:45
-#: templates/inventory/show.html:73 templates/inventory/show.html:103
-#: templates/inventory/show.html:157 templates/inventory/show.html:158
-#: templates/inventory/show.html:189 templates/inventory/show.html:242
-#: templates/inventory/show.html:243 templates/medications/edit.html:201
-#: templates/medications/index.html:59 templates/medications/index.html:61
-#: templates/medications/index.html:75 templates/medications/show.html:54
-#: templates/medications/show.html:128 templates/medications/show.html:199
-#: templates/medications/show.html:206 templates/medications/show.html:213
-#: templates/medications/show.html:230 templates/medications/show.html:278
-#: templates/medications/show.html:365 templates/orders/show.html:241
-#: templates/physicians/show.html:152 templates/physicians/show.html:155
-#: templates/schedules/edit.html:40 templates/schedules/new.html:40
-#: templates/visits/show.html:178
-msgid "units"
-msgstr ""
-
 #: templates/inventory/depletion.html:102 templates/inventory/index.html:84
 #: templates/inventory/low.html:56 templates/medications/show.html:236
-#: templates/physicians/show.html:218
+#: templates/physicians/show.html:221
 #: templates/settings/data_management.html:393
 #: templates/settings/physician_visits.html:27 templates/visits/index.html:59
 #: templates/visits/index.html:229 templates/visits/show.html:179
 msgid "days"
-msgstr ""
-
-#: templates/inventory/depletion.html:109 templates/inventory/index.html:102
-msgid "Critical"
 msgstr ""
 
 #: templates/inventory/depletion.html:111 templates/visits/show.html:256
@@ -820,11 +861,6 @@ msgstr ""
 
 #: templates/inventory/depletion.html:113
 msgid "Monitor"
-msgstr ""
-
-#: templates/inventory/depletion.html:115 templates/inventory/index.html:108
-#: templates/medications/index.html:88
-msgid "OK"
 msgstr ""
 
 #: templates/inventory/depletion.html:120 templates/inventory/low.html:74
@@ -865,34 +901,13 @@ msgstr ""
 msgid "Package Counts"
 msgstr ""
 
-#: templates/inventory/index.html:59 templates/medications/index.html:77
-#: templates/orders/edit.html:87 templates/orders/new.html:113
-#: templates/physicians/show.html:157
-msgid "No inventory"
-msgstr ""
-
 #: templates/inventory/index.html:75 templates/medications/show.html:177
 msgid "None"
 msgstr ""
 
-#: templates/inventory/index.html:79 templates/inventory/index.html:86
-#: templates/inventory/index.html:95 templates/inventory/low.html:58
-#: templates/inventory/low.html:65
-msgid "N/A"
-msgstr ""
-
-#: templates/inventory/index.html:100 templates/medications/index.html:82
-msgid "No Data"
-msgstr ""
-
-#: templates/inventory/index.html:106 templates/medications/index.html:86
-#: templates/physicians/show.html:165
-msgid "Running Low"
-msgstr ""
-
 #: templates/inventory/index.html:114 templates/medications/index.html:93
 #: templates/orders/index.html:60 templates/orders/index.html:151
-#: templates/physicians/show.html:176 templates/physicians/show.html:231
+#: templates/physicians/show.html:177 templates/physicians/show.html:235
 #: templates/prescriptions/index.html:89
 msgid "View"
 msgstr ""
@@ -975,6 +990,12 @@ msgstr ""
 msgid "All medications are above their minimum thresholds."
 msgstr ""
 
+#: templates/inventory/show.html:12 templates/medications/new.html:12
+#: templates/medications/show.html:10 templates/orders/show.html:15
+#: templates/physicians/show.html:15 templates/prescriptions/show.html:13
+msgid "Back to List"
+msgstr ""
+
 #: templates/inventory/show.html:15
 msgid "Medication Details"
 msgstr ""
@@ -1003,20 +1024,16 @@ msgstr ""
 msgid "Dosage"
 msgstr ""
 
-#: templates/inventory/show.html:74 templates/medications/index.html:33
-msgid "Frequency"
-msgstr ""
-
 #: templates/inventory/show.html:74
 msgid "per day"
 msgstr ""
 
-#: templates/inventory/show.html:89
-msgid "Adjust Inventory (Relative)"
+#: templates/inventory/show.html:74 templates/medications/index.html:33
+msgid "Frequency"
 msgstr ""
 
-#: templates/inventory/show.html:94 templates/inventory/show.html:180
-msgid "Use this form to"
+#: templates/inventory/show.html:89
+msgid "Adjust Inventory (Relative)"
 msgstr ""
 
 #: templates/inventory/show.html:94
@@ -1025,6 +1042,10 @@ msgstr ""
 
 #: templates/inventory/show.html:94
 msgid "units from your current inventory."
+msgstr ""
+
+#: templates/inventory/show.html:94 templates/inventory/show.html:180
+msgid "Use this form to"
 msgstr ""
 
 #: templates/inventory/show.html:100
@@ -1134,6 +1155,129 @@ msgstr ""
 msgid "No inventory adjustments recorded yet."
 msgstr ""
 
+#: templates/layout.html:38 templates/medications/index.html:3
+#: templates/medications/index.html:8 templates/orders/index.html:25
+#: templates/orders/index.html:123 templates/orders/show.html:55
+#: templates/physicians/index.html:34 templates/physicians/show.html:109
+#: templates/settings/data_management.html:88
+#: templates/settings/data_management.html:133
+msgid "Medications"
+msgstr ""
+
+#: templates/layout.html:41 templates/medications/edit.html:15
+#: templates/medications/index.html:18
+msgid "All Medications"
+msgstr ""
+
+#: templates/inventory/depletion.html:3 templates/inventory/depletion.html:8
+#: templates/inventory/index.html:17 templates/layout.html:44
+#: templates/layout.html:63
+msgid "Depletion Forecast"
+msgstr ""
+
+#: templates/layout.html:49 templates/physicians/index.html:3
+#: templates/physicians/index.html:8 templates/settings/data_management.html:97
+#: templates/settings/data_management.html:155
+msgid "Physicians"
+msgstr ""
+
+#: templates/layout.html:52 templates/physicians/edit.html:16
+#: templates/physicians/index.html:18
+msgid "All Physicians"
+msgstr ""
+
+#: templates/layout.html:53 templates/physicians/index.html:11
+#: templates/physicians/index.html:85 templates/physicians/new.html:3
+msgid "Add Physician"
+msgstr ""
+
+#: templates/inventory/index.html:3 templates/inventory/index.html:8
+#: templates/inventory/show.html:3 templates/inventory/show.html:8
+#: templates/layout.html:58 templates/medications/index.html:100
+#: templates/settings/data_management.html:199
+msgid "Inventory"
+msgstr ""
+
+#: templates/inventory/index.html:25 templates/layout.html:61
+msgid "Inventory Overview"
+msgstr ""
+
+#: templates/layout.html:68 templates/settings/data_management.html:221
+#: templates/visits/index.html:3 templates/visits/index.html:8
+msgid "Physician Visits"
+msgstr ""
+
+#: templates/layout.html:71 templates/visits/edit.html:15
+msgid "All Visits"
+msgstr ""
+
+#: templates/layout.html:72 templates/visits/new.html:64
+msgid "Schedule Visit"
+msgstr ""
+
+#: templates/layout.html:73
+msgid "Next Visit"
+msgstr ""
+
+#: templates/layout.html:78 templates/settings/data_management.html:99
+#: templates/settings/data_management.html:243 templates/visits/index.html:32
+#: templates/visits/index.html:129
+msgid "Orders"
+msgstr ""
+
+#: templates/layout.html:81 templates/orders/edit.html:15
+msgid "All Orders"
+msgstr ""
+
+#: templates/layout.html:82
+msgid "New Order"
+msgstr ""
+
+#: templates/layout.html:87
+msgid "System"
+msgstr ""
+
+#: templates/layout.html:90 templates/settings/system.html:140
+#: templates/system/status.html:3 templates/system/status.html:8
+msgid "System Status"
+msgstr ""
+
+#: templates/layout.html:91 templates/settings/system.html:3
+#: templates/settings/system.html:8
+msgid "System Settings"
+msgstr ""
+
+#: templates/layout.html:93
+msgid "Visit Planning"
+msgstr ""
+
+#: templates/layout.html:94 templates/settings/data_management.html:3
+#: templates/settings/data_management.html:8 templates/settings/system.html:114
+msgid "Data Management"
+msgstr ""
+
+#: templates/layout.html:95
+msgid "Database Updates"
+msgstr ""
+
+#: templates/inventory/index.html:146 templates/layout.html:139
+#: templates/layout.html:205 templates/orders/_fulfill_modal.html:11
+#: templates/orders/show.html:222 templates/schedules/index.html:161
+#: templates/settings/data_management.html:281
+#: templates/settings/data_management.html:335
+#: templates/settings/data_management.html:380
+#: templates/settings/data_management.html:415
+msgid "Close"
+msgstr ""
+
+#: templates/layout.html:152
+msgid "Timezone"
+msgstr ""
+
+#: templates/layout.html:153 templates/settings/system.html:28
+msgid "Local time"
+msgstr ""
+
 #: templates/medications/edit.html:3 templates/medications/edit.html:22
 #: templates/medications/index.html:96 templates/medications/show.html:16
 #: templates/orders/index.html:67 templates/physicians/edit.html:3
@@ -1150,94 +1294,94 @@ msgstr ""
 msgid "Back to Details"
 msgstr ""
 
-#: templates/medications/edit.html:29 templates/medications/new.html:24
+#: templates/medications/edit.html:29 templates/medications/new.html:25
 msgid "Basic Information"
 msgstr ""
 
-#: templates/medications/edit.html:32 templates/medications/new.html:27
+#: templates/medications/edit.html:32 templates/medications/new.html:29
 #: templates/orders/show.html:226
 msgid "Medication Name"
 msgstr ""
 
-#: templates/medications/edit.html:37 templates/medications/new.html:32
+#: templates/medications/edit.html:37 templates/medications/new.html:43
 msgid "Active Ingredient"
 msgstr ""
 
-#: templates/medications/edit.html:39 templates/medications/new.html:34
-msgid "The active pharmaceutical ingredient (Wirkstoff)"
+#: templates/medications/edit.html:39 templates/medications/new.html:52
+msgid "The active pharmaceutical ingredient"
 msgstr ""
 
-#: templates/medications/edit.html:43 templates/medications/new.html:38
+#: templates/medications/edit.html:43 templates/medications/new.html:58
 msgid "Form"
 msgstr ""
 
-#: templates/medications/edit.html:45 templates/medications/new.html:40
+#: templates/medications/edit.html:45
 msgid "The pharmaceutical form (e.g., tablets, capsules, solution)"
 msgstr ""
 
-#: templates/medications/edit.html:51 templates/medications/new.html:46
+#: templates/medications/edit.html:51 templates/medications/new.html:76
 msgid "Prescribing Physician"
 msgstr ""
 
-#: templates/medications/edit.html:53 templates/medications/new.html:48
+#: templates/medications/edit.html:53 templates/medications/new.html:84
 #: templates/visits/edit.html:40 templates/visits/new.html:35
 msgid "Select a physician (optional)"
 msgstr ""
 
-#: templates/medications/edit.html:61 templates/medications/new.html:53
+#: templates/medications/edit.html:61 templates/medications/new.html:93
 msgid "The physician who prescribes this medication"
 msgstr ""
 
-#: templates/medications/edit.html:70 templates/medications/new.html:61
+#: templates/medications/edit.html:70 templates/medications/new.html:109
 msgid "Over-the-Counter (OTC)"
 msgstr ""
 
-#: templates/medications/edit.html:73 templates/medications/new.html:64
+#: templates/medications/edit.html:73
 msgid "Check if this medication is available without prescription"
 msgstr ""
 
-#: templates/medications/edit.html:85 templates/medications/new.html:81
+#: templates/medications/edit.html:85 templates/medications/new.html:143
 msgid "Optional information about this medication"
 msgstr ""
 
 #: templates/medications/edit.html:91 templates/medications/index.html:35
-#: templates/medications/new.html:87
+#: templates/medications/new.html:150
 msgid "Package Sizes"
 msgstr ""
 
-#: templates/medications/edit.html:92 templates/medications/new.html:88
+#: templates/medications/edit.html:92
 msgid "Enter the number of units/pills in each package size (N1, N2, N3)"
 msgstr ""
 
-#: templates/medications/edit.html:97 templates/medications/new.html:93
+#: templates/medications/edit.html:97 templates/medications/new.html:160
 msgid "N1 Package"
 msgstr ""
 
-#: templates/medications/edit.html:103 templates/medications/new.html:99
+#: templates/medications/edit.html:103 templates/medications/new.html:174
 msgid "N2 Package"
 msgstr ""
 
-#: templates/medications/edit.html:109 templates/medications/new.html:105
+#: templates/medications/edit.html:109 templates/medications/new.html:188
 msgid "N3 Package"
 msgstr ""
 
-#: templates/medications/edit.html:115 templates/medications/new.html:111
+#: templates/medications/edit.html:115 templates/medications/new.html:201
 msgid "Inventory Settings"
 msgstr ""
 
-#: templates/medications/edit.html:120 templates/medications/new.html:116
+#: templates/medications/edit.html:120 templates/medications/new.html:207
 msgid "Minimum Threshold"
 msgstr ""
 
-#: templates/medications/edit.html:122 templates/medications/new.html:118
+#: templates/medications/edit.html:122 templates/medications/new.html:218
 msgid "Alert when stock falls below this level"
 msgstr ""
 
-#: templates/medications/edit.html:127 templates/medications/new.html:123
+#: templates/medications/edit.html:127 templates/medications/new.html:225
 msgid "Safety Margin (days)"
 msgstr ""
 
-#: templates/medications/edit.html:129 templates/medications/new.html:125
+#: templates/medications/edit.html:129 templates/medications/new.html:236
 msgid "Extra days to add when calculating needs"
 msgstr ""
 
@@ -1367,41 +1511,53 @@ msgid ""
 "to get started."
 msgstr ""
 
-#: templates/medications/new.html:8
-msgid "Add New Medication"
-msgstr ""
-
-#: templates/medications/new.html:11 templates/medications/show.html:10
-msgid "Back to List"
-msgstr ""
-
-#: templates/medications/new.html:17 templates/medications/show.html:157
+#: templates/medications/new.html:18 templates/medications/show.html:157
 msgid "Medication Information"
 msgstr ""
 
-#: templates/medications/new.html:71
+#: templates/medications/new.html:67
+msgid ""
+"The pharmaceutical form (e.g., tablets, capsules,\n"
+"              solution)"
+msgstr ""
+
+#: templates/medications/new.html:113
+msgid ""
+"Check if this medication is available without\n"
+"                  prescription"
+msgstr ""
+
+#: templates/medications/new.html:122
+msgid ""
+"After\n"
+"            creating the medication, you'll need to set up the\n"
+"            medication schedule to define when and how much to take."
+msgstr ""
+
+#: templates/medications/new.html:122
 #: templates/settings/data_management.html:269
 msgid "Important:"
 msgstr ""
 
-#: templates/medications/new.html:71
+#: templates/medications/new.html:152
 msgid ""
-"After creating the medication, you'll need to set up the medication "
-"schedule to define when and how much to take."
+"Enter the number of units/pills in each package size\n"
+"            (N1, N2, N3)"
 msgstr ""
 
-#: templates/medications/new.html:137
+#: templates/medications/new.html:250
 msgid "Next Step: Create Medication Schedule"
 msgstr ""
 
-#: templates/medications/new.html:138
+#: templates/medications/new.html:253
 msgid ""
-"After saving this medication, you'll need to define when and how much to "
-"take using the advanced scheduling system. This will determine the daily "
-"usage and enable automatic inventory tracking."
+"After saving this medication, you'll need to\n"
+"              define when and how much to take using the advanced\n"
+"              scheduling system. This will determine the daily usage\n"
+"              and enable automatic inventory tracking."
 msgstr ""
 
-#: templates/medications/new.html:146 templates/schedules/new.html:96
+#: templates/medications/new.html:264 templates/schedules/new.html:96
 #: templates/settings/data_management.html:127
 #: templates/settings/data_management.html:148
 #: templates/settings/data_management.html:170
@@ -1411,8 +1567,10 @@ msgstr ""
 msgid "Reset"
 msgstr ""
 
-#: templates/medications/new.html:149
-msgid "Save & Continue to Scheduling"
+#: templates/medications/new.html:267
+msgid ""
+"Save & Continue to\n"
+"          Scheduling"
 msgstr ""
 
 #: templates/medications/show.html:26
@@ -1517,7 +1675,7 @@ msgid "Order #"
 msgstr ""
 
 #: templates/medications/show.html:342 templates/orders/index.html:22
-#: templates/orders/index.html:121 templates/physicians/show.html:201
+#: templates/orders/index.html:121 templates/physicians/show.html:204
 #: templates/visits/edit.html:29 templates/visits/index.html:28
 #: templates/visits/index.html:126 templates/visits/new.html:24
 msgid "Visit Date"
@@ -1684,12 +1842,12 @@ msgid "Created Date"
 msgstr ""
 
 #: templates/orders/index.html:53 templates/orders/index.html:144
-#: templates/visits/show.html:125
-msgid "medication"
+msgid "medications"
 msgstr ""
 
 #: templates/orders/index.html:53 templates/orders/index.html:144
-msgid "medications"
+#: templates/visits/show.html:125
+msgid "medication"
 msgstr ""
 
 #: templates/orders/index.html:74 templates/orders/index.html:158
@@ -1704,10 +1862,6 @@ msgstr ""
 msgid "No pending orders found."
 msgstr ""
 
-#: templates/orders/index.html:103
-msgid "Create New Order"
-msgstr ""
-
 #: templates/orders/index.html:112
 msgid "Fulfilled Orders"
 msgstr ""
@@ -1720,7 +1874,7 @@ msgstr ""
 msgid "Create Medication Order"
 msgstr ""
 
-#: templates/orders/new.html:12 templates/orders/show.html:15
+#: templates/orders/new.html:12
 msgid "Back to Orders"
 msgstr ""
 
@@ -1828,6 +1982,11 @@ msgstr ""
 msgid "Until next visit: %(usage)s/day × %(days)s days = %(units)s units"
 msgstr ""
 
+#: templates/orders/new.html:126
+#, python-format
+msgid "To order: %(units)s units"
+msgstr ""
+
 #: templates/orders/new.html:126 templates/orders/new.html:132
 msgid "Total needed"
 msgstr ""
@@ -1835,11 +1994,6 @@ msgstr ""
 #: templates/orders/new.html:126 templates/orders/new.html:132
 #, python-format
 msgid "Current stock: %(units)s units"
-msgstr ""
-
-#: templates/orders/new.html:126
-#, python-format
-msgid "To order: %(units)s units"
 msgstr ""
 
 #: templates/orders/new.html:132
@@ -1873,13 +2027,13 @@ msgstr ""
 msgid "%(days)s days away"
 msgstr ""
 
-#: templates/orders/show.html:46 templates/physicians/show.html:214
+#: templates/orders/show.html:46 templates/physicians/show.html:217
 #: templates/visits/show.html:41
 msgid "Past visit"
 msgstr ""
 
 #: templates/orders/show.html:51 templates/prescriptions/index.html:67
-#: templates/visits/show.html:79
+#: templates/prescriptions/show.html:50 templates/visits/show.html:79
 msgid "Created"
 msgstr ""
 
@@ -2110,7 +2264,7 @@ msgstr ""
 msgid "Add New Physician"
 msgstr ""
 
-#: templates/physicians/new.html:11 templates/physicians/show.html:15
+#: templates/physicians/new.html:11
 msgid "Back to Physicians"
 msgstr ""
 
@@ -2142,43 +2296,43 @@ msgstr ""
 msgid "No Inventory"
 msgstr ""
 
-#: templates/physicians/show.html:193
+#: templates/physicians/show.html:196
 msgid "Scheduled Visits"
 msgstr ""
 
-#: templates/physicians/show.html:202
+#: templates/physicians/show.html:205
 msgid "Days Until"
 msgstr ""
 
-#: templates/physicians/show.html:225
+#: templates/physicians/show.html:228
 msgid "No notes"
 msgstr ""
 
-#: templates/physicians/show.html:247
+#: templates/physicians/show.html:253
 msgid "Danger Zone"
 msgstr ""
 
-#: templates/physicians/show.html:252
+#: templates/physicians/show.html:258
 msgid "Delete this physician permanently. This action cannot be undone."
 msgstr ""
 
-#: templates/physicians/show.html:254
+#: templates/physicians/show.html:260
 msgid "Note"
 msgstr ""
 
-#: templates/physicians/show.html:254
+#: templates/physicians/show.html:260
 msgid ""
 "This physician has associated medications or visits and cannot be deleted"
 " until they are reassigned."
 msgstr ""
 
-#: templates/physicians/show.html:258
+#: templates/physicians/show.html:264
 msgid ""
 "Are you sure you want to delete this physician? This action cannot be "
 "undone."
 msgstr ""
 
-#: templates/physicians/show.html:261
+#: templates/physicians/show.html:267
 msgid "Delete Physician"
 msgstr ""
 
@@ -2194,27 +2348,27 @@ msgstr ""
 msgid "Active Prescription Template"
 msgstr ""
 
-#: templates/prescriptions/index.html:26
+#: templates/prescriptions/index.html:26 templates/prescriptions/show.html:39
 msgid "No description provided"
 msgstr ""
 
-#: templates/prescriptions/index.html:28
+#: templates/prescriptions/index.html:28 templates/prescriptions/show.html:44
 msgid "First Field Tab Index"
 msgstr ""
 
-#: templates/prescriptions/index.html:29
+#: templates/prescriptions/index.html:29 templates/prescriptions/show.html:47
 msgid "Medications Per Page"
 msgstr ""
 
-#: templates/prescriptions/index.html:30
+#: templates/prescriptions/index.html:30 templates/prescriptions/show.html:41
 msgid "Template File"
 msgstr ""
 
-#: templates/prescriptions/index.html:31
+#: templates/prescriptions/index.html:31 templates/prescriptions/show.html:53
 msgid "Last Updated"
 msgstr ""
 
-#: templates/prescriptions/index.html:39
+#: templates/prescriptions/index.html:39 templates/prescriptions/show.html:16
 msgid "Download Template"
 msgstr ""
 
@@ -2228,7 +2382,7 @@ msgstr ""
 msgid "All Templates"
 msgstr ""
 
-#: templates/prescriptions/index.html:64
+#: templates/prescriptions/index.html:64 templates/prescriptions/show.html:38
 #: templates/settings/data_management.html:123
 msgid "Description"
 msgstr ""
@@ -2253,7 +2407,7 @@ msgstr ""
 msgid "Activate"
 msgstr ""
 
-#: templates/prescriptions/index.html:104
+#: templates/prescriptions/index.html:104 templates/prescriptions/show.html:65
 msgid "Are you sure you want to delete this template?"
 msgstr ""
 
@@ -2278,6 +2432,34 @@ msgstr ""
 
 #: templates/prescriptions/new.html:18
 msgid "Upload Prescription Template"
+msgstr ""
+
+#: templates/prescriptions/show.html:4
+msgid "Order Template"
+msgstr ""
+
+#: templates/prescriptions/show.html:25
+msgid "Template Details"
+msgstr ""
+
+#: templates/prescriptions/show.html:27
+msgid "Active Template"
+msgstr ""
+
+#: templates/prescriptions/show.html:35
+msgid "Template Name"
+msgstr ""
+
+#: templates/prescriptions/show.html:62
+msgid "Activate Template"
+msgstr ""
+
+#: templates/prescriptions/show.html:67
+msgid "Delete Template"
+msgstr ""
+
+#: templates/prescriptions/show.html:71
+msgid "Edit Template"
 msgstr ""
 
 #: templates/schedules/edit.html:4 templates/schedules/edit.html:20
@@ -2402,12 +2584,12 @@ msgstr ""
 msgid "Automatic Inventory Deduction"
 msgstr ""
 
-#: templates/schedules/index.html:31 templates/schedules/index.html:33
-msgid "Automatic deduction is"
-msgstr ""
-
 #: templates/schedules/index.html:31
 msgid "enabled"
+msgstr ""
+
+#: templates/schedules/index.html:31 templates/schedules/index.html:33
+msgid "Automatic deduction is"
 msgstr ""
 
 #: templates/schedules/index.html:31 templates/schedules/index.html:33
@@ -2861,10 +3043,6 @@ msgstr ""
 msgid "Upcoming Visits:"
 msgstr ""
 
-#: templates/settings/system.html:170
-msgid "Quick Actions"
-msgstr ""
-
 #: templates/settings/system.html:178
 msgid "Manage Data"
 msgstr ""
@@ -3122,10 +3300,6 @@ msgstr ""
 msgid "days away"
 msgstr ""
 
-#: templates/visits/new.html:3 templates/visits/new.html:8
-msgid "Schedule Physician Visit"
-msgstr ""
-
 #: templates/visits/new.html:11 templates/visits/show.html:12
 msgid "Back to Visits"
 msgstr ""
@@ -3204,21 +3378,23 @@ msgstr ""
 msgid "Create Order Based on These Needs"
 msgstr ""
 
-#: templates/visits/show.html:252
-msgid "Create Gap Coverage Order"
-msgstr ""
-
 #: templates/visits/show.html:258
-msgid "medication(s) will run out before this visit."
-msgstr ""
+#, python-format
+msgid "%(count)d medication will run out before this visit."
+msgid_plural "%(count)d medications will run out before this visit."
+msgstr[0] ""
+msgstr[1] ""
 
 #: templates/visits/show.html:261
 msgid "Additionally"
 msgstr ""
 
 #: templates/visits/show.html:262
-msgid "medication(s) are in the safety margin."
-msgstr ""
+#, python-format
+msgid "%(count)d medication is in the safety margin."
+msgid_plural "%(count)d medications are in the safety margin."
+msgstr[0] ""
+msgstr[1] ""
 
 #: templates/visits/show.html:264
 msgid "Please consider creating a gap coverage order to bridge the supply gap."

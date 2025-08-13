@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Translation Test</h1>
+<p>Locale: {{ get_locale() }}</p>
+<p>Simple translation: {{ _('Dashboard') }}</p>
+<p>Test _n with 1: {{ _n('%(count)d unit', '%(count)d units', 1, count=1) }}</p>
+<p>Test _n with 100: {{ _n('%(count)d unit', '%(count)d units', 100, count=100) }}</p>
+<p>Test _n with variable (100): 
+{% set test_count = 100 %}
+{{ _n('%(count)d unit', '%(count)d units', test_count, count=test_count) }}
+</p>
+{% endblock %}

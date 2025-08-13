@@ -72,6 +72,9 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
     db.init_app(app)
     
+    # Debug: Check if translations directory exists  
+    translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
+
     def discover_languages():
         """Dynamically discover available languages from translations directory."""
         languages = {'en': 'English'}  # Always include English
@@ -119,18 +122,20 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         if os.path.exists(translations_dir):
             for item in os.listdir(translations_dir):
                 lang_path = os.path.join(translations_dir, item)
-                po_file = os.path.join(lang_path, 'LC_MESSAGES', 'messages.po')
                 
-                # Check if it's a valid language directory with .po file
+                # Check if it's a valid language directory (2-letter code, not pot files)
                 if (os.path.isdir(lang_path) and 
                     item != 'en' and  # Skip English (already included)
-                    len(item) == 2 and  # Two-letter language codes
-                    os.path.exists(po_file)):
+                    len(item) == 2):  # Two-letter language codes
                     
-                    # Use mapped name or fallback to code
-                    language_name = language_names.get(item, item.upper())
-                    languages[item] = language_name
-                    logger.debug(f"Discovered language: {item} ({language_name})")
+                    # Check for messages.po file to confirm this is a valid language
+                    lc_messages_dir = os.path.join(lang_path, 'LC_MESSAGES')
+                    messages_po = os.path.join(lc_messages_dir, 'messages.po')
+                    if os.path.exists(messages_po):
+                        # Use mapped name or fallback to code
+                        language_name = language_names.get(item, item.upper())
+                        languages[item] = language_name
+                        logger.debug(f"Discovered language: {item} ({language_name})")
         
         return languages
 
@@ -153,15 +158,16 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         logger.debug(f"Using browser language fallback: {browser_lang}")
         return browser_lang
     
-    # Debug: Check if translations directory exists  
-    translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
-    
     # Configure Babel to use the translations directory BEFORE initializing
     app.config['BABEL_TRANSLATION_DIRECTORIES'] = translations_dir
     
     # Initialize Babel for i18n support with locale selector
     babel = Babel()
     babel.init_app(app, locale_selector=get_locale)
+    
+    # Explicitly register translation functions in Jinja2
+    app.jinja_env.globals.update(_=gettext, _n=ngettext, get_locale=get_locale)
+    
     logger.debug(f"App root path: {app.root_path}")
     logger.debug(f"Translations directory path: {translations_dir}")
     logger.debug(f"Translations directory exists: {os.path.exists(translations_dir)}")
@@ -287,31 +293,56 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         }
 
     def calculate_translation_coverage(language_code):
-        """Calculate translation coverage percentage for a language."""
+        """Calculate translation coverage percentage across all domains for a language."""
         if language_code == 'en':
             return 1.0  # English is always 100%
         
         try:
             import babel.messages.pofile as pofile
-            po_path = os.path.join(translations_dir, language_code, 'LC_MESSAGES', 'messages.po')
             
-            if not os.path.exists(po_path):
+            total_translated = 0
+            total_strings = 0
+            
+            # Get all domain .po files for this language
+            lang_dir = os.path.join(translations_dir, language_code, 'LC_MESSAGES')
+            if not os.path.exists(lang_dir):
                 return 0.0
-            
-            with open(po_path, 'r', encoding='utf-8') as f:
-                catalog = pofile.read_po(f)
-            
-            if len(catalog) == 0:
+                
+            # Process each domain .po file
+            po_files = [f for f in os.listdir(lang_dir) if f.endswith('.po')]
+            if not po_files:
                 return 0.0
+                
+            for po_file in po_files:
+                po_path = os.path.join(lang_dir, po_file)
+                
+                try:
+                    with open(po_path, 'r', encoding='utf-8') as f:
+                        catalog = pofile.read_po(f)
+                    
+                    if len(catalog) > 0:
+                        # Count non-empty translations (excluding header)
+                        domain_translated = len([msg for msg in catalog if msg.id and msg.string])
+                        domain_total = len([msg for msg in catalog if msg.id])  # Exclude header
+                        
+                        total_translated += domain_translated
+                        total_strings += domain_total
+                        
+                        logger.debug(f"Domain {po_file}: {domain_translated}/{domain_total} translated")
+                        
+                except Exception as e:
+                    logger.debug(f"Error reading {po_file}: {e}")
+                    continue
             
-            # Count non-empty translations (excluding header)
-            translated = len([msg for msg in catalog if msg.id and msg.string])
-            total = len([msg for msg in catalog if msg.id])  # Exclude header
-            
-            return translated / total if total > 0 else 0.0
+            if total_strings == 0:
+                return 0.0
+                
+            coverage = total_translated / total_strings
+            logger.debug(f"Overall coverage for {language_code}: {total_translated}/{total_strings} = {coverage:.1%}")
+            return coverage
             
         except Exception as e:
-            logger.warning(f"Could not calculate coverage for {language_code}: {e}")
+            logger.warning(f"Could not calculate domain-based coverage for {language_code}: {e}")
             return 0.0
 
     def get_available_languages():
@@ -382,6 +413,10 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     app.jinja_env.globals['_n'] = ngettext
 
     # Home route
+    @app.route("/test_translation")
+    def test_translation():
+        return render_template("test_translation.html")
+    
     @app.route("/")
     def index():
         """Render the dashboard/home page."""

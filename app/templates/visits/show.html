@@ -255,11 +255,11 @@
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         <strong>{{ _('Warning') }}:</strong>
                         {% if medications_will_deplete|length > 0 %}
-                            {{ medications_will_deplete|length }} {{ _('medication(s) will run out before this visit.') }}
+                            {{ _n('%(count)d medication will run out before this visit.', '%(count)d medications will run out before this visit.', medications_will_deplete|length, count=medications_will_deplete|length) }}
                         {% endif %}
                         {% if medications_in_safety_margin|length > 0 %}
                             {% if medications_will_deplete|length > 0 %} {{ _('Additionally') }}, {% endif %}
-                            {{ medications_in_safety_margin|length }} {{ _('medication(s) are in the safety margin.') }}
+                            {{ _n('%(count)d medication is in the safety margin.', '%(count)d medications are in the safety margin.', medications_in_safety_margin|length, count=medications_in_safety_margin|length) }}
                         {% endif %}
                         {{ _('Please consider creating a gap coverage order to bridge the supply gap.') }}
                     </div>

@@ -58,6 +58,12 @@ COPY alembic.ini ./
 
 # Copy translation files
 COPY translations/ ./translations/
+COPY babel.cfg ./
+
+# Compile translations
+RUN pip install babel && \
+    cd /app && \
+    pybabel compile -d ./translations
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1

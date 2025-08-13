@@ -36,7 +36,7 @@
                     <div class="mb-3">
                         <label for="active_ingredient" class="form-label">{{ _('Active Ingredient') }}</label>
                         <input type="text" class="form-control" id="active_ingredient" name="active_ingredient" value="{{ medication.active_ingredient or '' }}">
-                        <div class="form-text">{{ _('The active pharmaceutical ingredient (Wirkstoff)') }}</div>
+                        <div class="form-text">{{ _('The active pharmaceutical ingredient') }}</div>
                     </div>
 
                     <div class="mb-3">
@@ -52,7 +52,7 @@
                                 <select class="form-select" id="physician_id" name="physician_id">
                                     <option value="">{{ _('Select a physician (optional)') }}</option>
                                     {% for physician in physicians %}
-                                        <option value="{{ physician.id }}" 
+                                        <option value="{{ physician.id }}"
                                                 {% if medication.physician_id == physician.id %}selected{% endif %}>
                                             {{ physician.display_name }}
                                         </option>

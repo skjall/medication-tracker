@@ -10,12 +10,12 @@
             <small class="text-muted">{{ physician.specialty }}</small>
         {% endif %}
     </h1>
-    <div class="btn-group" role="group">
-        <a href="{{ url_for('physicians.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Physicians') }}
+    <div>
+        <a href="{{ url_for('physicians.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to List') }}
         </a>
-        <a href="{{ url_for('physicians.edit', physician_id=physician.id) }}" class="btn btn-primary">
-            <i class="fas fa-edit me-1"></i>{{ _('Edit') }}
+        <a href="{{ url_for('physicians.edit', physician_id=physician.id) }}" class="btn btn-primary ms-2">
+            <i class="fas fa-pen-to-square me-1"></i>{{ _('Edit') }}
         </a>
     </div>
 </div>
@@ -152,7 +152,7 @@
                             <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
                             <td>
                                 {% if med.inventory %}
-                                    {{ med.inventory.current_count }} {{ _('units') }}
+                                    {{ _n('%(count)d unit', '%(count)d units', med.inventory.current_count, count=med.inventory.current_count) }}
                                 {% else %}
                                     <em class="text-muted">{{ _('No inventory') }}</em>
                                 {% endif %}
@@ -171,10 +171,13 @@
                                 {% endif %}
                             </td>
                             <td class="text-end">
-                                <a href="{{ url_for('medications.show', medication_id=med.id) }}" 
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i> {{ _('View') }}
-                                </a>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('medications.show', id=med.id) }}" 
+                                       class="btn btn-outline-primary" 
+                                       title="{{ _('View') }}">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     {% endfor %}
@@ -226,10 +229,13 @@
                                 {% endif %}
                             </td>
                             <td class="text-end">
-                                <a href="{{ url_for('visits.show', visit_id=visit.id) }}" 
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i> {{ _('View') }}
-                                </a>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('visits.show', id=visit.id) }}" 
+                                       class="btn btn-outline-primary" 
+                                       title="{{ _('View') }}">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     {% endfor %}

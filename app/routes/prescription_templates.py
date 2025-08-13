@@ -33,7 +33,9 @@ from utils import to_local_timezone
 logger = logging.getLogger(__name__)
 
 # Create the blueprint for prescription routes
-prescription_bp = Blueprint("prescriptions", __name__, url_prefix="/prescriptions")
+prescription_bp = Blueprint(
+    "prescriptions", __name__, url_prefix="/prescriptions"
+)
 
 
 @prescription_bp.route("/")
@@ -74,8 +76,12 @@ def new():
         # Extract form data
         name = request.form.get("name", "")
         description = request.form.get("description", "")
-        first_field_tab_index = int(request.form.get("first_field_tab_index", 1))
-        medications_per_page = int(request.form.get("medications_per_page", 15))
+        first_field_tab_index = int(
+            request.form.get("first_field_tab_index", 1)
+        )
+        medications_per_page = int(
+            request.form.get("medications_per_page", 15)
+        )
 
         # Process column mappings
         column_mappings = {}
@@ -87,7 +93,9 @@ def new():
                 column_mappings[column_num] = column_field
 
         # Save the file
-        templates_dir = os.path.join(current_app.root_path, "data", "templates")
+        templates_dir = os.path.join(
+            current_app.root_path, "data", "templates"
+        )
         os.makedirs(templates_dir, exist_ok=True)
 
         # Secure the filename
@@ -116,13 +124,16 @@ def new():
         db.session.add(template)
         db.session.commit()
 
-        flash(_("Prescription template '{}' added successfully").format(name), "success")
+        flash(
+            _("Prescription template '{}' added successfully").format(name),
+            "success",
+        )
         return redirect(url_for("prescriptions.index"))
 
     # Get available field mappings for the dropdown
     field_mappings = [
         {"value": "medication_name", "label": "Medication Name"},
-        {"value": "active_ingredient", "label": "Active Ingredient (Wirkstoff)"},
+        {"value": "active_ingredient", "label": "Active Ingredient"},
         {"value": "form", "label": "Form"},
         {"value": "dosage", "label": "Dosage"},
         {"value": "frequency", "label": "Frequency"},
@@ -152,7 +163,7 @@ def show(id: int):
     # Map field names to labels
     field_labels = {
         "medication_name": "Medication Name",
-        "active_ingredient": "Active Ingredient (Wirkstoff)",
+        "active_ingredient": "Active Ingredient",
         "form": "Form",
         "dosage": "Dosage",
         "frequency": "Frequency",
@@ -181,7 +192,10 @@ def activate(id: int):
     template = PrescriptionTemplate.query.get_or_404(id)
     template.activate()
 
-    flash(_("Prescription template '{}' activated").format(template.name), "success")
+    flash(
+        _("Prescription template '{}' activated").format(template.name),
+        "success",
+    )
     return redirect(url_for("prescriptions.index"))
 
 
@@ -210,7 +224,10 @@ def delete(id: int):
     db.session.delete(template)
     db.session.commit()
 
-    flash(_("Prescription template '{}' deleted").format(template.name), "success")
+    flash(
+        _("Prescription template '{}' deleted").format(template.name),
+        "success",
+    )
     return redirect(url_for("prescriptions.index"))
 
 
@@ -240,8 +257,12 @@ def edit(id: int):
         # Extract form data
         name = request.form.get("name", "")
         description = request.form.get("description", "")
-        first_field_tab_index = int(request.form.get("first_field_tab_index", 1))
-        medications_per_page = int(request.form.get("medications_per_page", 15))
+        first_field_tab_index = int(
+            request.form.get("first_field_tab_index", 1)
+        )
+        medications_per_page = int(
+            request.form.get("medications_per_page", 15)
+        )
 
         # Update the basic information
         template.name = name
@@ -262,7 +283,10 @@ def edit(id: int):
         template.column_mappings = json.dumps(column_mappings)
 
         # Check if a new file has been uploaded
-        if "template_file" in request.files and request.files["template_file"].filename:
+        if (
+            "template_file" in request.files
+            and request.files["template_file"].filename
+        ):
             file = request.files["template_file"]
 
             # Check if the file is a PDF
@@ -273,7 +297,10 @@ def edit(id: int):
             # Delete the old file
             try:
                 old_file_path = os.path.join(
-                    current_app.root_path, "data", "templates", template.template_file
+                    current_app.root_path,
+                    "data",
+                    "templates",
+                    template.template_file,
                 )
                 if os.path.exists(old_file_path):
                     os.remove(old_file_path)
@@ -282,7 +309,9 @@ def edit(id: int):
                 # Continue even if delete fails
 
             # Save the new file
-            templates_dir = os.path.join(current_app.root_path, "data", "templates")
+            templates_dir = os.path.join(
+                current_app.root_path, "data", "templates"
+            )
 
             # Secure the filename
             secure_name = secure_filename(file.filename)
@@ -302,13 +331,16 @@ def edit(id: int):
         # Save changes
         db.session.commit()
 
-        flash(_("Prescription template '{}' updated successfully").format(name), "success")
+        flash(
+            _("Prescription template '{}' updated successfully").format(name),
+            "success",
+        )
         return redirect(url_for("prescriptions.show", id=template.id))
 
     # Get available field mappings for the dropdown
     field_mappings = [
         {"value": "medication_name", "label": "Medication Name"},
-        {"value": "active_ingredient", "label": "Active Ingredient (Wirkstoff)"},
+        {"value": "active_ingredient", "label": "Active Ingredient"},
         {"value": "form", "label": "Form"},
         {"value": "dosage", "label": "Dosage"},
         {"value": "frequency", "label": "Frequency"},

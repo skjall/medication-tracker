@@ -1,11 +1,22 @@
 #!/bin/bash
 
-# Translation Coverage Report Script
-# This script calculates translation completion percentages for all languages
+# Legacy Translation Coverage Report Script
+# NOTE: This application now uses domain-based translations. 
+# For domain-specific coverage, use: ./scripts/manage-grouped-translations.sh status
 
-echo "Translation Coverage Report"
-echo "=========================="
-echo "Total strings: $(grep -c '^msgid ' translations/messages.pot) strings"
+echo "Legacy Translation Coverage Report"
+echo "=================================="
+echo "ℹ️  This report shows legacy messages.pot coverage."
+echo "📊 For domain-based coverage, use: ./scripts/manage-grouped-translations.sh status"
+echo
+if [ -f "translations/messages.pot" ]; then
+    echo "Total strings in legacy file: $(grep -c '^msgid ' translations/messages.pot) strings"
+else
+    echo "✅ Legacy messages.pot has been removed. Application now uses domain-based translations."
+    echo "📊 For current translation status, run: ./scripts/manage-grouped-translations.sh status"
+    echo "📁 Domain files available: $(ls translations/*.pot 2>/dev/null | wc -l) domains"
+    exit 0
+fi
 echo
 
 # Check if translations directory exists

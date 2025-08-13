@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}{{ _('Dashboard') }} - Medication Tracker{% endblock %}
+{% block title %}{{ _('Dashboard') }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
@@ -24,7 +24,7 @@
                 {% if upcoming_visit %}
                     <h3 class="text-primary">
                         {{ format_date(upcoming_visit.visit_date) }}
-                        <small class="text-muted ms-2">({{ upcoming_visit.days_until }} days away)</small>
+                        <small class="text-muted ms-2">({{ _n('%(count)d day away', '%(count)d days away', upcoming_visit.days_until, count=upcoming_visit.days_until) }})</small>
                     </h3>
                     {% if upcoming_visit.notes %}
                         <p class="card-text mt-3">
@@ -54,12 +54,12 @@
         <div class="card h-100 {% if low_inventory %}border-danger{% else %}border-success{% endif %}">
             <div class="card-header {% if low_inventory %}bg-danger{% else %}bg-success{% endif %} text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Low Inventory Alert
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ _('Low Inventory Alert') }}
                 </h5>
             </div>
             <div class="card-body">
                 {% if low_inventory %}
-                    <p class="card-text">The following medications are below minimum threshold:</p>
+                    <p class="card-text">{{ _('The following medications are below minimum threshold:') }}</p>
                     <ul class="list-group">
                         {% for med in low_inventory %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -67,24 +67,24 @@
                                     <strong>{{ med.name }}</strong>
                                     <span class="text-danger ms-2">
                                         <i class="fas fa-arrow-down"></i>
-                                        {{ med.inventory.current_count }} units
+                                        {{ _n('%(count)d unit', '%(count)d units', med.inventory.current_count, count=med.inventory.current_count) }}
                                     </span>
                                 </div>
                                 <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-pencil-alt me-1"></i>Update
+                                    <i class="fas fa-pencil-alt me-1"></i>{{ _('Update') }}
                                 </a>
                             </li>
                         {% endfor %}
                     </ul>
                     <div class="mt-4">
                         <a href="{{ url_for('inventory.low') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-search me-1"></i>View All Low Stock
+                            <i class="fas fa-search me-1"></i>{{ _('View All Low Stock') }}
                         </a>
                     </div>
                 {% else %}
                     <p class="card-text">
                         <i class="fas fa-check-circle text-success me-2"></i>
-                        All medications are above minimum threshold levels.
+                        {{ _('All medications are above minimum threshold levels.') }}
                     </p>
                 {% endif %}
 
@@ -100,7 +100,7 @@
         <div class="card border-warning">
             <div class="card-header bg-warning text-dark">
                 <h5 class="mb-0">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Gap Coverage Warning
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ _('Gap Coverage Warning') }}
                     {% if gap_info.visit.physician %}
                         - {{ gap_info.visit.physician.name }}
                     {% endif %}
@@ -108,9 +108,9 @@
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    <strong>{{ gap_info.medications|length }} medication(s)</strong> will run out before your visit
-                    {% if gap_info.visit.physician %}with {{ gap_info.visit.physician.name }}{% endif %}
-                    on <strong>{{ format_date(gap_info.visit.visit_date) }}</strong> ({{ gap_info.visit.days_until }} days away).
+                    <strong>{{ _n('%(count)d medication', '%(count)d medications', gap_info.medications|length, count=gap_info.medications|length) }}</strong> {{ _('will run out before your visit') }}
+                    {% if gap_info.visit.physician %}{{ _('with') }} {{ gap_info.visit.physician.name }}{% endif %}
+                    {{ _('on') }} <strong>{{ format_date(gap_info.visit.visit_date) }}</strong> ({{ _n('%(count)d day away', '%(count)d days away', gap_info.visit.days_until, count=gap_info.visit.days_until) }}).
                 </p>
                 <div class="row">
                     <div class="col-md-8">
@@ -121,28 +121,28 @@
                                         <strong>{{ med.name }}</strong>
                                         <span class="text-warning ms-2">
                                             <i class="fas fa-calendar-times"></i>
-                                            Runs out {{ format_date(med.depletion_date) }}
+                                            {{ _('Runs out') }} {{ format_date(med.depletion_date) }}
                                         </span>
                                     </div>
                                     <span class="badge bg-warning text-dark">
-                                        {{ med.inventory.current_count }} units left
+                                        {{ _n('%(count)d unit left', '%(count)d units left', med.inventory.current_count, count=med.inventory.current_count) }}
                                     </span>
                                 </li>
                             {% endfor %}
                             {% if gap_info.medications|length > 5 %}
                                 <li class="list-group-item text-muted">
                                     <i class="fas fa-ellipsis-h me-2"></i>
-                                    And {{ gap_info.medications|length - 5 }} more medication(s)
+                                    {{ _n('And %(count)d more medication', 'And %(count)d more medications', gap_info.medications|length - 5, count=gap_info.medications|length - 5) }}
                                 </li>
                             {% endif %}
                         </ul>
                     </div>
                     <div class="col-md-4 d-flex flex-column justify-content-center">
                         <a href="{{ url_for('visits.show', id=gap_info.visit.id) }}" class="btn btn-primary mb-2">
-                            <i class="fas fa-hospital me-1"></i>View Visit Details
+                            <i class="fas fa-hospital me-1"></i>{{ _('View Visit Details') }}
                         </a>
                         <a href="{{ url_for('orders.new', visit_id=gap_info.visit.id, gap_coverage='true') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-clipboard-list me-1"></i>Create Gap Coverage Order
+                            <i class="fas fa-clipboard-list me-1"></i>{{ _('Create Gap Coverage Order') }}
                         </a>
                     </div>
                 </div>
@@ -158,7 +158,7 @@
         <div class="card">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-pills me-2"></i>Medications Overview
+                    <i class="fas fa-pills me-2"></i>{{ _('Medications Overview') }}
                 </h5>
             </div>
             <div class="card-body">
@@ -167,13 +167,13 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Medication</th>
-                                    <th>Daily Usage</th>
-                                    <th>Current Inventory</th>
-                                    <th>Days Left</th>
-                                    <th>Depletion Date</th>
-                                    <th>Status</th>
-                                    <th class="text-end">Actions</th>
+                                    <th>{{ _('Medication') }}</th>
+                                    <th>{{ _('Daily Usage') }}</th>
+                                    <th>{{ _('Current Inventory') }}</th>
+                                    <th>{{ _('Days Left') }}</th>
+                                    <th>{{ _('Depletion Date') }}</th>
+                                    <th>{{ _('Status') }}</th>
+                                    <th class="text-end">{{ _('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -183,39 +183,39 @@
                                         <td>
                                             <strong>{{ med.name }}</strong>
                                         </td>
-                                        <td>{{ med.daily_usage|round(1) }} units</td>
+                                        <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
                                         <td>
                                             {% if med.inventory %}
-                                                {{ med.inventory.current_count }} units
+                                                {{ _n('%(count)d unit', '%(count)d units', med.inventory.current_count, count=med.inventory.current_count) }}
                                             {% else %}
-                                                <span class="text-muted">No inventory</span>
+                                                <span class="text-muted">{{ _('No inventory') }}</span>
                                             {% endif %}
                                         </td>
                                         <td>
                                             {% if med.days_remaining %}
-                                                {{ med.days_remaining|round(1) }} days
+                                                {{ _n('%(count)d day', '%(count)d days', med.days_remaining|round|int, count=med.days_remaining|round|int) }}
                                             {% else %}
-                                                <span class="text-muted">N/A</span>
+                                                <span class="text-muted">{{ _('N/A') }}</span>
                                             {% endif %}
                                         </td>
                                         <td>
                                             {% if med.depletion_date %}
                                                 {{ format_date(med.depletion_date) }}
                                             {% else %}
-                                                <span class="text-muted">N/A</span>
+                                                <span class="text-muted">{{ _('N/A') }}</span>
                                             {% endif %}
                                         </td>
                                         <td>
                                             {% if not med.inventory %}
-                                                <span class="badge bg-secondary">No Data</span>
+                                                <span class="badge bg-secondary">{{ _('No Data') }}</span>
                                             {% elif med.inventory.current_count == 0 %}
-                                                <span class="badge bg-danger">critical</span>
+                                                <span class="badge bg-danger">{{ _('Critical') }}</span>
                                             {% elif med.inventory.is_low %}
-                                                <span class="badge bg-danger">Low Stock</span>
+                                                <span class="badge bg-danger">{{ _('Low Stock') }}</span>
                                             {% elif med.days_remaining and med.days_remaining < 30 %}
-                                                <span class="badge bg-warning text-white">Running Low</span>
+                                                <span class="badge bg-warning text-white">{{ _('Running Low') }}</span>
                                             {% else %}
-                                                <span class="badge bg-success">OK</span>
+                                                <span class="badge bg-success">{{ _('OK') }}</span>
                                             {% endif %}
                                         </td>
                                         <td class="text-end">
@@ -236,19 +236,19 @@
                         </table>
                     </div>
                 {% else %}
-                    <p class="card-text">No medications found in the system.</p>
+                    <p class="card-text">{{ _('No medications found in the system.') }}</p>
                     <a href="{{ url_for('medications.new') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i>Add Medication
+                        <i class="fas fa-plus me-1"></i>{{ _('Add Medication') }}
                     </a>
                 {% endif %}
             </div>
             {% if medications %}
                 <div class="card-footer">
                     <a href="{{ url_for('medications.index') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-pills me-1"></i>Manage Medications
+                        <i class="fas fa-pills me-1"></i>{{ _('Manage Medications') }}
                     </a>
                     <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-primary ms-2">
-                        <i class="fas fa-boxes me-1"></i>Inventory Detail
+                        <i class="fas fa-boxes me-1"></i>{{ _('Inventory Detail') }}
                     </a>
                 </div>
             {% endif %}
@@ -263,7 +263,7 @@
         <div class="card">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-link me-2"></i>Quick Actions
+                    <i class="fas fa-link me-2"></i>{{ _('Quick Actions') }}
                 </h5>
             </div>
             <div class="card-body">
@@ -271,25 +271,25 @@
                     <div class="col-md-3 mb-3">
                         <a href="{{ url_for('medications.new') }}" class="btn btn-outline-primary w-100 h-100 py-3">
                             <i class="fas fa-plus fa-2x mb-2"></i>
-                            <div>Add New Medication</div>
+                            <div>{{ _('Add New Medication') }}</div>
                         </a>
                     </div>
                     <div class="col-md-3 mb-3">
                         <a href="{{ url_for('visits.new') }}" class="btn btn-outline-primary w-100 h-100 py-3">
                             <i class="fas fa-calendar-plus fa-2x mb-2"></i>
-                            <div>Schedule Physician Visit</div>
+                            <div>{{ _('Schedule Physician Visit') }}</div>
                         </a>
                     </div>
                     <div class="col-md-3 mb-3">
                         <a href="{{ url_for('orders.new') }}" class="btn btn-outline-primary w-100 h-100 py-3">
                             <i class="fas fa-clipboard-list fa-2x mb-2"></i>
-                            <div>Create New Order</div>
+                            <div>{{ _('Create New Order') }}</div>
                         </a>
                     </div>
                     <div class="col-md-3 mb-3">
                         <a href="{{ url_for('inventory.depletion') }}" class="btn btn-outline-primary w-100 h-100 py-3">
                             <i class="fas fa-chart-line fa-2x mb-2"></i>
-                            <div>View Depletion Forecast</div>
+                            <div>{{ _('View Depletion Forecast') }}</div>
                         </a>
                     </div>
                 </div>
