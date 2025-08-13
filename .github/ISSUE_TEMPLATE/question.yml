@@ -1,0 +1,100 @@
+name: ❓ Question
+description: Ask a question about the project
+title: "[QUESTION] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help? We're here to assist!
+        
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: A clear and concise description of your question
+      placeholder: What would you like to know?
+    validations:
+      required: true
+      
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide context about why you're asking this question
+      placeholder: |
+        - What are you trying to accomplish?
+        - What have you already tried?
+        - What documentation have you consulted?
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What area does your question relate to?
+      options:
+        - Installation/Setup
+        - Configuration
+        - Usage/Features
+        - API/Integration
+        - Database
+        - Docker/Deployment
+        - Development/Contributing
+        - Other
+    validations:
+      required: true
+      
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version are you using (if applicable)?
+      placeholder: "e.g., 1.0.0, latest, dev branch"
+      
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment Method
+      description: How are you running the application (if applicable)?
+      options:
+        - Not applicable
+        - Docker
+        - Docker Compose
+        - Local Python
+        - Other
+        
+  - type: textarea
+    id: code
+    attributes:
+      label: Code or Configuration
+      description: If relevant, share any code, configuration, or commands you're working with
+      render: shell
+      
+  - type: textarea
+    id: research
+    attributes:
+      label: What I've Tried
+      description: Describe what you've already attempted or researched
+      placeholder: |
+        - Checked the README
+        - Searched existing issues
+        - Tried different configurations
+        - etc.
+        
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Any other details that might help answer your question
+      
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have searched the existing issues and discussions for similar questions
+          required: true
+        - label: I have checked the documentation and README
+          required: true

@@ -29,27 +29,55 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Delete PR images from Docker Hub
+        continue-on-error: true
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           TAG="pr-${PR_NUMBER}"
 
-          echo "Deleting Docker Hub image: skjall/medication-tracker:${TAG}"
+          echo "Attempting to delete Docker Hub image: skjall/medication-tracker:${TAG}"
 
-          # Get Docker Hub token
+          # Authenticate with Docker Hub API v2
+          # Note: Use a Personal Access Token if 2FA is enabled
+          LOGIN_PAYLOAD=$(echo '{"username": "'${{ secrets.DOCKERHUB_USERNAME }}'", "password": "'${{ secrets.DOCKERHUB_TOKEN }}'"}')
+          
           TOKEN=$(curl -s -X POST \
             -H "Content-Type: application/json" \
-            -d '{"username":"'${{ secrets.DOCKERHUB_USERNAME }}'","password":"'${{ secrets.DOCKERHUB_TOKEN }}'"}' \
-            https://hub.docker.com/v2/users/login/ | jq -r .token)
+            -d "${LOGIN_PAYLOAD}" \
+            "https://hub.docker.com/v2/users/login/" | jq -r .token)
 
-          if [ ! -z "$TOKEN" ]; then
-            # Delete the specific tag
-            curl -X DELETE \
-              -H "Authorization: Bearer ${TOKEN}" \
-              "https://hub.docker.com/v2/repositories/skjall/medication-tracker/tags/${TAG}/"
-
-            echo "Docker Hub image tag ${TAG} deletion requested"
+          if [ ! -z "$TOKEN" ] && [ "$TOKEN" != "null" ]; then
+            # Try to delete the tag - note the trailing slash is important
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+              -H "Accept: application/json" \
+              -H "Authorization: JWT ${TOKEN}" \
+              "https://hub.docker.com/v2/repositories/skjall/medication-tracker/tags/${TAG}/")
+            
+            case $HTTP_CODE in
+              204|200)
+                echo "✓ Docker Hub image tag ${TAG} deleted successfully"
+                ;;
+              404)
+                echo "ℹ Docker Hub image tag ${TAG} not found (may have been already deleted)"
+                ;;
+              401|403)
+                echo "⚠ Docker Hub deletion failed: Authentication/permission issue"
+                echo "  Ensure DOCKERHUB_TOKEN is a Personal Access Token with delete permissions"
+                echo "  Note: Docker Hub has known issues with tag deletion via API"
+                ;;
+              500|502|503)
+                echo "⚠ Docker Hub API error (HTTP ${HTTP_CODE})"
+                echo "  This is a known issue with Docker Hub API as of 2024"
+                echo "  The tag ${TAG} may need manual deletion from Docker Hub UI"
+                ;;
+              *)
+                echo "⚠ Unexpected response from Docker Hub (HTTP ${HTTP_CODE})"
+                echo "  The tag ${TAG} may need manual deletion"
+                ;;
+            esac
           else
-            echo "Failed to authenticate with Docker Hub"
+            echo "⚠ Failed to authenticate with Docker Hub API"
+            echo "  Ensure DOCKERHUB_USERNAME and DOCKERHUB_TOKEN are correctly configured"
+            echo "  If 2FA is enabled, use a Personal Access Token instead of password"
           fi
 
       - name: Delete PR images from GitHub Container Registry
