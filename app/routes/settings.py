@@ -19,6 +19,7 @@ from flask import (
     Blueprint,
     current_app,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -41,6 +42,7 @@ from data_utils import (
     import_physicians_from_csv,
     optimize_database,
 )
+from version import get_version
 from models import (
     Inventory,
     InventoryLog,
@@ -139,6 +141,9 @@ def system():
         PhysicianVisit.visit_date >= datetime.now(timezone.utc)
     ).count()
 
+    # Get current version
+    current_version = get_version()
+
     # Import timezone helper for getting timezone information
     logger.info("Getting timezone display information")
     try:
@@ -155,6 +160,7 @@ def system():
         schedule_count=schedule_count,
         upcoming_visits_count=upcoming_visits_count,
         timezone_info=timezone_info,
+        current_version=current_version,
     )
 
 
@@ -543,6 +549,76 @@ def import_data_type(data_type: str):
         os.rmdir(temp_dir)
 
     return redirect(url_for("settings.data_management"))
+
+
+@settings_bp.route("/check_updates", methods=["GET"])
+def check_updates():
+    """
+    Check for application updates by comparing with the latest GitHub release.
+    """
+    import requests
+    import json
+    
+    logger.info("Checking for application updates")
+    
+    current_version = get_version()
+    
+    try:
+        # Check GitHub API for latest release
+        response = requests.get(
+            "https://api.github.com/repos/skjall/medication-tracker/releases/latest",
+            headers={"Accept": "application/vnd.github.v3+json"},
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            release_data = response.json()
+            latest_version = release_data.get("tag_name", "").lstrip("v")
+            release_url = release_data.get("html_url", "")
+            release_date = release_data.get("published_at", "")
+            
+            # Parse version numbers for comparison
+            def parse_version(v):
+                try:
+                    return tuple(map(int, v.split(".")))
+                except:
+                    return (0, 0, 0)
+            
+            current = parse_version(current_version)
+            latest = parse_version(latest_version)
+            
+            update_available = latest > current
+            
+            return jsonify({
+                "success": True,
+                "current_version": current_version,
+                "latest_version": latest_version,
+                "update_available": update_available,
+                "release_url": release_url,
+                "release_date": release_date
+            })
+        else:
+            logger.warning(f"GitHub API returned status {response.status_code}")
+            return jsonify({
+                "success": False,
+                "current_version": current_version,
+                "error": "Unable to check for updates"
+            })
+            
+    except requests.exceptions.Timeout:
+        logger.error("Timeout while checking for updates")
+        return jsonify({
+            "success": False,
+            "current_version": current_version,
+            "error": "Connection timeout"
+        })
+    except Exception as e:
+        logger.error(f"Error checking for updates: {e}")
+        return jsonify({
+            "success": False,
+            "current_version": current_version,
+            "error": "Unable to check for updates"
+        })
 
 
 @settings_bp.route("/reset/<data_type>", methods=["POST"])

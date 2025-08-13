@@ -177,10 +177,20 @@
                     <a href="{{ url_for('settings.data_management') }}" class="btn btn-outline-success">
                         <i class="fas fa-database me-1"></i>Manage Data
                     </a>
-                    <a href="{{ url_for('system.migrations') }}" class="btn btn-outline-info">
-                        <i class="fas fa-code-branch me-1"></i>Check Updates
-                    </a>
+                    <button type="button" class="btn btn-outline-info" onclick="checkForUpdates()">
+                        <i class="fas fa-sync me-1"></i>Check Updates
+                    </button>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Version Info Card -->
+        <div class="card mt-3" id="versionCard" style="display: none;">
+            <div class="card-header" id="versionHeader">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Version Information</h5>
+            </div>
+            <div class="card-body" id="versionBody">
+                <!-- Version info will be inserted here -->
             </div>
         </div>
     </div>
@@ -190,7 +200,107 @@
 
 {% block scripts %}
 <script>
+    // Check for updates function
+    function checkForUpdates() {
+        const button = event.target.closest('button');
+        const originalContent = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Checking...';
+        
+        fetch('{{ url_for("settings.check_updates") }}')
+            .then(response => response.json())
+            .then(data => {
+                const versionCard = document.getElementById('versionCard');
+                const versionHeader = document.getElementById('versionHeader');
+                const versionBody = document.getElementById('versionBody');
+                
+                versionCard.style.display = 'block';
+                
+                if (data.success) {
+                    if (data.update_available) {
+                        versionHeader.className = 'card-header bg-warning text-dark';
+                        versionBody.innerHTML = `
+                            <div class="text-center">
+                                <i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                                <h6>Update Available!</h6>
+                                <p class="mb-2">Current version: <strong>v${data.current_version}</strong></p>
+                                <p class="mb-3">Latest version: <strong>v${data.latest_version}</strong></p>
+                                <a href="${data.release_url}" target="_blank" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-external-link-alt me-1"></i>View Release
+                                </a>
+                            </div>
+                        `;
+                    } else {
+                        versionHeader.className = 'card-header bg-success text-white';
+                        versionBody.innerHTML = `
+                            <div class="text-center">
+                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                <h6>You're Up to Date!</h6>
+                                <p class="mb-0">Current version: <strong>v${data.current_version}</strong></p>
+                                <p class="text-muted small">This is the latest version</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    versionHeader.className = 'card-header bg-secondary text-white';
+                    versionBody.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-question-circle fa-3x text-secondary mb-3"></i>
+                            <h6>Unable to Check</h6>
+                            <p class="mb-2">Current version: <strong>v${data.current_version}</strong></p>
+                            <p class="text-muted small">${data.error || 'Could not connect to update server'}</p>
+                            <a href="https://github.com/skjall/medication-tracker/releases" target="_blank" class="btn btn-secondary btn-sm mt-2">
+                                <i class="fas fa-external-link-alt me-1"></i>Check Manually
+                            </a>
+                        </div>
+                    `;
+                }
+                
+                // Show a toast with the result
+                if (data.success && data.update_available) {
+                    showToast('Update available! Version ' + data.latest_version + ' is now available.', 'warning');
+                } else if (data.success && !data.update_available) {
+                    showToast('You are running the latest version!', 'success');
+                } else {
+                    showToast('Unable to check for updates', 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Error checking for updates:', error);
+                const versionCard = document.getElementById('versionCard');
+                const versionHeader = document.getElementById('versionHeader');
+                const versionBody = document.getElementById('versionBody');
+                
+                versionCard.style.display = 'block';
+                versionHeader.className = 'card-header bg-danger text-white';
+                versionBody.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                        <h6>Error</h6>
+                        <p class="mb-0">Failed to check for updates</p>
+                        <p class="text-muted small">Please try again later</p>
+                    </div>
+                `;
+                
+                showToast('Error checking for updates', 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerHTML = originalContent;
+            });
+    }
+    
+    // Original timezone search code
     document.addEventListener('DOMContentLoaded', function() {
+        // Display current version in the system status card
+        const currentVersionElement = document.querySelector('.card-body .text-center:first-child');
+        if (currentVersionElement && '{{ current_version }}') {
+            const versionInfo = document.createElement('small');
+            versionInfo.className = 'd-block text-muted mt-1';
+            versionInfo.innerHTML = 'Version {{ current_version }}';
+            currentVersionElement.querySelector('h6').after(versionInfo);
+        }
+        
         // Timezone search functionality
         const searchInput = document.getElementById('timezone_search');
         const timezoneSelect = document.getElementById('timezone_name');
