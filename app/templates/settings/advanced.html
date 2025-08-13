@@ -207,6 +207,14 @@
                 </div>
 
                 <div class="mb-3">
+                    <h6>Database Restore</h6>
+                    <p>Restore database from a backup file:</p>
+                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#restoreModal">
+                        <i class="fas fa-upload me-1"></i>Restore Database
+                    </button>
+                </div>
+
+                <div class="mb-3">
                     <h6>Database Optimization</h6>
                     <p>Optimize the database to improve performance:</p>
                     <form action="{{ url_for('settings.optimize_db') }}" method="POST">
@@ -267,6 +275,51 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Import Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Database Modal -->
+<div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="restoreModalLabel">Restore Database</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('settings.restore_database') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Critical Warning:</strong> Restoring a database will completely replace your current database with the backup file. All current data will be lost!
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="restore_file" class="form-label">Database Backup File</label>
+                        <input class="form-control" type="file" id="restore_file" name="restore_file" accept=".db,.sqlite,.sqlite3" required>
+                        <div class="form-text">
+                            Select a database backup file (.db, .sqlite, or .sqlite3)
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirm_restore" name="confirm_restore" required>
+                        <label class="form-check-label text-danger" for="confirm_restore">
+                            I understand that this will permanently replace all current data
+                        </label>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Recommended:</strong> Create a backup of your current database before restoring.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Restore Database</button>
                 </div>
             </form>
         </div>

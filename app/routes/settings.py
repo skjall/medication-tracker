@@ -7,6 +7,8 @@ into a single unified settings module to avoid route conflicts.
 # Standard library imports
 import logging
 import os
+import shutil
+import sqlite3
 import tempfile
 from datetime import datetime, timezone
 from utils import to_local_timezone
@@ -15,6 +17,7 @@ from utils import to_local_timezone
 import pytz
 from flask import (
     Blueprint,
+    current_app,
     flash,
     redirect,
     render_template,
@@ -219,6 +222,90 @@ def backup_database():
     except Exception as e:
         logger.error(f"Error creating backup: {str(e)}")
         flash(f"Error creating backup: {str(e)}", "error")
+        return redirect(url_for("settings.advanced"))
+
+
+@settings_bp.route("/restore", methods=["POST"])
+def restore_database():
+    """Restore database from an uploaded backup file."""
+    logger.info("Handling database restore")
+    
+    # Check if user confirmed the restore
+    if not request.form.get("confirm_restore"):
+        flash("You must confirm that you understand the restore will replace all current data", "error")
+        return redirect(url_for("settings.advanced"))
+    
+    if "restore_file" not in request.files:
+        flash("No file provided for restore", "error")
+        return redirect(url_for("settings.advanced"))
+    
+    file = request.files["restore_file"]
+    if file.filename == "":
+        flash("No file selected", "error")
+        return redirect(url_for("settings.advanced"))
+    
+    # Validate file extension
+    allowed_extensions = {'.db', '.sqlite', '.sqlite3'}
+    file_ext = os.path.splitext(file.filename)[1].lower()
+    if file_ext not in allowed_extensions:
+        flash(f"Invalid file type. Please upload a database file ({', '.join(allowed_extensions)})", "error")
+        return redirect(url_for("settings.advanced"))
+    
+    try:
+        # Save uploaded file to temporary location
+        temp_dir = tempfile.mkdtemp()
+        temp_file_path = os.path.join(temp_dir, secure_filename(file.filename))
+        file.save(temp_file_path)
+        
+        # Validate that it's a valid SQLite database
+        try:
+            conn = sqlite3.connect(temp_file_path)
+            cursor = conn.cursor()
+            # Check if it has the expected tables
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='medications'")
+            if not cursor.fetchone():
+                flash("Invalid database file: missing required tables", "error")
+                return redirect(url_for("settings.advanced"))
+            conn.close()
+        except sqlite3.Error as e:
+            flash(f"Invalid database file: {str(e)}", "error")
+            return redirect(url_for("settings.advanced"))
+        
+        # Create backup of current database before restore
+        backup_dir = os.path.join(current_app.root_path, "data", "backups")
+        os.makedirs(backup_dir, exist_ok=True)
+        current_db_path = os.path.join(current_app.root_path, "data", "medication_tracker.db")
+        pre_restore_backup = os.path.join(
+            backup_dir, 
+            f"pre_restore_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
+        )
+        
+        # Close all database connections
+        db.session.close_all()
+        db.engine.dispose()
+        
+        # Create backup of current database
+        shutil.copy2(current_db_path, pre_restore_backup)
+        logger.info(f"Created pre-restore backup at: {pre_restore_backup}")
+        
+        # Replace current database with uploaded file
+        shutil.copy2(temp_file_path, current_db_path)
+        logger.info(f"Database restored from uploaded file")
+        
+        # Clean up temporary file
+        os.unlink(temp_file_path)
+        os.rmdir(temp_dir)
+        
+        flash("Database successfully restored! The application will restart to apply changes.", "success")
+        logger.info("Database restore completed successfully")
+        
+        # Note: In production, you might want to restart the application here
+        # For now, we'll just redirect and let the user refresh
+        return redirect(url_for("settings.advanced"))
+        
+    except Exception as e:
+        logger.error(f"Error restoring database: {str(e)}")
+        flash(f"Error restoring database: {str(e)}", "error")
         return redirect(url_for("settings.advanced"))
 
 

@@ -421,6 +421,62 @@ def get_migration_history(app: Flask) -> List[Tuple[str, str, str]]:
         return []
 
 
+def stamp_database_to_latest(app: Flask) -> bool:
+    """
+    Stamp the database to the latest migration version without running migrations.
+    This is useful for fresh databases that have all tables created directly.
+    
+    Args:
+        app: Flask application instance
+    
+    Returns:
+        True if stamping was successful, False otherwise
+    """
+    try:
+        from alembic.script import ScriptDirectory
+        from sqlalchemy import create_engine, text
+        
+        # Get the latest migration revision
+        config = get_alembic_config(app)
+        script_dir = ScriptDirectory.from_config(config)
+        head_rev = script_dir.get_current_head()
+        
+        if not head_rev:
+            logger.warning("No migration revisions found - cannot stamp database")
+            return False
+        
+        logger.info(f"Stamping database to latest migration revision: {head_rev}")
+        
+        # Get database URL
+        db_url = app.config["SQLALCHEMY_DATABASE_URI"]
+        engine = create_engine(db_url)
+        
+        with engine.connect() as conn:
+            # Create alembic_version table if it doesn't exist
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS alembic_version (
+                    version_num VARCHAR(32) NOT NULL PRIMARY KEY
+                )
+            """))
+            
+            # Clear any existing version (should be none for fresh database)
+            conn.execute(text("DELETE FROM alembic_version"))
+            
+            # Insert the latest revision
+            conn.execute(text(
+                f"INSERT INTO alembic_version (version_num) VALUES ('{head_rev}')"
+            ))
+            
+            conn.commit()
+        
+        logger.info(f"Successfully stamped database to revision {head_rev}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error stamping database to latest: {e}")
+        return False
+
+
 def initialize_migrations(app: Flask) -> bool:
     """
     Initialize the migrations environment if it doesn't exist.

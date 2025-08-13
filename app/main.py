@@ -80,27 +80,42 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     # Initialize database with migrations
     with app.app_context():
         # Import here to avoid circular imports
-        from migration_utils import check_migrations_needed, check_and_fix_version_tracking, run_migrations_with_lock, initialize_migrations
-
-        # Initialize migrations environment if needed
-        if not os.path.exists(os.path.join(app.root_path, '..', 'migrations', 'versions')):
-            logger.info("Initializing migrations environment for the first time")
-            initialize_migrations(app)
-
-        # Check and fix version tracking if needed
-        if check_and_fix_version_tracking(app):
-            logger.info("Migration tracking fixed.")
-
-        # Check if migrations need to be run and run them with lock to prevent concurrent execution
-        if check_migrations_needed(app):
-            logger.info("Database migrations needed - attempting to run with lock")
-            success = run_migrations_with_lock(app)
-            if success:
-                logger.info("Database migrations completed successfully")
-            else:
-                logger.warning("Database migrations failed or timed out - application will continue with current schema")
+        from migration_utils import stamp_database_to_latest
+        from sqlalchemy import inspect
+        
+        # Check if this is a fresh database (no tables exist)
+        inspector = inspect(db.engine)
+        existing_tables = inspector.get_table_names()
+        
+        if not existing_tables or len(existing_tables) == 0:
+            # Fresh database - create all tables directly
+            logger.info("Fresh database detected - creating all tables")
+            try:
+                db.create_all()
+                logger.info("Database tables created successfully")
+                
+                # Stamp database to latest migration to skip running them
+                stamp_database_to_latest(app)
+                logger.info("Database stamped to latest migration version")
+                
+                # Create default settings
+                from models.settings import Settings
+                if not Settings.query.first():
+                    default_settings = Settings()
+                    db.session.add(default_settings)
+                    db.session.commit()
+                    logger.info("Default settings created")
+                    
+            except Exception as e:
+                logger.error(f"Error creating database tables: {e}")
+                # Continue anyway - some tables might have been created
+        elif 'alembic_version' not in existing_tables:
+            # Database exists but no migration tracking - stamp to latest
+            logger.info("Existing database without migration tracking - stamping to latest")
+            stamp_database_to_latest(app)
         else:
-            logger.info("Database schema is up to date")
+            # Database exists with migration tracking - migrations already handled by startup
+            logger.info("Database already initialized with migration tracking")
 
     # Register blueprints (routes)
     from routes.medications import medication_bp
