@@ -69,9 +69,28 @@ def adjust(id: int):
     inventory = Inventory.query.get_or_404(id)
 
     # Extract form data
-    adjustment = int(request.form.get("adjustment", 0))
+    direct_adjustment = request.form.get("adjustment", "")
     notes = request.form.get("notes", "")
     referer = request.form.get("referer", None)
+    
+    # Get package adjustment data
+    adj_packages_n1 = int(request.form.get("adj_packages_n1", 0) or 0)
+    adj_packages_n2 = int(request.form.get("adj_packages_n2", 0) or 0)
+    adj_packages_n3 = int(request.form.get("adj_packages_n3", 0) or 0)
+
+    # Calculate the total adjustment
+    if direct_adjustment.strip():
+        # Use direct adjustment if provided
+        adjustment = int(direct_adjustment)
+    else:
+        # Calculate from package quantities
+        medication = inventory.medication
+        package_adjustment = (
+            adj_packages_n1 * (medication.package_size_n1 or 0) +
+            adj_packages_n2 * (medication.package_size_n2 or 0) +
+            adj_packages_n3 * (medication.package_size_n3 or 0)
+        )
+        adjustment = package_adjustment
 
     # Update inventory
     inventory.update_count(adjustment, notes)

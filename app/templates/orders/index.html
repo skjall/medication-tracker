@@ -23,7 +23,7 @@ Medication Tracker{% endblock %} {% block content %}
             <th>Status</th>
             <th>Created Date</th>
             <th>Medications</th>
-            <th>Actions</th>
+            <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -53,7 +53,7 @@ Medication Tracker{% endblock %} {% block content %}
               {{ order.order_items|length }} medication{% if
               order.order_items|length != 1 %}s{% endif %}
             </td>
-            <td>
+            <td class="text-end">
               <div class="btn-group btn-group-sm">
                 <a
                   href="{{ url_for('orders.show', id=order.id) }}"
@@ -64,7 +64,7 @@ Medication Tracker{% endblock %} {% block content %}
                 </a>
                 <a
                   href="{{ url_for('orders.edit', id=order.id) }}"
-                  class="btn btn-outline-secondary"
+                  class="btn btn-outline-primary"
                   title="Edit"
                 >
                   <i class="fas fa-pen-to-square"></i>
@@ -80,7 +80,7 @@ Medication Tracker{% endblock %} {% block content %}
                 {% if order.status != 'fulfilled' %}
                 <button
                   type="button"
-                  class="btn btn-outline-success"
+                  class="btn btn-outline-primary"
                   title="Fulfill Order"
                   data-bs-toggle="modal"
                   data-bs-target="#fulfillModal"
@@ -122,7 +122,7 @@ Medication Tracker{% endblock %} {% block content %}
             <th>Visit Date</th>
             <th>Created Date</th>
             <th>Medications</th>
-            <th>Actions</th>
+            <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -145,7 +145,7 @@ Medication Tracker{% endblock %} {% block content %}
               {{ order.order_items|length }} medication{% if
               order.order_items|length != 1 %}s{% endif %}
             </td>
-            <td>
+            <td class="text-end">
               <div class="btn-group btn-group-sm">
                 <a
                   href="{{ url_for('orders.show', id=order.id) }}"
@@ -156,7 +156,7 @@ Medication Tracker{% endblock %} {% block content %}
                 </a>
                 <a
                   href="{{ url_for('orders.printable', id=order.id) }}"
-                  class="btn btn-outline-info"
+                  class="btn btn-outline-primary"
                   title="Printable Version"
                   target="_blank"
                 >
@@ -178,52 +178,8 @@ Medication Tracker{% endblock %} {% block content %}
   </div>
 </div>
 
-<!-- Fulfill Order Modal -->
-<div
-  class="modal fade"
-  id="fulfillModal"
-  tabindex="-1"
-  aria-labelledby="fulfillModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="fulfillModalLabel">
-          Fulfill Order
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p>Fulfilling this order will:</p>
-        <ul>
-          <li>Mark the order as "fulfilled"</li>
-          <li>Add the ordered medications to your inventory</li>
-        </ul>
-        <p>Are you sure you want to continue?</p>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-        >
-          Cancel
-        </button>
-        <form id="fulfillForm" method="POST">
-          <button type="submit" class="btn btn-success">
-            <i class="fas fa-check me-1"></i>Fulfill Order
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Include Shared Fulfill Order Modal -->
+{% include 'orders/_fulfill_modal.html' %}
 {% endblock %} {% block scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function () {
@@ -238,7 +194,13 @@ Medication Tracker{% endblock %} {% block content %}
           const fulfillForm = document.getElementById('fulfillForm');
 
           if (fulfillForm) {
-            fulfillForm.action = `/orders/${orderId}/fulfill`;
+            fulfillForm.action = `/orders/${orderId}/toggle_fulfillment`;
+          }
+          
+          // Set redirect to return to index page
+          const redirectField = document.getElementById('redirect_to');
+          if (redirectField) {
+            redirectField.value = 'index';
           }
         }
       );

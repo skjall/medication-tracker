@@ -283,11 +283,28 @@ def restore_database():
         os.unlink(temp_file_path)
         os.rmdir(temp_dir)
         
-        flash("Database successfully restored! The application will restart to apply changes.", "success")
-        logger.info("Database restore completed successfully")
+        # Force migration check after restore
+        try:
+            from migration_utils import check_and_fix_version_tracking, run_migrations_with_lock
+            logger.info("Checking and applying migrations after database restore")
+            
+            # Check if the restored database needs migration tracking
+            check_and_fix_version_tracking(current_app)
+            
+            # Run any pending migrations
+            if run_migrations_with_lock(current_app):
+                logger.info("Migrations applied successfully after database restore")
+            else:
+                logger.warning("Migration check failed after restore - may need manual intervention")
+                
+        except Exception as migration_error:
+            logger.error(f"Error running migrations after restore: {migration_error}")
+            flash(f"Database restored but migration failed: {migration_error}", "warning")
+            return redirect(url_for("settings.data_management"))
         
-        # Note: In production, you might want to restart the application here
-        # For now, we'll just redirect and let the user refresh
+        flash("Database successfully restored and migrations applied!", "success")
+        logger.info("Database restore completed successfully with migrations")
+        
         return redirect(url_for("settings.data_management"))
         
     except Exception as e:
@@ -451,13 +468,23 @@ def data_management():
     # Get database path for display
     db_path = os.path.join("data", "medication_tracker.db")
 
-    # Get database size
-    db_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), db_path)
-    db_size_mb = (
-        round(os.path.getsize(db_file_path) / (1024 * 1024), 2)
-        if os.path.exists(db_file_path)
-        else 0
-    )
+    # Get database size - in Docker, the database is in the app directory
+    db_file_path = os.path.join(current_app.root_path, db_path)
+    
+    if os.path.exists(db_file_path):
+        size_bytes = os.path.getsize(db_file_path)
+        size_mb = size_bytes / (1024 * 1024)
+        
+        if size_mb >= 1:
+            db_size = round(size_mb, 2)
+            db_size_unit = "MB"
+        else:
+            db_size = round(size_bytes / 1024, 1)
+            db_size_unit = "KB"
+    else:
+        logger.warning(f"Database file not found at: {db_file_path}")
+        db_size = 0
+        db_size_unit = "KB"
 
     return render_template(
         "settings/data_management.html",
@@ -471,7 +498,8 @@ def data_management():
         schedule_count=schedule_count,
         inventory_logs_count=inventory_logs_count,
         db_path=db_path,
-        db_size_mb=db_size_mb,
+        db_size=db_size,
+        db_size_unit=db_size_unit,
     )
 
 

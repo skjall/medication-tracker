@@ -82,7 +82,7 @@ class Order(db.Model):
     )
     created_date: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
-    # Status can be 'planned', 'printed', 'fulfilled'
+    # Status can be 'planned', 'printed', 'fulfilled', 'partial'
     status: Mapped[str] = mapped_column(String(20), default="planned")
 
     # Relationships
@@ -92,6 +92,32 @@ class Order(db.Model):
     order_items: Mapped[List["OrderItem"]] = relationship(
         "OrderItem", back_populates="order", cascade="all, delete-orphan"
     )
+    
+    @property
+    def fulfillment_summary(self) -> dict:
+        """Get summary of fulfillment status for all items."""
+        summary = {
+            "total": len(self.order_items),
+            "pending": 0,
+            "fulfilled": 0,
+            "modified": 0,
+            "cancelled": 0
+        }
+        for item in self.order_items:
+            if item.fulfillment_status in summary:
+                summary[item.fulfillment_status] += 1
+        return summary
+    
+    def update_status_from_items(self):
+        """Update order status based on item fulfillment status."""
+        summary = self.fulfillment_summary
+        if summary["fulfilled"] == summary["total"] and summary["total"] > 0:
+            self.status = "fulfilled"
+        elif summary["fulfilled"] > 0 or summary["modified"] > 0:
+            self.status = "partial"
+        elif summary["cancelled"] == summary["total"] and summary["total"] > 0:
+            self.status = "cancelled"
+        # Keep current status if still planned/printed
 
     def __repr__(self) -> str:
         return f"<Order for visit {self.physician_visit_id}, status: {self.status}>"
@@ -100,6 +126,7 @@ class Order(db.Model):
 class OrderItem(db.Model):
     """
     Model representing an item in a medication order.
+    Now with individual fulfillment tracking.
     """
 
     __tablename__ = "order_items"
@@ -116,13 +143,34 @@ class OrderItem(db.Model):
     packages_n1: Mapped[int] = mapped_column(Integer, default=0)
     packages_n2: Mapped[int] = mapped_column(Integer, default=0)
     packages_n3: Mapped[int] = mapped_column(Integer, default=0)
+    
+    # Fulfillment tracking fields
+    fulfillment_status: Mapped[str] = mapped_column(
+        String(20), default="pending", nullable=False
+    )  # pending, fulfilled, modified, cancelled
+    fulfillment_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    fulfilled_quantity: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    fulfilled_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # Relationships
     order: Mapped["Order"] = relationship("Order", back_populates="order_items")
     medication: Mapped["Medication"] = relationship(
         "Medication", back_populates="order_items"
     )
+    
+    @property
+    def total_units_ordered(self) -> int:
+        """Calculate total units from packages."""
+        total = 0
+        if self.medication:
+            if self.medication.package_size_n1:
+                total += self.packages_n1 * self.medication.package_size_n1
+            if self.medication.package_size_n2:
+                total += self.packages_n2 * self.medication.package_size_n2
+            if self.medication.package_size_n3:
+                total += self.packages_n3 * self.medication.package_size_n3
+        return total
 
     def __repr__(self) -> str:
         med_name = self.medication.name if self.medication else "Unknown medication"
-        return f"<OrderItem {med_name} for order {self.order_id}>"
+        return f"<OrderItem {med_name} for order {self.order_id} - {self.fulfillment_status}>"

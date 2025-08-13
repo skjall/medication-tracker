@@ -9,7 +9,7 @@
         <i class="fas fa-file-prescription me-2"></i>{{ template.name }}
     </h1>
     <div>
-        <a href="{{ url_for('prescriptions.index') }}" class="btn btn-outline-secondary">
+        <a href="{{ url_for('prescriptions.index') }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left me-1"></i>Back to Templates
         </a>
         <a href="{{ url_for('prescriptions.download', id=template.id) }}" class="btn btn-outline-primary ms-2">
@@ -58,7 +58,7 @@
                 {% if not template.is_active %}
                     <div class="d-grid gap-2">
                         <form method="POST" action="{{ url_for('prescriptions.activate', id=template.id) }}">
-                            <button type="submit" class="btn btn-success w-100">
+                            <button type="submit" class="btn btn-primary w-100">
                                 <i class="fas fa-check-circle me-1"></i>Activate Template
                             </button>
                         </form>

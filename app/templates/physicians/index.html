@@ -33,7 +33,7 @@
                             <th>Email</th>
                             <th>Medications</th>
                             <th>Visits</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -57,7 +57,7 @@
                                 <td>
                                     <span class="badge bg-secondary">{{ physician.visits|length }}</span>
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="btn-group" role="group">
                                         <a href="{{ url_for('physicians.show', physician_id=physician.id) }}" 
                                            class="btn btn-sm btn-outline-primary" 

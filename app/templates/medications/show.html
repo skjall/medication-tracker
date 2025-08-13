@@ -350,7 +350,7 @@ Medication Tracker{% endblock %} {% block content %}
             <th>Order Status</th>
             <th>Quantity</th>
             <th>Packages</th>
-            <th>Actions</th>
+            <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -381,7 +381,7 @@ Medication Tracker{% endblock %} {% block content %}
                 }} {% endif %}
               </small>
             </td>
-            <td>
+            <td class="text-end">
               <a
                 href="{{ url_for('orders.show', id=item.order.id) }}"
                 class="btn btn-sm btn-outline-primary"

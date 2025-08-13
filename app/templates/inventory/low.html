@@ -37,7 +37,7 @@
                             <th>Days Left</th>
                             <th>Depletion Date</th>
                             <th>Needed Units</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -69,7 +69,7 @@
                                     {% set needed = (med.min_threshold + (med.safety_margin_days * med.daily_usage)) - med.inventory.current_count %}
                                     <strong>{{ needed|round(0)|int }}</strong> units
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary" title="Manage Inventory">
                                             <i class="fas fa-boxes"></i>

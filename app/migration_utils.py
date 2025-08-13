@@ -356,6 +356,8 @@ def run_migrations(app: Flask) -> bool:
         return True
     except Exception as e:
         logger.error(f"Migration failed: {e}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         return False
 
 

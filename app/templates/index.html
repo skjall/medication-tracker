@@ -35,7 +35,7 @@
                         <a href="{{ url_for('visits.show', id=upcoming_visit.id) }}" class="btn btn-outline-primary">
                             <i class="fas fa-eye me-1"></i>View Details
                         </a>
-                        <a href="{{ url_for('orders.new', visit_id=upcoming_visit.id) }}" class="btn btn-outline-success ms-2">
+                        <a href="{{ url_for('orders.new', visit_id=upcoming_visit.id) }}" class="btn btn-outline-primary ms-2">
                             <i class="fas fa-plus me-1"></i>Create Order
                         </a>
                     </div>
@@ -138,10 +138,10 @@
                         </ul>
                     </div>
                     <div class="col-md-4 d-flex flex-column justify-content-center">
-                        <a href="{{ url_for('visits.show', id=gap_info.visit.id) }}" class="btn btn-warning mb-2">
+                        <a href="{{ url_for('visits.show', id=gap_info.visit.id) }}" class="btn btn-primary mb-2">
                             <i class="fas fa-hospital me-1"></i>View Visit Details
                         </a>
-                        <a href="{{ url_for('orders.new', visit_id=gap_info.visit.id, gap_coverage='true') }}" class="btn btn-outline-warning">
+                        <a href="{{ url_for('orders.new', visit_id=gap_info.visit.id, gap_coverage='true') }}" class="btn btn-outline-primary">
                             <i class="fas fa-clipboard-list me-1"></i>Create Gap Coverage Order
                         </a>
                     </div>
@@ -173,7 +173,7 @@
                                     <th>Days Left</th>
                                     <th>Depletion Date</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -218,13 +218,13 @@
                                                 <span class="badge bg-success">OK</span>
                                             {% endif %}
                                         </td>
-                                        <td>
+                                        <td class="text-end">
                                             <div class="btn-group btn-group-sm">
                                                 <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-primary">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 {% if med.inventory %}
-                                                    <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-success">
+                                                    <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary">
                                                         <i class="fas fa-boxes"></i>
                                                     </a>
                                                 {% endif %}
@@ -247,7 +247,7 @@
                     <a href="{{ url_for('medications.index') }}" class="btn btn-outline-primary">
                         <i class="fas fa-pills me-1"></i>Manage Medications
                     </a>
-                    <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-success ms-2">
+                    <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-primary ms-2">
                         <i class="fas fa-boxes me-1"></i>Inventory Detail
                     </a>
                 </div>

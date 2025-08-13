@@ -7,7 +7,7 @@
     <h1>
         <i class="fas fa-database me-2"></i>Data Management
     </h1>
-    <a href="{{ url_for('settings.system') }}" class="btn btn-outline-secondary">
+    <a href="{{ url_for('settings.system') }}" class="btn btn-outline-primary">
         <i class="fas fa-arrow-left me-1"></i>Back to System Settings
     </a>
 </div>
@@ -32,7 +32,7 @@
                 <i class="fas fa-upload fa-3x text-success mb-3"></i>
                 <h6>Restore Database</h6>
                 <p class="small text-muted">Restore from backup file</p>
-                <button type="button" class="btn btn-success btn-sm w-100" data-bs-toggle="modal" data-bs-target="#restoreModal">
+                <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#restoreModal">
                     <i class="fas fa-upload me-1"></i>Restore Backup
                 </button>
             </div>
@@ -45,7 +45,7 @@
                 <h6>Optimize Database</h6>
                 <p class="small text-muted">Improve database performance</p>
                 <form action="{{ url_for('settings.optimize_db') }}" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-warning btn-sm w-100">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
                         <i class="fas fa-bolt me-1"></i>Optimize Now
                     </button>
                 </form>
@@ -77,7 +77,7 @@
                 <div class="text-center mb-3">
                     <i class="fas fa-database fa-2x text-info mb-2"></i>
                     <h6>Database Info</h6>
-                    <p class="mb-1"><strong>Size:</strong> {{ db_size_mb }} MB</p>
+                    <p class="mb-1"><strong>Size:</strong> {{ db_size }} {{ db_size_unit }}</p>
                     <p class="mb-0"><small class="text-muted">{{ db_path }}</small></p>
                 </div>
             </div>
@@ -139,7 +139,7 @@
                             </button>
                         </td>
                         <td>
-                            <a href="{{ url_for('settings.export_data', data_type='medications') }}" class="btn btn-success btn-sm">
+                            <a href="{{ url_for('settings.export_data', data_type='medications') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-file-export me-1"></i>Export
                             </a>
                         </td>
@@ -161,7 +161,7 @@
                             </button>
                         </td>
                         <td>
-                            <a href="{{ url_for('settings.export_data', data_type='physicians') }}" class="btn btn-success btn-sm">
+                            <a href="{{ url_for('settings.export_data', data_type='physicians') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-file-export me-1"></i>Export
                             </a>
                         </td>
@@ -183,7 +183,7 @@
                           </button>
                       </td>
                       <td>
-                          <a href="{{ url_for('settings.export_data', data_type='schedules') }}" class="btn btn-success btn-sm">
+                          <a href="{{ url_for('settings.export_data', data_type='schedules') }}" class="btn btn-primary btn-sm">
                               <i class="fas fa-file-export me-1"></i>Export
                           </a>
                       </td>
@@ -205,7 +205,7 @@
                             </button>
                         </td>
                         <td>
-                            <a href="{{ url_for('settings.export_data', data_type='inventory') }}" class="btn btn-success btn-sm">
+                            <a href="{{ url_for('settings.export_data', data_type='inventory') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-file-export me-1"></i>Export
                             </a>
                         </td>
@@ -227,7 +227,7 @@
                             </button>
                         </td>
                         <td>
-                            <a href="{{ url_for('settings.export_data', data_type='visits') }}" class="btn btn-success btn-sm">
+                            <a href="{{ url_for('settings.export_data', data_type='visits') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-file-export me-1"></i>Export
                             </a>
                         </td>
@@ -249,7 +249,7 @@
                             </button>
                         </td>
                         <td>
-                            <a href="{{ url_for('settings.export_data', data_type='orders') }}" class="btn btn-success btn-sm">
+                            <a href="{{ url_for('settings.export_data', data_type='orders') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-file-export me-1"></i>Export
                             </a>
                         </td>
@@ -318,7 +318,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Import Data</button>
                 </div>
             </form>
@@ -363,7 +363,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">Restore Database</button>
                 </div>
             </form>
@@ -398,7 +398,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">Clear Old Logs</button>
                 </div>
             </form>
@@ -432,7 +432,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">Reset Data</button>
                 </div>
             </form>

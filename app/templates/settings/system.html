@@ -7,7 +7,7 @@
     <h1>
         <i class="fas fa-cogs me-2"></i>System Settings
     </h1>
-    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
         <i class="fas fa-home me-1"></i>Dashboard
     </a>
 </div>
@@ -174,10 +174,10 @@
                     <a href="{{ url_for('settings.backup_database') }}" class="btn btn-outline-primary">
                         <i class="fas fa-download me-1"></i>Download Backup
                     </a>
-                    <a href="{{ url_for('settings.data_management') }}" class="btn btn-outline-success">
+                    <a href="{{ url_for('settings.data_management') }}" class="btn btn-outline-primary">
                         <i class="fas fa-database me-1"></i>Manage Data
                     </a>
-                    <button type="button" class="btn btn-outline-info" onclick="checkForUpdates()">
+                    <button type="button" class="btn btn-outline-primary" onclick="checkForUpdates()">
                         <i class="fas fa-sync me-1"></i>Check Updates
                     </button>
                 </div>
@@ -225,7 +225,7 @@
                                 <h6>Update Available!</h6>
                                 <p class="mb-2">Current version: <strong>v${data.current_version}</strong></p>
                                 <p class="mb-3">Latest version: <strong>v${data.latest_version}</strong></p>
-                                <a href="${data.release_url}" target="_blank" class="btn btn-warning btn-sm">
+                                <a href="${data.release_url}" target="_blank" class="btn btn-primary btn-sm">
                                     <i class="fas fa-external-link-alt me-1"></i>View Release
                                 </a>
                             </div>
@@ -249,7 +249,7 @@
                             <h6>Unable to Check</h6>
                             <p class="mb-2">Current version: <strong>v${data.current_version}</strong></p>
                             <p class="text-muted small">${data.error || 'Could not connect to update server'}</p>
-                            <a href="https://github.com/skjall/medication-tracker/releases" target="_blank" class="btn btn-secondary btn-sm mt-2">
+                            <a href="https://github.com/skjall/medication-tracker/releases" target="_blank" class="btn btn-outline-primary btn-sm mt-2">
                                 <i class="fas fa-external-link-alt me-1"></i>Check Manually
                             </a>
                         </div>

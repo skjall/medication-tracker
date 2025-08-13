@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from flask import (
     Blueprint,
     flash,
+    jsonify,
     make_response,
     redirect,
     render_template,
@@ -427,38 +428,143 @@ def printable(id: int):
     return response
 
 
-@order_bp.route("/<int:id>/fulfill", methods=["POST"])
-def fulfill(id: int):
-    """Mark an order as fulfilled and update inventory."""
+@order_bp.route("/<int:id>/toggle_fulfillment", methods=["POST"])
+def toggle_fulfillment(id: int):
+    """Toggle order fulfillment status with optional inventory update."""
     order = Order.query.get_or_404(id)
-
-    # Don't allow fulfilling already fulfilled orders
+    
     if order.status == "fulfilled":
-        flash("Order is already fulfilled", "warning")
+        # Unfulfill the order
+        order.status = "planned"
+        # Mark all items as pending
+        for item in order.order_items:
+            item.fulfillment_status = "pending"
+            item.fulfilled_at = None
+        flash("Order marked as unfulfilled", "info")
+    else:
+        # Get fulfillment type from form
+        fulfillment_type = request.form.get("fulfillment_type", "mark_only")
+        update_inventory = fulfillment_type == "update_inventory"
+        
+        # Mark as fulfilled
+        order.status = "fulfilled"
+        fulfilled_count = 0
+        
+        # Mark all pending items as fulfilled
+        for item in order.order_items:
+            if item.fulfillment_status != "fulfilled":
+                item.fulfillment_status = "fulfilled"
+                item.fulfilled_at = datetime.now(timezone.utc)
+                item.fulfilled_quantity = item.total_units_ordered
+                fulfilled_count += 1
+                
+                # Update inventory if requested
+                if update_inventory and item.medication and item.medication.inventory:
+                    item.medication.inventory.update_count(
+                        item.total_units_ordered,
+                        f"Bulk fulfillment from order #{order.id}"
+                    )
+        
+        if update_inventory:
+            flash(f"Order marked as fulfilled and {fulfilled_count} items added to inventory", "success")
+        else:
+            flash("Order marked as fulfilled", "success")
+    
+    db.session.commit()
+    
+    # Check if there's a specific redirect requested or use referrer
+    redirect_to = request.form.get("redirect_to")
+    if redirect_to == "index":
+        return redirect(url_for("orders.index"))
+    elif request.referrer and "/orders/" in request.referrer and request.referrer.endswith("/orders/"):
+        # Came from orders index page
+        return redirect(url_for("orders.index"))
+    else:
+        # Default to showing the order details
         return redirect(url_for("orders.show", id=order.id))
 
-    # Update inventory based on the order
-    for item in order.order_items:
-        if item.medication and item.medication.inventory:
-            # Calculate total pills from packages
-            total_units = 0
-            if item.medication.package_size_n1:
-                total_units += item.packages_n1 * item.medication.package_size_n1
-            if item.medication.package_size_n2:
-                total_units += item.packages_n2 * item.medication.package_size_n2
-            if item.medication.package_size_n3:
-                total_units += item.packages_n3 * item.medication.package_size_n3
 
-            # Update inventory
+@order_bp.route("/<int:id>/item/<int:item_id>/fulfill", methods=["POST"])
+def fulfill_item(id: int, item_id: int):
+    """Mark individual order item as fulfilled and optionally update inventory."""
+    order = Order.query.get_or_404(id)
+    item = OrderItem.query.get_or_404(item_id)
+    
+    if item.order_id != order.id:
+        flash("Item does not belong to this order", "error")
+        return redirect(url_for("orders.show", id=order.id))
+    
+    # Get form data
+    status = request.form.get("status", "fulfilled")
+    notes = request.form.get("notes", "")
+    add_to_inventory = request.form.get("add_to_inventory") == "true"
+    custom_quantity = request.form.get("custom_quantity", type=int)
+    
+    # Update item status
+    item.fulfillment_status = status
+    item.fulfillment_notes = notes if notes else None
+    item.fulfilled_at = datetime.now(timezone.utc) if status == "fulfilled" else None
+    
+    # Handle quantity and inventory update
+    if status == "fulfilled" and add_to_inventory and item.medication and item.medication.inventory:
+        # Use custom quantity or calculate from packages
+        if custom_quantity is not None:
+            total_units = custom_quantity
+            item.fulfilled_quantity = custom_quantity
+        else:
+            total_units = item.total_units_ordered
+            item.fulfilled_quantity = total_units
+        
+        # Update inventory
+        item.medication.inventory.update_count(
+            total_units, 
+            f"Added from order #{order.id} - {notes if notes else 'Standard fulfillment'}"
+        )
+    elif status == "modified" and custom_quantity is not None:
+        item.fulfilled_quantity = custom_quantity
+        if add_to_inventory and item.medication and item.medication.inventory:
             item.medication.inventory.update_count(
-                total_units, f"Added from order #{order.id}"
+                custom_quantity,
+                f"Modified fulfillment from order #{order.id} - {notes if notes else 'Modified quantity'}"
             )
-
-    # Mark order as fulfilled
-    order.status = "fulfilled"
+    
+    # Update order status based on all items
+    order.update_status_from_items()
     db.session.commit()
+    
+    flash(f"Item {item.medication.name if item.medication else 'Unknown'} marked as {status}", "success")
+    return redirect(url_for("orders.show", id=order.id))
 
-    flash("Order fulfilled and inventory updated successfully", "success")
+
+@order_bp.route("/<int:id>/bulk_fulfill", methods=["POST"])
+def bulk_fulfill(id: int):
+    """Process bulk fulfillment of multiple items."""
+    order = Order.query.get_or_404(id)
+    
+    # Get selected items from form
+    selected_items = request.form.getlist("items")
+    add_to_inventory = request.form.get("add_to_inventory") == "true"
+    
+    fulfilled_count = 0
+    for item_id in selected_items:
+        item = OrderItem.query.get(item_id)
+        if item and item.order_id == order.id and item.fulfillment_status != "fulfilled":
+            item.fulfillment_status = "fulfilled"
+            item.fulfilled_at = datetime.now(timezone.utc)
+            item.fulfilled_quantity = item.total_units_ordered
+            
+            if add_to_inventory and item.medication and item.medication.inventory:
+                item.medication.inventory.update_count(
+                    item.total_units_ordered,
+                    f"Bulk fulfillment from order #{order.id}"
+                )
+            fulfilled_count += 1
+    
+    # Update order status
+    order.update_status_from_items()
+    db.session.commit()
+    
+    flash(f"Successfully fulfilled {fulfilled_count} items", "success")
     return redirect(url_for("orders.show", id=order.id))
 
 

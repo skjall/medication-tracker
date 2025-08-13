@@ -116,6 +116,11 @@ footer {
   margin-right: 0.25rem;
 }
 
+/* Remove right margin for icon-only buttons */
+.btn i:only-child {
+  margin-right: 0;
+}
+
 /* Style for card link buttons */
 .card-link-btn {
   text-decoration: none;

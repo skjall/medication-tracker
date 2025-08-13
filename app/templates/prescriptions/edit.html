@@ -9,10 +9,10 @@
         <i class="fas fa-pen-to-square me-2"></i>Edit Prescription Template
     </h1>
     <div>
-        <a href="{{ url_for('prescriptions.show', id=template.id) }}" class="btn btn-outline-secondary">
+        <a href="{{ url_for('prescriptions.show', id=template.id) }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left me-1"></i>Back to Details
         </a>
-        <a href="{{ url_for('prescriptions.index') }}" class="btn btn-outline-secondary ms-2">
+        <a href="{{ url_for('prescriptions.index') }}" class="btn btn-outline-primary ms-2">
             <i class="fas fa-list me-1"></i>All Templates
         </a>
     </div>
@@ -44,7 +44,7 @@
                         <label for="template_file" class="form-label">Template PDF File</label>
                         <div class="input-group">
                             <input type="file" class="form-control" id="template_file" name="template_file" accept=".pdf">
-                            <button class="btn btn-outline-secondary" type="button" disabled>Current: {{ template.template_file }}</button>
+                            <button class="btn btn-outline-primary" type="button" disabled>Current: {{ template.template_file }}</button>
                         </div>
                         <div class="form-text">Upload a new file only if you want to replace the current one</div>
                     </div>
@@ -94,7 +94,7 @@
                     </div>
 
                     <div class="mt-2">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="add-column-btn">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="add-column-btn">
                             <i class="fas fa-plus me-1"></i>Add Column
                         </button>
                     </div>
@@ -116,7 +116,7 @@
             </div>
 
             <div class="mt-4 d-flex justify-content-between">
-                <a href="{{ url_for('prescriptions.show', id=template.id) }}" class="btn btn-outline-secondary">
+                <a href="{{ url_for('prescriptions.show', id=template.id) }}" class="btn btn-outline-primary">
                     <i class="fas fa-times me-1"></i>Cancel
                 </a>
                 <button type="submit" class="btn btn-primary">

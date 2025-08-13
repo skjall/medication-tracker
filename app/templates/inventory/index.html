@@ -41,7 +41,7 @@
                             <th>Days Left</th>
                             <th>Depletion Date</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,7 +108,7 @@
                                         <span class="badge bg-success">OK</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     {% if med.inventory %}
                                         <div class="btn-group btn-group-sm">
                                             <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary" title="View">

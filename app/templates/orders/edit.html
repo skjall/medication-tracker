@@ -63,7 +63,7 @@
                                 <th style="width: 3%"></th>
                                 <th>Medication</th>
                                 <th>Current Stock</th>
-                                <th>Actions</th>
+                                <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -89,7 +89,7 @@
                                             <span class="text-muted">No inventory</span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         <button type="button" class="btn btn-sm btn-outline-primary calculate-packages-btn" data-medication-id="{{ med.id }}">
                                             <i class="fas fa-calculator me-1"></i>Calculate Needs
                                         </button>

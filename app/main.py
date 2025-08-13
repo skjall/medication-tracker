@@ -114,8 +114,13 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             logger.info("Existing database without migration tracking - stamping to latest")
             stamp_database_to_latest(app)
         else:
-            # Database exists with migration tracking - migrations already handled by startup
-            logger.info("Database already initialized with migration tracking")
+            # Database exists with migration tracking - run any pending migrations
+            logger.info("Database already initialized with migration tracking - checking for pending migrations")
+            from migration_utils import run_migrations_with_lock
+            if run_migrations_with_lock(app):
+                logger.info("Migrations completed successfully")
+            else:
+                logger.warning("Migration run failed or timed out - continuing anyway")
 
     # Register blueprints (routes)
     from routes.medications import medication_bp

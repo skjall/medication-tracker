@@ -136,7 +136,7 @@
                         <th>Daily Usage</th>
                         <th>Current Stock</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -170,7 +170,7 @@
                                     <span class="badge bg-secondary">No Inventory</span>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td class="text-end">
                                 <a href="{{ url_for('medications.show', medication_id=med.id) }}" 
                                    class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i> View
@@ -201,7 +201,7 @@
                         <th>Visit Date</th>
                         <th>Days Until</th>
                         <th>Notes</th>
-                        <th>Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -225,7 +225,7 @@
                                     <em class="text-muted">No notes</em>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td class="text-end">
                                 <a href="{{ url_for('visits.show', visit_id=visit.id) }}" 
                                    class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i> View

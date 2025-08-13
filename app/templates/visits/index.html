@@ -31,7 +31,7 @@
                             <th>Notes</th>
                             <th>Orders</th>
                             <th>Order Plan</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,15 +81,15 @@
                                         </span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ url_for('visits.edit', id=visit.id) }}" class="btn btn-outline-secondary" title="Edit Visit">
+                                        <a href="{{ url_for('visits.edit', id=visit.id) }}" class="btn btn-outline-primary" title="Edit Visit">
                                             <i class="fas fa-pen-to-square"></i>
                                         </a>
-                                        <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-outline-success" title="Create Order">
+                                        <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-outline-primary" title="Create Order">
                                             <i class="fas fa-clipboard-list"></i>
                                         </a>
                                     </div>
@@ -127,7 +127,7 @@
                             <th>Physician</th>
                             <th>Notes</th>
                             <th>Orders</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -161,7 +161,7 @@
                                         <span class="badge bg-secondary">No orders</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary" title="View Details">
                                             <i class="fas fa-eye"></i>

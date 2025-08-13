@@ -6,9 +6,12 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
         <i class="fas fa-clipboard-list me-2"></i>Order #{{ order.id }}
+        {% if order.status == 'partial' %}
+            <span class="badge bg-warning ms-2">Partial</span>
+        {% endif %}
     </h1>
     <div>
-        <a href="{{ url_for('orders.index') }}" class="btn btn-outline-secondary">
+        <a href="{{ url_for('orders.index') }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left me-1"></i>Back to Orders
         </a>
         <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary ms-2">
@@ -27,7 +30,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h3>Order #{{ order.id }}</h3>
-                    <span class="badge {% if order.status == 'planned' %}bg-primary{% elif order.status == 'printed' %}bg-info{% elif order.status == 'fulfilled' %}bg-success{% endif %} fs-6">
+                    <span class="badge {% if order.status == 'planned' %}bg-primary{% elif order.status == 'printed' %}bg-info{% elif order.status == 'fulfilled' %}bg-success{% elif order.status == 'partial' %}bg-warning{% else %}bg-secondary{% endif %} fs-6">
                         {{ order.status|capitalize }}
                     </span>
                 </div>
@@ -68,10 +71,10 @@
                             <i class="fas fa-pen-to-square me-1"></i>Edit Order
                         </a>
                         <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-outline-primary" target="_blank">
-                            <i class="fas fa-print me-1"></i>Printable Version
+                            <i class="fas fa-print me-1"></i>Print
                         </a>
-                        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#fulfillModal">
-                            <i class="fas fa-check me-1"></i>Fulfill Order
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#fulfillModal">
+                            <i class="fas fa-check me-1"></i>Mark Fulfilled
                         </button>
                     </div>
 
@@ -81,14 +84,21 @@
                         </button>
                     </form>
                 {% else %}
-                    <div class="alert alert-success">
+                    <div class="alert alert-success mb-3">
                         <i class="fas fa-check-circle me-2"></i>
-                        This order has been fulfilled and added to your inventory.
+                        This order has been marked as fulfilled.
                     </div>
-
-                    <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-outline-info w-100" target="_blank">
-                        <i class="fas fa-print me-1"></i>Printable Version
-                    </a>
+                    
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-outline-primary" target="_blank">
+                            <i class="fas fa-print me-1"></i>Print
+                        </a>
+                        <form method="POST" action="{{ url_for('orders.toggle_fulfillment', id=order.id) }}" class="w-50">
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-undo me-1"></i>Mark Unfulfilled
+                            </button>
+                        </form>
+                    </div>
                 {% endif %}
             </div>
         </div>
@@ -109,6 +119,8 @@
                                     <th>Amount Needed</th>
                                     <th>Packages</th>
                                     <th>Total Units</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -117,6 +129,9 @@
                                         <td>
                                             <strong>{{ item.medication.name }}</strong>
                                             <div class="small text-muted">{{ item.medication.daily_usage|round(1) }} units/day</div>
+                                            {% if item.fulfillment_notes %}
+                                                <div class="small text-info"><i class="fas fa-info-circle"></i> {{ item.fulfillment_notes }}</div>
+                                            {% endif %}
                                         </td>
                                         <td>{{ item.quantity_needed }} units</td>
                                         <td>
@@ -133,17 +148,45 @@
                                             </small>
                                         </td>
                                         <td>
-                                            {% set total_units = 0 %}
-                                            {% if item.medication.package_size_n1 %}
-                                                {% set total_units = total_units + (item.packages_n1 * item.medication.package_size_n1) %}
+                                            {{ item.total_units_ordered }} units
+                                            {% if item.fulfilled_quantity and item.fulfilled_quantity != item.total_units_ordered %}
+                                                <div class="small text-warning">Received: {{ item.fulfilled_quantity }} units</div>
                                             {% endif %}
-                                            {% if item.medication.package_size_n2 %}
-                                                {% set total_units = total_units + (item.packages_n2 * item.medication.package_size_n2) %}
+                                        </td>
+                                        <td>
+                                            {% if item.fulfillment_status == 'pending' %}
+                                                <span class="badge bg-secondary">Pending</span>
+                                            {% elif item.fulfillment_status == 'fulfilled' %}
+                                                <span class="badge bg-success">Fulfilled</span>
+                                            {% elif item.fulfillment_status == 'modified' %}
+                                                <span class="badge bg-warning">Modified</span>
+                                            {% elif item.fulfillment_status == 'cancelled' %}
+                                                <span class="badge bg-danger">Cancelled</span>
                                             {% endif %}
-                                            {% if item.medication.package_size_n3 %}
-                                                {% set total_units = total_units + (item.packages_n3 * item.medication.package_size_n3) %}
+                                            {% if item.fulfilled_at %}
+                                                <div class="small text-muted">{{ format_date(item.fulfilled_at) }}</div>
                                             {% endif %}
-                                            {{ total_units }} units
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('medications.show', id=item.medication.id) }}" class="btn btn-outline-primary" title="View Medication Details">
+                                                    <i class="fas fa-pills"></i>
+                                                </a>
+                                                <a href="{{ url_for('inventory.show', id=item.medication.id) }}" class="btn btn-outline-primary" title="View Inventory">
+                                                    <i class="fas fa-boxes"></i>
+                                                </a>
+                                                {% if item.fulfillment_status == 'pending' %}
+                                                    <button type="button" class="btn btn-outline-primary" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#fulfillItemModal" 
+                                                            data-item-id="{{ item.id }}"
+                                                            data-item-name="{{ item.medication.name }}"
+                                                            data-item-quantity="{{ item.total_units_ordered }}"
+                                                            title="Fulfill Item">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -167,31 +210,108 @@
     </div>
 </div>
 
-<!-- Fulfill Order Modal -->
-<div class="modal fade" id="fulfillModal" tabindex="-1" aria-labelledby="fulfillModalLabel" aria-hidden="true">
+<!-- Include Shared Fulfill Order Modal -->
+{% include 'orders/_fulfill_modal.html' %}
+
+<!-- Fulfill Item Modal -->
+<div class="modal fade" id="fulfillItemModal" tabindex="-1" aria-labelledby="fulfillItemModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="fulfillModalLabel">Fulfill Order</h5>
+                <h5 class="modal-title" id="fulfillItemModalLabel">Fulfill Medication</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p>Fulfilling this order will:</p>
-                <ul>
-                    <li>Mark the order as "fulfilled"</li>
-                    <li>Add the ordered medications to your inventory</li>
-                </ul>
-                <p>Are you sure you want to continue?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="POST" action="{{ url_for('orders.fulfill', id=order.id) }}">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check me-1"></i>Fulfill Order
+            <form id="fulfillItemForm" method="POST" action="">
+                <div class="modal-body">
+                    <h6 id="itemName" class="mb-3">Medication Name</h6>
+                    
+                    <div class="mb-3">
+                        <label for="itemStatus" class="form-label">Fulfillment Status</label>
+                        <select class="form-select" id="itemStatus" name="status" required>
+                            <option value="fulfilled">Fulfilled - Delivered as ordered</option>
+                            <option value="modified">Modified - Different quantity received</option>
+                            <option value="cancelled">Cancelled - Not available</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3" id="quantitySection" style="display: none;">
+                        <label for="customQuantity" class="form-label">Actual Quantity Received</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="customQuantity" name="custom_quantity" min="0">
+                            <span class="input-group-text">units</span>
+                        </div>
+                        <div class="form-text">Original order: <span id="originalQuantity"></span> units</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="itemNotes" class="form-label">Notes (optional)</label>
+                        <textarea class="form-control" id="itemNotes" name="notes" rows="2" placeholder="e.g., Doctor modified prescription, pharmacy substitution, etc."></textarea>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="addToInventory" name="add_to_inventory" value="true" checked>
+                        <label class="form-check-label" for="addToInventory">
+                            Add to inventory
+                        </label>
+                        <div class="form-text">Check this to automatically update your inventory with the received medication</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check me-1"></i>Update Status
                     </button>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle item fulfillment modal
+    const fulfillItemModal = document.getElementById('fulfillItemModal');
+    if (fulfillItemModal) {
+        fulfillItemModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const itemId = button.getAttribute('data-item-id');
+            const itemName = button.getAttribute('data-item-name');
+            const itemQuantity = button.getAttribute('data-item-quantity');
+            
+            // Update form action
+            const form = document.getElementById('fulfillItemForm');
+            form.action = "{{ url_for('orders.fulfill_item', id=order.id, item_id=0) }}".replace('/0/', '/' + itemId + '/');
+            
+            // Update medication name
+            document.getElementById('itemName').textContent = itemName;
+            document.getElementById('originalQuantity').textContent = itemQuantity;
+            
+            // Handle status change
+            const statusSelect = document.getElementById('itemStatus');
+            const quantitySection = document.getElementById('quantitySection');
+            const customQuantityInput = document.getElementById('customQuantity');
+            
+            statusSelect.addEventListener('change', function() {
+                if (this.value === 'modified') {
+                    quantitySection.style.display = 'block';
+                    customQuantityInput.required = true;
+                } else {
+                    quantitySection.style.display = 'none';
+                    customQuantityInput.required = false;
+                    customQuantityInput.value = '';
+                }
+            });
+            
+            // Reset form when modal is shown
+            statusSelect.value = 'fulfilled';
+            quantitySection.style.display = 'none';
+            customQuantityInput.value = '';
+            document.getElementById('itemNotes').value = '';
+            document.getElementById('addToInventory').checked = true;
+        });
+    }
+});
+</script>
 {% endblock %}

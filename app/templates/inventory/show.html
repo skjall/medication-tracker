@@ -8,7 +8,7 @@
         <i class="fas fa-boxes me-2"></i>Inventory: {{ medication.name }}
     </h1>
     <div>
-        <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
+        <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left me-1"></i>Back to Inventory
         </a>
         <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-primary ms-2">
@@ -86,48 +86,82 @@
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-plus-minus me-2"></i>Adjust Inventory (Add/Subtract)</h5>
+                <h5 class="mb-0"><i class="fas fa-plus-minus me-2"></i>Adjust Inventory (Relative)</h5>
             </div>
             <div class="card-body">
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
                     Use this form to <strong>add or subtract</strong> units from your current inventory.
                 </div>
+                
                 <form method="POST" action="{{ url_for('inventory.adjust', id=inventory.id) }}">
+                    <!-- Direct Adjustment Input -->
                     <div class="mb-4">
-                        <label for="adjustment" class="form-label">Adjustment Amount</label>
+                        <label for="adjustment" class="form-label">Adjustment Amount Directly</label>
                         <div class="input-group">
-                            <button class="btn btn-lg btn-outline-danger" type="button" id="btn-minus">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="number" class="form-control form-control-lg text-center" id="adjustment" name="adjustment" value="0">
-                            <button class="btn btn-lg btn-outline-success" type="button" id="btn-plus">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                            <input type="number" class="form-control" id="adjustment" name="adjustment" value="0" placeholder="Enter adjustment amount">
+                            <span class="input-group-text">units</span>
                         </div>
                         <div class="form-text">
                             Enter a positive number to add units, or a negative number to subtract units
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-center mb-4">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-danger quick-adjust-btn" data-amount="-10">-10</button>
-                            <button type="button" class="btn btn-outline-danger quick-adjust-btn" data-amount="-5">-5</button>
-                            <button type="button" class="btn btn-outline-danger quick-adjust-btn" data-amount="-1">-1</button>
-                            <button type="button" class="btn btn-outline-success quick-adjust-btn" data-amount="1">+1</button>
-                            <button type="button" class="btn btn-outline-success quick-adjust-btn" data-amount="5">+5</button>
-                            <button type="button" class="btn btn-outline-success quick-adjust-btn" data-amount="10">+10</button>
+                    <!-- Package-based Adjustments -->
+                    <div class="mt-4 mb-4">
+                        <h6>Or Adjust by Package Quantities</h6>
+                        <div class="row">
+                            {% if medication.package_size_n1 %}
+                                <div class="col-md-4 mb-3">
+                                    <label for="adj_packages_n1" class="form-label">N1 Packages</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="adj_packages_n1" name="adj_packages_n1" value="0">
+                                        <span class="input-group-text">× {{ medication.package_size_n1 }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if medication.package_size_n2 %}
+                                <div class="col-md-4 mb-3">
+                                    <label for="adj_packages_n2" class="form-label">N2 Packages</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="adj_packages_n2" name="adj_packages_n2" value="0">
+                                        <span class="input-group-text">× {{ medication.package_size_n2 }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if medication.package_size_n3 %}
+                                <div class="col-md-4 mb-3">
+                                    <label for="adj_packages_n3" class="form-label">N3 Packages</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="adj_packages_n3" name="adj_packages_n3" value="0">
+                                        <span class="input-group-text">× {{ medication.package_size_n3 }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
 
+                    <!-- Notes Section -->
                     <div class="mb-4">
-                        <label for="notes" class="form-label">Notes</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Optional notes about this adjustment"></textarea>
+                        <label for="adj_notes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="adj_notes" name="notes" rows="2" placeholder="Optional notes about this adjustment"></textarea>
+                    </div>
+
+                    <!-- Result Preview -->
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-calculator me-2"></i>
+                            <div>
+                                Current: <strong>{{ inventory.current_count }} units</strong> → 
+                                New total: <strong><span id="preview-total">{{ inventory.current_count }}</span> units</strong>
+                            </div>
+                        </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>Save Adjustment
+                        <i class="fas fa-plus-minus me-1"></i>Apply Adjustment
                     </button>
                 </form>
             </div>
@@ -138,7 +172,7 @@
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-pen-to-square me-2"></i>Set Inventory (Absolute Values)</h5>
+                <h5 class="mb-0"><i class="fas fa-pen-to-square me-2"></i>Set Inventory (Absolute)</h5>
             </div>
             <div class="card-body">
                 <div class="alert alert-info">
@@ -194,17 +228,25 @@
                         </div>
                     </div>
 
+                    <!-- Notes Section -->
+                    <div class="mb-4">
+                        <label for="set_notes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="set_notes" name="notes" rows="2" placeholder="Optional notes about this inventory update"></textarea>
+                    </div>
+
+                    <!-- Result Preview -->
                     <div class="alert alert-info">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-info-circle me-2"></i>
+                            <i class="fas fa-calculator me-2"></i>
                             <div>
-                                You can either set the total units directly <strong>or</strong> specify package quantities. The package quantities will be ignored if you enter a direct unit count.
+                                Current: <strong>{{ inventory.current_count }} units</strong> → 
+                                New total: <strong><span id="set-preview-total">{{ inventory.current_count }}</span> units</strong>
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-rotate me-1"></i>Update Inventory
+                        <i class="fas fa-pen-to-square me-1"></i>Update Inventory
                     </button>
                 </form>
             </div>
@@ -264,63 +306,235 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // setupInventoryAdjustment(); // DISABLED because it was called twice
+        // === ADJUSTMENT CARD FUNCTIONALITY ===
+        const adjustmentInput = document.getElementById('adjustment');
+        const adjPackagesN1Input = document.getElementById('adj_packages_n1');
+        const adjPackagesN2Input = document.getElementById('adj_packages_n2');
+        const adjPackagesN3Input = document.getElementById('adj_packages_n3');
+        const previewTotal = document.getElementById('preview-total');
+        const currentCount = {{ inventory.current_count }};
+        
+        // Package sizes
+        const packageSizeN1 = {{ medication.package_size_n1 or 0 }};
+        const packageSizeN2 = {{ medication.package_size_n2 or 0 }};
+        const packageSizeN3 = {{ medication.package_size_n3 or 0 }};
+        
+        // Function to calculate total adjustment from packages
+        const calculatePackageAdjustment = function() {
+            const n1 = (parseInt(adjPackagesN1Input?.value) || 0) * packageSizeN1;
+            const n2 = (parseInt(adjPackagesN2Input?.value) || 0) * packageSizeN2;
+            const n3 = (parseInt(adjPackagesN3Input?.value) || 0) * packageSizeN3;
+            return n1 + n2 + n3;
+        };
+        
+        // Function to update the preview total
+        const updateAdjustmentPreview = function() {
+            if (!previewTotal) return;
+            
+            let adjustment = 0;
+            
+            // Check if direct adjustment is being used
+            if (adjustmentInput && adjustmentInput.value.trim() !== '') {
+                adjustment = parseInt(adjustmentInput.value) || 0;
+            } else {
+                // Use package-based calculation
+                adjustment = calculatePackageAdjustment();
+            }
+            
+            const newTotal = Math.max(0, currentCount + adjustment);
+            previewTotal.textContent = newTotal;
+            
+            // Add visual feedback for the preview
+            if (adjustment > 0) {
+                previewTotal.className = 'text-success fw-bold';
+            } else if (adjustment < 0) {
+                previewTotal.className = 'text-danger fw-bold';
+            } else {
+                previewTotal.className = 'fw-bold';
+            }
+        };
+        
+        // Function to disable/enable package adjustment inputs
+        const togglePackageAdjustments = function(disabled) {
+            if (adjPackagesN1Input) adjPackagesN1Input.disabled = disabled;
+            if (adjPackagesN2Input) adjPackagesN2Input.disabled = disabled;
+            if (adjPackagesN3Input) adjPackagesN3Input.disabled = disabled;
+        };
+        
+        // Function to clear and disable direct adjustment input
+        const toggleDirectAdjustment = function(disabled) {
+            if (adjustmentInput) adjustmentInput.disabled = disabled;
+        };
+        
+        // Update preview when adjustment input changes
+        if (adjustmentInput) {
+            adjustmentInput.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    // Clear and disable package inputs
+                    if (adjPackagesN1Input) adjPackagesN1Input.value = '0';
+                    if (adjPackagesN2Input) adjPackagesN2Input.value = '0';
+                    if (adjPackagesN3Input) adjPackagesN3Input.value = '0';
+                    togglePackageAdjustments(true);
+                } else {
+                    // Re-enable package inputs
+                    togglePackageAdjustments(false);
+                }
+                updateAdjustmentPreview();
+            });
+        }
+        
+        // When package inputs change, disable direct adjustment
+        if (adjPackagesN1Input) adjPackagesN1Input.addEventListener('input', function() {
+            const hasPackageValue = (adjPackagesN1Input?.value && adjPackagesN1Input.value !== '0') || 
+                                  (adjPackagesN2Input?.value && adjPackagesN2Input.value !== '0') || 
+                                  (adjPackagesN3Input?.value && adjPackagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (adjustmentInput) adjustmentInput.value = '';
+                toggleDirectAdjustment(true);
+            } else {
+                toggleDirectAdjustment(false);
+            }
+            updateAdjustmentPreview();
+        });
+        if (adjPackagesN2Input) adjPackagesN2Input.addEventListener('input', function() {
+            const hasPackageValue = (adjPackagesN1Input?.value && adjPackagesN1Input.value !== '0') || 
+                                  (adjPackagesN2Input?.value && adjPackagesN2Input.value !== '0') || 
+                                  (adjPackagesN3Input?.value && adjPackagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (adjustmentInput) adjustmentInput.value = '';
+                toggleDirectAdjustment(true);
+            } else {
+                toggleDirectAdjustment(false);
+            }
+            updateAdjustmentPreview();
+        });
+        if (adjPackagesN3Input) adjPackagesN3Input.addEventListener('input', function() {
+            const hasPackageValue = (adjPackagesN1Input?.value && adjPackagesN1Input.value !== '0') || 
+                                  (adjPackagesN2Input?.value && adjPackagesN2Input.value !== '0') || 
+                                  (adjPackagesN3Input?.value && adjPackagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (adjustmentInput) adjustmentInput.value = '';
+                toggleDirectAdjustment(true);
+            } else {
+                toggleDirectAdjustment(false);
+            }
+            updateAdjustmentPreview();
+        });
+        
+        // Initial preview update
+        updateAdjustmentPreview();
 
+        // === SET INVENTORY FUNCTIONALITY ===
         // Setup direct unit input and package fields
         const directUnitsInput = document.getElementById('direct_units');
         const packagesN1Input = document.getElementById('packages_n1');
         const packagesN2Input = document.getElementById('packages_n2');
         const packagesN3Input = document.getElementById('packages_n3');
+        const setPreviewTotal = document.getElementById('set-preview-total');
 
-        // Function to update visual state based on whether direct units has a value
-        const updateVisualState = function() {
-            if (!directUnitsInput) return;
-
-            const hasValue = directUnitsInput.value.trim() !== '';
-            const packageInputs = [packagesN1Input, packagesN2Input, packagesN3Input];
-
-            // Update visual state of package inputs
-            packageInputs.forEach(input => {
-                if (!input) return;
-
-                if (hasValue) {
-                    input.classList.add('text-muted');
-                } else {
-                    input.classList.remove('text-muted');
-                }
-            });
+        // Function to calculate total units from packages
+        const calculatePackageTotal = function() {
+            const n1 = (parseInt(packagesN1Input?.value) || 0) * packageSizeN1;
+            const n2 = (parseInt(packagesN2Input?.value) || 0) * packageSizeN2;
+            const n3 = (parseInt(packagesN3Input?.value) || 0) * packageSizeN3;
+            return n1 + n2 + n3;
         };
 
-        // Function to clear package input fields
-        const clearPackageInputs = function() {
-            if (packagesN1Input) packagesN1Input.value = '0';
-            if (packagesN2Input) packagesN2Input.value = '0';
-            if (packagesN3Input) packagesN3Input.value = '0';
+        // Function to update the set inventory preview
+        const updateSetPreview = function() {
+            if (!setPreviewTotal) return;
+            
+            let newTotal = 0;
+            
+            // Check if direct units is being used
+            if (directUnitsInput && directUnitsInput.value.trim() !== '') {
+                newTotal = Math.max(0, parseInt(directUnitsInput.value) || 0);
+            } else {
+                // Use package-based calculation
+                newTotal = calculatePackageTotal();
+            }
+            
+            setPreviewTotal.textContent = newTotal;
+            
+            // Add visual feedback for the preview
+            if (newTotal > currentCount) {
+                setPreviewTotal.className = 'text-success fw-bold';
+            } else if (newTotal < currentCount) {
+                setPreviewTotal.className = 'text-danger fw-bold';
+            } else {
+                setPreviewTotal.className = 'fw-bold';
+            }
         };
 
-        // Function to clear direct units input
-        const clearDirectUnits = function() {
-            if (directUnitsInput) directUnitsInput.value = '';
-            updateVisualState();
+        // Function to disable/enable package inputs
+        const togglePackageInputs = function(disabled) {
+            if (packagesN1Input) packagesN1Input.disabled = disabled;
+            if (packagesN2Input) packagesN2Input.disabled = disabled;
+            if (packagesN3Input) packagesN3Input.disabled = disabled;
         };
 
-        // When direct units changes, clear package inputs and update visual state
+        // Function to disable/enable direct units input
+        const toggleDirectUnits = function(disabled) {
+            if (directUnitsInput) directUnitsInput.disabled = disabled;
+        };
+
+        // When direct units changes, disable package inputs and update preview
         if (directUnitsInput) {
             directUnitsInput.addEventListener('input', function() {
                 if (this.value.trim() !== '') {
-                    clearPackageInputs();
+                    // Clear and disable package inputs
+                    if (packagesN1Input) packagesN1Input.value = '0';
+                    if (packagesN2Input) packagesN2Input.value = '0';
+                    if (packagesN3Input) packagesN3Input.value = '0';
+                    togglePackageInputs(true);
+                } else {
+                    // Re-enable package inputs
+                    togglePackageInputs(false);
                 }
-                updateVisualState();
+                updateSetPreview();
             });
         }
 
-        // When package inputs change, clear direct units
-        if (packagesN1Input) packagesN1Input.addEventListener('input', clearDirectUnits);
-        if (packagesN2Input) packagesN2Input.addEventListener('input', clearDirectUnits);
-        if (packagesN3Input) packagesN3Input.addEventListener('input', clearDirectUnits);
+        // When package inputs change, disable direct units
+        if (packagesN1Input) packagesN1Input.addEventListener('input', function() {
+            const hasPackageValue = (packagesN1Input?.value && packagesN1Input.value !== '0') || 
+                                  (packagesN2Input?.value && packagesN2Input.value !== '0') || 
+                                  (packagesN3Input?.value && packagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (directUnitsInput) directUnitsInput.value = '';
+                toggleDirectUnits(true);
+            } else {
+                toggleDirectUnits(false);
+            }
+            updateSetPreview();
+        });
+        if (packagesN2Input) packagesN2Input.addEventListener('input', function() {
+            const hasPackageValue = (packagesN1Input?.value && packagesN1Input.value !== '0') || 
+                                  (packagesN2Input?.value && packagesN2Input.value !== '0') || 
+                                  (packagesN3Input?.value && packagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (directUnitsInput) directUnitsInput.value = '';
+                toggleDirectUnits(true);
+            } else {
+                toggleDirectUnits(false);
+            }
+            updateSetPreview();
+        });
+        if (packagesN3Input) packagesN3Input.addEventListener('input', function() {
+            const hasPackageValue = (packagesN1Input?.value && packagesN1Input.value !== '0') || 
+                                  (packagesN2Input?.value && packagesN2Input.value !== '0') || 
+                                  (packagesN3Input?.value && packagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (directUnitsInput) directUnitsInput.value = '';
+                toggleDirectUnits(true);
+            } else {
+                toggleDirectUnits(false);
+            }
+            updateSetPreview();
+        });
 
-        // Initial update of visual state
-        updateVisualState();
+        // Initial preview update
+        updateSetPreview();
     });
 </script>
 {% endblock %}

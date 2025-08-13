@@ -123,7 +123,7 @@
                             <th>Needed for Next-But-One</th>
                             <th>Additional Needed</th>
                             <th>Packages</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -165,7 +165,7 @@
                                         <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-secondary" title="View Medication">
                                             <i class="fas fa-pills"></i>
