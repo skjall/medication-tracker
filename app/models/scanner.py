@@ -130,6 +130,9 @@ class PackageInventory(db.Model):
     medication_id: Mapped[int] = mapped_column(Integer, ForeignKey("medications.id"), nullable=False)
     scanned_item_id: Mapped[int] = mapped_column(Integer, ForeignKey("scanned_items.id"), nullable=False)
     
+    # Order linking (optional)
+    order_item_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("order_items.id"), nullable=True)
+    
     # Current state
     current_units: Mapped[int] = mapped_column(Integer, nullable=False)
     original_units: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -149,6 +152,7 @@ class PackageInventory(db.Model):
     # Relationships
     medication: Mapped["Medication"] = relationship("Medication", backref="package_inventories")
     scanned_item: Mapped["ScannedItem"] = relationship("ScannedItem", back_populates="package_inventory")
+    order_item: Mapped[Optional["OrderItem"]] = relationship("OrderItem", backref="linked_packages")
     
     @property
     def units_used(self) -> int:

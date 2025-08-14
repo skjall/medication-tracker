@@ -130,19 +130,9 @@
                                         </td>
                                         <td class="text-end">
                                             {% if med.inventory %}
-                                                <div class="btn-group btn-group-sm">
-                                                    <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary" title="{{ _('View') }}">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <button type="button" class="btn btn-outline-success quick-adjust-btn" 
-                                                            data-bs-toggle="modal" data-bs-target="#quickAdjustModal" 
-                                                            data-medication-id="{{ med.id }}" 
-                                                            data-inventory-id="{{ med.inventory.id }}" 
-                                                            data-medication-name="{{ med.name }}" 
-                                                            title="{{ _('Quick Adjust') }}">
-                                                        <i class="fas fa-plus-minus"></i>
-                                                    </button>
-                                                </div>
+                                                <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-sm btn-outline-primary" title="{{ _('View') }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
                                             {% else %}
                                                 <button type="button" class="btn btn-sm btn-primary" disabled>
                                                     <i class="fas fa-plus me-1"></i>{{ _('Create') }}
@@ -233,19 +223,9 @@
                                         </td>
                                         <td class="text-end">
                                             {% if med.inventory %}
-                                                <div class="btn-group btn-group-sm">
-                                                    <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary" title="{{ _('View') }}">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <button type="button" class="btn btn-outline-success quick-adjust-btn" 
-                                                            data-bs-toggle="modal" data-bs-target="#quickAdjustModal" 
-                                                            data-medication-id="{{ med.id }}" 
-                                                            data-inventory-id="{{ med.inventory.id }}" 
-                                                            data-medication-name="{{ med.name }}" 
-                                                            title="{{ _('Quick Adjust') }}">
-                                                        <i class="fas fa-plus-minus"></i>
-                                                    </button>
-                                                </div>
+                                                <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-sm btn-outline-primary" title="{{ _('View') }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
                                             {% else %}
                                                 <button type="button" class="btn btn-sm btn-primary" disabled>
                                                     <i class="fas fa-plus me-1"></i>{{ _('Create') }}
@@ -268,49 +248,6 @@
     </div>
 </div>
 
-<!-- Quick Adjustment Modal -->
-<div class="modal fade" id="quickAdjustModal" tabindex="-1" aria-labelledby="quickAdjustModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="quickAdjustModalLabel">{{ _('Adjust Inventory') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
-            </div>
-            <form id="quickAdjustForm" method="POST">
-                <div class="modal-body">
-                    <p>{{ _('Adjust inventory for') }} <strong id="adjustMedicationName"></strong></p>
-
-                    <div class="mb-3">
-                        <label for="quickAdjustment" class="form-label">{{ _('Adjustment (+ to add, - to subtract)') }}</label>
-                        <div class="input-group">
-                            <button class="btn btn-outline-secondary" type="button" id="quickAdjustMinus">-</button>
-                            <input type="number" class="form-control text-center" id="quickAdjustment" name="adjustment" value="0">
-                            <button class="btn btn-outline-secondary" type="button" id="quickAdjustPlus">+</button>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="quickAdjustNotes" class="form-label">{{ _('Notes') }}</label>
-                        <textarea class="form-control" id="quickAdjustNotes" name="notes" rows="2" placeholder="{{ _('Optional notes about this adjustment') }}"></textarea>
-                    </div>
-
-                    <div class="d-flex justify-content-center my-3 gap-2">
-                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="-10">-10</button>
-                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="-5">-5</button>
-                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="-1">-1</button>
-                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="1">+1</button>
-                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="5">+5</button>
-                        <button type="button" class="btn btn-outline-secondary quick-adjust-preset" data-value="10">+10</button>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ _('Save Changes') }}</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <script>
 // Search functionality
@@ -338,70 +275,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Hide/show entire section based on whether it has visible medications
                 section.style.display = hasVisibleMeds || searchTerm === '' ? '' : 'none';
-            });
-        });
-    }
-
-    // Quick adjust modal functionality
-    const quickAdjustModal = document.getElementById('quickAdjustModal');
-    if (quickAdjustModal) {
-        quickAdjustModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const medicationId = button.getAttribute('data-medication-id');
-            const inventoryId = button.getAttribute('data-inventory-id');
-            const medicationName = button.getAttribute('data-medication-name');
-            const referer = "index";
-
-            const adjustMedicationName = document.getElementById('adjustMedicationName');
-            const quickAdjustForm = document.getElementById('quickAdjustForm');
-            const refererInput = document.getElementById('refererInput') || document.createElement('input');
-
-            if (adjustMedicationName && quickAdjustForm) {
-                adjustMedicationName.textContent = medicationName;
-                quickAdjustForm.action = `/inventory/${inventoryId}/adjust`;
-
-                // Set up referer input if it doesn't exist
-                if (!refererInput.id) {
-                    refererInput.id = 'refererInput';
-                    refererInput.type = 'hidden';
-                    refererInput.name = 'referer';
-                    quickAdjustForm.appendChild(refererInput);
-                }
-
-                // Set referer value if provided
-                refererInput.value = referer || '';
-
-                // Reset the form
-                document.getElementById('quickAdjustment').value = 0;
-                document.getElementById('quickAdjustNotes').value = '';
-            }
-        });
-
-        // Handle +/- buttons
-        const minusBtn = document.getElementById('quickAdjustMinus');
-        const plusBtn = document.getElementById('quickAdjustPlus');
-        const adjustmentInput = document.getElementById('quickAdjustment');
-
-        if (minusBtn && plusBtn && adjustmentInput) {
-            minusBtn.addEventListener('click', function() {
-                let value = parseInt(adjustmentInput.value) || 0;
-                adjustmentInput.value = value - 1;
-            });
-
-            plusBtn.addEventListener('click', function() {
-                let value = parseInt(adjustmentInput.value) || 0;
-                adjustmentInput.value = value + 1;
-            });
-        }
-
-        // Handle preset buttons
-        const presetButtons = document.querySelectorAll('.quick-adjust-preset');
-        presetButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const value = parseInt(this.getAttribute('data-value'));
-                if (adjustmentInput && !isNaN(value)) {
-                    adjustmentInput.value = value;
-                }
             });
         });
     }

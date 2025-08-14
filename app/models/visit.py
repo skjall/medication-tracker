@@ -170,6 +170,20 @@ class OrderItem(db.Model):
             if self.medication.package_size_n3:
                 total += self.packages_n3 * self.medication.package_size_n3
         return total
+    
+    @property
+    def linked_package_count(self) -> int:
+        """Count the number of packages linked to this order item."""
+        if hasattr(self, 'linked_packages'):
+            return len(self.linked_packages)
+        return 0
+    
+    @property
+    def fulfillment_progress(self) -> str:
+        """Get fulfillment progress as a string."""
+        count = self.linked_package_count
+        total = self.packages_n1 + self.packages_n2 + self.packages_n3
+        return f"{count}/{total}"
 
     def __repr__(self) -> str:
         med_name = self.medication.name if self.medication else "Unknown medication"

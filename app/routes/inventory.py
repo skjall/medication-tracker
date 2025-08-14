@@ -272,6 +272,13 @@ def edit_package(package_id: int):
         if new_status in ["sealed", "open", "empty", "discarded"]:
             package.status = new_status
         
+        # Update order association
+        order_item_id = request.form.get("order_item_id")
+        if order_item_id:
+            package.order_item_id = int(order_item_id) if order_item_id else None
+        else:
+            package.order_item_id = None
+        
         # Update current units
         current_units = request.form.get("current_units")
         if current_units:
@@ -323,6 +330,31 @@ def edit_package(package_id: int):
     # GET request - show edit form
     inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
     
+    # Get order items for this medication
+    from models import Order, OrderItem
+    
+    pending_order_items = (
+        OrderItem.query.join(Order)
+        .filter(
+            OrderItem.medication_id == package.medication_id,
+            OrderItem.fulfillment_status == 'pending',
+            Order.status.in_(['planned', 'printed'])
+        )
+        .order_by(Order.created_date.desc())
+        .all()
+    )
+    
+    fulfilled_order_items = (
+        OrderItem.query.join(Order)
+        .filter(
+            OrderItem.medication_id == package.medication_id,
+            OrderItem.fulfillment_status.in_(['fulfilled', 'partial'])
+        )
+        .order_by(Order.created_date.desc())
+        .limit(10)
+        .all()
+    )
+    
     from datetime import date
     
     return render_template(
@@ -332,6 +364,8 @@ def edit_package(package_id: int):
         scanned_item=scanned_item,
         medication=package.medication,
         inventory=inventory,
+        pending_order_items=pending_order_items,
+        fulfilled_order_items=fulfilled_order_items,
         today=date.today()
     )
 

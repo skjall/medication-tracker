@@ -389,35 +389,90 @@ def create_migration(app: Flask, message: str) -> bool:
         return False
 
 
-def get_migration_history(app: Flask) -> List[Tuple[str, str, str]]:
+def get_migration_history(app: Flask) -> List[Tuple[str, str, str, bool]]:
     """
-    Get migration history.
+    Get migration history with applied status.
 
     Args:
         app: Flask application instance
 
     Returns:
-        List of tuples (revision_id, timestamp, description)
+        List of tuples (revision_id, timestamp, description, is_applied)
     """
     try:
         # Get Alembic config
         config = get_alembic_config(app)
 
+        # Get current database revision
+        from alembic.runtime.migration import MigrationContext
+        from sqlalchemy import create_engine
+        
+        engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+        with engine.begin() as connection:
+            context = MigrationContext.configure(connection)
+            current_rev = context.get_current_revision()
+
         # Get script directory
         from alembic.script import ScriptDirectory
         script_dir = ScriptDirectory.from_config(config)
 
-        # Get all revisions
+        # Build revision tree to determine which are applied
+        all_revisions = list(script_dir.walk_revisions())
+        applied_revisions = set()
+        
+        # If we have a current revision, find all its ancestors
+        if current_rev:
+            for script in all_revisions:
+                if script.revision == current_rev:
+                    # Add this and all ancestors
+                    applied_revisions.add(script.revision)
+                    for ancestor in script_dir.iterate_revisions(current_rev, 'base'):
+                        applied_revisions.add(ancestor.revision)
+                    break
+
+        # Get all revisions with status
         revisions = []
-        for script in script_dir.walk_revisions():
+        for script in all_revisions:
             # Extract info from each revision
             rev_id = script.revision
-            timestamp = script.doc.split("\n")[0] if script.doc else "Unknown"
-            description = script.doc.split("\n")[2] if script.doc and len(script.doc.split("\n")) > 2 else "No description"
+            is_applied = rev_id in applied_revisions
+            
+            # Parse the migration file for better info
+            import os
+            
+            timestamp = "Unknown"
+            description = "No description"
+            
+            # Try to read the actual migration file for better info
+            try:
+                # The versions directory is in script_dir.dir + '/versions'
+                versions_dir = os.path.join(script_dir.dir, 'versions')
+                
+                # Find the migration file - it starts with revision id
+                for filename in os.listdir(versions_dir):
+                    if filename.startswith(f"{rev_id}_") and filename.endswith('.py'):
+                        # Extract description from filename
+                        # Format: {rev_id}_{description}.py
+                        desc_from_filename = filename[len(rev_id)+1:-3]  # Remove rev_id_ and .py
+                        if desc_from_filename:
+                            description = desc_from_filename.replace('_', ' ')
+                        
+                        # Read file for timestamp
+                        filepath = os.path.join(versions_dir, filename)
+                        with open(filepath, 'r') as f:
+                            content = f.read()
+                            # Extract timestamp
+                            for line in content.split('\n'):
+                                if 'Create Date:' in line:
+                                    timestamp = line.split('Create Date:')[1].strip()
+                                    break
+                        break
+            except Exception as e:
+                logger.debug(f"Error reading migration file for {rev_id}: {e}")
 
-            revisions.append((rev_id, timestamp, description))
+            revisions.append((rev_id, timestamp, description, is_applied))
 
-        return list(reversed(revisions))  # Latest first
+        return revisions  # Keep in order from newest to oldest
     except Exception as e:
         logger.error(f"Failed to get migration history: {e}")
         return []

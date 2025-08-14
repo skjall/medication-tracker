@@ -120,6 +120,35 @@
                     </div>
 
                     <div class="mb-4">
+                        <label for="order_item_id" class="form-label">{{ _('Associated Order') }}</label>
+                        <select class="form-select" id="order_item_id" name="order_item_id">
+                            <option value="">{{ _('No order association') }}</option>
+                            {% if pending_order_items %}
+                                <optgroup label="{{ _('Pending Orders') }}">
+                                    {% for item in pending_order_items %}
+                                        <option value="{{ item.id }}" {% if package.order_item_id == item.id %}selected{% endif %}>
+                                            {{ _('Order #%(order_id)s', order_id=item.order.id) }} - 
+                                            {{ format_date(item.order.physician_visit.visit_date) }}
+                                            ({{ item.packages_n1 + item.packages_n2 + item.packages_n3 }} {{ _('packages') }})
+                                        </option>
+                                    {% endfor %}
+                                </optgroup>
+                            {% endif %}
+                            {% if fulfilled_order_items %}
+                                <optgroup label="{{ _('Fulfilled Orders') }}">
+                                    {% for item in fulfilled_order_items %}
+                                        <option value="{{ item.id }}" {% if package.order_item_id == item.id %}selected{% endif %}>
+                                            {{ _('Order #%(order_id)s', order_id=item.order.id) }} - 
+                                            {{ format_date(item.order.physician_visit.visit_date) }}
+                                        </option>
+                                    {% endfor %}
+                                </optgroup>
+                            {% endif %}
+                        </select>
+                        <div class="form-text">{{ _('Link this package to a medication order') }}</div>
+                    </div>
+
+                    <div class="mb-4">
                         <label for="notes" class="form-label">{{ _('Notes (Optional)') }}</label>
                         <textarea class="form-control" id="notes" name="notes" rows="3"
                                   placeholder="{{ _('Add any notes about this adjustment') }}"></textarea>

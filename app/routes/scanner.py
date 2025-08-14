@@ -194,12 +194,29 @@ def scan():
                 quantity = med.package_size_n3
         
         if quantity:
+            # Find pending order item for this medication
+            from models import Order, OrderItem
+            pending_order_item = None
+            
+            # Look for the oldest pending order with this medication
+            pending_order_item = (
+                OrderItem.query.join(Order)
+                .filter(
+                    OrderItem.medication_id == package.medication_id,
+                    OrderItem.fulfillment_status == 'pending',
+                    Order.status.in_(['planned', 'printed'])
+                )
+                .order_by(Order.created_date.asc())
+                .first()
+            )
+            
             inventory_item = PackageInventory(
                 medication_id=package.medication_id,
                 scanned_item_id=scanned_item.id,
                 current_units=quantity,
                 original_units=quantity,
-                status='sealed'
+                status='sealed',
+                order_item_id=pending_order_item.id if pending_order_item else None
             )
             db.session.add(inventory_item)
             

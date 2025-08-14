@@ -34,8 +34,8 @@
                         <select class="form-select form-select-sm" name="status" onchange="this.form.submit()" style="width: auto;">
                             <option value="planned" {% if order.status == 'planned' %}selected{% endif %}>{{ _('Planned') }}</option>
                             <option value="printed" {% if order.status == 'printed' %}selected{% endif %}>{{ _('Printed') }}</option>
-                            <option value="fulfilled" {% if order.status == 'fulfilled' %}selected{% endif %}>{{ _('Fully Fulfilled') }}</option>
                             <option value="partial" {% if order.status == 'partial' %}selected{% endif %}>{{ _('Partly Fulfilled') }}</option>
+                            <option value="fulfilled" {% if order.status == 'fulfilled' %}selected{% endif %}>{{ _('Fully Fulfilled') }}</option>
                         </select>
                     </form>
                 </div>
@@ -123,6 +123,7 @@
                                     <th>{{ _('Medication') }}</th>
                                     <th>{{ _('Amount Needed') }}</th>
                                     <th>{{ _('Packages') }}</th>
+                                    <th>{{ _('Linked') }}</th>
                                     <th>{{ _('Total Units') }}</th>
                                     <th>{{ _('Status') }}</th>
                                     <th class="text-end">{{ _('Actions') }}</th>
@@ -153,6 +154,11 @@
                                             </small>
                                         </td>
                                         <td>
+                                            <span class="{% if item.linked_package_count == (item.packages_n1 + item.packages_n2 + item.packages_n3) %}text-success{% elif item.linked_package_count > 0 %}text-warning{% else %}text-muted{% endif %}">
+                                                {{ item.fulfillment_progress }}
+                                            </span>
+                                        </td>
+                                        <td>
                                             {{ _('%(units)s units', units=item.total_units_ordered) }}
                                             {% if item.fulfilled_quantity and item.fulfilled_quantity != item.total_units_ordered %}
                                                 <div class="small text-warning">{{ _('Received: %(quantity)s units', quantity=item.fulfilled_quantity) }}</div>
@@ -181,7 +187,7 @@
                                                     <i class="fas fa-boxes"></i>
                                                 </a>
                                                 {% if item.fulfillment_status == 'pending' %}
-                                                    <button type="button" class="btn btn-outline-primary"
+                                                    <button type="button" class="btn btn-outline-success"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#fulfillItemModal"
                                                             data-item-id="{{ item.id }}"
@@ -190,6 +196,12 @@
                                                             title="{{ _('Fulfill Item') }}">
                                                         <i class="fas fa-check"></i>
                                                     </button>
+                                                    <form action="{{ url_for('orders.cancel_item', order_id=order.id, item_id=item.id) }}" method="post" style="display: inline;" 
+                                                          onsubmit="return confirm('{{ _('Are you sure you want to cancel this item?') }}');">
+                                                        <button type="submit" class="btn btn-outline-danger" title="{{ _('Cancel Item') }}">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </form>
                                                 {% endif %}
                                             </div>
                                         </td>

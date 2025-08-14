@@ -606,6 +606,34 @@ def bulk_fulfill(id: int):
     return redirect(url_for("orders.show", id=order.id))
 
 
+@order_bp.route("/<int:order_id>/item/<int:item_id>/cancel", methods=["POST"])
+def cancel_item(order_id: int, item_id: int):
+    """Cancel an individual order item."""
+    order = Order.query.get_or_404(order_id)
+    item = OrderItem.query.get_or_404(item_id)
+    
+    # Verify item belongs to order
+    if item.order_id != order.id:
+        flash(_("Invalid order item"), "error")
+        return redirect(url_for("orders.show", id=order_id))
+    
+    # Only allow canceling pending items
+    if item.fulfillment_status != "pending":
+        flash(_("Can only cancel pending items"), "warning")
+        return redirect(url_for("orders.show", id=order_id))
+    
+    # Cancel the item
+    item.fulfillment_status = "cancelled"
+    item.fulfillment_notes = _("Cancelled by user")
+    
+    # Update order status
+    order.update_status_from_items()
+    db.session.commit()
+    
+    flash(_("Item cancelled successfully"), "success")
+    return redirect(url_for("orders.show", id=order_id))
+
+
 @order_bp.route("/<int:id>/prescription", methods=["GET"])
 def prescription(id: int):
     """Generate a prescription PDF for the order."""
