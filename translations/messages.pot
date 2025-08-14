@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-14 00:28+0200\n"
+"POT-Creation-Date: 2025-08-14 11:34+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,12 +17,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: main.py:423 templates/index.html:3 templates/index.html:9
+#: main.py:431 templates/index.html:3 templates/index.html:9
 #: templates/layout.html:32 templates/settings/system.html:11
+#: templates/test_translation.html:5
 msgid "Dashboard"
 msgstr ""
 
-#: main.py:424 templates/index.html:43 templates/visits/index.html:104
+#: main.py:432 templates/index.html:43 templates/visits/index.html:104
 msgid "No upcoming physician visits scheduled."
 msgstr ""
 
@@ -159,8 +160,8 @@ msgstr ""
 msgid "Error deleting physician: {}"
 msgstr ""
 
-#: routes/prescription_templates.py:61 routes/settings.py:323
-#: routes/settings.py:518
+#: routes/prescription_templates.py:61 routes/settings.py:366
+#: routes/settings.py:583
 msgid "No file part"
 msgstr ""
 
@@ -229,242 +230,242 @@ msgstr ""
 msgid "Physician visit settings updated successfully"
 msgstr ""
 
-#: routes/settings.py:121
+#: routes/settings.py:124
 msgid ""
 "Orders for this visit will now be planned to last until the next-but-one "
 "visit"
 msgstr ""
 
-#: routes/settings.py:123
+#: routes/settings.py:128
 msgid ""
 "Orders for this visit will now be planned to last until the next visit "
 "only"
 msgstr ""
 
-#: routes/settings.py:191
+#: routes/settings.py:197
 #, python-brace-format
 msgid "Unknown export type: {}"
 msgstr ""
 
-#: routes/settings.py:212
+#: routes/settings.py:218
 #, python-brace-format
 msgid "Error creating backup: {}"
 msgstr ""
 
-#: routes/settings.py:223
+#: routes/settings.py:231
 msgid ""
 "You must confirm that you understand the restore will replace all current"
 " data"
 msgstr ""
 
-#: routes/settings.py:227
+#: routes/settings.py:238
 msgid "No file provided for restore"
 msgstr ""
 
-#: routes/settings.py:232 routes/settings.py:328 routes/settings.py:523
+#: routes/settings.py:243 routes/settings.py:371 routes/settings.py:588
 msgid "No file selected"
 msgstr ""
 
-#: routes/settings.py:239
+#: routes/settings.py:251
 #, python-brace-format
 msgid "Invalid file type. Please upload a database file ({})"
 msgstr ""
 
-#: routes/settings.py:255
+#: routes/settings.py:274
 msgid "Invalid database file: missing required tables"
 msgstr ""
 
-#: routes/settings.py:259
+#: routes/settings.py:280
 #, python-brace-format
 msgid "Invalid database file: {}"
 msgstr ""
 
-#: routes/settings.py:303
+#: routes/settings.py:339
 #, python-brace-format
 msgid "Database restored but migration failed: {}"
 msgstr ""
 
-#: routes/settings.py:306
+#: routes/settings.py:347
 msgid "Database successfully restored and migrations applied!"
 msgstr ""
 
-#: routes/settings.py:313
+#: routes/settings.py:356
 #, python-brace-format
 msgid "Error restoring database: {}"
 msgstr ""
 
-#: routes/settings.py:346 routes/settings.py:564
+#: routes/settings.py:390 routes/settings.py:638
 #, python-brace-format
-msgid "...and {} more errors"
+msgid "... and {} more errors"
 msgstr ""
 
-#: routes/settings.py:349
+#: routes/settings.py:396
 #, python-brace-format
 msgid "Successfully imported {} medications"
 msgstr ""
 
-#: routes/settings.py:351
+#: routes/settings.py:402
 msgid "No medications were imported"
 msgstr ""
 
-#: routes/settings.py:353
+#: routes/settings.py:405
 #, python-brace-format
 msgid "Import of {} is not yet implemented"
 msgstr ""
 
-#: routes/settings.py:384
+#: routes/settings.py:438
 msgid "Please keep at least 30 days of logs"
 msgstr ""
 
-#: routes/settings.py:389
+#: routes/settings.py:444
 #, python-brace-format
 msgid "Successfully removed {} old inventory logs"
 msgstr ""
 
-#: routes/settings.py:400
+#: routes/settings.py:458
 msgid "Verification text doesn't match. Data was not reset."
 msgstr ""
 
-#: routes/settings.py:406
+#: routes/settings.py:466
 #, python-brace-format
 msgid "Backup created at {}"
 msgstr ""
 
-#: routes/settings.py:414
+#: routes/settings.py:475
 msgid ""
 "All data has been reset. The application has been restored to initial "
 "state."
 msgstr ""
 
-#: routes/settings.py:419
+#: routes/settings.py:481
 #, python-brace-format
 msgid "Error resetting data: {}"
 msgstr ""
 
-#: routes/settings.py:441
+#: routes/settings.py:503
 #, python-brace-format
 msgid "Invalid timezone: {}"
 msgstr ""
 
-#: routes/settings.py:448
+#: routes/settings.py:511
 #, python-brace-format
 msgid "Application timezone updated to {}"
 msgstr ""
 
-#: routes/settings.py:557
+#: routes/settings.py:630
 #, python-brace-format
 msgid "Unknown import type: {}"
 msgstr ""
 
-#: routes/settings.py:568
+#: routes/settings.py:644
 #, python-brace-format
 msgid "Successfully imported {} {} records"
 msgstr ""
 
-#: routes/settings.py:571
+#: routes/settings.py:650
 #, python-brace-format
 msgid "No {} were imported"
 msgstr ""
 
-#: routes/settings.py:574
+#: routes/settings.py:653
 #, python-brace-format
 msgid "Error during import: {}"
 msgstr ""
 
-#: routes/settings.py:634
+#: routes/settings.py:718
 msgid "Unable to check for updates"
 msgstr ""
 
-#: routes/settings.py:642
+#: routes/settings.py:728
 msgid "Connection timeout"
 msgstr ""
 
-#: routes/settings.py:668
+#: routes/settings.py:758
 #, python-brace-format
 msgid "Verification text doesn't match. Expected '{}'. Data was not reset."
 msgstr ""
 
-#: routes/settings.py:685
+#: routes/settings.py:776
 msgid "All medication data has been reset"
 msgstr ""
 
-#: routes/settings.py:691
+#: routes/settings.py:783
 #, python-brace-format
 msgid "All inventory data has been reset ({} records)"
 msgstr ""
 
-#: routes/settings.py:697
+#: routes/settings.py:794
 #, python-brace-format
 msgid "All order data has been reset ({} records)"
 msgstr ""
 
-#: routes/settings.py:703
+#: routes/settings.py:803
 #, python-brace-format
 msgid "All visit data has been reset ({} records)"
 msgstr ""
 
-#: routes/settings.py:709
+#: routes/settings.py:812
 #, python-brace-format
 msgid "All schedule data has been reset ({} records)"
 msgstr ""
 
-#: routes/settings.py:715
+#: routes/settings.py:823
 #, python-brace-format
 msgid "All physician data has been reset ({} records)"
 msgstr ""
 
-#: routes/settings.py:718
+#: routes/settings.py:830
 #, python-brace-format
 msgid "Unknown data type: {}"
 msgstr ""
 
-#: routes/settings.py:723
+#: routes/settings.py:835
 #, python-brace-format
 msgid "Error resetting {}: {}"
 msgstr ""
 
-#: routes/system.py:107
+#: routes/system.py:182
 msgid "Task scheduler has been restarted"
 msgstr ""
 
-#: routes/system.py:109
+#: routes/system.py:184
 msgid "Task scheduler not available"
 msgstr ""
 
-#: routes/system.py:124
+#: routes/system.py:199
 #, python-brace-format
 msgid "Found {} schedules with pipe-separated times. Check logs for details."
 msgstr ""
 
-#: routes/system.py:128 routes/system.py:151
+#: routes/system.py:203 routes/system.py:226
 msgid "No pipe-separated times detected in medication schedules."
 msgstr ""
 
-#: routes/system.py:132
+#: routes/system.py:207
 #, python-brace-format
 msgid "Error running detection: {}"
 msgstr ""
 
-#: routes/system.py:173
+#: routes/system.py:248
 #, python-brace-format
 msgid "Successfully fixed {} schedules with pipe-separated times."
 msgstr ""
 
-#: routes/system.py:175
+#: routes/system.py:250
 #, python-brace-format
 msgid "Failed to fix {} schedules. Check logs for details."
 msgstr ""
 
-#: routes/system.py:179
+#: routes/system.py:254
 #, python-brace-format
 msgid "Error running fix: {}"
 msgstr ""
 
-#: routes/system.py:217
+#: routes/system.py:292
 msgid "Database migrations completed successfully"
 msgstr ""
 
-#: routes/system.py:219
+#: routes/system.py:294
 msgid "Error running database migrations"
 msgstr ""
 
@@ -525,6 +526,10 @@ msgstr ""
 msgid "Go to Dashboard"
 msgstr ""
 
+#: templates/dashboard/next_but_one.html:13 templates/system/status.html:11
+msgid "Back to Dashboard"
+msgstr ""
+
 #: templates/index.html:20
 msgid "Next Physician Visit"
 msgstr ""
@@ -572,7 +577,8 @@ msgid "The following medications are below minimum threshold:"
 msgstr ""
 
 #: templates/index.html:70 templates/index.html:189
-#: templates/physicians/show.html:155
+#: templates/physicians/show.html:155 templates/test_translation.html:6
+#: templates/test_translation.html:7 templates/test_translation.html:10
 #, python-format
 msgid "%(count)d unit"
 msgid_plural "%(count)d units"
@@ -678,7 +684,7 @@ msgstr ""
 #: templates/inventory/index.html:43 templates/medications/index.html:38
 #: templates/orders/index.html:23 templates/orders/show.html:122
 #: templates/physicians/show.html:138 templates/prescriptions/index.html:66
-#: templates/system/status.html:81
+#: templates/system/status.html:162
 msgid "Status"
 msgstr ""
 
@@ -745,7 +751,7 @@ msgid "Critical"
 msgstr ""
 
 #: templates/index.html:214 templates/inventory/index.html:104
-#: templates/layout.html:62 templates/medications/index.html:84
+#: templates/layout.html:53 templates/medications/index.html:84
 #: templates/physicians/show.html:163
 msgid "Low Stock"
 msgstr ""
@@ -757,6 +763,7 @@ msgstr ""
 
 #: templates/index.html:218 templates/inventory/depletion.html:115
 #: templates/inventory/index.html:108 templates/medications/index.html:88
+#: templates/physicians/show.html:167
 msgid "OK"
 msgstr ""
 
@@ -799,7 +806,14 @@ msgid "View Depletion Forecast"
 msgstr ""
 
 #: templates/inventory/depletion.html:12 templates/inventory/low.html:12
-msgid "Back to Inventory"
+#: templates/inventory/show.html:12 templates/medications/new.html:12
+#: templates/medications/show.html:10 templates/orders/new.html:12
+#: templates/orders/show.html:15 templates/physicians/new.html:11
+#: templates/physicians/show.html:15 templates/prescriptions/new.html:12
+#: templates/prescriptions/show.html:13 templates/schedules/edit.html:13
+#: templates/schedules/new.html:13 templates/visits/new.html:11
+#: templates/visits/show.html:12
+msgid "Back to List"
 msgstr ""
 
 #: templates/inventory/depletion.html:20
@@ -990,12 +1004,6 @@ msgstr ""
 msgid "All medications are above their minimum thresholds."
 msgstr ""
 
-#: templates/inventory/show.html:12 templates/medications/new.html:12
-#: templates/medications/show.html:10 templates/orders/show.html:15
-#: templates/physicians/show.html:15 templates/prescriptions/show.html:13
-msgid "Back to List"
-msgstr ""
-
 #: templates/inventory/show.html:15
 msgid "Medication Details"
 msgstr ""
@@ -1171,97 +1179,97 @@ msgstr ""
 
 #: templates/inventory/depletion.html:3 templates/inventory/depletion.html:8
 #: templates/inventory/index.html:17 templates/layout.html:44
-#: templates/layout.html:63
+#: templates/layout.html:54
 msgid "Depletion Forecast"
 msgstr ""
 
-#: templates/layout.html:49 templates/physicians/index.html:3
+#: templates/inventory/index.html:3 templates/inventory/index.html:8
+#: templates/inventory/show.html:3 templates/inventory/show.html:8
+#: templates/layout.html:49 templates/medications/index.html:100
+#: templates/settings/data_management.html:199
+msgid "Inventory"
+msgstr ""
+
+#: templates/inventory/index.html:25 templates/layout.html:52
+msgid "Inventory Overview"
+msgstr ""
+
+#: templates/layout.html:60 templates/physicians/index.html:3
 #: templates/physicians/index.html:8 templates/settings/data_management.html:97
 #: templates/settings/data_management.html:155
 msgid "Physicians"
 msgstr ""
 
-#: templates/layout.html:52 templates/physicians/edit.html:16
+#: templates/layout.html:63 templates/physicians/edit.html:16
 #: templates/physicians/index.html:18
 msgid "All Physicians"
 msgstr ""
 
-#: templates/layout.html:53 templates/physicians/index.html:11
+#: templates/layout.html:64 templates/physicians/index.html:11
 #: templates/physicians/index.html:85 templates/physicians/new.html:3
 msgid "Add Physician"
 msgstr ""
 
-#: templates/inventory/index.html:3 templates/inventory/index.html:8
-#: templates/inventory/show.html:3 templates/inventory/show.html:8
-#: templates/layout.html:58 templates/medications/index.html:100
-#: templates/settings/data_management.html:199
-msgid "Inventory"
-msgstr ""
-
-#: templates/inventory/index.html:25 templates/layout.html:61
-msgid "Inventory Overview"
-msgstr ""
-
-#: templates/layout.html:68 templates/settings/data_management.html:221
+#: templates/layout.html:69 templates/settings/data_management.html:221
 #: templates/visits/index.html:3 templates/visits/index.html:8
 msgid "Physician Visits"
 msgstr ""
 
-#: templates/layout.html:71 templates/visits/edit.html:15
+#: templates/layout.html:72 templates/visits/edit.html:15
 msgid "All Visits"
 msgstr ""
 
-#: templates/layout.html:72 templates/visits/new.html:64
+#: templates/layout.html:73 templates/visits/new.html:64
 msgid "Schedule Visit"
 msgstr ""
 
-#: templates/layout.html:73
+#: templates/layout.html:74
 msgid "Next Visit"
 msgstr ""
 
-#: templates/layout.html:78 templates/settings/data_management.html:99
+#: templates/layout.html:79 templates/settings/data_management.html:99
 #: templates/settings/data_management.html:243 templates/visits/index.html:32
 #: templates/visits/index.html:129
 msgid "Orders"
 msgstr ""
 
-#: templates/layout.html:81 templates/orders/edit.html:15
+#: templates/layout.html:82 templates/orders/edit.html:15
 msgid "All Orders"
 msgstr ""
 
-#: templates/layout.html:82
+#: templates/layout.html:83
 msgid "New Order"
 msgstr ""
 
-#: templates/layout.html:87
+#: templates/layout.html:88
 msgid "System"
 msgstr ""
 
-#: templates/layout.html:90 templates/settings/system.html:140
+#: templates/layout.html:91 templates/settings/system.html:140
 #: templates/system/status.html:3 templates/system/status.html:8
 msgid "System Status"
 msgstr ""
 
-#: templates/layout.html:91 templates/settings/system.html:3
+#: templates/layout.html:92 templates/settings/system.html:3
 #: templates/settings/system.html:8
 msgid "System Settings"
 msgstr ""
 
-#: templates/layout.html:93
+#: templates/layout.html:94
 msgid "Visit Planning"
 msgstr ""
 
-#: templates/layout.html:94 templates/settings/data_management.html:3
+#: templates/layout.html:95 templates/settings/data_management.html:3
 #: templates/settings/data_management.html:8 templates/settings/system.html:114
 msgid "Data Management"
 msgstr ""
 
-#: templates/layout.html:95
+#: templates/layout.html:96
 msgid "Database Updates"
 msgstr ""
 
-#: templates/inventory/index.html:146 templates/layout.html:139
-#: templates/layout.html:205 templates/orders/_fulfill_modal.html:11
+#: templates/inventory/index.html:146 templates/layout.html:140
+#: templates/layout.html:206 templates/orders/_fulfill_modal.html:11
 #: templates/orders/show.html:222 templates/schedules/index.html:161
 #: templates/settings/data_management.html:281
 #: templates/settings/data_management.html:335
@@ -1270,11 +1278,11 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: templates/layout.html:152
+#: templates/layout.html:153
 msgid "Timezone"
 msgstr ""
 
-#: templates/layout.html:153 templates/settings/system.html:28
+#: templates/layout.html:154 templates/settings/system.html:28
 msgid "Local time"
 msgstr ""
 
@@ -1290,7 +1298,10 @@ msgstr ""
 msgid "Edit Medication"
 msgstr ""
 
-#: templates/medications/edit.html:12 templates/physicians/edit.html:13
+#: templates/medications/edit.html:12 templates/orders/edit.html:12
+#: templates/orders/printable.html:99 templates/physicians/edit.html:13
+#: templates/prescriptions/edit.html:13 templates/schedules/index.html:13
+#: templates/visits/edit.html:12
 msgid "Back to Details"
 msgstr ""
 
@@ -1453,8 +1464,9 @@ msgid "day(s)"
 msgstr ""
 
 #: templates/medications/edit.html:180 templates/medications/show.html:103
-#: templates/schedules/index.html:82
-msgid "Selected Days"
+#: templates/schedules/edit.html:31 templates/schedules/index.html:82
+#: templates/schedules/new.html:31
+msgid "Selected Days of Week"
 msgstr ""
 
 #: templates/medications/edit.html:192 templates/medications/show.html:120
@@ -1479,6 +1491,7 @@ msgstr ""
 #: templates/medications/index.html:30 templates/physicians/edit.html:31
 #: templates/physicians/index.html:30 templates/physicians/new.html:25
 #: templates/physicians/show.html:34 templates/prescriptions/index.html:63
+#: templates/system/status.html:159
 msgid "Name"
 msgstr ""
 
@@ -1606,6 +1619,7 @@ msgid "Enable Auto-Deduction"
 msgstr ""
 
 #: templates/medications/show.html:81 templates/settings/system.html:158
+#: templates/system/status.html:113
 msgid "Active Schedules:"
 msgstr ""
 
@@ -1751,10 +1765,6 @@ msgstr ""
 msgid "Edit Order #%(order_id)s"
 msgstr ""
 
-#: templates/orders/edit.html:12
-msgid "Back to Order"
-msgstr ""
-
 #: templates/orders/edit.html:22
 #, python-format
 msgid "Edit Order for Physician Visit on %(date)s"
@@ -1872,10 +1882,6 @@ msgstr ""
 
 #: templates/orders/new.html:8
 msgid "Create Medication Order"
-msgstr ""
-
-#: templates/orders/new.html:12
-msgid "Back to Orders"
 msgstr ""
 
 #: templates/orders/new.html:15 templates/orders/show.html:18
@@ -2264,10 +2270,6 @@ msgstr ""
 msgid "Add New Physician"
 msgstr ""
 
-#: templates/physicians/new.html:11
-msgid "Back to Physicians"
-msgstr ""
-
 #: templates/physicians/new.html:86
 msgid "Save Physician"
 msgstr ""
@@ -2286,10 +2288,6 @@ msgstr ""
 
 #: templates/physicians/show.html:127
 msgid "Prescribed Medications"
-msgstr ""
-
-#: templates/physicians/show.html:167
-msgid "Good"
 msgstr ""
 
 #: templates/physicians/show.html:170
@@ -2426,10 +2424,6 @@ msgstr ""
 msgid "New Prescription Template"
 msgstr ""
 
-#: templates/prescriptions/new.html:12
-msgid "Back to Templates"
-msgstr ""
-
 #: templates/prescriptions/new.html:18
 msgid "Upload Prescription Template"
 msgstr ""
@@ -2470,10 +2464,6 @@ msgstr ""
 msgid "Edit Schedule"
 msgstr ""
 
-#: templates/schedules/edit.html:13 templates/schedules/new.html:13
-msgid "Back to Schedules"
-msgstr ""
-
 #: templates/schedules/edit.html:27 templates/schedules/index.html:64
 #: templates/schedules/new.html:27
 msgid "Schedule Type"
@@ -2485,10 +2475,6 @@ msgstr ""
 
 #: templates/schedules/edit.html:30 templates/schedules/new.html:30
 msgid "Interval (Every X Days)"
-msgstr ""
-
-#: templates/schedules/edit.html:31 templates/schedules/new.html:31
-msgid "Selected Days of Week"
 msgstr ""
 
 #: templates/schedules/edit.html:37 templates/schedules/index.html:67
@@ -2576,10 +2562,6 @@ msgstr ""
 msgid "Schedules for"
 msgstr ""
 
-#: templates/schedules/index.html:13
-msgid "Back to Medication"
-msgstr ""
-
 #: templates/schedules/index.html:24 templates/settings/system.html:76
 msgid "Automatic Inventory Deduction"
 msgstr ""
@@ -2643,7 +2625,7 @@ msgid "Sun"
 msgstr ""
 
 #: templates/schedules/index.html:109 templates/settings/system.html:154
-#: templates/system/status.html:93
+#: templates/system/status.html:174
 msgid "Never"
 msgstr ""
 
@@ -2690,7 +2672,7 @@ msgstr ""
 msgid "Back to System Settings"
 msgstr ""
 
-#: templates/settings/data_management.html:21
+#: templates/settings/data_management.html:21 templates/system/status.html:140
 msgid "Backup Database"
 msgstr ""
 
@@ -3007,7 +2989,7 @@ msgstr ""
 msgid "You can manually trigger the deduction check for testing:"
 msgstr ""
 
-#: templates/settings/system.html:88 templates/system/status.html:163
+#: templates/settings/system.html:88 templates/system/status.html:244
 msgid "Run Deduction Check Now"
 msgstr ""
 
@@ -3023,7 +3005,7 @@ msgstr ""
 msgid "Backup, restore, import and export data"
 msgstr ""
 
-#: templates/settings/system.html:124 templates/system/status.html:59
+#: templates/settings/system.html:124
 msgid "Database Migrations"
 msgstr ""
 
@@ -3055,15 +3037,15 @@ msgstr ""
 msgid "Version Information"
 msgstr ""
 
-#: templates/system/status.html:11
-msgid "Back to Dashboard"
+#: templates/system/migrations.html:11
+msgid "Back to System Status"
 msgstr ""
 
 #: templates/system/status.html:18
 msgid "Task Scheduler"
 msgstr ""
 
-#: templates/system/status.html:27 templates/system/status.html:98
+#: templates/system/status.html:27 templates/system/status.html:179
 msgid "Running"
 msgstr ""
 
@@ -3087,110 +3069,158 @@ msgstr ""
 msgid "Database Status"
 msgstr ""
 
-#: templates/system/status.html:61
-msgid "View migration status and history"
+#: templates/system/status.html:59
+msgid "Database Type:"
 msgstr ""
 
-#: templates/system/status.html:70
-msgid "Scheduled Tasks"
+#: templates/system/status.html:62
+msgid "Database Size:"
 msgstr ""
 
-#: templates/system/status.html:78
-msgid "Task Name"
+#: templates/system/status.html:67
+msgid "Not available"
+msgstr ""
+
+#: templates/system/status.html:71
+msgid "Total Tables:"
+msgstr ""
+
+#: templates/system/status.html:74
+msgid "Migration Version:"
 msgstr ""
 
 #: templates/system/status.html:79
-msgid "Interval"
+msgid "Not initialized"
 msgstr ""
 
-#: templates/system/status.html:80
-msgid "Last Run"
+#: templates/system/status.html:86
+msgid "Total Medications:"
 msgstr ""
 
-#: templates/system/status.html:88
-msgid "seconds"
+#: templates/system/status.html:89
+msgid "Active Inventories:"
 msgstr ""
 
-#: templates/system/status.html:100
-msgid "Idle"
+#: templates/system/status.html:92
+msgid "Low Stock Items:"
+msgstr ""
+
+#: templates/system/status.html:101
+msgid "Total Orders:"
 msgstr ""
 
 #: templates/system/status.html:110
-msgid "No scheduled tasks found."
+msgid "Physician Visits:"
 msgstr ""
 
 #: templates/system/status.html:119
-msgid "System Information"
+msgid "Migrations Status:"
 msgstr ""
 
-#: templates/system/status.html:125
-msgid "Python Version:"
+#: templates/system/status.html:122
+msgid "Updates Available"
 msgstr ""
 
-#: templates/system/status.html:128
-msgid "Flask Version:"
-msgstr ""
-
-#: templates/system/status.html:131
-msgid "Timezone:"
+#: templates/system/status.html:124
+msgid "Up to Date"
 msgstr ""
 
 #: templates/system/status.html:137
+msgid "View Migration History"
+msgstr ""
+
+#: templates/system/status.html:151
+msgid "Scheduled Tasks"
+msgstr ""
+
+#: templates/system/status.html:160
+msgid "Interval"
+msgstr ""
+
+#: templates/system/status.html:161
+msgid "Last Run"
+msgstr ""
+
+#: templates/system/status.html:169
+msgid "seconds"
+msgstr ""
+
+#: templates/system/status.html:181
+msgid "Idle"
+msgstr ""
+
+#: templates/system/status.html:191
+msgid "No scheduled tasks found."
+msgstr ""
+
+#: templates/system/status.html:200
+msgid "System Information"
+msgstr ""
+
+#: templates/system/status.html:206
+msgid "Python Version:"
+msgstr ""
+
+#: templates/system/status.html:209
+msgid "Flask Version:"
+msgstr ""
+
+#: templates/system/status.html:212
+msgid "Timezone:"
+msgstr ""
+
+#: templates/system/status.html:218
 msgid "Server Time:"
 msgstr ""
 
-#: templates/system/status.html:140
+#: templates/system/status.html:221
 msgid "Local Time:"
 msgstr ""
 
-#: templates/system/status.html:148
+#: templates/system/status.html:229
 msgid ""
 "The task scheduler runs background tasks including automatic inventory "
 "deduction."
 msgstr ""
 
-#: templates/system/status.html:149
+#: templates/system/status.html:230
 msgid "If the scheduler is not running, automatic deduction will not occur."
 msgstr ""
 
-#: templates/system/status.html:157
+#: templates/system/status.html:238
 msgid "Debug Actions"
 msgstr ""
 
-#: templates/system/status.html:169
+#: templates/system/status.html:250
 msgid "Restart Scheduler"
 msgstr ""
 
-#: templates/system/status.html:175
+#: templates/system/status.html:256
 msgid "Refresh Status"
 msgstr ""
 
-#: templates/system/status.html:183
+#: templates/system/status.html:264
 msgid "Detect Pipe-Separated Times"
 msgstr ""
 
-#: templates/system/status.html:185
+#: templates/system/status.html:266
 msgid "Scan for corrupted medication schedule times"
 msgstr ""
 
-#: templates/system/status.html:190
+#: templates/system/status.html:271
 msgid "This will permanently fix corrupted time data in the database. Continue?"
 msgstr ""
 
-#: templates/system/status.html:191
+#: templates/system/status.html:272
 msgid "Fix Pipe-Separated Times"
 msgstr ""
 
-#: templates/system/status.html:193
+#: templates/system/status.html:274
 msgid "Automatically repair corrupted medication schedule times"
 msgstr ""
 
 #: templates/visits/edit.html:3 templates/visits/edit.html:8
 msgid "Edit Physician Visit"
-msgstr ""
-
-#: templates/visits/edit.html:12
-msgid "Back to Visit"
 msgstr ""
 
 #: templates/visits/edit.html:22
@@ -3298,10 +3328,6 @@ msgstr ""
 
 #: templates/visits/index.html:217 templates/visits/show.html:37
 msgid "days away"
-msgstr ""
-
-#: templates/visits/new.html:11 templates/visits/show.html:12
-msgid "Back to Visits"
 msgstr ""
 
 #: templates/visits/new.html:17

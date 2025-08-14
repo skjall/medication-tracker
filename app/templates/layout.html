@@ -45,15 +45,6 @@
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="physiciansDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-md me-1"></i>{{ _('Physicians') }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('physicians.index') }}">{{ _('All Physicians') }}</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('physicians.new') }}">{{ _('Add Physician') }}</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="inventoryDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-boxes me-1"></i>{{ _('Inventory') }}
                         </a>
@@ -61,6 +52,16 @@
                             <li><a class="dropdown-item" href="{{ url_for('inventory.index') }}">{{ _('Inventory Overview') }}</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('inventory.low') }}">{{ _('Low Stock') }}</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('inventory.depletion') }}">{{ _('Depletion Forecast') }}</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="physiciansDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-md me-1"></i>{{ _('Physicians') }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('physicians.index') }}">{{ _('All Physicians') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('physicians.new') }}">{{ _('Add Physician') }}</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -97,7 +98,7 @@
 
                         </ul>
                     </li>
-                    
+
                     <!-- Language Selector -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown">
@@ -106,7 +107,7 @@
                         <ul class="dropdown-menu">
                             {% for code, name in LANGUAGES.items() %}
                                 <li>
-                                    <a class="dropdown-item {% if code == CURRENT_LANGUAGE %}active{% endif %}" 
+                                    <a class="dropdown-item {% if code == CURRENT_LANGUAGE %}active{% endif %}"
                                        href="{{ url_for('set_language', language=code) }}">
                                         {{ name }}
                                     </a>
@@ -178,11 +179,11 @@
             // Function to show a toast programmatically
             window.showToast = function(message, category = 'info') {
                 const toastContainer = document.querySelector('.toast-container');
-                
+
                 // Determine toast styling based on category
                 let toastClass = 'text-bg-info';
                 let icon = 'fa-info-circle';
-                
+
                 if (category === 'success') {
                     toastClass = 'text-bg-success';
                     icon = 'fa-check-circle';
@@ -193,7 +194,7 @@
                     toastClass = 'text-bg-warning';
                     icon = 'fa-exclamation-triangle';
                 }
-                
+
                 // Create toast HTML
                 const toastHtml = `
                     <div class="toast align-items-center ${toastClass} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
@@ -206,22 +207,22 @@
                         </div>
                     </div>
                 `;
-                
+
                 // Add toast to container
                 const toastElement = document.createElement('div');
                 toastElement.innerHTML = toastHtml;
                 const toastNode = toastElement.firstElementChild;
                 toastContainer.appendChild(toastNode);
-                
+
                 // Initialize and show the toast
                 const toast = new bootstrap.Toast(toastNode);
                 toast.show();
-                
+
                 // Add hiding animation before removal
                 toastNode.addEventListener('hide.bs.toast', function() {
                     toastNode.classList.add('hiding');
                 });
-                
+
                 // Remove toast from DOM after it's hidden
                 toastNode.addEventListener('hidden.bs.toast', function() {
                     setTimeout(() => {

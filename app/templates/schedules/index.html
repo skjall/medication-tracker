@@ -10,7 +10,7 @@
     </h1>
     <div>
         <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Medication') }}
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Details') }}
         </a>
         <a href="{{ url_for('schedules.new', medication_id=medication.id) }}" class="btn btn-primary ms-2">
             <i class="fas fa-plus me-1"></i>{{ _('Add Schedule') }}
@@ -79,7 +79,7 @@
                                     {% elif schedule.schedule_type.value == 'interval' %}
                                         <span class="badge bg-info">{{ _('Every') }} {{ schedule.interval_days }} {{ _('day(s)') }}</span>
                                     {% elif schedule.schedule_type.value == 'weekdays' %}
-                                        <span class="badge bg-primary">{{ _('Selected Days') }}</span>
+                                        <span class="badge bg-primary">{{ _('Selected Days of Week') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>

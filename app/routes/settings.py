@@ -104,7 +104,9 @@ def physician_visits():
     )
 
 
-@settings_bp.route("/update_visit_order_planning/<int:visit_id>", methods=["POST"])
+@settings_bp.route(
+    "/update_visit_order_planning/<int:visit_id>", methods=["POST"]
+)
 def update_visit_order_planning(visit_id: int):
     """
     Update the order planning setting for a specific visit.
@@ -118,9 +120,13 @@ def update_visit_order_planning(visit_id: int):
     db.session.commit()
 
     if visit.order_for_next_but_one:
-        message = _("Orders for this visit will now be planned to last until the next-but-one visit")
+        message = _(
+            "Orders for this visit will now be planned to last until the next-but-one visit"
+        )
     else:
-        message = _("Orders for this visit will now be planned to last until the next visit only")
+        message = _(
+            "Orders for this visit will now be planned to last until the next visit only"
+        )
 
     flash(message, "success")
     return redirect(url_for("visits.show", id=visit_id))
@@ -217,97 +223,134 @@ def backup_database():
 def restore_database():
     """Restore database from an uploaded backup file."""
     logger.info("Handling database restore")
-    
+
     # Check if user confirmed the restore
     if not request.form.get("confirm_restore"):
-        flash(_("You must confirm that you understand the restore will replace all current data"), "error")
+        flash(
+            _(
+                "You must confirm that you understand the restore will replace all current data"
+            ),
+            "error",
+        )
         return redirect(url_for("settings.data_management"))
-    
+
     if "restore_file" not in request.files:
         flash(_("No file provided for restore"), "error")
         return redirect(url_for("settings.data_management"))
-    
+
     file = request.files["restore_file"]
     if file.filename == "":
         flash(_("No file selected"), "error")
         return redirect(url_for("settings.data_management"))
-    
+
     # Validate file extension
-    allowed_extensions = {'.db', '.sqlite', '.sqlite3'}
+    allowed_extensions = {".db", ".sqlite", ".sqlite3"}
     file_ext = os.path.splitext(file.filename)[1].lower()
     if file_ext not in allowed_extensions:
-        flash(_("Invalid file type. Please upload a database file ({})").format(', '.join(allowed_extensions)), "error")
+        flash(
+            _("Invalid file type. Please upload a database file ({})").format(
+                ", ".join(allowed_extensions)
+            ),
+            "error",
+        )
         return redirect(url_for("settings.data_management"))
-    
+
     try:
         # Save uploaded file to temporary location
         temp_dir = tempfile.mkdtemp()
         temp_file_path = os.path.join(temp_dir, secure_filename(file.filename))
         file.save(temp_file_path)
-        
+
         # Validate that it's a valid SQLite database
         try:
             conn = sqlite3.connect(temp_file_path)
             cursor = conn.cursor()
             # Check if it has the expected tables
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='medications'")
+            cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='medications'"
+            )
             if not cursor.fetchone():
-                flash(_("Invalid database file: missing required tables"), "error")
+                flash(
+                    _("Invalid database file: missing required tables"),
+                    "error",
+                )
                 return redirect(url_for("settings.data_management"))
             conn.close()
         except sqlite3.Error as e:
             flash(_("Invalid database file: {}").format(str(e)), "error")
             return redirect(url_for("settings.data_management"))
-        
+
         # Create backup of current database before restore
         backup_dir = os.path.join(current_app.root_path, "data", "backups")
         os.makedirs(backup_dir, exist_ok=True)
-        current_db_path = os.path.join(current_app.root_path, "data", "medication_tracker.db")
-        pre_restore_backup = os.path.join(
-            backup_dir, 
-            f"pre_restore_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
+        current_db_path = os.path.join(
+            current_app.root_path, "data", "medication_tracker.db"
         )
-        
+        pre_restore_backup = os.path.join(
+            backup_dir,
+            f"pre_restore_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db",
+        )
+
         # Close all database connections
         db.session.close_all()
         db.engine.dispose()
-        
+
         # Create backup of current database
         shutil.copy2(current_db_path, pre_restore_backup)
         logger.info(f"Created pre-restore backup at: {pre_restore_backup}")
-        
+
         # Replace current database with uploaded file
         shutil.copy2(temp_file_path, current_db_path)
         logger.info(f"Database restored from uploaded file")
-        
+
         # Clean up temporary file
         os.unlink(temp_file_path)
         os.rmdir(temp_dir)
-        
+
         # Force migration check after restore
         try:
-            from migration_utils import check_and_fix_version_tracking, run_migrations_with_lock
-            logger.info("Checking and applying migrations after database restore")
-            
+            from migration_utils import (
+                check_and_fix_version_tracking,
+                run_migrations_with_lock,
+            )
+
+            logger.info(
+                "Checking and applying migrations after database restore"
+            )
+
             # Check if the restored database needs migration tracking
             check_and_fix_version_tracking(current_app)
-            
+
             # Run any pending migrations
             if run_migrations_with_lock(current_app):
-                logger.info("Migrations applied successfully after database restore")
+                logger.info(
+                    "Migrations applied successfully after database restore"
+                )
             else:
-                logger.warning("Migration check failed after restore - may need manual intervention")
-                
+                logger.warning(
+                    "Migration check failed after restore - may need manual intervention"
+                )
+
         except Exception as migration_error:
-            logger.error(f"Error running migrations after restore: {migration_error}")
-            flash(_("Database restored but migration failed: {}").format(migration_error), "warning")
+            logger.error(
+                f"Error running migrations after restore: {migration_error}"
+            )
+            flash(
+                _("Database restored but migration failed: {}").format(
+                    migration_error
+                ),
+                "warning",
+            )
             return redirect(url_for("settings.data_management"))
-        
-        flash(_("Database successfully restored and migrations applied!"), "success")
+
+        flash(
+            _("Database successfully restored and migrations applied!"),
+            "success",
+        )
         logger.info("Database restore completed successfully with migrations")
-        
+
         return redirect(url_for("settings.data_management"))
-        
+
     except Exception as e:
         logger.error(f"Error restoring database: {str(e)}")
         flash(_("Error restoring database: {}").format(str(e)), "error")
@@ -343,14 +386,25 @@ def import_data():
             for error in errors[:5]:  # Show first 5 errors
                 flash(error, "warning")
             if len(errors) > 5:
-                flash(_("...and {} more errors").format(len(errors) - 5), "warning")
+                flash(
+                    _("... and {} more errors").format(len(errors) - 5),
+                    "warning",
+                )
 
         if success_count > 0:
-            flash(_("Successfully imported {} medications").format(success_count), "success")
+            flash(
+                _("Successfully imported {} medications").format(
+                    success_count
+                ),
+                "success",
+            )
         else:
             flash(_("No medications were imported"), "warning")
     else:
-        flash(_("Import of {} is not yet implemented").format(import_type), "warning")
+        flash(
+            _("Import of {} is not yet implemented").format(import_type),
+            "warning",
+        )
 
     # Clean up temporary file
     os.unlink(file_path)
@@ -386,7 +440,10 @@ def clear_logs():
 
     deleted_count = clear_old_inventory_logs(days_to_keep)
 
-    flash(_("Successfully removed {} old inventory logs").format(deleted_count), "success")
+    flash(
+        _("Successfully removed {} old inventory logs").format(deleted_count),
+        "success",
+    )
     return redirect(url_for("settings.data_management"))
 
 
@@ -397,7 +454,10 @@ def reset_data():
     logger.warning(f"Data reset requested. Verification: '{verification}'")
 
     if verification.lower() != "reset all data":
-        flash(_("Verification text doesn't match. Data was not reset."), "warning")
+        flash(
+            _("Verification text doesn't match. Data was not reset."),
+            "warning",
+        )
         return redirect(url_for("settings.system"))
 
     try:
@@ -411,7 +471,9 @@ def reset_data():
 
         logger.warning("All data has been reset")
         flash(
-            _("All data has been reset. The application has been restored to initial state."),
+            _(
+                "All data has been reset. The application has been restored to initial state."
+            ),
             "success",
         )
     except Exception as e:
@@ -445,7 +507,10 @@ def update_timezone():
     settings.timezone_name = timezone_name
     db.session.commit()
 
-    flash(_("Application timezone updated to {}").format(timezone_name), "success")
+    flash(
+        _("Application timezone updated to {}").format(timezone_name),
+        "success",
+    )
     return redirect(url_for("settings.system"))
 
 
@@ -471,11 +536,11 @@ def data_management():
 
     # Get database size - in Docker, the database is in the app directory
     db_file_path = os.path.join(current_app.root_path, db_path)
-    
+
     if os.path.exists(db_file_path):
         size_bytes = os.path.getsize(db_file_path)
         size_mb = size_bytes / (1024 * 1024)
-        
+
         if size_mb >= 1:
             db_size = round(size_mb, 2)
             db_size_unit = "MB"
@@ -534,11 +599,15 @@ def import_data_type(data_type: str):
     try:
         # Import based on data type
         if data_type == "medications":
-            success_count, errors = import_medications_from_csv(file_path, override)
+            success_count, errors = import_medications_from_csv(
+                file_path, override
+            )
         elif data_type == "inventory":
             from data_utils import import_inventory_from_csv
 
-            success_count, errors = import_inventory_from_csv(file_path, override)
+            success_count, errors = import_inventory_from_csv(
+                file_path, override
+            )
         elif data_type == "orders":
             from data_utils import import_orders_from_csv
 
@@ -550,9 +619,13 @@ def import_data_type(data_type: str):
         elif data_type == "schedules":
             from data_utils import import_schedules_from_csv
 
-            success_count, errors = import_schedules_from_csv(file_path, override)
+            success_count, errors = import_schedules_from_csv(
+                file_path, override
+            )
         elif data_type == "physicians":
-            success_count, errors = import_physicians_from_csv(file_path, override)
+            success_count, errors = import_physicians_from_csv(
+                file_path, override
+            )
         else:
             flash(_("Unknown import type: {}").format(data_type), "error")
             return redirect(url_for("settings.data_management"))
@@ -561,11 +634,17 @@ def import_data_type(data_type: str):
             for error in errors[:5]:  # Show first 5 errors
                 flash(error, "warning")
             if len(errors) > 5:
-                flash(_("...and {} more errors").format(len(errors) - 5), "warning")
+                flash(
+                    _("... and {} more errors").format(len(errors) - 5),
+                    "warning",
+                )
 
         if success_count > 0:
             flash(
-                _("Successfully imported {} {} records").format(success_count, data_type), "success"
+                _("Successfully imported {} {} records").format(
+                    success_count, data_type
+                ),
+                "success",
             )
         else:
             flash(_("No {} were imported").format(data_type), "warning")
@@ -587,67 +666,77 @@ def check_updates():
     """
     import requests
     import json
-    
+
     logger.info("Checking for application updates")
-    
+
     current_version = get_version()
-    
+
     try:
         # Check GitHub API for latest release
         response = requests.get(
             "https://api.github.com/repos/skjall/medication-tracker/releases/latest",
             headers={"Accept": "application/vnd.github.v3+json"},
-            timeout=5
+            timeout=5,
         )
-        
+
         if response.status_code == 200:
             release_data = response.json()
             latest_version = release_data.get("tag_name", "").lstrip("v")
             release_url = release_data.get("html_url", "")
             release_date = release_data.get("published_at", "")
-            
+
             # Parse version numbers for comparison
             def parse_version(v):
                 try:
                     return tuple(map(int, v.split(".")))
                 except:
                     return (0, 0, 0)
-            
+
             current = parse_version(current_version)
             latest = parse_version(latest_version)
-            
+
             update_available = latest > current
-            
-            return jsonify({
-                "success": True,
-                "current_version": current_version,
-                "latest_version": latest_version,
-                "update_available": update_available,
-                "release_url": release_url,
-                "release_date": release_date
-            })
+
+            return jsonify(
+                {
+                    "success": True,
+                    "current_version": current_version,
+                    "latest_version": latest_version,
+                    "update_available": update_available,
+                    "release_url": release_url,
+                    "release_date": release_date,
+                }
+            )
         else:
-            logger.warning(f"GitHub API returned status {response.status_code}")
-            return jsonify({
-                "success": False,
-                "current_version": current_version,
-                "error": _("Unable to check for updates")
-            })
-            
+            logger.warning(
+                f"GitHub API returned status {response.status_code}"
+            )
+            return jsonify(
+                {
+                    "success": False,
+                    "current_version": current_version,
+                    "error": _("Unable to check for updates"),
+                }
+            )
+
     except requests.exceptions.Timeout:
         logger.error("Timeout while checking for updates")
-        return jsonify({
-            "success": False,
-            "current_version": current_version,
-            "error": _("Connection timeout")
-        })
+        return jsonify(
+            {
+                "success": False,
+                "current_version": current_version,
+                "error": _("Connection timeout"),
+            }
+        )
     except Exception as e:
         logger.error(f"Error checking for updates: {e}")
-        return jsonify({
-            "success": False,
-            "current_version": current_version,
-            "error": "Unable to check for updates"
-        })
+        return jsonify(
+            {
+                "success": False,
+                "current_version": current_version,
+                "error": "Unable to check for updates",
+            }
+        )
 
 
 @settings_bp.route("/reset/<data_type>", methods=["POST"])
@@ -665,7 +754,9 @@ def reset_data_type(data_type: str):
 
     if verification.lower() != expected_text:
         flash(
-            _("Verification text doesn't match. Expected '{}'. Data was not reset.").format(expected_text),
+            _(
+                "Verification text doesn't match. Expected '{}'. Data was not reset."
+            ).format(expected_text),
             "warning",
         )
         return redirect(url_for("settings.data_management"))
@@ -688,31 +779,52 @@ def reset_data_type(data_type: str):
             from data_utils import reset_inventory_data
 
             count = reset_inventory_data()
-            flash(_("All inventory data has been reset ({} records)").format(count), "success")
+            flash(
+                _("All inventory data has been reset ({} records)").format(
+                    count
+                ),
+                "success",
+            )
 
         elif data_type == "orders":
             from data_utils import reset_orders_data
 
             count = reset_orders_data()
-            flash(_("All order data has been reset ({} records)").format(count), "success")
+            flash(
+                _("All order data has been reset ({} records)").format(count),
+                "success",
+            )
 
         elif data_type == "visits":
             from data_utils import reset_visits_data
 
             count = reset_visits_data()
-            flash(_("All visit data has been reset ({} records)").format(count), "success")
+            flash(
+                _("All visit data has been reset ({} records)").format(count),
+                "success",
+            )
 
         elif data_type == "schedules":
             from data_utils import reset_schedules_data
 
             count = reset_schedules_data()
-            flash(_("All schedule data has been reset ({} records)").format(count), "success")
+            flash(
+                _("All schedule data has been reset ({} records)").format(
+                    count
+                ),
+                "success",
+            )
 
         elif data_type == "physicians":
             from data_utils import reset_physicians_data
 
             count = reset_physicians_data()
-            flash(_("All physician data has been reset ({} records)").format(count), "success")
+            flash(
+                _("All physician data has been reset ({} records)").format(
+                    count
+                ),
+                "success",
+            )
 
         else:
             flash(_("Unknown data type: {}").format(data_type), "error")

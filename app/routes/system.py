@@ -35,7 +35,9 @@ def status():
     Render a system status page with scheduler information.
     Displays the status of background tasks and system health.
     """
-    from models import Settings
+    from models import Settings, Medication, Inventory, PhysicianVisit, Order, MedicationSchedule, db
+    import os
+    from sqlalchemy import inspect, text
 
     settings = Settings.get_settings()
 
@@ -72,12 +74,85 @@ def status():
     python_version = platform.python_version()
     flask_version = flask.__version__
 
+    # Collect database statistics
+    db_stats = {
+        "medications_count": Medication.query.count(),
+        "inventories_count": Inventory.query.count(),
+        "visits_count": PhysicianVisit.query.count(),
+        "orders_count": Order.query.count(),
+        "schedules_count": MedicationSchedule.query.count(),
+        "low_stock_count": 0,  # Will calculate below
+    }
+    
+    # Calculate low stock count properly
+    low_stock_count = 0
+    for inventory in Inventory.query.all():
+        if inventory.medication and inventory.is_low:
+            low_stock_count += 1
+    db_stats["low_stock_count"] = low_stock_count
+    
+    # Get database file information
+    db_path = current_app.config.get('SQLALCHEMY_DATABASE_URI', '').replace('sqlite:///', '')
+    db_info = {}
+    if db_path and os.path.exists(db_path):
+        db_size = os.path.getsize(db_path)
+        db_info = {
+            "path": db_path,
+            "size_mb": round(db_size / (1024 * 1024), 2),
+            "exists": True
+        }
+    else:
+        db_info = {
+            "path": db_path or "Not configured",
+            "size_mb": 0,
+            "exists": False
+        }
+    
+    # Check migration status
+    migration_info = {}
+    try:
+        # Check if migrations are needed
+        migrations_needed = check_migrations_needed(current_app)
+        
+        # Get current migration version from database
+        current_version = None
+        try:
+            with db.engine.connect() as conn:
+                # text is already imported at the top
+                result = conn.execute(text("SELECT version_num FROM alembic_version LIMIT 1"))
+                row = result.fetchone()
+                if row:
+                    current_version = row[0]
+                logger.info(f"Current migration version: {current_version}")
+        except Exception as e:
+            logger.warning(f"Could not get migration version from DB: {e}")
+            current_version = None
+        
+        migration_info = {
+            "migrations_needed": migrations_needed,
+            "current_version": current_version,
+        }
+    except Exception as e:
+        logger.warning(f"Could not get complete migration info: {e}")
+        migration_info = {
+            "migrations_needed": False,
+            "current_version": None,
+        }
+    
+    # Get table information
+    inspector = inspect(db.engine)
+    tables = inspector.get_table_names()
+    
     status = {
         "scheduler_running": scheduler_running,
         "tasks": tasks,
         "last_deduction_check": (
             settings.last_deduction_check if settings.last_deduction_check else None
         ),
+        "db_stats": db_stats,
+        "db_info": db_info,
+        "migration_info": migration_info,
+        "table_count": len(tables),
     }
 
     local_timezone = tzlocal.get_localzone()

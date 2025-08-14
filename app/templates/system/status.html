@@ -53,12 +53,93 @@
         <h5 class="mb-0">{{ _('Database Status') }}</h5>
     </div>
     <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-6">{{ _('Database Type:') }}</dt>
+                    <dd class="col-sm-6">SQLite</dd>
+
+                    <dt class="col-sm-6">{{ _('Database Size:') }}</dt>
+                    <dd class="col-sm-6">
+                        {% if status.db_info.exists %}
+                            {{ status.db_info.size_mb }} MB
+                        {% else %}
+                            <span class="text-muted">{{ _('Not available') }}</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-6">{{ _('Total Tables:') }}</dt>
+                    <dd class="col-sm-6">{{ status.table_count }}</dd>
+
+                    <dt class="col-sm-6">{{ _('Migration Version:') }}</dt>
+                    <dd class="col-sm-6">
+                        {% if status.migration_info.current_version %}
+                            <code>{{ status.migration_info.current_version }}</code>
+                        {% else %}
+                            <span class="text-muted">{{ _('Not initialized') }}</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-6">{{ _('Total Medications:') }}</dt>
+                    <dd class="col-sm-6">{{ status.db_stats.medications_count }}</dd>
+
+                    <dt class="col-sm-6">{{ _('Active Inventories:') }}</dt>
+                    <dd class="col-sm-6">{{ status.db_stats.inventories_count }}</dd>
+
+                    <dt class="col-sm-6">{{ _('Low Stock Items:') }}</dt>
+                    <dd class="col-sm-6">
+                        {% if status.db_stats.low_stock_count > 0 %}
+                            <span class="text-danger">{{ status.db_stats.low_stock_count }}</span>
+                        {% else %}
+                            <span class="text-success">0</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-6">{{ _('Total Orders:') }}</dt>
+                    <dd class="col-sm-6">{{ status.db_stats.orders_count }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-6">{{ _('Physician Visits:') }}</dt>
+                    <dd class="col-sm-6">{{ status.db_stats.visits_count }}</dd>
+
+                    <dt class="col-sm-6">{{ _('Active Schedules:') }}</dt>
+                    <dd class="col-sm-6">{{ status.db_stats.schedules_count }}</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-6">{{ _('Migrations Status:') }}</dt>
+                    <dd class="col-sm-6">
+                        {% if status.migration_info.migrations_needed %}
+                            <span class="badge bg-warning text-dark">{{ _('Updates Available') }}</span>
+                        {% else %}
+                            <span class="badge bg-success">{{ _('Up to Date') }}</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <hr>
+
         <div class="row">
             <div class="col-md-12">
-                <a href="{{ url_for('system.migrations') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-database me-1"></i>{{ _('Database Migrations') }}
-                </a>
-                <span class="ms-3">{{ _('View migration status and history') }}</span>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('system.migrations') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-code-branch me-1"></i>{{ _('View Migration History') }}
+                    </a>
+                    <a href="{{ url_for('settings.data_management') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-download me-1"></i>{{ _('Backup Database') }}
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -75,7 +156,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>{{ _('Task Name') }}</th>
+                            <th>{{ _('Name') }}</th>
                             <th>{{ _('Interval') }}</th>
                             <th>{{ _('Last Run') }}</th>
                             <th>{{ _('Status') }}</th>
@@ -176,7 +257,7 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="row">
             <div class="col-md-6 mb-3">
                 <a href="{{ url_for('system.detect_pipe_times') }}" class="btn btn-outline-primary w-100">
@@ -186,7 +267,7 @@
             </div>
 
             <div class="col-md-6 mb-3">
-                <a href="{{ url_for('system.fix_pipe_times') }}" class="btn btn-outline-danger w-100" 
+                <a href="{{ url_for('system.fix_pipe_times') }}" class="btn btn-outline-danger w-100"
                    onclick="return confirm('{{ _('This will permanently fix corrupted time data in the database. Continue?') }}')")>
                     <i class="fas fa-wrench me-1"></i>{{ _('Fix Pipe-Separated Times') }}
                 </a>

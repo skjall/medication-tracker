@@ -10,7 +10,7 @@
     </h1>
     <div>
         <a href="{{ url_for('prescriptions.show', id=template.id) }}" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Details
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Details') }}
         </a>
         <a href="{{ url_for('prescriptions.index') }}" class="btn btn-outline-primary ms-2">
             <i class="fas fa-list me-1"></i>All Templates

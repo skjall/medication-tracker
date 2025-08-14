@@ -9,7 +9,7 @@
     </h1>
     <div>
         <a href="{{ url_for('visits.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Visits') }}
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to List') }}
         </a>
         {% if make_aware(visit.visit_date) >= make_aware(now) %}
             <a href="{{ url_for('visits.edit', id=visit.id) }}" class="btn btn-primary ms-2">
