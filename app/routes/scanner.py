@@ -10,9 +10,10 @@ from models import db, MedicationPackage, ScannedItem, PackageInventory
 from scanner_parser import (
     parse_datamatrix, 
     parse_expiry_date, 
-    format_national_number_display
+    format_national_number_display,
+    validate_gtin
 )
-from barcode_validator import identify_barcode_format
+from barcode_validator import identify_barcode_format, validate_de_pzn
 
 bp = Blueprint('scanner', __name__, url_prefix='/scanner')
 
