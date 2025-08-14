@@ -36,12 +36,28 @@ medication_bp = Blueprint("medications", __name__, url_prefix="/medications")
 
 @medication_bp.route("/")
 def index():
-    """Display list of all medications."""
-    medications = Medication.query.all()
+    """Display list of all medications grouped by physician."""
+    medications = Medication.query.order_by(Medication.name).all()
+    
+    # Group medications by physician
+    medications_by_physician = {}
+    for med in medications:
+        physician_key = med.physician if med.physician else None
+        if physician_key not in medications_by_physician:
+            medications_by_physician[physician_key] = []
+        medications_by_physician[physician_key].append(med)
+    
+    # Sort physicians by name, with unassigned at the end
+    sorted_physicians = sorted(
+        medications_by_physician.keys(),
+        key=lambda p: (p is None, p.name if p else "")
+    )
+    
     return render_template(
         "medications/index.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
-        medications=medications,
+        medications_by_physician=medications_by_physician,
+        sorted_physicians=sorted_physicians,
     )
 
 
@@ -76,12 +92,14 @@ def new():
             physician_id = int(physician_id)
 
         is_otc = bool(request.form.get("is_otc"))
+        aut_idem = bool(request.form.get("aut_idem"))
 
         # Create new medication
         medication = Medication(
             name=name,
             physician_id=physician_id,
             is_otc=is_otc,
+            aut_idem=aut_idem,
             active_ingredient=active_ingredient,
             form=form,
             dosage=dosage,  # Kept for database compatibility
@@ -167,6 +185,7 @@ def edit(id: int):
             medication.physician_id = int(physician_id)
 
         medication.is_otc = bool(request.form.get("is_otc"))
+        medication.aut_idem = bool(request.form.get("aut_idem"))
 
         db.session.commit()
 

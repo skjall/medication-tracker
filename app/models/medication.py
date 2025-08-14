@@ -43,6 +43,11 @@ class Medication(db.Model):
     is_otc: Mapped[bool] = mapped_column(
         Boolean, default=False, comment="True if medication is over-the-counter"
     )
+    
+    # Aut idem flag - allows generic substitution by pharmacist
+    aut_idem: Mapped[bool] = mapped_column(
+        Boolean, default=True, comment="True if generic substitution is allowed"
+    )
 
     # Legacy fields - marked as deprecated but kept for database compatibility
     # These are no longer used for calculations

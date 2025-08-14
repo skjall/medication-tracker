@@ -54,14 +54,14 @@
                 <p>
                     <strong>{{ _('Medications') }}:</strong> {{ order_items|length }} {% if order_items|length == 1 %}{{ _('item') }}{% else %}{{ _('items') }}{% endif %}
                 </p>
-                
+
                 {% if visit.physician %}
                     <p>
                         <strong>{{ _('Physician') }}:</strong> {{ visit.physician.display_name }}
                     </p>
                 {% else %}
                     <p>
-                        <strong>{{ _('Type') }}:</strong> <span class="badge bg-info">{{ _('OTC/Supplements') }}</span>
+                        <strong>{{ _('Type') }}:</strong> <span class="badge bg-info">{{ _('OTC') }}</span>
                     </p>
                 {% endif %}
 
@@ -88,7 +88,7 @@
                         <i class="fas fa-check-circle me-2"></i>
                         {{ _('This order has been marked as fulfilled.') }}
                     </div>
-                    
+
                     <div class="btn-group w-100">
                         <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-outline-primary" target="_blank">
                             <i class="fas fa-print me-1"></i>{{ _('Print') }}
@@ -176,9 +176,9 @@
                                                     <i class="fas fa-boxes"></i>
                                                 </a>
                                                 {% if item.fulfillment_status == 'pending' %}
-                                                    <button type="button" class="btn btn-outline-primary" 
-                                                            data-bs-toggle="modal" 
-                                                            data-bs-target="#fulfillItemModal" 
+                                                    <button type="button" class="btn btn-outline-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#fulfillItemModal"
                                                             data-item-id="{{ item.id }}"
                                                             data-item-name="{{ item.medication.name }}"
                                                             data-item-quantity="{{ item.total_units_ordered }}"
@@ -224,7 +224,7 @@
             <form id="fulfillItemForm" method="POST" action="">
                 <div class="modal-body">
                     <h6 id="itemName" class="mb-3">{{ _('Medication Name') }}</h6>
-                    
+
                     <div class="mb-3">
                         <label for="itemStatus" class="form-label">{{ _('Fulfillment Status') }}</label>
                         <select class="form-select" id="itemStatus" name="status" required>
@@ -233,7 +233,7 @@
                             <option value="cancelled">{{ _('Cancelled - Not available') }}</option>
                         </select>
                     </div>
-                    
+
                     <div class="mb-3" id="quantitySection" style="display: none;">
                         <label for="customQuantity" class="form-label">{{ _('Actual Quantity Received') }}</label>
                         <div class="input-group">
@@ -242,12 +242,12 @@
                         </div>
                         <div class="form-text">{{ _('Original order: %(quantity)s units', quantity='<span id="originalQuantity"></span>'|safe) }}</div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="itemNotes" class="form-label">{{ _('Notes (optional)') }}</label>
                         <textarea class="form-control" id="itemNotes" name="notes" rows="2" placeholder="{{ _('e.g., Doctor modified prescription, pharmacy substitution, etc.') }}"></textarea>
                     </div>
-                    
+
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="addToInventory" name="add_to_inventory" value="true" checked>
                         <label class="form-check-label" for="addToInventory">
@@ -279,20 +279,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemId = button.getAttribute('data-item-id');
             const itemName = button.getAttribute('data-item-name');
             const itemQuantity = button.getAttribute('data-item-quantity');
-            
+
             // Update form action
             const form = document.getElementById('fulfillItemForm');
             form.action = "{{ url_for('orders.fulfill_item', id=order.id, item_id=0) }}".replace('/0/', '/' + itemId + '/');
-            
+
             // Update medication name
             document.getElementById('itemName').textContent = itemName;
             document.getElementById('originalQuantity').textContent = itemQuantity;
-            
+
             // Handle status change
             const statusSelect = document.getElementById('itemStatus');
             const quantitySection = document.getElementById('quantitySection');
             const customQuantityInput = document.getElementById('customQuantity');
-            
+
             statusSelect.addEventListener('change', function() {
                 if (this.value === 'modified') {
                     quantitySection.style.display = 'block';
@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     customQuantityInput.value = '';
                 }
             });
-            
+
             // Reset form when modal is shown
             statusSelect.value = 'fulfilled';
             quantitySection.style.display = 'none';
