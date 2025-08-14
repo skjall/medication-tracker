@@ -164,7 +164,10 @@ def get_alembic_config(app: Flask) -> Config:
         Configured Alembic Config object
     """
     # Create Alembic config
-    config_path = os.path.join(app.root_path, "..", "alembic.ini")
+    # Check if we're in Docker (alembic.ini in same directory) or local dev (in parent)
+    config_path = os.path.join(app.root_path, "alembic.ini")
+    if not os.path.exists(config_path):
+        config_path = os.path.join(app.root_path, "..", "alembic.ini")
     alembic_cfg = Config(config_path)
 
     # Set SQLAlchemy URL from app config
@@ -182,7 +185,10 @@ def get_alembic_config(app: Flask) -> Config:
     alembic_cfg.set_section_option(section, "sqlalchemy.url", db_url)
 
     # Set script location
-    migrations_dir = os.path.join(app.root_path, "..", "migrations")
+    # Check if we're in Docker (migrations in same directory) or local dev (in parent)
+    migrations_dir = os.path.join(app.root_path, "migrations")
+    if not os.path.exists(migrations_dir):
+        migrations_dir = os.path.join(app.root_path, "..", "migrations")
     alembic_cfg.set_main_option("script_location", migrations_dir)
 
     return alembic_cfg
@@ -552,7 +558,9 @@ def initialize_migrations(app: Flask) -> bool:
             return True
 
         # Check if migrations directory exists
-        migrations_dir = os.path.join(app.root_path, "..", "migrations", "versions")
+        migrations_dir = os.path.join(app.root_path, "migrations", "versions")
+        if not os.path.exists(migrations_dir):
+            migrations_dir = os.path.join(app.root_path, "..", "migrations", "versions")
         if not os.path.exists(migrations_dir):
             logger.info("Initializing migrations environment...")
             os.makedirs(migrations_dir, exist_ok=True)
