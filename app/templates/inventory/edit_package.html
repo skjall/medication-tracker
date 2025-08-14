@@ -1,0 +1,241 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Edit Package') }} - {{ medication.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-qrcode me-2"></i>{{ _('Edit Scanned Package') }}
+    </h1>
+    <div>
+        <a href="{{ url_for('inventory.show', id=inventory.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Inventory') }}
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-box me-2"></i>{{ _('Package Details') }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('inventory.edit_package', package_id=package.id) }}">
+                    <input type="hidden" name="original_units" value="{{ package.current_units }}">
+
+                    <!-- Package Information -->
+                    <div class="mb-4">
+                        <h6>{{ _('Package Information') }}</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>{{ _('Medication') }}:</strong> {{ medication.name }}</p>
+                                <p><strong>{{ _('Package Size') }}:</strong>
+                                    {% if package.medication_package %}
+                                        {{ package.medication_package.package_size }}
+                                    {% else %}
+                                        <span class="text-muted">{{ _('Unknown') }}</span>
+                                    {% endif %}
+                                </p>
+                                <p><strong>{{ _('Original Units') }}:</strong> {{ package.original_units }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>{{ _('Serial Number') }}:</strong> <code>{{ scanned_item.serial_number }}</code></p>
+                                <p><strong>{{ _('Batch') }}:</strong>
+                                    {% if scanned_item.batch_number %}
+                                        <code>{{ scanned_item.batch_number }}</code>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </p>
+                                <p><strong>{{ _('Expiry Date') }}:</strong>
+                                    {% if scanned_item.expiry_date %}
+                                        <span class="{% if scanned_item.expiry_date < today %}text-danger fw-bold{% endif %}">
+                                            {{ scanned_item.expiry_date.strftime('%Y-%m-%d') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Editable Fields -->
+                    <div class="mb-4">
+                        <label for="status" class="form-label">{{ _('Package Status') }}</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="sealed" {% if package.status == 'sealed' %}selected{% endif %}>
+                                {{ _('Sealed - Not opened yet') }}
+                            </option>
+                            <option value="open" {% if package.status == 'open' %}selected{% endif %}>
+                                {{ _('Open - In use') }}
+                            </option>
+                            <option value="empty" {% if package.status == 'empty' %}selected{% endif %}>
+                                {{ _('Empty - All units consumed') }}
+                            </option>
+                            <option value="discarded" {% if package.status == 'discarded' %}selected{% endif %}>
+                                {{ _('Discarded - Removed from inventory') }}
+                            </option>
+                        </select>
+                        <div class="form-text">
+                            {{ _('Update the status to reflect the current state of the package') }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="current_units" class="form-label">{{ _('Current Units Remaining') }}</label>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" id="decreaseUnits">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" class="form-control text-center" id="current_units" name="current_units"
+                                   value="{{ package.current_units }}" min="0" max="{{ package.original_units }}">
+                            <button class="btn btn-outline-secondary" type="button" id="increaseUnits">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <span class="input-group-text">/ {{ package.original_units }}</span>
+                        </div>
+                        <div class="form-text">
+                            {{ _('Adjust if you have taken medication from this package without updating the system') }}
+                        </div>
+                    </div>
+
+                    <!-- Quick adjustment buttons -->
+                    <div class="mb-4">
+                        <label class="form-label">{{ _('Quick Adjustments') }}</label>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary quick-adjust" data-value="-1">-1</button>
+                            <button type="button" class="btn btn-outline-secondary quick-adjust" data-value="-5">-5</button>
+                            <button type="button" class="btn btn-outline-secondary quick-adjust" data-value="-10">-10</button>
+                            <button type="button" class="btn btn-outline-warning quick-adjust" data-value="0">
+                                <i class="fas fa-times"></i> {{ _('Empty') }}
+                            </button>
+                            <button type="button" class="btn btn-outline-success quick-adjust" data-value="{{ package.original_units }}">
+                                <i class="fas fa-undo"></i> {{ _('Reset to Full') }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">{{ _('Notes (Optional)') }}</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"
+                                  placeholder="{{ _('Add any notes about this adjustment') }}"></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>{{ _('Save Changes') }}
+                        </button>
+                        <a href="{{ url_for('inventory.show', id=inventory.id) }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Status Info Card -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">{{ _('Status Information') }}</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>{{ _('Current Status') }}:</strong></p>
+                {% if package.status == 'sealed' %}
+                    <span class="badge bg-success">{{ _('Sealed') }}</span>
+                    <p class="mt-2 mb-0">{{ _('This package has not been opened yet') }}</p>
+                {% elif package.status == 'open' %}
+                    <span class="badge bg-warning">{{ _('Open') }}</span>
+                    <p class="mt-2 mb-0">{{ _('This package is currently in use') }}</p>
+                {% elif package.status == 'empty' %}
+                    <span class="badge bg-secondary">{{ _('Empty') }}</span>
+                    <p class="mt-2 mb-0">{{ _('All units have been consumed') }}</p>
+                {% elif package.status == 'discarded' %}
+                    <span class="badge bg-danger">{{ _('Discarded') }}</span>
+                    <p class="mt-2 mb-0">{{ _('This package has been removed from inventory') }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Usage Info Card -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">{{ _('Usage Information') }}</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>{{ _('Units Used') }}:</strong> {{ package.original_units - package.current_units }} / {{ package.original_units }}</p>
+                <div class="progress mb-3">
+                    {% set usage_percent = ((package.original_units - package.current_units) / package.original_units * 100)|round %}
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ usage_percent }}%"
+                         aria-valuenow="{{ usage_percent }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ usage_percent }}%
+                    </div>
+                </div>
+                <p><strong>{{ _('Scanned') }}:</strong> {{ scanned_item.scanned_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const unitsInput = document.getElementById('current_units');
+    const statusSelect = document.getElementById('status');
+    const maxUnits = {{ package.original_units }};
+
+    // Decrease button
+    document.getElementById('decreaseUnits').addEventListener('click', function() {
+        const currentValue = parseInt(unitsInput.value) || 0;
+        if (currentValue > 0) {
+            unitsInput.value = currentValue - 1;
+            updateStatus();
+        }
+    });
+
+    // Increase button
+    document.getElementById('increaseUnits').addEventListener('click', function() {
+        const currentValue = parseInt(unitsInput.value) || 0;
+        if (currentValue < maxUnits) {
+            unitsInput.value = currentValue + 1;
+            updateStatus();
+        }
+    });
+
+    // Quick adjust buttons
+    document.querySelectorAll('.quick-adjust').forEach(button => {
+        button.addEventListener('click', function() {
+            const adjustment = parseInt(this.getAttribute('data-value'));
+            if (adjustment < 0) {
+                // Relative adjustment
+                const currentValue = parseInt(unitsInput.value) || 0;
+                unitsInput.value = Math.max(0, currentValue + adjustment);
+            } else {
+                // Absolute value
+                unitsInput.value = adjustment;
+            }
+            updateStatus();
+        });
+    });
+
+    // Auto-update status based on units
+    function updateStatus() {
+        const units = parseInt(unitsInput.value) || 0;
+        if (units === 0) {
+            statusSelect.value = 'empty';
+        } else if (units === maxUnits) {
+            statusSelect.value = 'sealed';
+        } else if (units < maxUnits && statusSelect.value === 'sealed') {
+            statusSelect.value = 'open';
+        }
+    }
+
+    // Update status when units change
+    unitsInput.addEventListener('change', updateStatus);
+});
+</script>
+{% endblock %}

@@ -67,7 +67,7 @@
                                     <strong>{{ med.name }}</strong>
                                     <span class="text-danger ms-2">
                                         <i class="fas fa-arrow-down"></i>
-                                        {{ _n('%(count)d unit', '%(count)d units', med.inventory.current_count, count=med.inventory.current_count) }}
+                                        {{ _n('%(count)d unit', '%(count)d units', med.total_inventory_count, count=med.total_inventory_count) }}
                                     </span>
                                 </div>
                                 <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-sm btn-outline-primary">
@@ -108,7 +108,8 @@
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    <strong>{{ _n('%(count)d medication', '%(count)d medications', gap_info.medications|length, count=gap_info.medications|length) }}</strong> {{ _('will run out before your visit') }}
+                    <strong>{{ _n('%(count)d medication', '%(count)d medications', gap_info.medications|length, count=gap_info.medications|length) }}</strong> 
+                    {{ _n('will run out before your visit', 'will run out before your visit', gap_info.medications|length) }}
                     {% if gap_info.visit.physician %}{{ _('with') }} {{ gap_info.visit.physician.name }}{% endif %}
                     {{ _('on') }} <strong>{{ format_date(gap_info.visit.visit_date) }}</strong> ({{ _n('%(count)d day away', '%(count)d days away', gap_info.visit.days_until, count=gap_info.visit.days_until) }}).
                 </p>
@@ -124,9 +125,21 @@
                                             {{ _('Runs out') }} {{ format_date(med.depletion_date) }}
                                         </span>
                                     </div>
-                                    <span class="badge bg-warning text-dark">
-                                        {{ _n('%(count)d unit left', '%(count)d units left', med.inventory.current_count, count=med.inventory.current_count) }}
-                                    </span>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-warning text-dark me-2">
+                                            {{ _n('%(count)d unit left', '%(count)d units left', med.total_inventory_count, count=med.total_inventory_count) }}
+                                        </span>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-primary" title="{{ _('View Medication') }}">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if med.inventory %}
+                                                <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary" title="{{ _('View Inventory') }}">
+                                                    <i class="fas fa-boxes"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </li>
                             {% endfor %}
                             {% if gap_info.medications|length > 5 %}
@@ -162,79 +175,191 @@
                 </h5>
             </div>
             <div class="card-body">
-                {% if medications %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>{{ _('Name') }}</th>
-                                    <th>{{ _('Daily Usage') }}</th>
-                                    <th>{{ _('Current Inventory') }}</th>
-                                    <th>{{ _('Days Left') }}</th>
-                                    <th>{{ _('Depletion Date') }}</th>
-                                    <th>{{ _('Status') }}</th>
-                                    <th class="text-end">{{ _('Actions') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for med in medications %}
-                                    {% set color_class = 'text-danger' if med.inventory and med.inventory.is_low else ('text-warning' if med.days_remaining and med.days_remaining < 30 else 'text-success') %}
-                                    <tr>
-                                        <td>
-                                            <strong>{{ med.name }}</strong>
-                                        </td>
-                                        <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
-                                        <td>
-                                            {% if med.inventory %}
-                                                {{ _n('%(count)d unit', '%(count)d units', med.inventory.current_count, count=med.inventory.current_count) }}
-                                            {% else %}
-                                                <span class="text-muted">{{ _('No inventory') }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if med.days_remaining %}
-                                                {{ _n('%(count)d day', '%(count)d days', med.days_remaining|round|int, count=med.days_remaining|round|int) }}
-                                            {% else %}
-                                                <span class="text-muted">{{ _('N/A') }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if med.depletion_date %}
-                                                {{ format_date(med.depletion_date) }}
-                                            {% else %}
-                                                <span class="text-muted">{{ _('N/A') }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if not med.inventory %}
-                                                <span class="badge bg-secondary">{{ _('No Data') }}</span>
-                                            {% elif med.inventory.current_count == 0 %}
-                                                <span class="badge bg-danger">{{ _('Critical') }}</span>
-                                            {% elif med.inventory.is_low %}
-                                                <span class="badge bg-danger">{{ _('Low Stock') }}</span>
-                                            {% elif med.days_remaining and med.days_remaining < 30 %}
-                                                <span class="badge bg-warning text-white">{{ _('Running Low') }}</span>
-                                            {% else %}
-                                                <span class="badge bg-success">{{ _('OK') }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-end">
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-primary">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                {% if med.inventory %}
-                                                    <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary">
-                                                        <i class="fas fa-boxes"></i>
-                                                    </a>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                {% if medications_by_physician %}
+                    {% for physician in sorted_physicians %}
+                        <div class="physician-section mb-4">
+                            <!-- Physician Header -->
+                            <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                                <i class="fas fa-user-md text-primary me-2"></i>
+                                <h6 class="mb-0 text-primary">
+                                    {% if physician %}
+                                        {{ physician.display_name }}
+                                    {% else %}
+                                        {{ _('Unassigned Medications') }}
+                                    {% endif %}
+                                </h6>
+                                <span class="badge bg-secondary ms-2">{{ medications_by_physician[physician]|length }}</span>
+                            </div>
+                            
+                            <!-- Medications Table for this Physician -->
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ _('Name') }}</th>
+                                            <th>{{ _('Daily Usage') }}</th>
+                                            <th>{{ _('Current Inventory') }}</th>
+                                            <th>{{ _('Days Left') }}</th>
+                                            <th>{{ _('Depletion Date') }}</th>
+                                            <th>{{ _('Status') }}</th>
+                                            <th class="text-end">{{ _('Actions') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for med in medications_by_physician[physician] %}
+                                            {% set color_class = 'text-danger' if med.inventory and med.inventory.is_low else ('text-warning' if med.days_remaining and med.days_remaining < 30 else 'text-success') %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ med.name }}</strong>
+                                                    {% if med.is_otc %}
+                                                        <span class="badge bg-warning text-dark ms-2">{{ _('OTC') }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
+                                                <td>
+                                                    {% set total_count = med.total_inventory_count %}
+                                                    {% if total_count > 0 %}
+                                                        {{ _n('%(count)d unit', '%(count)d units', total_count, count=total_count) }}
+                                                    {% else %}
+                                                        <span class="text-muted">{{ _('No inventory') }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if med.days_remaining %}
+                                                        {{ _n('%(count)d day', '%(count)d days', med.days_remaining|round|int, count=med.days_remaining|round|int) }}
+                                                    {% else %}
+                                                        <span class="text-muted">{{ _('N/A') }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if med.depletion_date %}
+                                                        {{ format_date(med.depletion_date) }}
+                                                    {% else %}
+                                                        <span class="text-muted">{{ _('N/A') }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if not med.inventory %}
+                                                        <span class="badge bg-secondary">{{ _('No Data') }}</span>
+                                                    {% elif med.total_inventory_count == 0 %}
+                                                        <span class="badge bg-danger">{{ _('Critical') }}</span>
+                                                    {% elif med.inventory.is_low %}
+                                                        <span class="badge bg-danger">{{ _('Low Stock') }}</span>
+                                                    {% elif med.days_remaining and med.days_remaining < 30 %}
+                                                        <span class="badge bg-warning text-white">{{ _('Running Low') }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success">{{ _('OK') }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        {% if med.inventory %}
+                                                            <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary">
+                                                                <i class="fas fa-boxes"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <!-- OTC Medications Section -->
+                    {% if otc_medications %}
+                        <div class="physician-section mb-4">
+                            <!-- OTC Header -->
+                            <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                                <i class="fas fa-cart-shopping text-primary me-2"></i>
+                                <h6 class="mb-0 text-primary">
+                                    {{ _('Over-the-Counter (OTC) Medications') }}
+                                </h6>
+                                <span class="badge bg-secondary ms-2">{{ otc_medications|length }}</span>
+                            </div>
+                            
+                            <!-- OTC Medications Table -->
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ _('Name') }}</th>
+                                            <th>{{ _('Daily Usage') }}</th>
+                                            <th>{{ _('Current Inventory') }}</th>
+                                            <th>{{ _('Days Left') }}</th>
+                                            <th>{{ _('Depletion Date') }}</th>
+                                            <th>{{ _('Status') }}</th>
+                                            <th class="text-end">{{ _('Actions') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for med in otc_medications %}
+                                            {% set color_class = 'text-danger' if med.inventory and med.inventory.is_low else ('text-warning' if med.days_remaining and med.days_remaining < 30 else 'text-success') %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ med.name }}</strong>
+                                                    <span class="badge bg-warning text-dark ms-2">{{ _('OTC') }}</span>
+                                                </td>
+                                                <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
+                                                <td>
+                                                    {% set total_count = med.total_inventory_count %}
+                                                    {% if total_count > 0 %}
+                                                        {{ _n('%(count)d unit', '%(count)d units', total_count, count=total_count) }}
+                                                    {% else %}
+                                                        <span class="text-muted">{{ _('No inventory') }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if med.days_remaining %}
+                                                        {{ _n('%(count)d day', '%(count)d days', med.days_remaining|round|int, count=med.days_remaining|round|int) }}
+                                                    {% else %}
+                                                        <span class="text-muted">{{ _('N/A') }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if med.depletion_date %}
+                                                        {{ format_date(med.depletion_date) }}
+                                                    {% else %}
+                                                        <span class="text-muted">{{ _('N/A') }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if not med.inventory %}
+                                                        <span class="badge bg-secondary">{{ _('No Data') }}</span>
+                                                    {% elif med.total_inventory_count == 0 %}
+                                                        <span class="badge bg-danger">{{ _('Critical') }}</span>
+                                                    {% elif med.inventory.is_low %}
+                                                        <span class="badge bg-danger">{{ _('Low Stock') }}</span>
+                                                    {% elif med.days_remaining and med.days_remaining < 30 %}
+                                                        <span class="badge bg-warning text-white">{{ _('Running Low') }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success">{{ _('OK') }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        {% if med.inventory %}
+                                                            <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary">
+                                                                <i class="fas fa-boxes"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
                 {% else %}
                     <p class="card-text">{{ _('No medications found in the system.') }}</p>
                     <a href="{{ url_for('medications.new') }}" class="btn btn-primary">

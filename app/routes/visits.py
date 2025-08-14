@@ -151,7 +151,7 @@ def show(id: int):
     for med in medications:
         if med.inventory:
             needed = med.calculate_needed_until_visit(visit.visit_date)
-            current = med.inventory.current_count
+            current = med.total_inventory_count  # Use total including packages
             additional = max(0, needed - current)
             packages = med.calculate_packages_needed(additional)
 

@@ -83,7 +83,7 @@
                                         <td>{{ med.min_threshold }}</td>
                                         <td>
                                             {% if med.inventory %}
-                                                {{ med.inventory.current_count }} {{ _('units') }}
+                                                {{ med.total_inventory_count }} {{ _('units') }}
                                             {% else %}
                                                 <span class="text-muted">{{ _('No inventory') }}</span>
                                             {% endif %}
@@ -107,7 +107,7 @@
                                                 <a href="{{ url_for('medications.edit', id=med.id) }}" class="btn btn-outline-primary" title="{{ _('Edit') }}">
                                                     <i class="fas fa-pen-to-square"></i>
                                                 </a>
-                                                <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-info" title="{{ _('Stock') }}">
+                                                <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-outline-primary" title="{{ _('Stock') }}">
                                                     <i class="fas fa-boxes-stacked"></i>
                                                 </a>
                                             </div>
@@ -119,6 +119,84 @@
                     </div>
                 </div>
             {% endfor %}
+            
+            <!-- OTC Medications Section -->
+            {% if otc_medications %}
+                <div class="physician-section mb-4">
+                    <!-- OTC Header -->
+                    <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                        <i class="fas fa-cart-shopping text-primary me-2"></i>
+                        <h5 class="mb-0 text-primary">
+                            {{ _('Over-the-Counter (OTC) Medications') }}
+                        </h5>
+                        <span class="badge bg-secondary ms-2">{{ otc_medications|length }}</span>
+                    </div>
+                    
+                    <!-- OTC Medications Table -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('Name') }}</th>
+                                    <th>{{ _('Daily Usage') }}</th>
+                                    <th>{{ _('Current Stock') }}</th>
+                                    <th>{{ _('Package Sizes') }}</th>
+                                    <th>{{ _('Status') }}</th>
+                                    <th class="text-end">{{ _('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for med in otc_medications %}
+                                    <tr class="medication-row">
+                                        <td>
+                                            <strong>{{ med.name }}</strong>
+                                            <span class="badge bg-warning text-dark ms-2">{{ _('OTC') }}</span>
+                                            {% if not med.aut_idem %}
+                                                <i class="fas fa-fingerprint text-info ms-2" title="{{ _('No generic substitution') }}"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
+                                        <td>
+                                            {% if med.inventory %}
+                                                {{ med.total_inventory_count }} {{ _('units') }}
+                                            {% else %}
+                                                <span class="text-muted">{{ _('No inventory') }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>
+                                                {% if med.package_size_n1 %}N1: {{ med.package_size_n1 }}{% endif %}
+                                                {% if med.package_size_n2 %}{% if med.package_size_n1 %}, {% endif %}N2: {{ med.package_size_n2 }}{% endif %}
+                                                {% if med.package_size_n3 %}{% if med.package_size_n1 or med.package_size_n2 %}, {% endif %}N3: {{ med.package_size_n3 }}{% endif %}
+                                                {% if not med.package_size_n1 and not med.package_size_n2 and not med.package_size_n3 %}
+                                                    <span class="text-muted">{{ _('Not defined') }}</span>
+                                                {% endif %}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            {% if med.schedules|length > 0 %}
+                                                <span class="badge bg-success">{{ med.schedules|length }} {{ _('schedule(s)') }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ _('No schedule') }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-primary" title="{{ _('View') }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('medications.edit', id=med.id) }}" class="btn btn-outline-primary" title="{{ _('Edit') }}">
+                                                    <i class="fas fa-pen-to-square"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
         {% else %}
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>{{ _('No medications registered yet.') }}

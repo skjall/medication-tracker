@@ -97,7 +97,7 @@
                                     <strong>{{ med.name }}</strong>
                                 </td>
                                 <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
-                                <td>{{ med.inventory.current_count }} {{ _('units') }}</td>
+                                <td>{{ med.total_inventory_count }} {{ _('units') }}</td>
                                 <td class="{% if days_until < 14 %}text-danger{% elif days_until < 30 %}text-warning{% endif %}">
                                     {{ days_until }} {{ _('days') }}
                                 </td>
@@ -141,7 +141,7 @@
                             {{ med.name }}
                             {% if not med.inventory %}
                                 ({{ _('no inventory data') }})
-                            {% elif med.inventory.current_count == 0 %}
+                            {% elif med.total_inventory_count == 0 %}
                                 ({{ _('empty') }})
                             {% elif med.daily_usage == 0 %}
                                 ({{ _('no daily usage set') }})

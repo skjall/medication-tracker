@@ -1,0 +1,195 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Scanner') }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ _('Scanner') }}</h1>
+        <a href="{{ url_for('scanner.scan') }}" class="btn btn-primary">
+            <i class="fas fa-qrcode"></i> {{ _('Scan Package') }}
+        </a>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('Total Scanned') }}</h5>
+                    <p class="card-text display-4">{{ stats.total_scanned }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('Active Packages') }}</h5>
+                    <p class="card-text display-4">{{ stats.active_packages }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('Expired') }}</h5>
+                    <p class="card-text display-4 text-danger">{{ stats.expired_packages }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Current Inventory -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">{{ _('Current Inventory') }}</h5>
+        </div>
+        <div class="card-body">
+            {% if inventory_packages %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Medication') }}</th>
+                            <th>{{ _('Serial') }}</th>
+                            <th>{{ _('Batch') }}</th>
+                            <th>{{ _('Expiry') }}</th>
+                            <th>{{ _('Units') }}</th>
+                            <th>{{ _('Status') }}</th>
+                            <th>{{ _('Actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in inventory_packages %}
+                        <tr class="{% if item.scanned_item.is_expired %}table-danger{% elif item.scanned_item.days_until_expiry and item.scanned_item.days_until_expiry < 30 %}table-warning{% endif %}">
+                            <td>
+                                {% if item.medication %}
+                                    <a href="{{ url_for('medications.show', id=item.medication.id) }}">
+                                        {{ item.medication.name }}
+                                    </a>
+                                {% else %}
+                                    {{ _('Unknown') }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ item.scanned_item.serial_number[:8] }}...</small>
+                            </td>
+                            <td>{{ item.scanned_item.batch_number or '-' }}</td>
+                            <td>
+                                {% if item.scanned_item.expiry_date %}
+                                    {{ item.scanned_item.expiry_date.strftime('%d.%m.%Y') }}
+                                    {% if item.scanned_item.is_expired %}
+                                        <span class="badge bg-danger">{{ _('Expired') }}</span>
+                                    {% elif item.scanned_item.days_until_expiry < 30 %}
+                                        <span class="badge bg-warning">{{ item.scanned_item.days_until_expiry }} {{ _('days') }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ item.current_units }}/{{ item.original_units }}
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ item.percentage_remaining }}%"
+                                         aria-valuenow="{{ item.percentage_remaining }}" 
+                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if item.status == 'sealed' %}
+                                    <span class="badge bg-success">{{ _('Sealed') }}</span>
+                                {% elif item.status == 'open' %}
+                                    <span class="badge bg-info">{{ _('Open') }}</span>
+                                {% elif item.status == 'consumed' %}
+                                    <span class="badge bg-secondary">{{ _('Consumed') }}</span>
+                                {% elif item.status == 'expired' %}
+                                    <span class="badge bg-danger">{{ _('Expired') }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('scanner.package_details', id=item.scanned_item.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">{{ _('No packages in inventory') }}</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recent Scans -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">{{ _('Recent Scans') }}</h5>
+        </div>
+        <div class="card-body">
+            {% if recent_scans %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Scanned At') }}</th>
+                            <th>{{ _('Medication') }}</th>
+                            <th>{{ _('National Number') }}</th>
+                            <th>{{ _('Serial') }}</th>
+                            <th>{{ _('Expiry') }}</th>
+                            <th>{{ _('Status') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scan in recent_scans %}
+                        <tr>
+                            <td>{{ scan.scanned_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td>
+                                {% if scan.package and scan.package.medication %}
+                                    {{ scan.package.medication.name }}
+                                {% else %}
+                                    <span class="text-muted">{{ _('Unknown') }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if scan.national_number %}
+                                    <small>{{ scan.national_number_type }}: {{ scan.national_number }}</small>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ scan.serial_number[:8] }}...</small>
+                            </td>
+                            <td>
+                                {% if scan.expiry_date %}
+                                    {{ scan.expiry_date.strftime('%d.%m.%Y') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if scan.status == 'active' %}
+                                    <span class="badge bg-success">{{ _('Active') }}</span>
+                                {% elif scan.status == 'consumed' %}
+                                    <span class="badge bg-secondary">{{ _('Consumed') }}</span>
+                                {% elif scan.status == 'expired' %}
+                                    <span class="badge bg-danger">{{ _('Expired') }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">{{ _('No recent scans') }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

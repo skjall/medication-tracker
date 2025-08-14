@@ -30,9 +30,14 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h3>{{ _('Order #%(order_id)s', order_id=order.id) }}</h3>
-                    <span class="badge {% if order.status == 'planned' %}bg-primary{% elif order.status == 'printed' %}bg-info{% elif order.status == 'fulfilled' %}bg-success{% elif order.status == 'partial' %}bg-warning{% else %}bg-secondary{% endif %} fs-6">
-                        {{ order.status|capitalize }}
-                    </span>
+                    <form method="POST" action="{{ url_for('orders.update_status', id=order.id) }}" class="d-inline">
+                        <select class="form-select form-select-sm" name="status" onchange="this.form.submit()" style="width: auto;">
+                            <option value="planned" {% if order.status == 'planned' %}selected{% endif %}>{{ _('Planned') }}</option>
+                            <option value="printed" {% if order.status == 'printed' %}selected{% endif %}>{{ _('Printed') }}</option>
+                            <option value="fulfilled" {% if order.status == 'fulfilled' %}selected{% endif %}>{{ _('Fully Fulfilled') }}</option>
+                            <option value="partial" {% if order.status == 'partial' %}selected{% endif %}>{{ _('Partly Fulfilled') }}</option>
+                        </select>
+                    </form>
                 </div>
 
                 <p>

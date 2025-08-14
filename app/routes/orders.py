@@ -186,7 +186,7 @@ def new():
 
             # For gap coverage, the additional needed is the full gap period amount
             # because we need to order enough to bridge the gap from depletion to visit
-            current = med.inventory.current_count
+            current = med.total_inventory_count
             additional = gap_period_units  # Always order the full gap amount
             packages = med.calculate_packages_needed(additional)
             
@@ -218,7 +218,7 @@ def new():
                 include_safety_margin=True,
                 consider_next_but_one=consider_next_but_one,
             )
-            current = med.inventory.current_count
+            current = med.total_inventory_count
             additional = max(0, needed - current)
             packages = med.calculate_packages_needed(additional)
 
@@ -427,6 +427,43 @@ def printable(id: int):
     response.headers["Content-Disposition"] = f"inline; filename=order_{order.id}.html"
 
     return response
+
+
+@order_bp.route("/<int:id>/update_status", methods=["POST"])
+def update_status(id: int):
+    """Update order status from dropdown."""
+    order = Order.query.get_or_404(id)
+    
+    new_status = request.form.get("status")
+    if new_status in ["planned", "printed", "fulfilled", "partial"]:
+        old_status = order.status
+        order.status = new_status
+        
+        # If manually setting to fulfilled, mark all pending items as fulfilled
+        if new_status == "fulfilled" and old_status != "fulfilled":
+            for item in order.order_items:
+                if item.fulfillment_status == "pending":
+                    item.fulfillment_status = "fulfilled"
+                    item.fulfilled_at = datetime.now(timezone.utc)
+                    item.fulfilled_quantity = item.total_units_ordered
+        
+        # If manually setting from fulfilled/partial to planned/printed, reset fulfilled items
+        elif old_status in ["fulfilled", "partial"] and new_status in ["planned", "printed"]:
+            for item in order.order_items:
+                if item.fulfillment_status in ["fulfilled", "modified"]:
+                    item.fulfillment_status = "pending"
+                    item.fulfilled_at = None
+                    item.fulfilled_quantity = None
+        
+        # Note: We don't change item status when manually setting to "partial"
+        # as this should reflect the actual state of individual items
+        
+        db.session.commit()
+        flash(_("Order status updated to {}").format(new_status.capitalize()), "success")
+    else:
+        flash(_("Invalid status"), "error")
+    
+    return redirect(url_for("orders.show", id=order.id))
 
 
 @order_bp.route("/<int:id>/toggle_fulfillment", methods=["POST"])

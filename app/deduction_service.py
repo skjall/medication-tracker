@@ -657,7 +657,7 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                 for deduction_time in missed_deductions:
                     # Deduct the scheduled amount
                     amount = schedule.units_per_dose
-                    if amount > 0 and medication.inventory.current_count >= amount:
+                    if amount > 0 and medication.total_inventory_count >= amount:
                         medication.inventory.update_count(
                             -amount,
                             f"Automatic deduction (retroactive): {amount} units \
@@ -672,7 +672,7 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                     else:
                         logger.warning(
                             f"Not enough inventory to deduct {amount} units from \
-                                {medication.name}. Current count: {medication.inventory.current_count}"
+                                {medication.name}. Current count: {medication.total_inventory_count}"
                         )
 
                 # Update last deduction time to the most recent missed deduction

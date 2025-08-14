@@ -39,13 +39,18 @@ def index():
     """Display list of all medications grouped by physician."""
     medications = Medication.query.order_by(Medication.name).all()
     
-    # Group medications by physician
+    # Group medications by physician or OTC status
     medications_by_physician = {}
+    otc_medications = []
+    
     for med in medications:
-        physician_key = med.physician if med.physician else None
-        if physician_key not in medications_by_physician:
-            medications_by_physician[physician_key] = []
-        medications_by_physician[physician_key].append(med)
+        if med.is_otc:
+            otc_medications.append(med)
+        else:
+            physician_key = med.physician if med.physician else None
+            if physician_key not in medications_by_physician:
+                medications_by_physician[physician_key] = []
+            medications_by_physician[physician_key].append(med)
     
     # Sort physicians by name, with unassigned at the end
     sorted_physicians = sorted(
@@ -58,6 +63,7 @@ def index():
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         medications_by_physician=medications_by_physician,
         sorted_physicians=sorted_physicians,
+        otc_medications=otc_medications,
     )
 
 
@@ -85,13 +91,18 @@ def new():
         safety_margin_days = int(request.form.get("safety_margin_days", 30) or 30)
 
         # Extract new physician and OTC fields
-        physician_id = request.form.get("physician_id")
-        if physician_id == "":
-            physician_id = None
-        elif physician_id:
-            physician_id = int(physician_id)
-
         is_otc = bool(request.form.get("is_otc"))
+        
+        # If OTC, always clear physician
+        if is_otc:
+            physician_id = None
+        else:
+            physician_id = request.form.get("physician_id")
+            if physician_id == "":
+                physician_id = None
+            elif physician_id:
+                physician_id = int(physician_id)
+
         aut_idem = bool(request.form.get("aut_idem"))
 
         # Create new medication
@@ -178,13 +189,18 @@ def edit(id: int):
         )
 
         # Update physician and OTC fields
-        physician_id = request.form.get("physician_id")
-        if physician_id == "":
-            medication.physician_id = None
-        elif physician_id:
-            medication.physician_id = int(physician_id)
-
         medication.is_otc = bool(request.form.get("is_otc"))
+        
+        # If OTC, always clear physician
+        if medication.is_otc:
+            medication.physician_id = None
+        else:
+            physician_id = request.form.get("physician_id")
+            if physician_id == "":
+                medication.physician_id = None
+            elif physician_id:
+                medication.physician_id = int(physician_id)
+        
         medication.aut_idem = bool(request.form.get("aut_idem"))
 
         db.session.commit()
@@ -240,9 +256,7 @@ def calculate_needs(id: int):
     units = int(request.form.get("units", 0) or 0)
     calculation = str(request.form.get("calculation", "total"))
 
-    current_inventory = (
-        medication.inventory.current_count if medication.inventory else 0
-    )
+    current_inventory = medication.total_inventory_count
 
     if days and not units:
         # Calculate needs based on days

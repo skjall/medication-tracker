@@ -68,10 +68,10 @@ RUN cd app && pybabel extract -F ../babel.cfg -k _l -k _ -k _n:1,2 -o ../transla
 
 # Upload source files and download translations from Crowdin
 RUN if [ -n "${CROWDIN_API_TOKEN}" ] && [ -n "${CROWDIN_PROJECT_ID}" ]; then \
-    crowdin upload sources --no-progress && \
-    crowdin download --no-progress ; \
+  crowdin upload sources --no-progress && \
+  crowdin download --no-progress ; \
   else \
-    echo "Crowdin sync skipped - missing credentials" ; \
+  echo "Crowdin sync skipped - missing credentials" ; \
   fi
 
 # Update existing translations with new strings

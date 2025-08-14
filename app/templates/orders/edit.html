@@ -82,7 +82,7 @@
                                     </td>
                                     <td>
                                         {% if med.inventory %}
-                                            {{ _('%(units)s units', units=med.inventory.current_count) }}
+                                            {{ _('%(units)s units', units=med.total_inventory_count) }}
                                         {% else %}
                                             <span class="text-muted">{{ _('No inventory') }}</span>
                                         {% endif %}

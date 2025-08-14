@@ -52,6 +52,8 @@
                             <li><a class="dropdown-item" href="{{ url_for('inventory.index') }}">{{ _('Inventory Overview') }}</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('inventory.low') }}">{{ _('Low Stock') }}</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('inventory.depletion') }}">{{ _('Depletion Forecast') }}</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('scanner.index') }}"><i class="fas fa-qrcode me-1"></i>{{ _('Scanner') }}</a></li>
                         </ul>
                     </li>
 

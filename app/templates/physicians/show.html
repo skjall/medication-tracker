@@ -96,7 +96,7 @@
     <!-- Statistics -->
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header bg-info text-white">
+            <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-chart-bar me-2"></i>{{ _('Statistics') }}
                 </h5>
@@ -152,7 +152,7 @@
                             <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
                             <td>
                                 {% if med.inventory %}
-                                    {{ _n('%(count)d unit', '%(count)d units', med.inventory.current_count, count=med.inventory.current_count) }}
+                                    {{ _n('%(count)d unit', '%(count)d units', med.total_inventory_count, count=med.total_inventory_count) }}
                                 {% else %}
                                     <em class="text-muted">{{ _('No inventory') }}</em>
                                 {% endif %}

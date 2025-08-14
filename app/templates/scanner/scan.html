@@ -1,0 +1,296 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Scanner') }}{% endblock %}
+
+{% block head_extra %}
+<!-- ZXing library for barcode scanning -->
+<script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+<style>
+    .scan-log {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    .scan-item {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    .scan-success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+    }
+    .scan-error {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+    }
+    .scan-timestamp {
+        font-size: 0.85em;
+        color: #6c757d;
+    }
+    #scanner-video {
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        background: #000;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ _('Scanner') }}</h5>
+                    <span id="scan-status" class="badge bg-secondary">{{ _('Initializing...') }}</span>
+                </div>
+                <div class="card-body text-center">
+                    <!-- Camera view -->
+                    <video id="scanner-video" autoplay muted playsinline></video>
+                    
+                    <!-- Start button (only shown if camera fails) -->
+                    <button class="btn btn-primary d-none" id="retry-camera-btn">
+                        <i class="fas fa-camera"></i> {{ _('Retry Camera') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-5">
+            <!-- Scan log -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ _('Scan History') }}</h5>
+                    <div>
+                        <span class="badge bg-success me-2">
+                            <i class="fas fa-check"></i> <span id="success-count">0</span>
+                        </span>
+                        <span class="badge bg-danger">
+                            <i class="fas fa-times"></i> <span id="error-count">0</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body scan-log" id="scan-log">
+                    <p class="text-muted text-center">{{ _('Waiting for scans...') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let codeReader = null;
+let selectedDeviceId = null;
+let isScanning = false;
+let lastScannedCode = null;
+let lastScannedTime = 0;
+let successCount = 0;
+let errorCount = 0;
+
+// Initialize and start immediately
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof ZXing === 'undefined') {
+        console.error('ZXing library not loaded');
+        showStatus('{{ _("Scanner error") }}', 'danger');
+        return;
+    }
+    
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    console.log('ZXing initialized');
+    startScanning();
+});
+
+async function startScanning() {
+    if (!codeReader || isScanning) return;
+    
+    try {
+        showStatus('{{ _("Starting camera...") }}', 'warning');
+        
+        // Get available video devices
+        const videoInputDevices = await codeReader.listVideoInputDevices();
+        
+        if (videoInputDevices.length === 0) {
+            showStatus('{{ _("No camera found") }}', 'danger');
+            document.getElementById('retry-camera-btn').classList.remove('d-none');
+            return;
+        }
+        
+        // Select the rear camera if available
+        selectedDeviceId = videoInputDevices[0].deviceId;
+        for (const device of videoInputDevices) {
+            if (device.label.toLowerCase().includes('back') || 
+                device.label.toLowerCase().includes('environment') ||
+                device.label.toLowerCase().includes('rear')) {
+                selectedDeviceId = device.deviceId;
+                break;
+            }
+        }
+        
+        console.log('Starting continuous scanning with device:', selectedDeviceId);
+        isScanning = true;
+        showStatus('{{ _("Scanning...") }}', 'success');
+        
+        // Start continuous decoding
+        codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
+            if (result) {
+                const now = Date.now();
+                // Debounce: Don't scan same code within 3 seconds
+                if (result.text !== lastScannedCode || now - lastScannedTime > 3000) {
+                    console.log('Barcode detected:', result.text);
+                    lastScannedCode = result.text;
+                    lastScannedTime = now;
+                    
+                    // Process the scan without stopping
+                    processScan(result.text);
+                }
+            }
+            
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error('Scanning error:', err);
+            }
+        });
+        
+    } catch (err) {
+        showStatus('{{ _("Camera error") }}', 'danger');
+        document.getElementById('retry-camera-btn').classList.remove('d-none');
+        console.error(err);
+        isScanning = false;
+    }
+}
+
+document.getElementById('retry-camera-btn').addEventListener('click', () => {
+    document.getElementById('retry-camera-btn').classList.add('d-none');
+    startScanning();
+});
+
+async function processScan(barcodeData) {
+    // Ignore very short codes (likely misreads)
+    if (barcodeData.length < 4) {
+        console.log('Ignoring short code:', barcodeData);
+        return;
+    }
+    
+    // Ignore single characters or obvious misreads
+    if (barcodeData.length === 1 || (barcodeData.length < 6 && !barcodeData.match(/^\d+$/))) {
+        console.log('Ignoring likely misread:', barcodeData);
+        return;
+    }
+    
+    try {
+        const response = await fetch('{{ url_for("scanner.scan") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                barcode: barcodeData
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            successCount++;
+            document.getElementById('success-count').textContent = successCount;
+            addToLog(result, 'success');
+        } else {
+            // Only show error for codes that look like real barcodes
+            // (at least 6 digits or proper format)
+            if (barcodeData.match(/^\d{6,}$/) || barcodeData.length > 20) {
+                errorCount++;
+                document.getElementById('error-count').textContent = errorCount;
+                addToLog({
+                    error: result.error,
+                    details: result.details,
+                    barcode: barcodeData
+                }, 'error');
+            } else {
+                // Silently ignore unrecognized short codes
+                console.log('Ignoring unrecognized code:', barcodeData);
+            }
+        }
+    } catch (err) {
+        // Only log real errors, not network issues from rapid scanning
+        console.log('Scan processing failed:', barcodeData);
+    }
+}
+
+function addToLog(data, type) {
+    const logContainer = document.getElementById('scan-log');
+    const now = new Date();
+    const timestamp = now.toLocaleTimeString();
+    
+    // Remove initial message if present
+    if (logContainer.querySelector('.text-muted')) {
+        logContainer.innerHTML = '';
+    }
+    
+    const logItem = document.createElement('div');
+    logItem.className = `scan-item scan-${type}`;
+    
+    let html = '<div class="d-flex justify-content-between align-items-start">';
+    html += '<div class="flex-grow-1">';
+    
+    if (type === 'success') {
+        html += '<strong>' + (data.medication ? data.medication.name : '{{ _("Unknown") }}') + '</strong><br>';
+        if (data.parsed_data) {
+            if (data.parsed_data.national_number) {
+                html += '<small>' + data.parsed_data.national_number + '</small><br>';
+            }
+            if (data.parsed_data.batch) {
+                html += '<small>{{ _("Batch") }}: ' + data.parsed_data.batch + '</small><br>';
+            }
+            if (data.parsed_data.expiry) {
+                html += '<small>{{ _("Expiry") }}: ' + new Date(data.parsed_data.expiry).toLocaleDateString() + '</small>';
+            }
+        }
+    } else {
+        // Show error message prominently
+        html += '<strong style="color: #dc3545;">' + data.error + '</strong><br>';
+        
+        // Show hint if available
+        if (data.hint) {
+            html += '<small class="text-muted">' + data.hint + '</small><br>';
+        }
+        
+        // Show barcode if we couldn't parse it
+        if (!data.details || !data.details.national_number) {
+            if (data.barcode) {
+                // Clean up barcode for display (remove leading minus from PZN barcodes)
+                let cleanBarcode = data.barcode.replace(/^-/, '');
+                html += '<small><code>' + cleanBarcode.substring(0, 30) + (cleanBarcode.length > 30 ? '...' : '') + '</code></small>';
+            }
+        }
+    }
+    
+    html += '</div>';
+    html += '<div class="scan-timestamp">' + timestamp + '</div>';
+    html += '</div>';
+    
+    logItem.innerHTML = html;
+    
+    // Insert at top
+    logContainer.insertBefore(logItem, logContainer.firstChild);
+    
+    // Keep only last 50 items
+    while (logContainer.children.length > 50) {
+        logContainer.removeChild(logContainer.lastChild);
+    }
+}
+
+function showStatus(message, type) {
+    const statusBadge = document.getElementById('scan-status');
+    statusBadge.textContent = message;
+    statusBadge.className = 'badge bg-' + type;
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (codeReader) {
+        codeReader.reset();
+    }
+});
+</script>
+{% endblock %}

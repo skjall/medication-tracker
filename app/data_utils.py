@@ -89,7 +89,7 @@ def export_medications_to_csv() -> Response:
                 med.package_size_n3 or "",
                 med.min_threshold,
                 med.safety_margin_days,
-                med.inventory.current_count if med.inventory else 0,
+                med.total_inventory_count,
                 round(med.days_remaining, 1) if med.days_remaining else "N/A",
                 format_datetime(med.created_at),
                 format_datetime(med.updated_at),

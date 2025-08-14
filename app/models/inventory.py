@@ -57,8 +57,10 @@ class Inventory(db.Model):
 
     @property
     def is_low(self) -> bool:
-        """Check if the inventory is below the minimum threshold."""
-        return self.current_count < self.medication.min_threshold
+        """Check if the total inventory (legacy + packages) is below the minimum threshold."""
+        # Use the medication's total_inventory_count which includes packages
+        total = self.medication.total_inventory_count
+        return total < self.medication.min_threshold
 
     def update_count(self, adjustment: int, notes: Optional[str] = None) -> None:
         """

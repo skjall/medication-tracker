@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from .visit import OrderItem
     from .schedule import MedicationSchedule
     from .physician import Physician
+    from .scanner import MedicationPackage
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -82,6 +83,14 @@ class Medication(db.Model):
 
     # Auto deduction enabled flag
     auto_deduction_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    # Inventory mode for hybrid system
+    inventory_mode: Mapped[Optional[str]] = mapped_column(
+        String(20), 
+        default='legacy',
+        nullable=True,
+        comment="legacy, packages, or hybrid"
+    )
 
     # Relationships
     physician: Mapped[Optional["Physician"]] = relationship(
@@ -100,6 +109,11 @@ class Medication(db.Model):
     # New relationship for medication schedules
     schedules: Mapped[List["MedicationSchedule"]] = relationship(
         "MedicationSchedule", back_populates="medication", cascade="all, delete-orphan"
+    )
+    
+    # Scanner system relationship
+    packages: Mapped[List["MedicationPackage"]] = relationship(
+        "MedicationPackage", back_populates="medication", cascade="all, delete-orphan"
     )
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -121,11 +135,35 @@ class Medication(db.Model):
         return sum(schedule.calculate_daily_usage() for schedule in self.schedules)
 
     @property
+    def total_inventory_count(self) -> float:
+        """Get total inventory including both legacy and package-based inventory."""
+        total = 0
+        
+        # Add legacy inventory
+        if self.inventory:
+            total += self.inventory.current_count
+        
+        # Add package inventory
+        from models import PackageInventory
+        package_units = PackageInventory.query.filter(
+            PackageInventory.medication_id == self.id,
+            PackageInventory.status.in_(['sealed', 'open'])
+        ).with_entities(db.func.sum(PackageInventory.current_units)).scalar()
+        
+        if package_units:
+            total += package_units
+            
+        return total
+
+    @property
     def days_remaining(self) -> Optional[float]:
         """Calculate how many days of medication remain based on current inventory."""
-        if not self.inventory or self.daily_usage == 0:
+        if self.daily_usage == 0:
             return None
-        return self.inventory.current_count / self.daily_usage
+        total_count = self.total_inventory_count
+        if total_count == 0:
+            return None
+        return total_count / self.daily_usage
 
     @property
     def depletion_date(self) -> Optional[datetime]:
@@ -157,7 +195,7 @@ class Medication(db.Model):
             if schedule.is_due_now(current_time):
                 # Deduct the scheduled amount
                 amount = schedule.units_per_dose
-                if amount > 0 and self.inventory.current_count >= amount:
+                if amount > 0 and self.total_inventory_count >= amount:
                     self.inventory.update_count(
                         -amount,
                         f"Automatic deduction: {amount} units at {current_time.strftime('%d.%m.%Y %H:%M')}",

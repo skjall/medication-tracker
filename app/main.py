@@ -248,6 +248,8 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     from routes.schedule import schedule_bp
     from routes.prescription_templates import prescription_bp
     from routes.system import system_bp
+    from routes.scanner import bp as scanner_bp
+    from routes.medication_packages import bp as medication_packages_bp
 
     app.register_blueprint(medication_bp)
     app.register_blueprint(physician_bp)
@@ -258,6 +260,8 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     app.register_blueprint(schedule_bp)
     app.register_blueprint(prescription_bp)
     app.register_blueprint(system_bp)
+    app.register_blueprint(scanner_bp)
+    app.register_blueprint(medication_packages_bp)
 
     # Add utility functions to Jinja
     from utils import min_value, make_aware, format_date, format_datetime, format_time, to_local_timezone
@@ -432,7 +436,27 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         test_translation2 = gettext('No upcoming physician visits scheduled.')
         logger.debug(f"Translation test - 'Dashboard': '{test_translation}'")
         logger.debug(f"Translation test - 'No upcoming physician visits scheduled.': '{test_translation2}'")
-        medications = Medication.query.all()
+        medications = Medication.query.order_by(Medication.name).all()
+        
+        # Group medications by physician or OTC status for display
+        medications_by_physician = {}
+        otc_medications = []
+        
+        for med in medications:
+            if med.is_otc:
+                otc_medications.append(med)
+            else:
+                physician_key = med.physician if med.physician else None
+                if physician_key not in medications_by_physician:
+                    medications_by_physician[physician_key] = []
+                medications_by_physician[physician_key].append(med)
+        
+        # Sort physicians by name, with unassigned at the end
+        sorted_physicians = sorted(
+            medications_by_physician.keys(),
+            key=lambda p: (p is None, p.name if p else "")
+        )
+        
         # Get ALL upcoming visits, not just the first one
         upcoming_visits = (
             PhysicianVisit.query.filter(PhysicianVisit.visit_date >= utcnow())
@@ -476,6 +500,9 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             "index.html",
             local_time=to_local_timezone(datetime.now(timezone.utc)),
             medications=medications,
+            medications_by_physician=medications_by_physician,
+            sorted_physicians=sorted_physicians,
+            otc_medications=otc_medications,
             upcoming_visit=upcoming_visit,
             low_inventory=low_inventory,
             gap_coverage_by_visit=gap_coverage_by_visit,

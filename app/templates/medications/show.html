@@ -26,6 +26,88 @@
   </div>
 </div>
 
+<!-- Package Configuration Card -->
+<div class="card mb-4">
+  <div class="card-header bg-primary text-white">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="fas fa-qrcode me-2"></i>{{ _('Package Configuration') }}
+      </h5>
+      <a
+        href="{{ url_for('medication_packages.new', medication_id=medication.id) }}"
+        class="btn btn-light btn-sm"
+      >
+        <i class="fas fa-plus me-1"></i>{{ _('Add Package') }}
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    {% if medication.packages %}
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead>
+          <tr>
+            <th>{{ _('Size') }}</th>
+            <th>{{ _('Quantity') }}</th>
+            <th>{{ _('National Number') }}</th>
+            <th>GTIN</th>
+            <th>{{ _('Scanned') }}</th>
+            <th>{{ _('Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for package in medication.packages %}
+          <tr>
+            <td>
+              <strong>{{ package.package_size }}</strong>
+            </td>
+            <td>{{ package.quantity }} {{ _('units') }}</td>
+            <td>
+              {% if package.national_number %}
+                <code>{{ package.national_number }}</code>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if package.gtin %}
+                <small><code>{{ package.gtin }}</code></small>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if package.scanned_items %}
+                <span class="badge bg-success">{{ package.scanned_items|length }}</span>
+              {% else %}
+                <span class="badge bg-secondary">0</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('medication_packages.edit', medication_id=medication.id, package_id=package.id) }}"
+                 class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i>
+              </a>
+              {% if not package.scanned_items %}
+              <form method="POST" action="{{ url_for('medication_packages.delete', medication_id=medication.id, package_id=package.id) }}"
+                    class="d-inline" onsubmit="return confirm('{{ _('Are you sure?') }}');">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">{{ _('No packages configured yet. Add package configurations to enable barcode scanning.') }}</p>
+    {% endif %}
+  </div>
+</div>
+
 <!-- Medication Schedule Card - Moved here to make it more prominent -->
 <div class="card mb-4">
   <div class="card-header bg-primary text-white">
@@ -265,18 +347,18 @@
           <div
             class="display-1 {% if medication.inventory.is_low %}text-danger{% else %}text-success{% endif %}"
           >
-            {{ medication.inventory.current_count }}
+            {{ medication.total_inventory_count }}
           </div>
           <p class="lead">{{ _('Current Units') }}</p>
           <div class="progress mt-2">
             {% set percent = 100 if not medication.min_threshold else
-            (medication.inventory.current_count /
+            (medication.total_inventory_count /
             (medication.min_threshold * 2) * 100)|round %}
             <div
               class="progress-bar {% if medication.inventory.is_low %}bg-danger{% elif percent < 50 %}bg-warning{% else %}bg-success{% endif %}"
               role="progressbar"
               style="width: {{ min(100, percent) }}%"
-              aria-valuenow="{{ medication.inventory.current_count }}"
+              aria-valuenow="{{ medication.total_inventory_count }}"
               aria-valuemin="0"
               aria-valuemax="{{ medication.min_threshold * 2 }}"
             ></div>

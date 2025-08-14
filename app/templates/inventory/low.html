@@ -44,7 +44,7 @@
                                 <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
                                 <td>{{ med.min_threshold }}</td>
                                 <td class="text-danger">
-                                    <strong>{{ med.inventory.current_count }}</strong> {{ _('units') }}
+                                    <strong>{{ med.total_inventory_count }}</strong> {{ _('units') }}
                                 </td>
                                 <td class="{% if med.days_remaining and med.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}">
                                     {% if med.days_remaining %}
@@ -61,7 +61,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% set needed = (med.min_threshold + (med.safety_margin_days * med.daily_usage)) - med.inventory.current_count %}
+                                    {% set needed = (med.min_threshold + (med.safety_margin_days * med.daily_usage)) - med.total_inventory_count %}
                                     <strong>{{ needed|round(0)|int }}</strong> {{ _('units') }}
                                 </td>
                                 <td class="text-end">

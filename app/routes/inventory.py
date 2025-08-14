@@ -35,18 +35,42 @@ inventory_bp = Blueprint("inventory", __name__, url_prefix="/inventory")
 
 @inventory_bp.route("/")
 def index():
-    """Display inventory overview for all medications."""
-    medications = Medication.query.all()
+    """Display inventory overview for all medications grouped by physician."""
+    medications = Medication.query.order_by(Medication.name).all()
+    
+    # Group medications by physician or OTC status
+    medications_by_physician = {}
+    otc_medications = []
+    
+    for med in medications:
+        if med.is_otc:
+            otc_medications.append(med)
+        else:
+            physician_key = med.physician if med.physician else None
+            if physician_key not in medications_by_physician:
+                medications_by_physician[physician_key] = []
+            medications_by_physician[physician_key].append(med)
+    
+    # Sort physicians by name, with unassigned at the end
+    sorted_physicians = sorted(
+        medications_by_physician.keys(),
+        key=lambda p: (p is None, p.name if p else "")
+    )
+    
     return render_template(
         "inventory/index.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
-        medications=medications,
+        medications_by_physician=medications_by_physician,
+        sorted_physicians=sorted_physicians,
+        otc_medications=otc_medications,
     )
 
 
 @inventory_bp.route("/<int:id>", methods=["GET"])
 def show(id: int):
     """Display detailed inventory information for a specific medication."""
+    from models import PackageInventory, ScannedItem
+    
     inventory = Inventory.query.get_or_404(id)
     logs = (
         InventoryLog.query.filter_by(inventory_id=id)
@@ -54,13 +78,35 @@ def show(id: int):
         .limit(10)
         .all()
     )
+    
+    # Get package inventory for this medication
+    from models import MedicationPackage
+    
+    package_inventory = (
+        db.session.query(PackageInventory, ScannedItem, MedicationPackage)
+        .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
+        .outerjoin(MedicationPackage, ScannedItem.medication_package_id == MedicationPackage.id)
+        .filter(PackageInventory.medication_id == inventory.medication_id)
+        .filter(PackageInventory.status.in_(['sealed', 'open']))
+        .order_by(ScannedItem.expiry_date.asc())
+        .all()
+    )
+    
+    # Calculate total units from packages
+    package_units = sum(pkg.current_units for pkg, _, _ in package_inventory)
 
+    from datetime import date
+    
     return render_template(
         "inventory/show.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         inventory=inventory,
         medication=inventory.medication,
         logs=logs,
+        package_inventory=package_inventory,
+        package_units=package_units,
+        total_units=inventory.current_count + package_units,
+        today=date.today()
     )
 
 
@@ -209,6 +255,84 @@ def low():
         "inventory/low.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         medications=low_inventory,
+    )
+
+
+@inventory_bp.route("/package/<int:package_id>/edit", methods=["GET", "POST"])
+def edit_package(package_id: int):
+    """Edit a scanned package inventory item."""
+    from models import PackageInventory, ScannedItem
+    
+    package = PackageInventory.query.get_or_404(package_id)
+    scanned_item = package.scanned_item
+    
+    if request.method == "POST":
+        # Update package status
+        new_status = request.form.get("status")
+        if new_status in ["sealed", "open", "empty", "discarded"]:
+            package.status = new_status
+        
+        # Update current units
+        current_units = request.form.get("current_units")
+        if current_units:
+            try:
+                units = int(current_units)
+                if 0 <= units <= package.original_units:
+                    package.current_units = units
+                    
+                    # Auto-update status based on units
+                    if units == 0:
+                        package.status = "empty"
+                    elif units < package.original_units and package.status == "sealed":
+                        package.status = "open"
+                else:
+                    flash(_("Units must be between 0 and %(max)s", max=package.original_units), "error")
+                    return redirect(url_for("inventory.edit_package", package_id=package_id))
+            except ValueError:
+                flash(_("Invalid units value"), "error")
+                return redirect(url_for("inventory.edit_package", package_id=package_id))
+        
+        # Add optional notes
+        notes = request.form.get("notes", "")
+        if notes:
+            # Create an inventory log entry for tracking
+            adjustment = package.current_units - int(request.form.get("original_units", package.current_units))
+            if adjustment != 0:
+                inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
+                if inventory:
+                    from models import InventoryLog
+                    log = InventoryLog(
+                        inventory_id=inventory.id,
+                        previous_count=inventory.current_count - adjustment,
+                        adjustment=adjustment,
+                        new_count=inventory.current_count,
+                        notes=f"Package {scanned_item.serial_number}: {notes}"
+                    )
+                    db.session.add(log)
+        
+        db.session.commit()
+        flash(_("Package updated successfully"), "success")
+        
+        # Return to inventory show page
+        inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
+        if inventory:
+            return redirect(url_for("inventory.show", id=inventory.id))
+        else:
+            return redirect(url_for("inventory.index"))
+    
+    # GET request - show edit form
+    inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
+    
+    from datetime import date
+    
+    return render_template(
+        "inventory/edit_package.html",
+        local_time=to_local_timezone(datetime.now(timezone.utc)),
+        package=package,
+        scanned_item=scanned_item,
+        medication=package.medication,
+        inventory=inventory,
+        today=date.today()
     )
 
 
