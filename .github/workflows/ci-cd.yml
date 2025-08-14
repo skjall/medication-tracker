@@ -54,7 +54,10 @@ jobs:
           load: true
           tags: medication-tracker:test
           build-args: |
-            VERSION=test-${{ github.sha }}
+            VERSION=test
+            CROWDIN_API_TOKEN=${{ secrets.CROWDIN_API_TOKEN }}
+            CROWDIN_PROJECT_ID=${{ secrets.CROWDIN_PROJECT_ID }}
+            CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -121,6 +124,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             VERSION=pr-${{ github.event.pull_request.number }}
+            CROWDIN_API_TOKEN=${{ secrets.CROWDIN_API_TOKEN }}
+            CROWDIN_PROJECT_ID=${{ secrets.CROWDIN_PROJECT_ID }}
+            CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
           cache-from: type=registry,ref=skjall/medication-tracker:buildcache
           cache-to: type=registry,ref=skjall/medication-tracker:buildcache,mode=max
 
@@ -269,6 +275,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             VERSION=${{ steps.app_version.outputs.version || steps.dev_version.outputs.version || github.ref_name }}
+            CROWDIN_API_TOKEN=${{ secrets.CROWDIN_API_TOKEN }}
+            CROWDIN_PROJECT_ID=${{ secrets.CROWDIN_PROJECT_ID }}
+            CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
           cache-from: type=registry,ref=skjall/medication-tracker:buildcache
           cache-to: type=registry,ref=skjall/medication-tracker:buildcache,mode=max
 

@@ -21,16 +21,11 @@
     </div>
     <div class="card-body">
         {% if medications %}
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                {{ _('The following medications have inventory levels below their minimum thresholds.') }}
-            </div>
-
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>{{ _('Medication') }}</th>
+                            <th>{{ _('Name') }}</th>
                             <th>{{ _('Daily Usage') }}</th>
                             <th>{{ _('Min Threshold') }}</th>
                             <th>{{ _('Current Stock') }}</th>

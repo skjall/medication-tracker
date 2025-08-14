@@ -23,6 +23,63 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Translation stage - extracts strings and manages translations
+FROM python:3.13-slim@sha256:f2fdaec50160418e0c2867ba3e254755edd067171725886d5d303fd7057bbf81 AS translator
+
+WORKDIR /app
+
+# Install translation tools and Crowdin CLI
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  curl \
+  unzip \
+  openjdk-17-jre-headless \
+  && rm -rf /var/lib/apt/lists/* \
+  && pip install --no-cache-dir babel flask-babel \
+  && curl -L https://github.com/crowdin/crowdin-cli/releases/download/4.9.1/crowdin-cli.zip -o crowdin-cli.zip \
+  && unzip crowdin-cli.zip -d /opt/ \
+  && rm crowdin-cli.zip \
+  && CROWDIN_DIR=$(ls -d /opt/*/ | head -n1) \
+  && chmod +x ${CROWDIN_DIR}crowdin \
+  && ln -s ${CROWDIN_DIR}crowdin-cli.jar /opt/crowdin-cli.jar \
+  && ln -s ${CROWDIN_DIR}crowdin /opt/crowdin
+
+# Add Crowdin CLI to PATH
+ENV PATH="/opt:${PATH}"
+
+# Copy application code for string extraction
+COPY app/ ./app/
+COPY babel.cfg ./
+COPY translations/ ./translations/
+COPY crowdin.yml ./
+
+# Set Crowdin API token and project ID as build arguments (pass during build)
+ARG CROWDIN_API_TOKEN
+ENV CROWDIN_API_TOKEN=${CROWDIN_API_TOKEN}
+ARG CROWDIN_PROJECT_ID
+ENV CROWDIN_PROJECT_ID=${CROWDIN_PROJECT_ID}
+
+# Cache busting argument - changes on each build to force refresh
+ARG CACHE_BUST=1
+RUN echo "Cache bust: ${CACHE_BUST}"
+
+# Extract strings from source code
+RUN cd app && pybabel extract -F ../babel.cfg -k _l -k _ -k _n:1,2 -o ../translations/messages.pot . \
+  --add-comments="TRANSLATORS:" --sort-by-file && cd ..
+
+# Upload source files and download translations from Crowdin
+RUN if [ -n "${CROWDIN_API_TOKEN}" ] && [ -n "${CROWDIN_PROJECT_ID}" ]; then \
+    crowdin upload sources --no-progress && \
+    crowdin download --no-progress ; \
+  else \
+    echo "Crowdin sync skipped - missing credentials" ; \
+  fi
+
+# Update existing translations with new strings
+RUN pybabel update -i translations/messages.pot -d translations || true
+
+# Compile all translations
+RUN pybabel compile -d translations
+
 # Final stage with minimal dependencies
 FROM python:3.13-slim@sha256:f2fdaec50160418e0c2867ba3e254755edd067171725886d5d303fd7057bbf81
 
@@ -56,14 +113,11 @@ COPY app/ ./
 COPY migrations/ ./migrations/
 COPY alembic.ini ./
 
-# Copy translation files
-COPY translations/ ./translations/
+# Copy babel config
 COPY babel.cfg ./
 
-# Compile translations
-RUN pip install babel && \
-    cd /app && \
-    pybabel compile -d ./translations
+# Copy compiled translations from translator stage
+COPY --from=translator /app/translations/ ./translations/
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
