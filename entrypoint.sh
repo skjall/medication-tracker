@@ -7,26 +7,35 @@ echo "Starting Medication Tracker..."
 mkdir -p /app/data /app/logs
 chmod -R 777 /app/data /app/logs
 
-# Only run migrations with a single process
+# Clean up any stale migration locks from previous runs
+if [ -f /app/data/migration.lock ]; then
+    echo "Removing stale migration lock..."
+    rm -f /app/data/migration.lock
+fi
+
+# Run migrations before starting the app (if not disabled)
 if [ "$RUN_MIGRATIONS" != "false" ]; then
     echo "Running database migrations..."
     
-    # Use Python to run migrations directly with Alembic, not through the app
+    # Use Python to run migrations with proper app context
     python -c "
 import os
 import sys
 os.chdir('/app')
-from alembic import command
-from alembic.config import Config
 
-try:
-    cfg = Config('alembic.ini')
-    cfg.set_main_option('sqlalchemy.url', 'sqlite:////app/data/medication_tracker.db')
-    command.upgrade(cfg, 'head')
+# Set environment to prevent worker migration attempts
+os.environ['IS_STARTUP_MIGRATION'] = 'true'
+
+from main import create_app
+from migration_utils import run_migrations_with_lock
+
+app = create_app()
+with app.app_context():
+    success = run_migrations_with_lock(app)
+    if not success:
+        print('Migration failed or timed out')
+        sys.exit(1)
     print('Migrations completed successfully')
-except Exception as e:
-    print(f'Migration failed: {e}')
-    sys.exit(1)
 "
     if [ $? -ne 0 ]; then
         echo "Migration failed, exiting..."
@@ -35,7 +44,5 @@ except Exception as e:
 fi
 
 # Start gunicorn with multiple workers
-# Set environment variable so workers don't try to run migrations
-export GUNICORN_WORKER=true
 echo "Starting gunicorn server..."
 exec gunicorn --bind 0.0.0.0:8087 --workers 4 --threads 2 --timeout 120 "main:create_app()"

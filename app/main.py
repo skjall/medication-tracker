@@ -231,8 +231,22 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             stamp_database_to_latest(app)
         else:
             # Database exists with migration tracking
-            # Check if we should run migrations (not in Gunicorn worker processes)
-            if os.environ.get('RUN_MIGRATIONS') != 'false' and not os.environ.get('GUNICORN_WORKER'):
+            # Skip migrations if:
+            # 1. They were already run during startup (IS_STARTUP_MIGRATION set)
+            # 2. We're in a Gunicorn worker process (detected by checking for master process)
+            # 3. Migrations are explicitly disabled
+            
+            # Check if we're in a Gunicorn worker
+            # Gunicorn sets SERVER_SOFTWARE environment variable
+            is_gunicorn_worker = (
+                'gunicorn' in os.environ.get('SERVER_SOFTWARE', '').lower() or
+                'gunicorn' in sys.modules
+            )
+            
+            # Only run migrations if not in a worker and not already done at startup
+            if (not is_gunicorn_worker and 
+                not os.environ.get('IS_STARTUP_MIGRATION') and 
+                os.environ.get('RUN_MIGRATIONS') != 'false'):
                 logger.info("Database already initialized with migration tracking - checking for pending migrations")
                 from migration_utils import run_migrations_with_lock
                 if run_migrations_with_lock(app):
@@ -240,7 +254,14 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
                 else:
                     logger.warning("Migration run failed or timed out - continuing anyway")
             else:
-                logger.debug("Skipping migrations (running in worker process or migrations disabled)")
+                reason = []
+                if is_gunicorn_worker:
+                    reason.append("Gunicorn worker")
+                if os.environ.get('IS_STARTUP_MIGRATION'):
+                    reason.append("startup migration completed")
+                if os.environ.get('RUN_MIGRATIONS') == 'false':
+                    reason.append("migrations disabled")
+                logger.debug(f"Skipping migrations ({', '.join(reason)})")
 
     # Register blueprints (routes)
     from routes.medications import medication_bp

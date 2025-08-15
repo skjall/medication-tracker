@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-15 08:42+0200\n"
-"PO-Revision-Date: 2025-08-15 06:42\n"
+"POT-Creation-Date: 2025-08-15 08:45+0200\n"
+"PO-Revision-Date: 2025-08-15 06:45\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -18,13 +18,13 @@ msgstr ""
 "X-Crowdin-File-ID: 11\n"
 "Language: de_DE\n"
 
-#: main.py:439 templates/index.html:3 templates/index.html:9
+#: main.py:460 templates/index.html:3 templates/index.html:9
 #: templates/layout.html:32 templates/settings/system.html:11
 #: templates/test_translation.html:5
 msgid "Dashboard"
 msgstr "Übersicht"
 
-#: main.py:440 templates/index.html:43 templates/visits/index.html:104
+#: main.py:461 templates/index.html:43 templates/visits/index.html:104
 msgid "No upcoming physician visits scheduled."
 msgstr "Keine Arzttermine geplant."
 
