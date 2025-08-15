@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-15 00:59+0200\n"
-"PO-Revision-Date: 2025-08-14 22:59\n"
+"POT-Creation-Date: 2025-08-15 08:26+0200\n"
+"PO-Revision-Date: 2025-08-15 06:26\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.15.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: medication-tracker\n"
 "X-Crowdin-Project-ID: 819294\n"
@@ -18,23 +18,21 @@ msgstr ""
 "X-Crowdin-File-ID: 11\n"
 "Language: de_DE\n"
 
-#: main.py:435 templates/index.html:3 templates/index.html:9
+#: main.py:439 templates/index.html:3 templates/index.html:9
 #: templates/layout.html:32 templates/settings/system.html:11
 #: templates/test_translation.html:5
 msgid "Dashboard"
 msgstr "Übersicht"
 
-#: main.py:436 templates/index.html:43 templates/visits/index.html:104
+#: main.py:440 templates/index.html:43 templates/visits/index.html:104
 msgid "No upcoming physician visits scheduled."
 msgstr "Keine Arzttermine geplant."
 
 #: routes/inventory.py:147
-#, python-brace-format
 msgid "Inventory for {} adjusted by {}"
 msgstr "Bestand für {} angepasst von {}"
 
 #: routes/inventory.py:217
-#, python-brace-format
 msgid "Inventory updated for {}"
 msgstr "Bestand aktualisiert für {}"
 
@@ -86,22 +84,18 @@ msgid "Package deleted successfully"
 msgstr "Packung erfolgreich gelöscht"
 
 #: routes/medications.py:133
-#, python-brace-format
 msgid "Medication '{}' added successfully"
 msgstr "Medikament '{}' erfolgreich hinzugefügt"
 
 #: routes/medications.py:208
-#, python-brace-format
 msgid "Medication '{}' updated successfully"
 msgstr "Medikament '{}' erfolgreich aktualisiert"
 
 #: routes/medications.py:233
-#, python-brace-format
 msgid "Cannot delete '{}' because it has associated orders"
 msgstr "'{}' kann nicht gelöscht werden, da es zugeordnete Bestellungen hat"
 
 #: routes/medications.py:245
-#, python-brace-format
 msgid "Medication '{}' deleted successfully"
 msgstr "Medikament '{}' erfolgreich gelöscht"
 
@@ -130,7 +124,6 @@ msgid "Order deleted successfully"
 msgstr "Bestellung erfolgreich gelöscht"
 
 #: routes/orders.py:462
-#, python-brace-format
 msgid "Order status updated to {}"
 msgstr ""
 
@@ -143,7 +136,6 @@ msgid "Order marked as unfulfilled"
 msgstr "Bestellung als nicht erfüllt markiert"
 
 #: routes/orders.py:507
-#, python-brace-format
 msgid "Order marked as fulfilled and {} items added to inventory"
 msgstr "Bestellung als erfüllt markiert und {} Artikel zum Bestand hinzugefügt"
 
@@ -156,7 +148,6 @@ msgid "Item does not belong to this order"
 msgstr "Artikel gehört nicht zu dieser Bestellung"
 
 #: routes/orders.py:573
-#, python-brace-format
 msgid "Item {} marked as {}"
 msgstr "Artikel {} als {} markiert"
 
@@ -168,7 +159,6 @@ msgid "Unknown"
 msgstr "Unbekannt"
 
 #: routes/orders.py:605
-#, python-brace-format
 msgid "Successfully fulfilled {} items"
 msgstr "{} Artikel erfolgreich erfüllt"
 
@@ -201,22 +191,18 @@ msgid "Physician name is required."
 msgstr "Der Name des Arztes ist erforderlich."
 
 #: routes/physicians.py:76
-#, python-brace-format
 msgid "Physician '{}' has been created successfully."
 msgstr "Arzt '{}' wurde erfolgreich erstellt."
 
 #: routes/physicians.py:83
-#, python-brace-format
 msgid "Error creating physician: {}"
 msgstr "Fehler beim Erstellen des Arztes: {}"
 
 #: routes/physicians.py:131
-#, python-brace-format
 msgid "Physician '{}' has been updated successfully."
 msgstr "Arzt '{}' wurde erfolgreich aktualisiert."
 
 #: routes/physicians.py:138
-#, python-brace-format
 msgid "Error updating physician: {}"
 msgstr "Fehler beim Aktualisieren des Arztes: {}"
 
@@ -225,12 +211,10 @@ msgid "Cannot delete physician who has associated medications or visits. Please 
 msgstr "Arzt, der Medikamente oder Termine hat, kann nicht gelöscht werden. Bitte zuerst neu zuweisen."
 
 #: routes/physicians.py:162
-#, python-brace-format
 msgid "Physician '{}' has been deleted successfully."
 msgstr "Arzt '{}' wurde erfolgreich gelöscht."
 
 #: routes/physicians.py:169
-#, python-brace-format
 msgid "Error deleting physician: {}"
 msgstr "Fehler beim Löschen des Arztes: {}"
 
@@ -248,12 +232,10 @@ msgid "Only PDF files are allowed"
 msgstr "Nur PDF-Dateien sind erlaubt"
 
 #: routes/prescription_templates.py:128
-#, python-brace-format
 msgid "Prescription template '{}' added successfully"
 msgstr "Bestellformular '{}' erfolgreich hinzugefügt"
 
 #: routes/prescription_templates.py:196
-#, python-brace-format
 msgid "Prescription template '{}' activated"
 msgstr "Bestellformular '{}' aktiviert"
 
@@ -262,7 +244,6 @@ msgid "Cannot delete the active template"
 msgstr "Aktive Vorlage kann nicht gelöscht werden"
 
 #: routes/prescription_templates.py:228
-#, python-brace-format
 msgid "Prescription template '{}' deleted"
 msgstr "Bestellformular '{}' gelöscht"
 
@@ -271,7 +252,6 @@ msgid "Error downloading template file"
 msgstr "Fehler beim Herunterladen der Template-Datei"
 
 #: routes/prescription_templates.py:335
-#, python-brace-format
 msgid "Prescription template '{}' updated successfully"
 msgstr "Bestellformular '{}' erfolgreich aktualisiert"
 
@@ -341,7 +321,6 @@ msgid "Schedule deleted successfully"
 msgstr "Zeitplan erfolgreich gelöscht"
 
 #: routes/schedule.py:191
-#, python-brace-format
 msgid "Automatic deduction {} for {}"
 msgstr "Automatischer Abzug {} für {}"
 
@@ -353,25 +332,23 @@ msgstr "Medikamentenverbrauch erfolgreich überprüft"
 msgid "Physician visit settings updated successfully"
 msgstr "Einstellungen für Arzttermine erfolgreich aktualisiert"
 
-#: routes/settings.py:124
+#: routes/settings.py:123
 msgid "Orders for this visit will now be planned to last until the next-but-one visit"
 msgstr "Bestellungen für diesen Termin werden nun bis zum nächsten Termin geplant"
 
-#: routes/settings.py:128
+#: routes/settings.py:127
 msgid "Orders for this visit will now be planned to last until the next visit only"
 msgstr "Bestellungen für diesen Termin werden bis zum nächsten Termin geplant"
 
 #: routes/settings.py:197
-#, python-brace-format
 msgid "Unknown export type: {}"
 msgstr "Unbekannter Exporttyp: {}"
 
 #: routes/settings.py:218
-#, python-brace-format
 msgid "Error creating backup: {}"
 msgstr "Fehler beim Erstellen der Sicherung: {}"
 
-#: routes/settings.py:231
+#: routes/settings.py:230
 msgid "You must confirm that you understand the restore will replace all current data"
 msgstr "Du musst bestätigen, dass die Wiederherstellung alle aktuellen Daten ersetzt"
 
@@ -384,7 +361,6 @@ msgid "No file selected"
 msgstr "Keine Datei ausgewählt"
 
 #: routes/settings.py:251
-#, python-brace-format
 msgid "Invalid file type. Please upload a database file ({})"
 msgstr "Ungültiger Dateityp. Bitte eine Datenbankdatei hochladen ({})"
 
@@ -393,12 +369,10 @@ msgid "Invalid database file: missing required tables"
 msgstr "Ungültige Datenbankdatei: fehlende erforderliche Tabellen"
 
 #: routes/settings.py:280
-#, python-brace-format
 msgid "Invalid database file: {}"
 msgstr "Ungültige Datenbankdatei: {}"
 
 #: routes/settings.py:339
-#, python-brace-format
 msgid "Database restored but migration failed: {}"
 msgstr "Datenbank wiederhergestellt, aber Migration fehlgeschlagen: {}"
 
@@ -407,17 +381,14 @@ msgid "Database successfully restored and migrations applied!"
 msgstr "Datenbank erfolgreich wiederhergestellt und Migrationen angewendet!"
 
 #: routes/settings.py:356
-#, python-brace-format
 msgid "Error restoring database: {}"
 msgstr "Fehler beim Wiederherstellen der Datenbank: {}"
 
 #: routes/settings.py:390 routes/settings.py:638
-#, python-brace-format
 msgid "... and {} more errors"
 msgstr "... und {} weitere Fehler"
 
 #: routes/settings.py:396
-#, python-brace-format
 msgid "Successfully imported {} medications"
 msgstr "{} Medikamente erfolgreich importiert"
 
@@ -426,7 +397,6 @@ msgid "No medications were imported"
 msgstr "Keine Medikamente wurden importiert"
 
 #: routes/settings.py:405
-#, python-brace-format
 msgid "Import of {} is not yet implemented"
 msgstr "Import von {} ist noch nicht implementiert"
 
@@ -435,7 +405,6 @@ msgid "Please keep at least 30 days of logs"
 msgstr "Bitte halte mindestens 30 Tage Logs"
 
 #: routes/settings.py:444
-#, python-brace-format
 msgid "Successfully removed {} old inventory logs"
 msgstr "{} alte Bestandprotokolle erfolgreich entfernt"
 
@@ -444,46 +413,38 @@ msgid "Verification text doesn't match. Data was not reset."
 msgstr "Bestätigungstext stimmt nicht überein. Die Daten wurden nicht zurückgesetzt."
 
 #: routes/settings.py:466
-#, python-brace-format
 msgid "Backup created at {}"
 msgstr "Sicherung erstellt am {}"
 
-#: routes/settings.py:475
+#: routes/settings.py:474
 msgid "All data has been reset. The application has been restored to initial state."
 msgstr "Alle Daten wurden zurückgesetzt. Die Anwendung wurde in den Ausgangszustand wiederhergestellt."
 
 #: routes/settings.py:481
-#, python-brace-format
 msgid "Error resetting data: {}"
 msgstr "Fehler beim Zurücksetzen der Daten: {}"
 
 #: routes/settings.py:503
-#, python-brace-format
 msgid "Invalid timezone: {}"
 msgstr "Ungültige Zeitzone: {}"
 
 #: routes/settings.py:511
-#, python-brace-format
 msgid "Application timezone updated to {}"
 msgstr "Zeitzone der Anwendung aktualisiert auf {}"
 
 #: routes/settings.py:630
-#, python-brace-format
 msgid "Unknown import type: {}"
 msgstr "Unbekannter Importtyp: {}"
 
 #: routes/settings.py:644
-#, python-brace-format
 msgid "Successfully imported {} {} records"
 msgstr "{} {} {} Einträge erfolgreich importiert"
 
 #: routes/settings.py:650
-#, python-brace-format
 msgid "No {} were imported"
 msgstr "Keine {} wurden importiert"
 
 #: routes/settings.py:653
-#, python-brace-format
 msgid "Error during import: {}"
 msgstr "Fehler beim Import: {}"
 
@@ -495,8 +456,7 @@ msgstr "Suche nach Updates nicht möglich"
 msgid "Connection timeout"
 msgstr "Verbindungs-Timeout"
 
-#: routes/settings.py:758
-#, python-brace-format
+#: routes/settings.py:757
 msgid "Verification text doesn't match. Expected '{}'. Data was not reset."
 msgstr "Bestätigungstext stimmt nicht überein. Die Daten wurden nicht zurückgesetzt."
 
@@ -505,37 +465,30 @@ msgid "All medication data has been reset"
 msgstr "Alle Medikamentendaten wurden zurückgesetzt"
 
 #: routes/settings.py:783
-#, python-brace-format
 msgid "All inventory data has been reset ({} records)"
 msgstr "Alle Bestandsdaten wurden zurückgesetzt ({} Datensätze)"
 
 #: routes/settings.py:794
-#, python-brace-format
 msgid "All order data has been reset ({} records)"
 msgstr "Alle Bestelldaten wurden zurückgesetzt ({} Datensätze)"
 
 #: routes/settings.py:803
-#, python-brace-format
 msgid "All visit data has been reset ({} records)"
 msgstr "Alle Termindaten wurden zurückgesetzt ({} Datensätze)"
 
 #: routes/settings.py:812
-#, python-brace-format
 msgid "All schedule data has been reset ({} records)"
 msgstr "Alle Fahrplandaten wurden zurückgesetzt ({} Datensätze)"
 
 #: routes/settings.py:823
-#, python-brace-format
 msgid "All physician data has been reset ({} records)"
 msgstr "Alle Daten des Arztes wurden zurückgesetzt ({} Datensätze)"
 
 #: routes/settings.py:830
-#, python-brace-format
 msgid "Unknown data type: {}"
 msgstr "Unbekannter Datentyp: {}"
 
 #: routes/settings.py:835
-#, python-brace-format
 msgid "Error resetting {}: {}"
 msgstr "Fehler beim Zurücksetzen von {}: {}"
 
@@ -548,7 +501,6 @@ msgid "Task scheduler not available"
 msgstr "Aufgabenplaner nicht verfügbar"
 
 #: routes/system.py:199
-#, python-brace-format
 msgid "Found {} schedules with pipe-separated times. Check logs for details."
 msgstr "Es wurden {} Zeitpläne mit pipe-separierten Zeiten gefunden. Überprüfe Protokolle für Details."
 
@@ -557,22 +509,18 @@ msgid "No pipe-separated times detected in medication schedules."
 msgstr "Keine Rohrtrennungszeiten in Medikamentenplanungen erkannt."
 
 #: routes/system.py:207
-#, python-brace-format
 msgid "Error running detection: {}"
 msgstr "Fehler beim Ausführen der Erkennung: {}"
 
 #: routes/system.py:248
-#, python-brace-format
 msgid "Successfully fixed {} schedules with pipe-separated times."
 msgstr "{} Pläne erfolgreich mit Rohrtrennungszeiten festgelegt."
 
 #: routes/system.py:250
-#, python-brace-format
 msgid "Failed to fix {} schedules. Check logs for details."
 msgstr "Fehler beim Beheben von {} Zeitplänen. Überprüfe die Protokolle für Details."
 
 #: routes/system.py:254
-#, python-brace-format
 msgid "Error running fix: {}"
 msgstr "Fehler beim Ausführen des Fixes: {}"
 
@@ -585,7 +533,6 @@ msgid "Error running database migrations"
 msgstr "Fehler beim Ausführen der Datenbankmigrationen"
 
 #: routes/visits.py:100
-#, python-brace-format
 msgid "Physician visit scheduled for {}"
 msgstr "Arzttermin für {} geplant"
 
@@ -594,7 +541,6 @@ msgid "Invalid date format. Please use DD.MM.YYYY format."
 msgstr "Ungültiges Datumsformat. Bitte verwende das TT.MM.YYYY-Format."
 
 #: routes/visits.py:243
-#, python-brace-format
 msgid "Physician visit updated to {}"
 msgstr "Arzttermin aktualisiert auf {}"
 

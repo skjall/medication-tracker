@@ -129,14 +129,9 @@ ENV LOG_LEVEL=INFO
 ARG VERSION
 ENV VERSION=${VERSION}
 
-# Create entrypoint script to handle permissions
-RUN echo '#!/bin/bash\n\
-  mkdir -p /app/data /app/logs\n\
-  chmod -R 777 /app/data /app/logs\n\
-  echo "Starting application..."\n\
-  exec gunicorn --bind 0.0.0.0:8087 --workers 4 --threads 2 --timeout 120 "main:create_app()"\n'\
-  > /app/entrypoint.sh && \
-  chmod +x /app/entrypoint.sh
+# Copy entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Create volumes for data and logs persistence
 VOLUME /app/data

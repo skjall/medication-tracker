@@ -230,13 +230,17 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             logger.info("Existing database without migration tracking - stamping to latest")
             stamp_database_to_latest(app)
         else:
-            # Database exists with migration tracking - run any pending migrations
-            logger.info("Database already initialized with migration tracking - checking for pending migrations")
-            from migration_utils import run_migrations_with_lock
-            if run_migrations_with_lock(app):
-                logger.info("Migrations completed successfully")
+            # Database exists with migration tracking
+            # Check if we should run migrations (not in Gunicorn worker processes)
+            if os.environ.get('RUN_MIGRATIONS') != 'false' and not os.environ.get('GUNICORN_WORKER'):
+                logger.info("Database already initialized with migration tracking - checking for pending migrations")
+                from migration_utils import run_migrations_with_lock
+                if run_migrations_with_lock(app):
+                    logger.info("Migrations completed successfully")
+                else:
+                    logger.warning("Migration run failed or timed out - continuing anyway")
             else:
-                logger.warning("Migration run failed or timed out - continuing anyway")
+                logger.debug("Skipping migrations (running in worker process or migrations disabled)")
 
     # Register blueprints (routes)
     from routes.medications import medication_bp
