@@ -260,8 +260,10 @@ def register_translation_routes(app):
     # Make available in templates
     @app.context_processor
     def inject_conf_vars():
+        from flask_babel import get_locale
+        current_locale = str(get_locale())
         return {
             'LANGUAGES': get_available_languages(app),  # Only show available languages
             'ALL_LANGUAGES': app.config['LANGUAGES'],  # All configured languages for admin
-            'CURRENT_LANGUAGE': session.get('language', 'en')
+            'CURRENT_LANGUAGE': current_locale
         }
