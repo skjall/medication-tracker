@@ -84,7 +84,11 @@
                                         <td class="{{ color_class }}">
                                             {% if med.inventory %}
                                                 <strong>{{ med.total_inventory_count }}</strong> {{ _('units') }}
-                                                {% if med.packages %}
+                                                {% if med.uses_package_system %}
+                                                    <br><small class="text-success">
+                                                        <i class="fas fa-box"></i> {{ _('Package-based') }}
+                                                    </small>
+                                                {% elif med.packages %}
                                                     {% set package_count = 0 %}
                                                     {% if 'package_inventory' in med.__dict__ %}
                                                         {% set package_count = med.package_inventory|length %}
@@ -188,6 +192,15 @@
                                         <td class="{{ color_class }}">
                                             {% if med.inventory %}
                                                 <strong>{{ med.total_inventory_count }}</strong> {{ _('units') }}
+                                                {% if med.uses_package_system %}
+                                                    <br><small class="text-success">
+                                                        <i class="fas fa-box"></i> {{ _('Package-based') }}
+                                                    </small>
+                                                {% elif med.active_package_count > 0 %}
+                                                    <br><small class="text-muted">
+                                                        <i class="fas fa-qrcode"></i> {{ med.active_package_count }} {{ _('packages') }}
+                                                    </small>
+                                                {% endif %}
                                             {% else %}
                                                 <span class="text-muted">{{ _('No inventory') }}</span>
                                             {% endif %}

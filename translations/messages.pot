@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-15 19:14+0200\n"
+"POT-Creation-Date: 2025-08-15 22:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -150,7 +150,7 @@ msgstr ""
 msgid "Item {} marked as {}"
 msgstr ""
 
-#: routes/orders.py:573 routes/scanner.py:83 templates/inventory/show.html:364
+#: routes/orders.py:573 routes/scanner.py:83 templates/inventory/show.html:368
 #: templates/scanner/index.html:72 templates/scanner/index.html:155
 #: templates/scanner/package_details.html:30 templates/scanner/scan.html:237
 msgid "Unknown"
@@ -218,8 +218,8 @@ msgstr ""
 msgid "Error deleting physician: {}"
 msgstr ""
 
-#: routes/prescription_templates.py:61 routes/settings.py:367
-#: routes/settings.py:585
+#: routes/prescription_templates.py:61 routes/settings.py:382
+#: routes/settings.py:616
 msgid "No file part"
 msgstr ""
 
@@ -362,7 +362,7 @@ msgstr ""
 msgid "No file provided for restore"
 msgstr ""
 
-#: routes/settings.py:243 routes/settings.py:372 routes/settings.py:590
+#: routes/settings.py:243 routes/settings.py:387 routes/settings.py:621
 msgid "No file selected"
 msgstr ""
 
@@ -378,125 +378,125 @@ msgstr ""
 msgid "Invalid database file: {}"
 msgstr ""
 
-#: routes/settings.py:340
+#: routes/settings.py:355
 msgid "Database restored but migration failed: {}"
 msgstr ""
 
-#: routes/settings.py:348
+#: routes/settings.py:363
 msgid "Database successfully restored and migrations applied!"
 msgstr ""
 
-#: routes/settings.py:357
+#: routes/settings.py:372
 msgid "Error restoring database: {}"
 msgstr ""
 
-#: routes/settings.py:391 routes/settings.py:640
+#: routes/settings.py:406 routes/settings.py:671
 msgid "... and {} more errors"
 msgstr ""
 
-#: routes/settings.py:397
+#: routes/settings.py:412
 msgid "Successfully imported {} medications"
 msgstr ""
 
-#: routes/settings.py:403
+#: routes/settings.py:418
 msgid "No medications were imported"
 msgstr ""
 
-#: routes/settings.py:406
+#: routes/settings.py:421
 msgid "Import of {} is not yet implemented"
 msgstr ""
 
-#: routes/settings.py:439
+#: routes/settings.py:454
 msgid "Please keep at least 30 days of logs"
 msgstr ""
 
-#: routes/settings.py:445
+#: routes/settings.py:460
 msgid "Successfully removed {} old inventory logs"
 msgstr ""
 
-#: routes/settings.py:459
+#: routes/settings.py:474
 msgid "Verification text doesn't match. Data was not reset."
 msgstr ""
 
-#: routes/settings.py:467
+#: routes/settings.py:482
 msgid "Backup created at {}"
 msgstr ""
 
-#: routes/settings.py:475
+#: routes/settings.py:490
 msgid ""
 "All data has been reset. The application has been restored to initial "
 "state."
 msgstr ""
 
-#: routes/settings.py:482
+#: routes/settings.py:497
 msgid "Error resetting data: {}"
 msgstr ""
 
-#: routes/settings.py:504
+#: routes/settings.py:519
 msgid "Invalid timezone: {}"
 msgstr ""
 
-#: routes/settings.py:512
+#: routes/settings.py:527
 msgid "Application timezone updated to {}"
 msgstr ""
 
-#: routes/settings.py:632
+#: routes/settings.py:663
 msgid "Unknown import type: {}"
 msgstr ""
 
-#: routes/settings.py:646
+#: routes/settings.py:677
 msgid "Successfully imported {} {} records"
 msgstr ""
 
-#: routes/settings.py:652
+#: routes/settings.py:683
 msgid "No {} were imported"
 msgstr ""
 
-#: routes/settings.py:655
+#: routes/settings.py:686
 msgid "Error during import: {}"
 msgstr ""
 
-#: routes/settings.py:720
+#: routes/settings.py:751
 msgid "Unable to check for updates"
 msgstr ""
 
-#: routes/settings.py:730
+#: routes/settings.py:761
 msgid "Connection timeout"
 msgstr ""
 
-#: routes/settings.py:759
+#: routes/settings.py:790
 msgid "Verification text doesn't match. Expected '{}'. Data was not reset."
 msgstr ""
 
-#: routes/settings.py:778
+#: routes/settings.py:809
 msgid "All medication data has been reset"
 msgstr ""
 
-#: routes/settings.py:785
+#: routes/settings.py:816
 msgid "All inventory data has been reset ({} records)"
 msgstr ""
 
-#: routes/settings.py:796
+#: routes/settings.py:827
 msgid "All order data has been reset ({} records)"
 msgstr ""
 
-#: routes/settings.py:805
+#: routes/settings.py:836
 msgid "All visit data has been reset ({} records)"
 msgstr ""
 
-#: routes/settings.py:814
+#: routes/settings.py:845
 msgid "All schedule data has been reset ({} records)"
 msgstr ""
 
-#: routes/settings.py:825
+#: routes/settings.py:856
 msgid "All physician data has been reset ({} records)"
 msgstr ""
 
-#: routes/settings.py:832
+#: routes/settings.py:863
 msgid "Unknown data type: {}"
 msgstr ""
 
-#: routes/settings.py:837
+#: routes/settings.py:868
 msgid "Error resetting {}: {}"
 msgstr ""
 
@@ -599,7 +599,7 @@ msgstr ""
 msgid "Next Physician Visit"
 msgstr ""
 
-#: templates/index.html:31 templates/inventory/show.html:441
+#: templates/index.html:31 templates/inventory/show.html:445
 #: templates/medications/edit.html:98 templates/medications/new.html:157
 #: templates/physicians/edit.html:85 templates/physicians/new.html:75
 #: templates/physicians/show.html:86 templates/physicians/show.html:206
@@ -689,7 +689,7 @@ msgid "Unassigned Medications"
 msgstr ""
 
 #: templates/index.html:199 templates/index.html:291
-#: templates/inventory/index.html:61 templates/inventory/index.html:167
+#: templates/inventory/index.html:61 templates/inventory/index.html:171
 #: templates/inventory/low.html:28 templates/medications/index.html:46
 #: templates/medications/index.html:140 templates/physicians/edit.html:31
 #: templates/physicians/index.html:30 templates/physicians/new.html:25
@@ -701,8 +701,8 @@ msgstr ""
 
 #: templates/index.html:200 templates/index.html:292
 #: templates/inventory/depletion.html:84 templates/inventory/index.html:62
-#: templates/inventory/index.html:168 templates/inventory/low.html:29
-#: templates/inventory/show.html:84 templates/medications/index.html:49
+#: templates/inventory/index.html:172 templates/inventory/low.html:29
+#: templates/inventory/show.html:88 templates/medications/index.html:49
 #: templates/medications/index.html:141 templates/physicians/show.html:136
 #: templates/visits/show.html:163
 msgid "Daily Usage"
@@ -715,20 +715,20 @@ msgstr ""
 
 #: templates/index.html:202 templates/index.html:294
 #: templates/inventory/depletion.html:86 templates/inventory/index.html:64
-#: templates/inventory/index.html:170 templates/inventory/low.html:32
+#: templates/inventory/index.html:174 templates/inventory/low.html:32
 msgid "Days Left"
 msgstr ""
 
 #: templates/index.html:203 templates/index.html:295
 #: templates/inventory/depletion.html:87 templates/inventory/index.html:65
-#: templates/inventory/index.html:171 templates/inventory/low.html:33
+#: templates/inventory/index.html:175 templates/inventory/low.html:33
 #: templates/medications/show.html:390 templates/medications/show.html:393
 msgid "Depletion Date"
 msgstr ""
 
 #: templates/index.html:204 templates/index.html:296
 #: templates/inventory/depletion.html:88 templates/inventory/index.html:66
-#: templates/inventory/index.html:172 templates/inventory/show.html:349
+#: templates/inventory/index.html:176 templates/inventory/show.html:353
 #: templates/medications/index.html:53 templates/medications/index.html:144
 #: templates/orders/index.html:23 templates/orders/show.html:128
 #: templates/physicians/show.html:138 templates/prescriptions/index.html:66
@@ -740,8 +740,8 @@ msgstr ""
 
 #: templates/index.html:205 templates/index.html:297
 #: templates/inventory/depletion.html:89 templates/inventory/index.html:67
-#: templates/inventory/index.html:173 templates/inventory/low.html:35
-#: templates/inventory/show.html:354 templates/medications/index.html:54
+#: templates/inventory/index.html:177 templates/inventory/low.html:35
+#: templates/inventory/show.html:358 templates/medications/index.html:54
 #: templates/medications/index.html:145 templates/medications/show.html:55
 #: templates/medications/show.html:436 templates/orders/edit.html:64
 #: templates/orders/index.html:26 templates/orders/index.html:124
@@ -755,7 +755,7 @@ msgid "Actions"
 msgstr ""
 
 #: templates/index.html:215 templates/index.html:306
-#: templates/inventory/index.html:77 templates/inventory/index.html:182
+#: templates/inventory/index.html:77 templates/inventory/index.html:186
 #: templates/medications/index.html:64 templates/medications/index.html:153
 #: templates/medications/show.html:7 templates/orders/show.html:69
 #: templates/physicians/show.html:149
@@ -765,14 +765,14 @@ msgstr ""
 #: templates/index.html:218 templates/index.html:308
 #: templates/inventory/depletion.html:99 templates/inventory/depletion.html:100
 #: templates/inventory/edit_package.html:50 templates/inventory/index.html:83
-#: templates/inventory/index.html:86 templates/inventory/index.html:187
-#: templates/inventory/index.html:190 templates/inventory/low.html:44
+#: templates/inventory/index.html:86 templates/inventory/index.html:191
+#: templates/inventory/index.html:194 templates/inventory/low.html:44
 #: templates/inventory/low.html:47 templates/inventory/low.html:65
-#: templates/inventory/show.html:58 templates/inventory/show.html:86
-#: templates/inventory/show.html:135 templates/inventory/show.html:189
-#: templates/inventory/show.html:190 templates/inventory/show.html:221
-#: templates/inventory/show.html:274 templates/inventory/show.html:275
-#: templates/inventory/show.html:334 templates/medications/edit.html:216
+#: templates/inventory/show.html:62 templates/inventory/show.html:90
+#: templates/inventory/show.html:139 templates/inventory/show.html:193
+#: templates/inventory/show.html:194 templates/inventory/show.html:225
+#: templates/inventory/show.html:278 templates/inventory/show.html:279
+#: templates/inventory/show.html:338 templates/medications/edit.html:216
 #: templates/medications/index.html:70 templates/medications/index.html:72
 #: templates/medications/index.html:86 templates/medications/index.html:158
 #: templates/medications/index.html:161 templates/medications/show.html:64
@@ -787,7 +787,7 @@ msgid "units"
 msgstr ""
 
 #: templates/index.html:224 templates/index.html:314
-#: templates/inventory/index.html:99 templates/inventory/index.html:192
+#: templates/inventory/index.html:103 templates/inventory/index.html:205
 #: templates/medications/index.html:88 templates/medications/index.html:163
 #: templates/orders/edit.html:87 templates/orders/new.html:113
 #: templates/physicians/show.html:157
@@ -795,46 +795,46 @@ msgid "No inventory"
 msgstr ""
 
 #: templates/index.html:231 templates/index.html:238 templates/index.html:321
-#: templates/index.html:328 templates/inventory/index.html:106
-#: templates/inventory/index.html:115 templates/inventory/index.html:199
-#: templates/inventory/index.html:208 templates/inventory/low.html:53
+#: templates/index.html:328 templates/inventory/index.html:110
+#: templates/inventory/index.html:119 templates/inventory/index.html:212
+#: templates/inventory/index.html:221 templates/inventory/low.html:53
 #: templates/inventory/low.html:60
 msgid "N/A"
 msgstr ""
 
 #: templates/index.html:243 templates/index.html:333
-#: templates/inventory/index.html:120 templates/inventory/index.html:213
+#: templates/inventory/index.html:124 templates/inventory/index.html:226
 #: templates/medications/index.html:93
 msgid "No Data"
 msgstr ""
 
 #: templates/index.html:245 templates/index.html:335
-#: templates/inventory/depletion.html:109 templates/inventory/index.html:122
-#: templates/inventory/index.html:215
+#: templates/inventory/depletion.html:109 templates/inventory/index.html:126
+#: templates/inventory/index.html:228
 msgid "Critical"
 msgstr ""
 
 #: templates/index.html:247 templates/index.html:337
-#: templates/inventory/index.html:21 templates/inventory/index.html:124
-#: templates/inventory/index.html:217 templates/layout.html:53
+#: templates/inventory/index.html:21 templates/inventory/index.html:128
+#: templates/inventory/index.html:230 templates/layout.html:53
 #: templates/medications/index.html:95 templates/physicians/show.html:163
 msgid "Low Stock"
 msgstr ""
 
 #: templates/index.html:249 templates/index.html:339
-#: templates/inventory/index.html:126 templates/inventory/index.html:219
+#: templates/inventory/index.html:130 templates/inventory/index.html:232
 #: templates/medications/index.html:97 templates/physicians/show.html:165
 msgid "Running Low"
 msgstr ""
 
 #: templates/index.html:251 templates/index.html:341
-#: templates/inventory/depletion.html:115 templates/inventory/index.html:128
-#: templates/inventory/index.html:221 templates/medications/index.html:99
+#: templates/inventory/depletion.html:115 templates/inventory/index.html:132
+#: templates/inventory/index.html:234 templates/medications/index.html:99
 #: templates/physicians/show.html:167
 msgid "OK"
 msgstr ""
 
-#: templates/index.html:281 templates/inventory/index.html:157
+#: templates/index.html:281 templates/inventory/index.html:161
 #: templates/medications/index.html:130
 msgid "Over-the-Counter (OTC) Medications"
 msgstr ""
@@ -1066,15 +1066,15 @@ msgid "Medication"
 msgstr ""
 
 #: templates/inventory/depletion.html:85 templates/inventory/index.html:63
-#: templates/inventory/index.html:169 templates/inventory/low.html:31
+#: templates/inventory/index.html:173 templates/inventory/low.html:31
 #: templates/medications/index.html:52 templates/medications/index.html:142
 #: templates/orders/edit.html:63 templates/orders/new.html:77
 #: templates/physicians/show.html:137 templates/visits/show.html:166
 msgid "Current Stock"
 msgstr ""
 
-#: templates/inventory/depletion.html:102 templates/inventory/index.html:104
-#: templates/inventory/index.html:197 templates/inventory/low.html:51
+#: templates/inventory/depletion.html:102 templates/inventory/index.html:108
+#: templates/inventory/index.html:210 templates/inventory/low.html:51
 #: templates/medications/show.html:326 templates/physicians/show.html:221
 #: templates/scanner/index.html:85 templates/settings/data_management.html:393
 #: templates/settings/physician_visits.html:27 templates/visits/index.html:59
@@ -1146,7 +1146,7 @@ msgstr ""
 msgid "Serial Number"
 msgstr ""
 
-#: templates/inventory/edit_package.html:59 templates/inventory/show.html:350
+#: templates/inventory/edit_package.html:59 templates/inventory/show.html:354
 #: templates/scanner/index.html:56 templates/scanner/package_details.html:54
 #: templates/scanner/scan.html:243
 msgid "Batch"
@@ -1232,7 +1232,8 @@ msgstr ""
 msgid "Order #%(order_id)s"
 msgstr ""
 
-#: templates/inventory/edit_package.html:169 templates/inventory/index.html:94
+#: templates/inventory/edit_package.html:169 templates/inventory/index.html:98
+#: templates/inventory/index.html:201
 msgid "packages"
 msgstr ""
 
@@ -1244,8 +1245,8 @@ msgstr ""
 msgid "Link this package to a medication order"
 msgstr ""
 
-#: templates/inventory/edit_package.html:189 templates/inventory/show.html:180
-#: templates/inventory/show.html:265
+#: templates/inventory/edit_package.html:189 templates/inventory/show.html:184
+#: templates/inventory/show.html:269
 msgid "Notes (Optional)"
 msgstr ""
 
@@ -1283,7 +1284,7 @@ msgstr ""
 msgid "Current Status"
 msgstr ""
 
-#: templates/inventory/edit_package.html:216 templates/inventory/show.html:372
+#: templates/inventory/edit_package.html:216 templates/inventory/show.html:376
 #: templates/scanner/index.html:102 templates/scanner/package_details.html:103
 msgid "Sealed"
 msgstr ""
@@ -1292,7 +1293,7 @@ msgstr ""
 msgid "This package has not been opened yet"
 msgstr ""
 
-#: templates/inventory/edit_package.html:219 templates/inventory/show.html:374
+#: templates/inventory/edit_package.html:219 templates/inventory/show.html:378
 #: templates/scanner/index.html:104 templates/scanner/package_details.html:105
 msgid "Open"
 msgstr ""
@@ -1325,7 +1326,7 @@ msgstr ""
 msgid "Units Used"
 msgstr ""
 
-#: templates/inventory/edit_package.html:245 templates/inventory/show.html:353
+#: templates/inventory/edit_package.html:245 templates/inventory/show.html:357
 #: templates/medications/show.html:54 templates/scanner/package_details.html:72
 msgid "Scanned"
 msgstr ""
@@ -1334,13 +1335,17 @@ msgstr ""
 msgid "Search medications..."
 msgstr ""
 
-#: templates/inventory/index.html:80 templates/inventory/index.html:184
+#: templates/inventory/index.html:80 templates/inventory/index.html:188
 #: templates/medications/index.html:67 templates/medications/index.html:155
 #: templates/medications/show.html:10
 msgid "No generic substitution"
 msgstr ""
 
-#: templates/inventory/index.html:133 templates/inventory/index.html:226
+#: templates/inventory/index.html:89 templates/inventory/index.html:197
+msgid "Package-based"
+msgstr ""
+
+#: templates/inventory/index.html:137 templates/inventory/index.html:239
 #: templates/medications/index.html:104 templates/medications/index.html:185
 #: templates/orders/index.html:60 templates/orders/index.html:151
 #: templates/physicians/show.html:177 templates/physicians/show.html:235
@@ -1348,15 +1353,15 @@ msgstr ""
 msgid "View"
 msgstr ""
 
-#: templates/inventory/index.html:138 templates/inventory/index.html:231
+#: templates/inventory/index.html:142 templates/inventory/index.html:244
 msgid "Create"
 msgstr ""
 
-#: templates/inventory/index.html:244 templates/medications/index.html:202
+#: templates/inventory/index.html:257 templates/medications/index.html:202
 msgid "No medications registered yet."
 msgstr ""
 
-#: templates/inventory/index.html:245 templates/medications/index.html:203
+#: templates/inventory/index.html:258 templates/medications/index.html:203
 msgid "Add your first medication"
 msgstr ""
 
@@ -1400,212 +1405,216 @@ msgstr ""
 msgid "Total Units"
 msgstr ""
 
-#: templates/inventory/show.html:39
+#: templates/inventory/show.html:38
+msgid "Package-based inventory"
+msgstr ""
+
+#: templates/inventory/show.html:43
 msgid "Legacy"
 msgstr ""
 
-#: templates/inventory/show.html:41 templates/medications/show.html:435
+#: templates/inventory/show.html:45 templates/medications/show.html:435
 #: templates/orders/show.html:125 templates/visits/show.html:168
 msgid "Packages"
 msgstr ""
 
-#: templates/inventory/show.html:45
+#: templates/inventory/show.html:49
 msgid "Sum-based inventory"
 msgstr ""
 
-#: templates/inventory/show.html:58
+#: templates/inventory/show.html:62
 msgid "Minimum threshold"
 msgstr ""
 
-#: templates/inventory/show.html:70 templates/medications/show.html:381
+#: templates/inventory/show.html:74 templates/medications/show.html:381
 msgid "Days Remaining"
 msgstr ""
 
-#: templates/inventory/show.html:73
+#: templates/inventory/show.html:77
 msgid "Will run out on"
 msgstr ""
 
-#: templates/inventory/show.html:86 templates/medications/index.html:47
+#: templates/inventory/show.html:90 templates/medications/index.html:47
 msgid "Dosage"
 msgstr ""
 
-#: templates/inventory/show.html:87 templates/medications/index.html:48
+#: templates/inventory/show.html:91 templates/medications/index.html:48
 msgid "Frequency"
 msgstr ""
 
-#: templates/inventory/show.html:87
+#: templates/inventory/show.html:91
 msgid "per day"
 msgstr ""
 
-#: templates/inventory/show.html:104
+#: templates/inventory/show.html:108
 msgid "Legacy Inventory System"
 msgstr ""
 
-#: templates/inventory/show.html:110
+#: templates/inventory/show.html:114
 msgid "Note:"
 msgstr ""
 
-#: templates/inventory/show.html:110
+#: templates/inventory/show.html:114
 msgid ""
 "You are using the new package scanning system. The forms below should "
 "only be used to adjust existing legacy stock. Please use the barcode "
 "scanner for adding new inventory."
 msgstr ""
 
-#: templates/inventory/show.html:121
+#: templates/inventory/show.html:125
 msgid "Adjust Inventory (Relative)"
 msgstr ""
 
-#: templates/inventory/show.html:126 templates/inventory/show.html:212
+#: templates/inventory/show.html:130 templates/inventory/show.html:216
 msgid "Use this form to"
 msgstr ""
 
-#: templates/inventory/show.html:126
+#: templates/inventory/show.html:130
 msgid "add or subtract"
 msgstr ""
 
-#: templates/inventory/show.html:126
+#: templates/inventory/show.html:130
 msgid "units from your current inventory."
 msgstr ""
 
-#: templates/inventory/show.html:132
+#: templates/inventory/show.html:136
 msgid "Adjustment Amount Directly"
 msgstr ""
 
-#: templates/inventory/show.html:134
+#: templates/inventory/show.html:138
 msgid "Enter adjustment amount"
 msgstr ""
 
-#: templates/inventory/show.html:138
+#: templates/inventory/show.html:142
 msgid ""
 "Enter a positive number to add units, or a negative number to subtract "
 "units"
 msgstr ""
 
-#: templates/inventory/show.html:144
+#: templates/inventory/show.html:148
 msgid "Or Adjust by Package Quantities"
 msgstr ""
 
-#: templates/inventory/show.html:148 templates/inventory/show.html:233
+#: templates/inventory/show.html:152 templates/inventory/show.html:237
 msgid "N1 Packages"
 msgstr ""
 
-#: templates/inventory/show.html:158 templates/inventory/show.html:243
+#: templates/inventory/show.html:162 templates/inventory/show.html:247
 msgid "N2 Packages"
 msgstr ""
 
-#: templates/inventory/show.html:168 templates/inventory/show.html:253
+#: templates/inventory/show.html:172 templates/inventory/show.html:257
 msgid "N3 Packages"
 msgstr ""
 
-#: templates/inventory/show.html:181
+#: templates/inventory/show.html:185
 msgid "Optional notes about this adjustment"
 msgstr ""
 
-#: templates/inventory/show.html:189 templates/inventory/show.html:274
+#: templates/inventory/show.html:193 templates/inventory/show.html:278
 #: templates/settings/system.html:40
 msgid "Current"
 msgstr ""
 
-#: templates/inventory/show.html:190 templates/inventory/show.html:275
+#: templates/inventory/show.html:194 templates/inventory/show.html:279
 msgid "New total"
 msgstr ""
 
-#: templates/inventory/show.html:196
+#: templates/inventory/show.html:200
 msgid "Apply Adjustment"
 msgstr ""
 
-#: templates/inventory/show.html:207
+#: templates/inventory/show.html:211
 msgid "Set Inventory (Absolute)"
 msgstr ""
 
-#: templates/inventory/show.html:212
+#: templates/inventory/show.html:216
 msgid "set absolute values"
 msgstr ""
 
-#: templates/inventory/show.html:212
+#: templates/inventory/show.html:216
 msgid "for your inventory quantities."
 msgstr ""
 
-#: templates/inventory/show.html:218
+#: templates/inventory/show.html:222
 msgid "Set Total Units Directly"
 msgstr ""
 
-#: templates/inventory/show.html:224
+#: templates/inventory/show.html:228
 msgid "Enter the total number of units you currently have"
 msgstr ""
 
-#: templates/inventory/show.html:229
+#: templates/inventory/show.html:233
 msgid "Or Set Package Quantities"
 msgstr ""
 
-#: templates/inventory/show.html:266
+#: templates/inventory/show.html:270
 msgid "Optional notes about this inventory update"
 msgstr ""
 
-#: templates/inventory/show.html:281
+#: templates/inventory/show.html:285
 msgid "Update Inventory"
 msgstr ""
 
-#: templates/inventory/show.html:304
+#: templates/inventory/show.html:308
 msgid "Package Scanning Available"
 msgstr ""
 
-#: templates/inventory/show.html:308
+#: templates/inventory/show.html:312
 msgid ""
 "You have configured package sizes for this medication. You can now use "
 "the barcode scanner to track individual packages with batch numbers and "
 "expiry dates."
 msgstr ""
 
-#: templates/inventory/show.html:309 templates/medications/new.html:145
+#: templates/inventory/show.html:313 templates/medications/new.html:145
 #: templates/settings/data_management.html:269
 msgid "Important:"
 msgstr ""
 
-#: templates/inventory/show.html:309
+#: templates/inventory/show.html:313
 msgid ""
 "Once you start using the package scanning system, you should stop adding "
 "inventory through the legacy sum-based method to avoid confusion."
 msgstr ""
 
-#: templates/inventory/show.html:312
+#: templates/inventory/show.html:316
 msgid "Start Scanning Packages"
 msgstr ""
 
-#: templates/inventory/show.html:329
+#: templates/inventory/show.html:333
 msgid "Scanned Packages"
 msgstr ""
 
-#: templates/inventory/show.html:334
+#: templates/inventory/show.html:338
 msgid "Total"
 msgstr ""
 
-#: templates/inventory/show.html:337
+#: templates/inventory/show.html:341
 msgid "Scan More"
 msgstr ""
 
-#: templates/inventory/show.html:347
+#: templates/inventory/show.html:351
 msgid "Package"
 msgstr ""
 
-#: templates/inventory/show.html:348 templates/scanner/index.html:58
+#: templates/inventory/show.html:352 templates/scanner/index.html:58
 #: templates/scanner/package_details.html:113
 msgid "Units"
 msgstr ""
 
-#: templates/inventory/show.html:351 templates/scanner/index.html:57
+#: templates/inventory/show.html:355 templates/scanner/index.html:57
 #: templates/scanner/index.html:143 templates/scanner/package_details.html:59
 #: templates/scanner/scan.html:246
 msgid "Expiry"
 msgstr ""
 
-#: templates/inventory/show.html:352 templates/scanner/index.html:55
+#: templates/inventory/show.html:356 templates/scanner/index.html:55
 #: templates/scanner/index.html:142 templates/scanner/package_details.html:48
 msgid "Serial"
 msgstr ""
 
-#: templates/inventory/show.html:404 templates/medications/edit.html:3
+#: templates/inventory/show.html:408 templates/medications/edit.html:3
 #: templates/medications/edit.html:22 templates/medications/index.html:107
 #: templates/medications/index.html:188 templates/medications/show.html:24
 #: templates/orders/index.html:67 templates/physicians/edit.html:3
@@ -1614,31 +1623,31 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: templates/inventory/show.html:425
+#: templates/inventory/show.html:429
 msgid "Inventory History"
 msgstr ""
 
-#: templates/inventory/show.html:427
+#: templates/inventory/show.html:431
 msgid "View Full History"
 msgstr ""
 
-#: templates/inventory/show.html:437
+#: templates/inventory/show.html:441
 msgid "Date & Time"
 msgstr ""
 
-#: templates/inventory/show.html:438
+#: templates/inventory/show.html:442
 msgid "Previous Count"
 msgstr ""
 
-#: templates/inventory/show.html:439
+#: templates/inventory/show.html:443
 msgid "Adjustment"
 msgstr ""
 
-#: templates/inventory/show.html:440
+#: templates/inventory/show.html:444
 msgid "New Count"
 msgstr ""
 
-#: templates/inventory/show.html:460
+#: templates/inventory/show.html:464
 msgid "No inventory adjustments recorded yet."
 msgstr ""
 

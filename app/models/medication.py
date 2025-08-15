@@ -171,6 +171,124 @@ class Medication(db.Model):
         if self.days_remaining is None:
             return None
         return utcnow() + timedelta(days=self.days_remaining)
+    
+    @property
+    def has_package_inventory(self) -> bool:
+        """Check if medication has any packages with units available."""
+        from models import PackageInventory
+        return db.session.query(
+            PackageInventory.query.filter_by(medication_id=self.id)
+            .filter(PackageInventory.current_units > 0)
+            .exists()
+        ).scalar()
+    
+    @property
+    def uses_package_system(self) -> bool:
+        """
+        Determine if this medication should use package-based inventory.
+        True when legacy inventory is empty (or doesn't exist) and packages are available.
+        """
+        has_legacy = self.inventory and self.inventory.current_count > 0
+        return not has_legacy and self.has_package_inventory
+    
+    @property
+    def active_package_count(self) -> int:
+        """Count of packages with units available."""
+        from models import PackageInventory
+        return PackageInventory.query.filter_by(medication_id=self.id)\
+            .filter(PackageInventory.current_units > 0).count()
+
+    def get_next_package_for_deduction(self):
+        """
+        Get the next package to deduct from using FIFO principle.
+        Priority: 1. Open packages (by expiry, then opened date)
+                  2. Sealed packages (by expiry, then scan date)
+        """
+        from models import PackageInventory, ScannedItem
+        from sqlalchemy import case
+        
+        return PackageInventory.query.join(ScannedItem)\
+            .filter(
+                PackageInventory.medication_id == self.id,
+                PackageInventory.status.in_(['open', 'sealed']),
+                PackageInventory.current_units > 0
+            ).order_by(
+                # Open packages first
+                case((PackageInventory.status == 'open', 0), else_=1),
+                # Then by expiry date (nulls last)
+                ScannedItem.expiry_date.asc().nullslast(),
+                # Then by opened date for open packages
+                PackageInventory.opened_at.asc().nullslast(),
+                # Finally by scan date
+                ScannedItem.scanned_at.asc()
+            ).first()
+    
+    def deduct_units(self, amount: int, reason: str = None) -> Dict:
+        """
+        Intelligent deduction that handles both legacy and package inventory.
+        Deducts from legacy first, then from packages using FIFO.
+        
+        Returns:
+            Dict with deduction details including success status and what was deducted from
+        """
+        from models import PackageInventory
+        result = {
+            'success': False,
+            'total_deducted': 0,
+            'legacy_deducted': 0,
+            'packages_deducted': [],
+            'insufficient': False,
+            'notes': []
+        }
+        
+        remaining = amount
+        
+        # Step 1: Try to deduct from legacy inventory first
+        if self.inventory and self.inventory.current_count > 0:
+            legacy_deduction = min(remaining, self.inventory.current_count)
+            self.inventory.update_count(-legacy_deduction, reason or "Automatic deduction")
+            remaining -= legacy_deduction
+            result['legacy_deducted'] = legacy_deduction
+            result['total_deducted'] += legacy_deduction
+            
+            if legacy_deduction > 0:
+                result['notes'].append(f"Deducted {legacy_deduction} from legacy inventory")
+        
+        # Step 2: If still need more, deduct from packages
+        while remaining > 0:
+            package = self.get_next_package_for_deduction()
+            if not package:
+                # No more packages available
+                result['insufficient'] = True
+                result['notes'].append(f"Insufficient inventory: needed {remaining} more units")
+                break
+            
+            # If package is sealed, open it
+            if package.status == 'sealed':
+                package.status = 'open'
+                package.opened_at = utcnow()
+                result['notes'].append(f"Opened package {package.scanned_item.serial_number}")
+            
+            # Deduct what we can from this package
+            package_deduction = min(remaining, package.current_units)
+            package.current_units -= package_deduction
+            remaining -= package_deduction
+            
+            # Mark as empty if depleted
+            if package.current_units == 0:
+                package.status = 'empty'
+                package.consumed_at = utcnow()
+            
+            result['packages_deducted'].append({
+                'package_id': package.id,
+                'serial': package.scanned_item.serial_number,
+                'amount': package_deduction,
+                'remaining': package.current_units
+            })
+            result['total_deducted'] += package_deduction
+        
+        result['success'] = remaining == 0
+        return result
 
     def check_and_deduct_inventory(self, current_time: datetime) -> Tuple[bool, float]:
         """
@@ -185,7 +303,7 @@ class Medication(db.Model):
         # Ensure current_time is timezone-aware
         current_time = ensure_timezone_utc(current_time)
 
-        if not self.auto_deduction_enabled or not self.inventory:
+        if not self.auto_deduction_enabled:
             return False, 0
 
         total_deducted = 0.0
@@ -193,18 +311,22 @@ class Medication(db.Model):
 
         for schedule in self.schedules:
             if schedule.is_due_now(current_time):
-                # Deduct the scheduled amount
+                # Deduct the scheduled amount using new intelligent deduction
                 amount = schedule.units_per_dose
                 if amount > 0 and self.total_inventory_count >= amount:
-                    self.inventory.update_count(
-                        -amount,
-                        f"Automatic deduction: {amount} units at {current_time.strftime('%d.%m.%Y %H:%M')}",
+                    result = self.deduct_units(
+                        amount, 
+                        f"Scheduled deduction for {current_time.strftime('%Y-%m-%d %H:%M')}"
                     )
-                    total_deducted += amount
-                    deduction_made = True
-
-                    # Update last deduction time
-                    schedule.last_deduction = current_time
+                    if result['success']:
+                        total_deducted += result['total_deducted']
+                        deduction_made = True
+                        schedule.last_deduction = current_time
+                        
+                        # Log the deduction details
+                        logger.debug(f"Deduction for {self.name}: {result['notes']}")
+                    else:
+                        logger.warning(f"Failed to deduct {amount} units from {self.name}: insufficient inventory")
 
         return deduction_made, total_deducted
 

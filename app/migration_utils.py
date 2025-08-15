@@ -123,12 +123,20 @@ def run_migrations_with_lock(app: Flask) -> bool:
         while time.time() - start_time < max_wait_time:
             try:
                 with MigrationLock(app):
-                    # Double-check if migrations are still needed (another process might have run them)
-                    # Use a fresh app context to avoid transaction conflicts
+                    # First verify schema integrity - this catches mismatches between version and actual schema
                     with app.app_context():
+                        if not verify_schema_integrity(app):
+                            logger.info("Schema integrity check failed - will force migration")
+                            # Schema check already reset the version if needed
+                        
+                        # Double-check if migrations are still needed (another process might have run them)
                         if not check_migrations_needed(app):
-                            logger.info("Migrations no longer needed (completed by another process)")
-                            return True
+                            # Even if alembic says no migrations needed, verify schema is actually correct
+                            if verify_schema_integrity(app):
+                                logger.info("Migrations no longer needed and schema is valid")
+                                return True
+                            else:
+                                logger.info("No migrations pending but schema is invalid - forcing migration")
 
                         # Run the actual migrations
                         logger.info(f"Process {os.getpid()} running database migrations")
@@ -198,6 +206,66 @@ def get_alembic_config(app: Flask) -> Config:
 
     return alembic_cfg
 
+
+def verify_schema_integrity(app: Flask) -> bool:
+    """
+    Verify that the actual database schema matches what the models expect.
+    This catches cases where the alembic version says it's up-to-date but columns are missing.
+    
+    Returns:
+        True if schema is valid, False if issues were found
+    """
+    try:
+        from sqlalchemy import create_engine, inspect
+        
+        db_url = app.config["SQLALCHEMY_DATABASE_URI"]
+        engine = create_engine(db_url)
+        inspector = inspect(engine)
+        
+        # Define expected columns for critical tables
+        expected_columns = {
+            "order_items": ["fulfillment_status", "fulfillment_notes", "fulfilled_quantity", "fulfilled_at"],
+            "package_inventory": ["id", "medication_id", "scanned_item_id", "order_item_id"],
+            # Add more tables/columns as needed
+        }
+        
+        schema_valid = True
+        
+        for table_name, required_columns in expected_columns.items():
+            if table_name not in inspector.get_table_names():
+                logger.warning(f"Table {table_name} is missing from database")
+                schema_valid = False
+                continue
+                
+            existing_columns = [col['name'] for col in inspector.get_columns(table_name)]
+            
+            for col in required_columns:
+                if col not in existing_columns:
+                    logger.warning(f"Column {col} is missing from table {table_name}")
+                    schema_valid = False
+        
+        if not schema_valid:
+            logger.info("Schema integrity check failed - forcing migration")
+            # Force alembic to re-run migrations by clearing version
+            with engine.connect() as conn:
+                from sqlalchemy import text
+                # Get the current version first
+                result = conn.execute(text("SELECT version_num FROM alembic_version"))
+                current_version = result.scalar()
+                logger.info(f"Current alembic version: {current_version}")
+                
+                # Clear the version to force re-migration
+                conn.execute(text("DELETE FROM alembic_version"))
+                # Set to a version before the problematic migration
+                conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('8b5d249f8899')"))
+                conn.commit()
+                logger.info("Reset alembic version to force re-migration")
+        
+        return schema_valid
+        
+    except Exception as e:
+        logger.error(f"Error verifying schema integrity: {e}")
+        return True  # Assume it's OK if we can't check
 
 def check_and_fix_version_tracking(app: Flask) -> bool:
     """

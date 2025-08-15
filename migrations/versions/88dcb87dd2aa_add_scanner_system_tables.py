@@ -21,8 +21,12 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Add scanner system tables."""
     
-    # 1. Add inventory_mode to medications table
+    # Get connection and check existing tables
     conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    existing_tables = inspector.get_table_names()
+    
+    # 1. Add inventory_mode to medications table
     result = conn.execute(sa.text("PRAGMA table_info(medications)"))
     columns = [row[1] for row in result]
     
@@ -32,8 +36,9 @@ def upgrade() -> None:
                      nullable=True,
                      server_default='legacy'))
     
-    # 2. Create medication_packages table
-    op.create_table('medication_packages',
+    # 2. Create medication_packages table if it doesn't exist
+    if 'medication_packages' not in existing_tables:
+        op.create_table('medication_packages',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('medication_id', sa.Integer(), nullable=False),
         sa.Column('package_size', sa.String(50), nullable=True),
@@ -48,12 +53,13 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id')
     )
     
-    # Create index for faster lookups
-    op.create_index('ix_medication_packages_gtin', 'medication_packages', ['gtin'])
-    op.create_index('ix_medication_packages_national_number', 'medication_packages', ['national_number'])
+        # Create index for faster lookups
+        op.create_index('ix_medication_packages_gtin', 'medication_packages', ['gtin'])
+        op.create_index('ix_medication_packages_national_number', 'medication_packages', ['national_number'])
     
-    # 3. Create scanned_items table
-    op.create_table('scanned_items',
+    # 3. Create scanned_items table if it doesn't exist
+    if 'scanned_items' not in existing_tables:
+        op.create_table('scanned_items',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('medication_package_id', sa.Integer(), nullable=True),
         sa.Column('gtin', sa.String(14), nullable=True),
@@ -73,12 +79,13 @@ def upgrade() -> None:
         sa.UniqueConstraint('serial_number', name='uq_scanned_items_serial')
     )
     
-    # Create index for faster lookups
-    op.create_index('ix_scanned_items_expiry_date', 'scanned_items', ['expiry_date'])
-    op.create_index('ix_scanned_items_status', 'scanned_items', ['status'])
+        # Create index for faster lookups
+        op.create_index('ix_scanned_items_expiry_date', 'scanned_items', ['expiry_date'])
+        op.create_index('ix_scanned_items_status', 'scanned_items', ['status'])
     
-    # 4. Create package_inventory table
-    op.create_table('package_inventory',
+    # 4. Create package_inventory table if it doesn't exist
+    if 'package_inventory' not in existing_tables:
+        op.create_table('package_inventory',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('medication_id', sa.Integer(), nullable=False),
         sa.Column('scanned_item_id', sa.Integer(), nullable=False),
@@ -87,14 +94,24 @@ def upgrade() -> None:
         sa.Column('status', sa.String(20), nullable=False, server_default='sealed'),
         sa.Column('opened_at', sa.DateTime(), nullable=True),
         sa.Column('consumed_at', sa.DateTime(), nullable=True),
+        sa.Column('order_item_id', sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(['medication_id'], ['medications.id'], ),
         sa.ForeignKeyConstraint(['scanned_item_id'], ['scanned_items.id'], ),
+        sa.ForeignKeyConstraint(['order_item_id'], ['order_items.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     
-    # Create index for faster lookups
-    op.create_index('ix_package_inventory_status', 'package_inventory', ['status'])
-    op.create_index('ix_package_inventory_medication_id', 'package_inventory', ['medication_id'])
+        # Create index for faster lookups
+        op.create_index('ix_package_inventory_status', 'package_inventory', ['status'])
+        op.create_index('ix_package_inventory_medication_id', 'package_inventory', ['medication_id'])
+    else:
+        # If table exists, check if order_item_id column is missing
+        result = conn.execute(sa.text("PRAGMA table_info(package_inventory)"))
+        columns = [row[1] for row in result]
+        
+        if 'order_item_id' not in columns:
+            op.add_column('package_inventory', 
+                sa.Column('order_item_id', sa.Integer(), nullable=True))
 
 
 def downgrade() -> None:

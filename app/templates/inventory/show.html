@@ -33,7 +33,11 @@
                                 {{ total_units }}
                             </div>
                             <p class="lead">{{ _('Total Units') }}</p>
-                            {% if package_units > 0 %}
+                            {% if medication.uses_package_system %}
+                            <small class="text-success">
+                                <i class="fas fa-box me-1"></i>{{ _('Package-based inventory') }}
+                            </small>
+                            {% elif package_units > 0 %}
                             <small class="text-muted">
                                 {% if inventory.current_count > 0 %}
                                     <span class="text-warning">{{ _('Legacy') }}: {{ inventory.current_count }}</span> +
@@ -94,8 +98,8 @@
     </div>
 </div>
 
-<!-- Legacy Inventory Management - Only show if legacy inventory exists or no packages configured -->
-{% if inventory.current_count > 0 or not package_inventory %}
+<!-- Legacy Inventory Management - Only show if NOT using package-only system -->
+{% if not medication.uses_package_system %}
     {% if package_inventory %}
     <!-- Orange warning card wrapper for legacy system when packages are being used -->
     <div class="card border-warning mb-4">

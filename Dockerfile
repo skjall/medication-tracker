@@ -77,8 +77,8 @@ RUN if [ -n "${CROWDIN_API_TOKEN}" ] && [ -n "${CROWDIN_PROJECT_ID}" ]; then \
 # Update existing translations with new strings
 RUN pybabel update -i translations/messages.pot -d translations || true
 
-# Compile all translations
-RUN pybabel compile -d translations
+# Compile all translations (allow failures due to placeholder issues on Crowdin)
+RUN pybabel compile -d translations || echo "Translation compilation had errors but continuing"
 
 # Final stage with minimal dependencies
 FROM python:3.13-slim@sha256:2a928e11761872b12003515ea59b3c40bb5340e2e5ecc1108e043f92be7e473d

@@ -655,20 +655,27 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                 missed_deductions.sort()
 
                 for deduction_time in missed_deductions:
-                    # Deduct the scheduled amount
+                    # Deduct the scheduled amount using intelligent deduction
                     amount = schedule.units_per_dose
                     if amount > 0 and medication.total_inventory_count >= amount:
-                        medication.inventory.update_count(
-                            -amount,
+                        result = medication.deduct_units(
+                            amount,
                             f"Automatic deduction (retroactive): {amount} units \
                                 for {deduction_time.strftime('%d.%m.%Y %H:%M')}",
                         )
-                        action_count += 1
-                        med_deducted = True
-
-                        logger.info(
-                            f"Retroactively deducted {amount} units from {medication.name} for {deduction_time.isoformat()}"
-                        )
+                        if result['success']:
+                            action_count += 1
+                            med_deducted = True
+                            logger.info(
+                                f"Retroactively deducted {amount} units from {medication.name} for {deduction_time.isoformat()}"
+                            )
+                            # Log deduction details if packages were used
+                            if result['packages_deducted']:
+                                logger.debug(f"Package deduction details: {result['notes']}")
+                        else:
+                            logger.warning(
+                                f"Failed to deduct {amount} units from {medication.name}: {result['notes']}"
+                            )
                     else:
                         logger.warning(
                             f"Not enough inventory to deduct {amount} units from \

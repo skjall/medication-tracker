@@ -319,18 +319,33 @@ def restore_database():
                 "Checking and applying migrations after database restore"
             )
 
+            # Re-establish database connection with the new database
+            db.engine.dispose()
+            db.session.remove()
+            
+            # Import the verify function
+            from migration_utils import verify_schema_integrity
+            
             # Check if the restored database needs migration tracking
             check_and_fix_version_tracking(current_app)
+            
+            # Force schema integrity check - this will reset version if needed
+            if not verify_schema_integrity(current_app):
+                logger.info("Restored database has schema issues - forcing migration")
 
-            # Run any pending migrations
+            # Run any pending migrations (will now check schema integrity)
             if run_migrations_with_lock(current_app):
                 logger.info(
                     "Migrations applied successfully after database restore"
                 )
             else:
                 logger.warning(
-                    "Migration check failed after restore - may need manual intervention"
+                    "Migration check failed after restore - continuing anyway"
                 )
+            
+            # Dispose and recreate connection again to ensure fresh schema
+            db.engine.dispose()
+            db.session.remove()
 
         except Exception as migration_error:
             logger.error(
@@ -522,15 +537,31 @@ def data_management():
     """
     logger.info("Loading data management page")
 
-    # Get database statistics
-    med_count = Medication.query.count()
-    inventory_count = Inventory.query.count()
-    visit_count = PhysicianVisit.query.count()
-    physician_count = Physician.query.count()
-    order_count = Order.query.count()
-    order_item_count = OrderItem.query.count()
-    schedule_count = MedicationSchedule.query.count()
-    inventory_logs_count = InventoryLog.query.count()
+    # Get database statistics with error handling for missing columns
+    def safe_count(model, model_name):
+        """Safely count records, returning 0 if there's a database error."""
+        try:
+            return model.query.count()
+        except Exception as e:
+            logger.warning(f"Could not count {model_name}: {e}")
+            # Try to trigger migration if there's a schema issue
+            if "no such column" in str(e).lower():
+                logger.info(f"Schema issue detected for {model_name}, attempting migration")
+                try:
+                    from migration_utils import run_migrations_with_lock
+                    run_migrations_with_lock(current_app)
+                except Exception as migration_error:
+                    logger.error(f"Auto-migration failed: {migration_error}")
+            return 0
+
+    med_count = safe_count(Medication, "medications")
+    inventory_count = safe_count(Inventory, "inventory")
+    visit_count = safe_count(PhysicianVisit, "visits")
+    physician_count = safe_count(Physician, "physicians")
+    order_count = safe_count(Order, "orders")
+    order_item_count = safe_count(OrderItem, "order_items")
+    schedule_count = safe_count(MedicationSchedule, "schedules")
+    inventory_logs_count = safe_count(InventoryLog, "inventory_logs")
 
     # Get database path for display
     data_dir = get_data_directory()
