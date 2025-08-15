@@ -17,8 +17,7 @@ if [ -f /app/data/.migration_lock ]; then
     rm -f /app/data/.migration_lock
 fi
 
-# Start gunicorn with single worker
-# The worker will handle migrations during app initialization
-# This ensures the same process that runs migrations also serves requests
+# Create the application instance once
+# This prevents multiple initializations and migration lock issues
 echo "Starting gunicorn server..."
-exec gunicorn --bind 0.0.0.0:8087 --workers 1 --threads 4 --timeout 120 "main:create_app()"
+exec gunicorn --bind 0.0.0.0:8087 --workers 1 --threads 4 --timeout 120 --preload "main:app"

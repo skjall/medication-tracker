@@ -235,15 +235,16 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     return app
 
 
-# Application entry point
-if __name__ == "__main__":
-    app = create_app()
+# Create the application instance for Gunicorn
+app = create_app()
 
+# Fix existing data in the database if needed
+fix_database_timezones(app)
+
+# Application entry point for development
+if __name__ == "__main__":
     # Get logger
     logger = logging.getLogger(__name__)
-
-    # Fix existing data in the database if needed
-    fix_database_timezones(app)
 
     # Start the application
     port = int(os.environ.get("PORT", 8087))
