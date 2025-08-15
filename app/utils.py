@@ -20,6 +20,19 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
+def get_data_directory():
+    """
+    Get the correct data directory path.
+    In Docker, use /app/data; locally use app.root_path/data
+    """
+    if os.path.exists('/app/data'):
+        # Running in Docker container
+        return '/app/data'
+    else:
+        # Running locally
+        return os.path.join(current_app.root_path, 'data')
+
+
 def min_value(a: T, b: T) -> T:
     """
     Return the minimum of two values.
@@ -166,11 +179,11 @@ def create_database_backup() -> str:
     from datetime import datetime
 
     # Get the database path from app config
-    db_path = os.path.join(current_app.root_path, "data", "medication_tracker.db")
+    db_path = os.path.join(get_data_directory(), "medication_tracker.db")
 
     # Create backup filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_dir = os.path.join(current_app.root_path, "data", "backups")
+    backup_dir = os.path.join(get_data_directory(), "backups")
 
     # Ensure backup directory exists
     os.makedirs(backup_dir, exist_ok=True)
@@ -192,7 +205,7 @@ def optimize_database() -> Tuple[bool, str]:
     """
     import sqlite3
 
-    db_path = os.path.join(current_app.root_path, "data", "medication_tracker.db")
+    db_path = os.path.join(get_data_directory(), "medication_tracker.db")
 
     try:
         # Connect to the database

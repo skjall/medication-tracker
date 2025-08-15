@@ -55,17 +55,26 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     # Create and configure the app
     app = Flask(__name__)
 
+    # Determine the correct data directory path
+    # In Docker, use /app/data; locally use app.root_path/data
+    if os.path.exists('/app/data'):
+        # Running in Docker container
+        data_dir = '/app/data'
+    else:
+        # Running locally
+        data_dir = os.path.join(app.root_path, 'data')
+    
     # Ensure data directory exists
-    os.makedirs(os.path.join(app.root_path, "data"), exist_ok=True)
+    os.makedirs(data_dir, exist_ok=True)
     # Also create a backups directory
-    os.makedirs(os.path.join(app.root_path, "data", "backups"), exist_ok=True)
+    os.makedirs(os.path.join(data_dir, "backups"), exist_ok=True)
 
     # Default configuration
     app.config.update(
         SECRET_KEY=os.environ.get(
             "SECRET_KEY", "dev"
         ),  # Use a secure key in production
-        SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(app.root_path, 'data', 'medication_tracker.db')}",
+        SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(data_dir, 'medication_tracker.db')}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         DEBUG=os.environ.get("FLASK_ENV", "development") == "development",
         MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max upload size

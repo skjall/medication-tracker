@@ -29,7 +29,7 @@ from models import (
     ScheduleType,
     db,
 )
-from utils import ensure_timezone_utc, format_date, format_datetime, from_local_timezone
+from utils import ensure_timezone_utc, format_date, format_datetime, from_local_timezone, get_data_directory
 
 
 # Get a logger specific to this module
@@ -349,11 +349,11 @@ def create_database_backup() -> str:
         Path to the backup file
     """
     # Get the database path from app config
-    db_path = os.path.join(current_app.root_path, "data", "medication_tracker.db")
+    db_path = os.path.join(get_data_directory(), "medication_tracker.db")
 
     # Create backup filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_dir = os.path.join(current_app.root_path, "data", "backups")
+    backup_dir = os.path.join(get_data_directory(), "backups")
 
     # Ensure backup directory exists
     os.makedirs(backup_dir, exist_ok=True)
@@ -549,7 +549,7 @@ def optimize_database() -> Tuple[bool, str]:
     """
     import sqlite3
 
-    db_path = os.path.join(current_app.root_path, "data", "medication_tracker.db")
+    db_path = os.path.join(get_data_directory(), "medication_tracker.db")
 
     try:
         # Connect to the database

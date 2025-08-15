@@ -11,7 +11,7 @@ import shutil
 import sqlite3
 import tempfile
 from datetime import datetime, timezone
-from utils import to_local_timezone
+from utils import to_local_timezone, get_data_directory
 
 # Third-party imports
 import pytz
@@ -281,10 +281,11 @@ def restore_database():
             return redirect(url_for("settings.data_management"))
 
         # Create backup of current database before restore
-        backup_dir = os.path.join(current_app.root_path, "data", "backups")
+        data_dir = get_data_directory()
+        backup_dir = os.path.join(data_dir, "backups")
         os.makedirs(backup_dir, exist_ok=True)
         current_db_path = os.path.join(
-            current_app.root_path, "data", "medication_tracker.db"
+            data_dir, "medication_tracker.db"
         )
         pre_restore_backup = os.path.join(
             backup_dir,
@@ -532,7 +533,8 @@ def data_management():
     inventory_logs_count = InventoryLog.query.count()
 
     # Get database path for display
-    db_path = os.path.join("data", "medication_tracker.db")
+    data_dir = get_data_directory()
+    db_path = os.path.join(data_dir, "medication_tracker.db")
 
     # Get database size - in Docker, the database is in the app directory
     db_file_path = os.path.join(current_app.root_path, db_path)

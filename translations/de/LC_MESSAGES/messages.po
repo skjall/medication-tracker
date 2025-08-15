@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-15 13:30+0200\n"
-"PO-Revision-Date: 2025-08-15 11:30\n"
+"POT-Creation-Date: 2025-08-15 14:11+0200\n"
+"PO-Revision-Date: 2025-08-15 12:11\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -18,13 +18,13 @@ msgstr ""
 "X-Crowdin-File-ID: 11\n"
 "Language: de_DE\n"
 
-#: main.py:117 templates/index.html:3 templates/index.html:9
+#: main.py:126 templates/index.html:3 templates/index.html:9
 #: templates/layout.html:32 templates/settings/system.html:11
 #: templates/test_translation.html:5
 msgid "Dashboard"
 msgstr "Übersicht"
 
-#: main.py:118 templates/index.html:43 templates/visits/index.html:104
+#: main.py:127 templates/index.html:43 templates/visits/index.html:104
 msgid "No upcoming physician visits scheduled."
 msgstr "Keine Arzttermine geplant."
 
@@ -218,8 +218,8 @@ msgstr "Arzt '{}' wurde erfolgreich gelöscht."
 msgid "Error deleting physician: {}"
 msgstr "Fehler beim Löschen des Arztes: {}"
 
-#: routes/prescription_templates.py:61 routes/settings.py:366
-#: routes/settings.py:583
+#: routes/prescription_templates.py:61 routes/settings.py:367
+#: routes/settings.py:585
 msgid "No file part"
 msgstr "Kein Dateiteil"
 
@@ -356,7 +356,7 @@ msgstr "Du musst bestätigen, dass die Wiederherstellung alle aktuellen Daten er
 msgid "No file provided for restore"
 msgstr "Keine Datei für Wiederherstellung vorhanden"
 
-#: routes/settings.py:243 routes/settings.py:371 routes/settings.py:588
+#: routes/settings.py:243 routes/settings.py:372 routes/settings.py:590
 msgid "No file selected"
 msgstr "Keine Datei ausgewählt"
 
@@ -372,123 +372,123 @@ msgstr "Ungültige Datenbankdatei: fehlende erforderliche Tabellen"
 msgid "Invalid database file: {}"
 msgstr "Ungültige Datenbankdatei: {}"
 
-#: routes/settings.py:339
+#: routes/settings.py:340
 msgid "Database restored but migration failed: {}"
 msgstr "Datenbank wiederhergestellt, aber Migration fehlgeschlagen: {}"
 
-#: routes/settings.py:347
+#: routes/settings.py:348
 msgid "Database successfully restored and migrations applied!"
 msgstr "Datenbank erfolgreich wiederhergestellt und Migrationen angewendet!"
 
-#: routes/settings.py:356
+#: routes/settings.py:357
 msgid "Error restoring database: {}"
 msgstr "Fehler beim Wiederherstellen der Datenbank: {}"
 
-#: routes/settings.py:390 routes/settings.py:638
+#: routes/settings.py:391 routes/settings.py:640
 msgid "... and {} more errors"
 msgstr "... und {} weitere Fehler"
 
-#: routes/settings.py:396
+#: routes/settings.py:397
 msgid "Successfully imported {} medications"
 msgstr "{} Medikamente erfolgreich importiert"
 
-#: routes/settings.py:402
+#: routes/settings.py:403
 msgid "No medications were imported"
 msgstr "Keine Medikamente wurden importiert"
 
-#: routes/settings.py:405
+#: routes/settings.py:406
 msgid "Import of {} is not yet implemented"
 msgstr "Import von {} ist noch nicht implementiert"
 
-#: routes/settings.py:438
+#: routes/settings.py:439
 msgid "Please keep at least 30 days of logs"
 msgstr "Bitte halte mindestens 30 Tage Logs"
 
-#: routes/settings.py:444
+#: routes/settings.py:445
 msgid "Successfully removed {} old inventory logs"
 msgstr "{} alte Bestandprotokolle erfolgreich entfernt"
 
-#: routes/settings.py:458
+#: routes/settings.py:459
 msgid "Verification text doesn't match. Data was not reset."
 msgstr "Bestätigungstext stimmt nicht überein. Die Daten wurden nicht zurückgesetzt."
 
-#: routes/settings.py:466
+#: routes/settings.py:467
 msgid "Backup created at {}"
 msgstr "Sicherung erstellt am {}"
 
-#: routes/settings.py:474
+#: routes/settings.py:475
 msgid "All data has been reset. The application has been restored to initial state."
 msgstr "Alle Daten wurden zurückgesetzt. Die Anwendung wurde in den Ausgangszustand wiederhergestellt."
 
-#: routes/settings.py:481
+#: routes/settings.py:482
 msgid "Error resetting data: {}"
 msgstr "Fehler beim Zurücksetzen der Daten: {}"
 
-#: routes/settings.py:503
+#: routes/settings.py:504
 msgid "Invalid timezone: {}"
 msgstr "Ungültige Zeitzone: {}"
 
-#: routes/settings.py:511
+#: routes/settings.py:512
 msgid "Application timezone updated to {}"
 msgstr "Zeitzone der Anwendung aktualisiert auf {}"
 
-#: routes/settings.py:630
+#: routes/settings.py:632
 msgid "Unknown import type: {}"
 msgstr "Unbekannter Importtyp: {}"
 
-#: routes/settings.py:644
+#: routes/settings.py:646
 msgid "Successfully imported {} {} records"
 msgstr "{} {} {} Einträge erfolgreich importiert"
 
-#: routes/settings.py:650
+#: routes/settings.py:652
 msgid "No {} were imported"
 msgstr "Keine {} wurden importiert"
 
-#: routes/settings.py:653
+#: routes/settings.py:655
 msgid "Error during import: {}"
 msgstr "Fehler beim Import: {}"
 
-#: routes/settings.py:718
+#: routes/settings.py:720
 msgid "Unable to check for updates"
 msgstr "Suche nach Updates nicht möglich"
 
-#: routes/settings.py:728
+#: routes/settings.py:730
 msgid "Connection timeout"
 msgstr "Verbindungs-Timeout"
 
-#: routes/settings.py:757
+#: routes/settings.py:759
 msgid "Verification text doesn't match. Expected '{}'. Data was not reset."
 msgstr "Bestätigungstext stimmt nicht überein. Die Daten wurden nicht zurückgesetzt."
 
-#: routes/settings.py:776
+#: routes/settings.py:778
 msgid "All medication data has been reset"
 msgstr "Alle Medikamentendaten wurden zurückgesetzt"
 
-#: routes/settings.py:783
+#: routes/settings.py:785
 msgid "All inventory data has been reset ({} records)"
 msgstr "Alle Bestandsdaten wurden zurückgesetzt ({} Datensätze)"
 
-#: routes/settings.py:794
+#: routes/settings.py:796
 msgid "All order data has been reset ({} records)"
 msgstr "Alle Bestelldaten wurden zurückgesetzt ({} Datensätze)"
 
-#: routes/settings.py:803
+#: routes/settings.py:805
 msgid "All visit data has been reset ({} records)"
 msgstr "Alle Termindaten wurden zurückgesetzt ({} Datensätze)"
 
-#: routes/settings.py:812
+#: routes/settings.py:814
 msgid "All schedule data has been reset ({} records)"
 msgstr "Alle Fahrplandaten wurden zurückgesetzt ({} Datensätze)"
 
-#: routes/settings.py:823
+#: routes/settings.py:825
 msgid "All physician data has been reset ({} records)"
 msgstr "Alle Daten des Arztes wurden zurückgesetzt ({} Datensätze)"
 
-#: routes/settings.py:830
+#: routes/settings.py:832
 msgid "Unknown data type: {}"
 msgstr "Unbekannter Datentyp: {}"
 
-#: routes/settings.py:835
+#: routes/settings.py:837
 msgid "Error resetting {}: {}"
 msgstr "Fehler beim Zurücksetzen von {}: {}"
 

@@ -55,8 +55,13 @@ def get_database_path():
     Determine the absolute path for the SQLite database file.
     Creates the necessary directories if they don't exist.
     """
-    # Construct the SQLite database path
-    db_path = os.path.join(base_dir, 'app', 'data', 'medication_tracker.db')
+    # Check if running in Docker
+    if os.path.exists('/app/data'):
+        # Running in Docker container
+        db_path = '/app/data/medication_tracker.db'
+    else:
+        # Running locally
+        db_path = os.path.join(base_dir, 'app', 'data', 'medication_tracker.db')
 
     # Ensure the directory exists
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
