@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-15 09:59+0200\n"
+"POT-Creation-Date: 2025-08-15 10:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,13 +17,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.15.0\n"
 
-#: main.py:460 templates/index.html:3 templates/index.html:9
+#: main.py:446 templates/index.html:3 templates/index.html:9
 #: templates/layout.html:32 templates/settings/system.html:11
 #: templates/test_translation.html:5
 msgid "Dashboard"
 msgstr ""
 
-#: main.py:461 templates/index.html:43 templates/visits/index.html:104
+#: main.py:447 templates/index.html:43 templates/visits/index.html:104
 msgid "No upcoming physician visits scheduled."
 msgstr ""
 

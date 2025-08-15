@@ -12,38 +12,13 @@ if [ -f /app/data/migration.lock ]; then
     echo "Removing stale migration lock..."
     rm -f /app/data/migration.lock
 fi
-
-# Run migrations before starting the app (if not disabled)
-if [ "$RUN_MIGRATIONS" != "false" ]; then
-    echo "Running database migrations..."
-    
-    # Use Python to run migrations with proper app context
-    python -c "
-import os
-import sys
-os.chdir('/app')
-
-# Set environment to prevent worker migration attempts
-os.environ['IS_STARTUP_MIGRATION'] = 'true'
-
-from main import create_app
-from migration_utils import run_migrations_with_lock
-
-app = create_app()
-with app.app_context():
-    success = run_migrations_with_lock(app)
-    if not success:
-        print('Migration failed or timed out')
-        sys.exit(1)
-    print('Migrations completed successfully')
-"
-    if [ $? -ne 0 ]; then
-        echo "Migration failed, exiting..."
-        exit 1
-    fi
+if [ -f /app/data/.migration_lock ]; then
+    echo "Removing stale migration lock..."
+    rm -f /app/data/.migration_lock
 fi
 
-# Start gunicorn with single worker (avoids SQLite concurrency issues)
-# This is a single-user application, so one worker is sufficient
+# Start gunicorn with single worker
+# The worker will handle migrations during app initialization
+# This ensures the same process that runs migrations also serves requests
 echo "Starting gunicorn server..."
 exec gunicorn --bind 0.0.0.0:8087 --workers 1 --threads 4 --timeout 120 "main:create_app()"

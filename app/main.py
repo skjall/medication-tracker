@@ -15,7 +15,7 @@ from typing import Any, Dict, Optional  # noqa: E402
 
 # Third-party imports
 from flask import Flask, render_template, request, session  # noqa: E402
-from flask_babel import Babel, get_locale, gettext, ngettext  # noqa: E402
+from flask_babel import Babel, gettext, ngettext  # noqa: E402
 
 # Local application imports
 from logging_config import configure_logging  # noqa: E402
@@ -27,7 +27,16 @@ from models import (  # noqa: E402
     PhysicianVisit,
     Order,
     Inventory,
-    InventoryLog
+    InventoryLog,
+    Physician,  # noqa: F401 - needed for db.create_all()
+    OrderItem,  # noqa: F401 - needed for db.create_all()
+    ScheduleType,  # noqa: F401 - needed for db.create_all()
+    MedicationSchedule,
+    Settings,
+    PrescriptionTemplate,  # noqa: F401 - needed for db.create_all()
+    MedicationPackage,  # noqa: F401 - needed for db.create_all()
+    ScannedItem,  # noqa: F401 - needed for db.create_all()
+    PackageInventory  # noqa: F401 - needed for db.create_all()
 )
 from task_scheduler import TaskScheduler  # noqa: E402
 
@@ -215,7 +224,6 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
                 logger.info("Database stamped to latest migration version")
                 
                 # Create default settings
-                from models.settings import Settings
                 if not Settings.query.first():
                     default_settings = Settings()
                     db.session.add(default_settings)
@@ -231,22 +239,9 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
             stamp_database_to_latest(app)
         else:
             # Database exists with migration tracking
-            # Skip migrations if:
-            # 1. They were already run during startup (IS_STARTUP_MIGRATION set)
-            # 2. We're in a Gunicorn worker process (detected by checking for master process)
-            # 3. Migrations are explicitly disabled
+            # Run migrations unless explicitly disabled
             
-            # Check if we're in a Gunicorn worker
-            # Gunicorn sets SERVER_SOFTWARE environment variable
-            is_gunicorn_worker = (
-                'gunicorn' in os.environ.get('SERVER_SOFTWARE', '').lower() or
-                'gunicorn' in sys.modules
-            )
-            
-            # Only run migrations if not in a worker and not already done at startup
-            if (not is_gunicorn_worker and 
-                not os.environ.get('IS_STARTUP_MIGRATION') and 
-                os.environ.get('RUN_MIGRATIONS') != 'false'):
+            if os.environ.get('RUN_MIGRATIONS') != 'false':
                 logger.info("Database already initialized with migration tracking - checking for pending migrations")
                 from migration_utils import run_migrations_with_lock
                 if run_migrations_with_lock(app):
@@ -254,14 +249,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
                 else:
                     logger.warning("Migration run failed or timed out - continuing anyway")
             else:
-                reason = []
-                if is_gunicorn_worker:
-                    reason.append("Gunicorn worker")
-                if os.environ.get('IS_STARTUP_MIGRATION'):
-                    reason.append("startup migration completed")
-                if os.environ.get('RUN_MIGRATIONS') == 'false':
-                    reason.append("migrations disabled")
-                logger.debug(f"Skipping migrations ({', '.join(reason)})")
+                logger.debug("Skipping migrations (migrations disabled)")
 
     # Register blueprints (routes)
     from routes.medications import medication_bp
@@ -310,8 +298,6 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         local_now = to_local_timezone(utc_now)
 
         # Get settings for access in all templates
-        from models import Settings
-
         settings = Settings.get_settings()
 
         # Return both UTC and local time, plus settings
@@ -654,8 +640,6 @@ def fix_database_timezones(app):
                 log.timestamp = ensure_timezone_utc(log.timestamp)
 
             # Fix MedicationSchedule dates
-            from models import MedicationSchedule
-
             schedules = MedicationSchedule.query.all()
             for schedule in schedules:
                 if schedule.last_deduction:
