@@ -27,7 +27,12 @@ class MigrationLock:
 
     def __init__(self, app: Flask):
         self.app = app
-        self.lock_file_path = os.path.join(app.root_path, "data", ".migration_lock")
+        # Check if running in Docker
+        if os.path.exists('/app/data'):
+            data_dir = '/app/data'
+        else:
+            data_dir = os.path.join(app.root_path, 'data')
+        self.lock_file_path = os.path.join(data_dir, ".migration_lock")
         self.acquired = False
 
     def __enter__(self):

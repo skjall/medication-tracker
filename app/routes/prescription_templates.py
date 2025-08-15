@@ -27,7 +27,7 @@ from models import (
     PrescriptionTemplate,
     db,
 )
-from utils import to_local_timezone
+from utils import to_local_timezone, get_data_directory
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ def new():
 
         # Save the file
         templates_dir = os.path.join(
-            current_app.root_path, "data", "templates"
+            get_data_directory(), "templates"
         )
         os.makedirs(templates_dir, exist_ok=True)
 
@@ -212,7 +212,7 @@ def delete(id: int):
     # Delete the template file
     try:
         file_path = os.path.join(
-            current_app.root_path, "data", "templates", template.template_file
+            get_data_directory(), "templates", template.template_file
         )
         if os.path.exists(file_path):
             os.remove(file_path)
@@ -310,7 +310,7 @@ def edit(id: int):
 
             # Save the new file
             templates_dir = os.path.join(
-                current_app.root_path, "data", "templates"
+                get_data_directory(), "templates"
             )
 
             # Secure the filename

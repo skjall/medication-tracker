@@ -170,8 +170,9 @@ def generate_prescription_pdf(
 
         # Create the output directory if it doesn't exist
         from flask import current_app
+        from utils import get_data_directory
 
-        output_dir = os.path.join(current_app.root_path, "data", "prescriptions")
+        output_dir = os.path.join(get_data_directory(), "prescriptions")
         os.makedirs(output_dir, exist_ok=True)
 
         # Generate a unique filename

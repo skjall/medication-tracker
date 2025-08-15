@@ -11,6 +11,7 @@ from typing import Dict, Optional
 
 # Third-party imports
 from flask import current_app
+from utils import get_data_directory
 from sqlalchemy import Boolean, DateTime, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -60,7 +61,7 @@ class PrescriptionTemplate(db.Model):
     def template_path(self) -> str:
         """Get the full path to the template file."""
         return os.path.join(
-            current_app.root_path, "data", "templates", self.template_file
+            get_data_directory(), "templates", self.template_file
         )
 
     @property

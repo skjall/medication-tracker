@@ -53,7 +53,11 @@ def discover_languages(app):
         'tl': 'Filipino',
     }
     
-    translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
+    # Check if running in Docker
+    if os.path.exists('/app/translations'):
+        translations_dir = '/app/translations'
+    else:
+        translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
     
     # Scan translations directory for language folders
     if os.path.exists(translations_dir):
@@ -135,7 +139,11 @@ def get_available_languages(app):
     """Return only languages with >80% translation coverage."""
     available = {}
     coverage_threshold = 0.8
-    translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
+    # Check if running in Docker
+    if os.path.exists('/app/translations'):
+        translations_dir = '/app/translations'
+    else:
+        translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
     
     # Get current languages (dynamically discovered)
     all_languages = app.config['LANGUAGES']
@@ -162,7 +170,11 @@ def get_available_languages(app):
 
 def setup_babel(app):
     """Configure and initialize Babel for internationalization."""
-    translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
+    # Check if running in Docker
+    if os.path.exists('/app/translations'):
+        translations_dir = '/app/translations'
+    else:
+        translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
     
     # Debug: Check if translations directory exists  
     logger.debug(f"App root path: {app.root_path}")
@@ -224,7 +236,11 @@ def register_translation_routes(app):
     # Debug route for translation coverage (admin use)
     @app.route('/debug/translation-coverage')
     def debug_translation_coverage():
-        translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
+        # Check if running in Docker
+        if os.path.exists('/app/translations'):
+            translations_dir = '/app/translations'
+        else:
+            translations_dir = os.path.join(os.path.dirname(app.root_path), 'translations')
         coverage_data = {}
         
         for code, name in app.config['LANGUAGES'].items():
