@@ -10,17 +10,23 @@ chmod -R 777 /app/data /app/logs
 # Only run migrations with a single process
 if [ "$RUN_MIGRATIONS" != "false" ]; then
     echo "Running database migrations..."
+    
+    # Use Python to run migrations directly with Alembic, not through the app
     python -c "
-from main import create_app
-from migration_utils import run_migrations_with_lock
+import os
 import sys
+os.chdir('/app')
+from alembic import command
+from alembic.config import Config
 
-app = create_app()
-with app.app_context():
-    if not run_migrations_with_lock(app):
-        print('Migration failed!')
-        sys.exit(1)
-print('Migrations completed successfully')
+try:
+    cfg = Config('alembic.ini')
+    cfg.set_main_option('sqlalchemy.url', 'sqlite:////app/data/medication_tracker.db')
+    command.upgrade(cfg, 'head')
+    print('Migrations completed successfully')
+except Exception as e:
+    print(f'Migration failed: {e}')
+    sys.exit(1)
 "
     if [ $? -ne 0 ]; then
         echo "Migration failed, exiting..."
