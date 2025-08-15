@@ -24,6 +24,8 @@ else:
     import app.models as models
 
 # Create Flask app to ensure all models are loaded
+# IMPORTANT: Set environment variable to prevent migration recursion
+os.environ['RUN_MIGRATIONS'] = 'false'
 app = create_app()
 # Use app context to load models
 with app.app_context():
