@@ -23,15 +23,21 @@ else:
     from app.models.base import db
     import app.models as models
 
-# Create Flask app to ensure all models are loaded
-app = create_app()
-# Use app context to load models
-with app.app_context():
-    # Models are already imported above
-    pass
+# Only create Flask app if we're not already in a migration context
+# This prevents double initialization when migrations are run from within the app
+if not os.environ.get('MIGRATION_IN_PROGRESS'):
+    # Create Flask app to ensure all models are loaded
+    app = create_app()
+    # Use app context to load models
+    with app.app_context():
+        # Models are already imported above
+        pass
 
-    # Remove reload of models to avoid re-defining tables
-    # Simply import to ensure they are loaded
+        # Remove reload of models to avoid re-defining tables
+        # Simply import to ensure they are loaded
+else:
+    # We're already in a migration context, models should be loaded
+    pass
 
 # This is the Alembic Config object
 config = context.config

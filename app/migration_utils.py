@@ -351,15 +351,23 @@ def run_migrations(app: Flask) -> bool:
     try:
         logger.info("Running database migrations...")
 
-        # Get Alembic config
-        config = get_alembic_config(app)
+        # Set environment variable to prevent double initialization
+        os.environ['MIGRATION_IN_PROGRESS'] = '1'
+        
+        try:
+            # Get Alembic config
+            config = get_alembic_config(app)
 
-        # Run the migration
-        with app.app_context():
-            command.upgrade(config, "head")
+            # Run the migration
+            with app.app_context():
+                command.upgrade(config, "head")
 
-        logger.info("Database migrations completed successfully.")
-        return True
+            logger.info("Database migrations completed successfully.")
+            return True
+        finally:
+            # Always clean up the environment variable
+            os.environ.pop('MIGRATION_IN_PROGRESS', None)
+            
     except Exception as e:
         logger.error(f"Migration failed: {e}")
         import traceback
