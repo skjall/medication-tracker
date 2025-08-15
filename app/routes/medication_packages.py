@@ -38,6 +38,14 @@ def create(medication_id):
     national_number = request.form.get('national_number', '').strip()
     gtin = request.form.get('gtin', '').strip()
     
+    # Clean PZN input (common format: "PZN-12345678" or "PZN - 12345678")
+    if national_number and national_number.upper().startswith('PZN'):
+        # Extract only the digits from PZN entries
+        import re
+        digits = re.findall(r'\d+', national_number)
+        if digits:
+            national_number = ''.join(digits)
+    
     # Validate inputs
     if not package_size or not quantity:
         flash(_('Package size and quantity are required'), 'error')
@@ -141,6 +149,14 @@ def update(medication_id, package_id):
     package.quantity = request.form.get('quantity', type=int)
     national_number = request.form.get('national_number', '').strip()
     gtin = request.form.get('gtin', '').strip()
+    
+    # Clean PZN input (common format: "PZN-12345678" or "PZN - 12345678")
+    if national_number and national_number.upper().startswith('PZN'):
+        # Extract only the digits from PZN entries
+        import re
+        digits = re.findall(r'\d+', national_number)
+        if digits:
+            national_number = ''.join(digits)
     
     # Import the parser function
     from scanner_parser import extract_national_number

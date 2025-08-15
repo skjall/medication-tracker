@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-qrcode me-2"></i>{{ _('Edit Scanned Package') }}
+        <i class="fas fa-box-open me-2"></i>{{ _('Edit Package') }}: {{ medication.name }}
     </h1>
     <div>
         <a href="{{ url_for('inventory.show', id=inventory.id) }}" class="btn btn-outline-secondary">
@@ -28,37 +28,54 @@
 
                     <!-- Package Information -->
                     <div class="mb-4">
-                        <h6>{{ _('Package Information') }}</h6>
+                        <h6 class="text-muted mb-3">{{ _('Package Information') }}</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <p><strong>{{ _('Medication') }}:</strong> {{ medication.name }}</p>
-                                <p><strong>{{ _('Package Size') }}:</strong>
-                                    {% if package.medication_package %}
-                                        {{ package.medication_package.package_size }}
-                                    {% else %}
-                                        <span class="text-muted">{{ _('Unknown') }}</span>
-                                    {% endif %}
-                                </p>
-                                <p><strong>{{ _('Original Units') }}:</strong> {{ package.original_units }}</p>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">{{ _('Medication') }}</small>
+                                    <strong>{{ medication.name }}</strong>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">{{ _('Package Size') }}</small>
+                                    <strong>
+                                        {% if scanned_item.package and scanned_item.package.package_size %}
+                                            {{ scanned_item.package.package_size }}
+                                        {% else %}
+                                            N{{ (package.original_units // 10) if package.original_units >= 100 else (1 if package.original_units <= 30 else (2 if package.original_units <= 60 else 3)) }}
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">{{ _('Original Units') }}</small>
+                                    <strong>{{ package.original_units }} {{ _('units') }}</strong>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <p><strong>{{ _('Serial Number') }}:</strong> <code>{{ scanned_item.serial_number }}</code></p>
-                                <p><strong>{{ _('Batch') }}:</strong>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">{{ _('Serial Number') }}</small>
+                                    <code class="fs-6">{{ scanned_item.serial_number }}</code>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">{{ _('Batch') }}</small>
                                     {% if scanned_item.batch_number %}
-                                        <code>{{ scanned_item.batch_number }}</code>
+                                        <code class="fs-6">{{ scanned_item.batch_number }}</code>
                                     {% else %}
-                                        <span class="text-muted">-</span>
+                                        <span class="text-muted">{{ _('Not specified') }}</span>
                                     {% endif %}
-                                </p>
-                                <p><strong>{{ _('Expiry Date') }}:</strong>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">{{ _('Expiry Date') }}</small>
                                     {% if scanned_item.expiry_date %}
-                                        <span class="{% if scanned_item.expiry_date < today %}text-danger fw-bold{% endif %}">
+                                        <span class="{% if scanned_item.expiry_date < today %}text-danger fw-bold{% else %}fw-bold{% endif %}">
                                             {{ scanned_item.expiry_date.strftime('%Y-%m-%d') }}
+                                            {% if scanned_item.expiry_date < today %}
+                                                <i class="fas fa-exclamation-triangle ms-1"></i>
+                                            {% endif %}
                                         </span>
                                     {% else %}
-                                        <span class="text-muted">-</span>
+                                        <span class="text-muted">{{ _('Not specified') }}</span>
                                     {% endif %}
-                                </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -87,16 +104,24 @@
 
                     <div class="mb-4">
                         <label for="current_units" class="form-label">{{ _('Current Units Remaining') }}</label>
-                        <div class="input-group">
+                        <div class="input-group input-group-lg mb-2">
                             <button class="btn btn-outline-secondary" type="button" id="decreaseUnits">
                                 <i class="fas fa-minus"></i>
                             </button>
-                            <input type="number" class="form-control text-center" id="current_units" name="current_units"
-                                   value="{{ package.current_units }}" min="0" max="{{ package.original_units }}">
+                            <input type="number" class="form-control text-center fw-bold" id="current_units" name="current_units"
+                                   value="{{ package.current_units }}" min="0" max="{{ package.original_units }}" style="font-size: 1.5rem;">
                             <button class="btn btn-outline-secondary" type="button" id="increaseUnits">
                                 <i class="fas fa-plus"></i>
                             </button>
-                            <span class="input-group-text">/ {{ package.original_units }}</span>
+                            <span class="input-group-text bg-light">/ {{ package.original_units }}</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 25px;">
+                            {% set usage_percent = ((package.original_units - package.current_units) / package.original_units * 100)|round if package.original_units > 0 else 0 %}
+                            <div class="progress-bar {{ 'bg-success' if usage_percent < 50 else ('bg-warning' if usage_percent < 80 else 'bg-danger') }}" 
+                                 role="progressbar" style="width: {{ usage_percent }}%"
+                                 aria-valuenow="{{ usage_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ usage_percent }}% {{ _('used') }}
+                            </div>
                         </div>
                         <div class="form-text">
                             {{ _('Adjust if you have taken medication from this package without updating the system') }}
@@ -106,16 +131,28 @@
                     <!-- Quick adjustment buttons -->
                     <div class="mb-4">
                         <label class="form-label">{{ _('Quick Adjustments') }}</label>
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-outline-secondary quick-adjust" data-value="-1">-1</button>
-                            <button type="button" class="btn btn-outline-secondary quick-adjust" data-value="-5">-5</button>
-                            <button type="button" class="btn btn-outline-secondary quick-adjust" data-value="-10">-10</button>
-                            <button type="button" class="btn btn-outline-warning quick-adjust" data-value="0">
-                                <i class="fas fa-times"></i> {{ _('Empty') }}
-                            </button>
-                            <button type="button" class="btn btn-outline-success quick-adjust" data-value="{{ package.original_units }}">
-                                <i class="fas fa-undo"></i> {{ _('Reset to Full') }}
-                            </button>
+                        <div class="row g-2">
+                            <div class="col-auto">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-secondary quick-adjust" data-value="-1">
+                                        <i class="fas fa-pills me-1"></i>-1
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary quick-adjust" data-value="-5">
+                                        <i class="fas fa-pills me-1"></i>-5
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary quick-adjust" data-value="-10">
+                                        <i class="fas fa-pills me-1"></i>-10
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-auto ms-auto">
+                                <button type="button" class="btn btn-outline-danger quick-adjust me-2" data-value="0">
+                                    <i class="fas fa-box me-1"></i>{{ _('Mark Empty') }}
+                                </button>
+                                <button type="button" class="btn btn-outline-success quick-adjust" data-value="{{ package.original_units }}">
+                                    <i class="fas fa-undo me-1"></i>{{ _('Reset to Full') }}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
