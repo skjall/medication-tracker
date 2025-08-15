@@ -43,7 +43,7 @@ with app.app_context():
     fi
 fi
 
-# Start gunicorn with multiple workers
-# Use --preload to ensure all workers share the same app instance after migrations
+# Start gunicorn with single worker (avoids SQLite concurrency issues)
+# This is a single-user application, so one worker is sufficient
 echo "Starting gunicorn server..."
-exec gunicorn --bind 0.0.0.0:8087 --workers 4 --threads 2 --timeout 120 --preload "main:create_app()"
+exec gunicorn --bind 0.0.0.0:8087 --workers 1 --threads 4 --timeout 120 "main:create_app()"
