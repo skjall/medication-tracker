@@ -53,7 +53,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         Configured Flask application
     """
     # Create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__)
 
     # Ensure data directory exists
     os.makedirs(os.path.join(app.root_path, "data"), exist_ok=True)
