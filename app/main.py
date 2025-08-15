@@ -235,16 +235,25 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     return app
 
 
-# Create the application instance for Gunicorn
-app = create_app()
+# Create the application instance for Gunicorn (lazy initialization)
+app = None
 
-# Fix existing data in the database if needed
-fix_database_timezones(app)
+def get_app():
+    """Get or create the application instance."""
+    global app
+    if app is None:
+        app = create_app()
+        # Fix existing data in the database if needed
+        fix_database_timezones(app)
+    return app
 
 # Application entry point for development
 if __name__ == "__main__":
     # Get logger
     logger = logging.getLogger(__name__)
+    
+    # Get the app instance
+    app = get_app()
 
     # Start the application
     port = int(os.environ.get("PORT", 8087))

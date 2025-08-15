@@ -17,7 +17,7 @@ if [ -f /app/data/.migration_lock ]; then
     rm -f /app/data/.migration_lock
 fi
 
-# Create the application instance once
-# This prevents multiple initializations and migration lock issues
+# Start gunicorn with application factory
+# The app will be created once per worker on first request
 echo "Starting gunicorn server..."
-exec gunicorn --bind 0.0.0.0:8087 --workers 1 --threads 4 --timeout 120 --preload "main:app"
+exec gunicorn --bind 0.0.0.0:8087 --workers 1 --threads 4 --timeout 120 "main:get_app()"
