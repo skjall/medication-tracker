@@ -44,5 +44,6 @@ with app.app_context():
 fi
 
 # Start gunicorn with multiple workers
+# Use --preload to ensure all workers share the same app instance after migrations
 echo "Starting gunicorn server..."
-exec gunicorn --bind 0.0.0.0:8087 --workers 4 --threads 2 --timeout 120 "main:create_app()"
+exec gunicorn --bind 0.0.0.0:8087 --workers 4 --threads 2 --timeout 120 --preload "main:create_app()"

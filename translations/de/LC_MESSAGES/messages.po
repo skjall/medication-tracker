@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-15 06:47+0000\n"
-"PO-Revision-Date: 2025-08-15 06:47\n"
+"POT-Creation-Date: 2025-08-15 09:38+0200\n"
+"PO-Revision-Date: 2025-08-15 07:38\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.15.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: medication-tracker\n"
 "X-Crowdin-Project-ID: 819294\n"
@@ -29,12 +29,10 @@ msgid "No upcoming physician visits scheduled."
 msgstr "Keine Arzttermine geplant."
 
 #: routes/inventory.py:147
-#, python-brace-format
 msgid "Inventory for {} adjusted by {}"
 msgstr "Bestand für {} angepasst von {}"
 
 #: routes/inventory.py:217
-#, python-brace-format
 msgid "Inventory updated for {}"
 msgstr "Bestand aktualisiert für {}"
 
@@ -86,22 +84,18 @@ msgid "Package deleted successfully"
 msgstr "Packung erfolgreich gelöscht"
 
 #: routes/medications.py:133
-#, python-brace-format
 msgid "Medication '{}' added successfully"
 msgstr "Medikament '{}' erfolgreich hinzugefügt"
 
 #: routes/medications.py:208
-#, python-brace-format
 msgid "Medication '{}' updated successfully"
 msgstr "Medikament '{}' erfolgreich aktualisiert"
 
 #: routes/medications.py:233
-#, python-brace-format
 msgid "Cannot delete '{}' because it has associated orders"
 msgstr "'{}' kann nicht gelöscht werden, da es zugeordnete Bestellungen hat"
 
 #: routes/medications.py:245
-#, python-brace-format
 msgid "Medication '{}' deleted successfully"
 msgstr "Medikament '{}' erfolgreich gelöscht"
 
@@ -130,7 +124,6 @@ msgid "Order deleted successfully"
 msgstr "Bestellung erfolgreich gelöscht"
 
 #: routes/orders.py:462
-#, python-brace-format
 msgid "Order status updated to {}"
 msgstr ""
 
@@ -143,7 +136,6 @@ msgid "Order marked as unfulfilled"
 msgstr "Bestellung als nicht erfüllt markiert"
 
 #: routes/orders.py:507
-#, python-brace-format
 msgid "Order marked as fulfilled and {} items added to inventory"
 msgstr "Bestellung als erfüllt markiert und {} Artikel zum Bestand hinzugefügt"
 
@@ -156,7 +148,6 @@ msgid "Item does not belong to this order"
 msgstr "Artikel gehört nicht zu dieser Bestellung"
 
 #: routes/orders.py:573
-#, python-brace-format
 msgid "Item {} marked as {}"
 msgstr "Artikel {} als {} markiert"
 
@@ -168,7 +159,6 @@ msgid "Unknown"
 msgstr "Unbekannt"
 
 #: routes/orders.py:605
-#, python-brace-format
 msgid "Successfully fulfilled {} items"
 msgstr "{} Artikel erfolgreich erfüllt"
 
@@ -201,22 +191,18 @@ msgid "Physician name is required."
 msgstr "Der Name des Arztes ist erforderlich."
 
 #: routes/physicians.py:76
-#, python-brace-format
 msgid "Physician '{}' has been created successfully."
 msgstr "Arzt '{}' wurde erfolgreich erstellt."
 
 #: routes/physicians.py:83
-#, python-brace-format
 msgid "Error creating physician: {}"
 msgstr "Fehler beim Erstellen des Arztes: {}"
 
 #: routes/physicians.py:131
-#, python-brace-format
 msgid "Physician '{}' has been updated successfully."
 msgstr "Arzt '{}' wurde erfolgreich aktualisiert."
 
 #: routes/physicians.py:138
-#, python-brace-format
 msgid "Error updating physician: {}"
 msgstr "Fehler beim Aktualisieren des Arztes: {}"
 
@@ -225,12 +211,10 @@ msgid "Cannot delete physician who has associated medications or visits. Please 
 msgstr "Arzt, der Medikamente oder Termine hat, kann nicht gelöscht werden. Bitte zuerst neu zuweisen."
 
 #: routes/physicians.py:162
-#, python-brace-format
 msgid "Physician '{}' has been deleted successfully."
 msgstr "Arzt '{}' wurde erfolgreich gelöscht."
 
 #: routes/physicians.py:169
-#, python-brace-format
 msgid "Error deleting physician: {}"
 msgstr "Fehler beim Löschen des Arztes: {}"
 
@@ -248,12 +232,10 @@ msgid "Only PDF files are allowed"
 msgstr "Nur PDF-Dateien sind erlaubt"
 
 #: routes/prescription_templates.py:128
-#, python-brace-format
 msgid "Prescription template '{}' added successfully"
 msgstr "Bestellformular '{}' erfolgreich hinzugefügt"
 
 #: routes/prescription_templates.py:196
-#, python-brace-format
 msgid "Prescription template '{}' activated"
 msgstr "Bestellformular '{}' aktiviert"
 
@@ -262,7 +244,6 @@ msgid "Cannot delete the active template"
 msgstr "Aktive Vorlage kann nicht gelöscht werden"
 
 #: routes/prescription_templates.py:228
-#, python-brace-format
 msgid "Prescription template '{}' deleted"
 msgstr "Bestellformular '{}' gelöscht"
 
@@ -271,7 +252,6 @@ msgid "Error downloading template file"
 msgstr "Fehler beim Herunterladen der Template-Datei"
 
 #: routes/prescription_templates.py:335
-#, python-brace-format
 msgid "Prescription template '{}' updated successfully"
 msgstr "Bestellformular '{}' erfolgreich aktualisiert"
 
@@ -341,7 +321,6 @@ msgid "Schedule deleted successfully"
 msgstr "Zeitplan erfolgreich gelöscht"
 
 #: routes/schedule.py:191
-#, python-brace-format
 msgid "Automatic deduction {} for {}"
 msgstr "Automatischer Abzug {} für {}"
 
@@ -353,25 +332,23 @@ msgstr "Medikamentenverbrauch erfolgreich überprüft"
 msgid "Physician visit settings updated successfully"
 msgstr "Einstellungen für Arzttermine erfolgreich aktualisiert"
 
-#: routes/settings.py:124
+#: routes/settings.py:123
 msgid "Orders for this visit will now be planned to last until the next-but-one visit"
 msgstr "Bestellungen für diesen Termin werden nun bis zum nächsten Termin geplant"
 
-#: routes/settings.py:128
+#: routes/settings.py:127
 msgid "Orders for this visit will now be planned to last until the next visit only"
 msgstr "Bestellungen für diesen Termin werden bis zum nächsten Termin geplant"
 
 #: routes/settings.py:197
-#, python-brace-format
 msgid "Unknown export type: {}"
 msgstr "Unbekannter Exporttyp: {}"
 
 #: routes/settings.py:218
-#, python-brace-format
 msgid "Error creating backup: {}"
 msgstr "Fehler beim Erstellen der Sicherung: {}"
 
-#: routes/settings.py:231
+#: routes/settings.py:230
 msgid "You must confirm that you understand the restore will replace all current data"
 msgstr "Du musst bestätigen, dass die Wiederherstellung alle aktuellen Daten ersetzt"
 
@@ -384,7 +361,6 @@ msgid "No file selected"
 msgstr "Keine Datei ausgewählt"
 
 #: routes/settings.py:251
-#, python-brace-format
 msgid "Invalid file type. Please upload a database file ({})"
 msgstr "Ungültiger Dateityp. Bitte eine Datenbankdatei hochladen ({})"
 
@@ -393,12 +369,10 @@ msgid "Invalid database file: missing required tables"
 msgstr "Ungültige Datenbankdatei: fehlende erforderliche Tabellen"
 
 #: routes/settings.py:280
-#, python-brace-format
 msgid "Invalid database file: {}"
 msgstr "Ungültige Datenbankdatei: {}"
 
 #: routes/settings.py:339
-#, python-brace-format
 msgid "Database restored but migration failed: {}"
 msgstr "Datenbank wiederhergestellt, aber Migration fehlgeschlagen: {}"
 
@@ -407,17 +381,14 @@ msgid "Database successfully restored and migrations applied!"
 msgstr "Datenbank erfolgreich wiederhergestellt und Migrationen angewendet!"
 
 #: routes/settings.py:356
-#, python-brace-format
 msgid "Error restoring database: {}"
 msgstr "Fehler beim Wiederherstellen der Datenbank: {}"
 
 #: routes/settings.py:390 routes/settings.py:638
-#, python-brace-format
 msgid "... and {} more errors"
 msgstr "... und {} weitere Fehler"
 
 #: routes/settings.py:396
-#, python-brace-format
 msgid "Successfully imported {} medications"
 msgstr "{} Medikamente erfolgreich importiert"
 
@@ -426,7 +397,6 @@ msgid "No medications were imported"
 msgstr "Keine Medikamente wurden importiert"
 
 #: routes/settings.py:405
-#, python-brace-format
 msgid "Import of {} is not yet implemented"
 msgstr "Import von {} ist noch nicht implementiert"
 
@@ -435,7 +405,6 @@ msgid "Please keep at least 30 days of logs"
 msgstr "Bitte halte mindestens 30 Tage Logs"
 
 #: routes/settings.py:444
-#, python-brace-format
 msgid "Successfully removed {} old inventory logs"
 msgstr "{} alte Bestandprotokolle erfolgreich entfernt"
 
@@ -444,46 +413,38 @@ msgid "Verification text doesn't match. Data was not reset."
 msgstr "Bestätigungstext stimmt nicht überein. Die Daten wurden nicht zurückgesetzt."
 
 #: routes/settings.py:466
-#, python-brace-format
 msgid "Backup created at {}"
 msgstr "Sicherung erstellt am {}"
 
-#: routes/settings.py:475
+#: routes/settings.py:474
 msgid "All data has been reset. The application has been restored to initial state."
 msgstr "Alle Daten wurden zurückgesetzt. Die Anwendung wurde in den Ausgangszustand wiederhergestellt."
 
 #: routes/settings.py:481
-#, python-brace-format
 msgid "Error resetting data: {}"
 msgstr "Fehler beim Zurücksetzen der Daten: {}"
 
 #: routes/settings.py:503
-#, python-brace-format
 msgid "Invalid timezone: {}"
 msgstr "Ungültige Zeitzone: {}"
 
 #: routes/settings.py:511
-#, python-brace-format
 msgid "Application timezone updated to {}"
 msgstr "Zeitzone der Anwendung aktualisiert auf {}"
 
 #: routes/settings.py:630
-#, python-brace-format
 msgid "Unknown import type: {}"
 msgstr "Unbekannter Importtyp: {}"
 
 #: routes/settings.py:644
-#, python-brace-format
 msgid "Successfully imported {} {} records"
 msgstr "{} {} {} Einträge erfolgreich importiert"
 
 #: routes/settings.py:650
-#, python-brace-format
 msgid "No {} were imported"
 msgstr "Keine {} wurden importiert"
 
 #: routes/settings.py:653
-#, python-brace-format
 msgid "Error during import: {}"
 msgstr "Fehler beim Import: {}"
 
@@ -495,8 +456,7 @@ msgstr "Suche nach Updates nicht möglich"
 msgid "Connection timeout"
 msgstr "Verbindungs-Timeout"
 
-#: routes/settings.py:758
-#, python-brace-format
+#: routes/settings.py:757
 msgid "Verification text doesn't match. Expected '{}'. Data was not reset."
 msgstr "Bestätigungstext stimmt nicht überein. Die Daten wurden nicht zurückgesetzt."
 
@@ -505,37 +465,30 @@ msgid "All medication data has been reset"
 msgstr "Alle Medikamentendaten wurden zurückgesetzt"
 
 #: routes/settings.py:783
-#, python-brace-format
 msgid "All inventory data has been reset ({} records)"
 msgstr "Alle Bestandsdaten wurden zurückgesetzt ({} Datensätze)"
 
 #: routes/settings.py:794
-#, python-brace-format
 msgid "All order data has been reset ({} records)"
 msgstr "Alle Bestelldaten wurden zurückgesetzt ({} Datensätze)"
 
 #: routes/settings.py:803
-#, python-brace-format
 msgid "All visit data has been reset ({} records)"
 msgstr "Alle Termindaten wurden zurückgesetzt ({} Datensätze)"
 
 #: routes/settings.py:812
-#, python-brace-format
 msgid "All schedule data has been reset ({} records)"
 msgstr "Alle Fahrplandaten wurden zurückgesetzt ({} Datensätze)"
 
 #: routes/settings.py:823
-#, python-brace-format
 msgid "All physician data has been reset ({} records)"
 msgstr "Alle Daten des Arztes wurden zurückgesetzt ({} Datensätze)"
 
 #: routes/settings.py:830
-#, python-brace-format
 msgid "Unknown data type: {}"
 msgstr "Unbekannter Datentyp: {}"
 
 #: routes/settings.py:835
-#, python-brace-format
 msgid "Error resetting {}: {}"
 msgstr "Fehler beim Zurücksetzen von {}: {}"
 
@@ -548,7 +501,6 @@ msgid "Task scheduler not available"
 msgstr "Aufgabenplaner nicht verfügbar"
 
 #: routes/system.py:199
-#, python-brace-format
 msgid "Found {} schedules with pipe-separated times. Check logs for details."
 msgstr "Es wurden {} Zeitpläne mit pipe-separierten Zeiten gefunden. Überprüfe Protokolle für Details."
 
@@ -557,22 +509,18 @@ msgid "No pipe-separated times detected in medication schedules."
 msgstr "Keine Rohrtrennungszeiten in Medikamentenplanungen erkannt."
 
 #: routes/system.py:207
-#, python-brace-format
 msgid "Error running detection: {}"
 msgstr "Fehler beim Ausführen der Erkennung: {}"
 
 #: routes/system.py:248
-#, python-brace-format
 msgid "Successfully fixed {} schedules with pipe-separated times."
 msgstr "{} Pläne erfolgreich mit Rohrtrennungszeiten festgelegt."
 
 #: routes/system.py:250
-#, python-brace-format
 msgid "Failed to fix {} schedules. Check logs for details."
 msgstr "Fehler beim Beheben von {} Zeitplänen. Überprüfe die Protokolle für Details."
 
 #: routes/system.py:254
-#, python-brace-format
 msgid "Error running fix: {}"
 msgstr "Fehler beim Ausführen des Fixes: {}"
 
@@ -585,7 +533,6 @@ msgid "Error running database migrations"
 msgstr "Fehler beim Ausführen der Datenbankmigrationen"
 
 #: routes/visits.py:100
-#, python-brace-format
 msgid "Physician visit scheduled for {}"
 msgstr "Arzttermin für {} geplant"
 
@@ -594,7 +541,6 @@ msgid "Invalid date format. Please use DD.MM.YYYY format."
 msgstr "Ungültiges Datumsformat. Bitte verwende das TT.MM.YYYY-Format."
 
 #: routes/visits.py:243
-#, python-brace-format
 msgid "Physician visit updated to {}"
 msgstr "Arzttermin aktualisiert auf {}"
 
@@ -641,20 +587,9 @@ msgstr "Die gesuchte Seite existiert nicht oder wurde verschoben."
 msgid "Go to Dashboard"
 msgstr "Zum Dashboard gehen"
 
-#: templates/dashboard/next_but_one.html:13 templates/system/status.html:11
-msgid "Back to Dashboard"
-msgstr "Zurück zum Dashboard"
-
 #: templates/index.html:20
 msgid "Next Physician Visit"
 msgstr "Nächster Arzttermin"
-
-#: templates/index.html:27 templates/index.html:114
-#, python-format
-msgid "%(count)d day away"
-msgid_plural "%(count)d days away"
-msgstr[0] ""
-msgstr[1] ""
 
 #: templates/index.html:31 templates/inventory/show.html:441
 #: templates/medications/edit.html:98 templates/medications/new.html:157
@@ -691,15 +626,6 @@ msgstr "Warnung wegen niedriger Lagerbestände"
 msgid "The following medications are below minimum threshold:"
 msgstr "Folgende Medikamente liegen unter ihrem Grenzwert:"
 
-#: templates/index.html:70 templates/index.html:222 templates/index.html:312
-#: templates/physicians/show.html:155 templates/test_translation.html:6
-#: templates/test_translation.html:7 templates/test_translation.html:10
-#, python-format
-msgid "%(count)d unit"
-msgid_plural "%(count)d units"
-msgstr[0] ""
-msgstr[1] ""
-
 #: templates/index.html:74
 msgid "Update"
 msgstr "Aktualisierung"
@@ -716,19 +642,6 @@ msgstr "Alle Medikamente liegen über ihrem Grenzwert."
 msgid "Gap Coverage Warning"
 msgstr "Warnung zur Lückenabdeckung"
 
-#: templates/index.html:111
-#, python-format
-msgid "%(count)d medication"
-msgid_plural "%(count)d medications"
-msgstr[0] ""
-msgstr[1] ""
-
-#: templates/index.html:112
-msgid "will run out before your visit"
-msgid_plural "will run out before your visit"
-msgstr[0] ""
-msgstr[1] ""
-
 #: templates/index.html:113
 msgid "with"
 msgstr "mit"
@@ -741,13 +654,6 @@ msgstr "an"
 msgid "Runs out"
 msgstr "Geht aus"
 
-#: templates/index.html:130
-#, python-format
-msgid "%(count)d unit left"
-msgid_plural "%(count)d units left"
-msgstr[0] ""
-msgstr[1] ""
-
 #: templates/index.html:133 templates/inventory/depletion.html:123
 #: templates/inventory/low.html:72 templates/visits/show.html:212
 msgid "View Medication"
@@ -756,13 +662,6 @@ msgstr "Medikament ansehen"
 #: templates/index.html:137 templates/orders/show.html:186
 msgid "View Inventory"
 msgstr "Bestand anzeigen"
-
-#: templates/index.html:148
-#, python-format
-msgid "And %(count)d more medication"
-msgid_plural "And %(count)d more medications"
-msgstr[0] ""
-msgstr[1] ""
 
 #: templates/index.html:155
 msgid "View Visit Details"
@@ -886,13 +785,6 @@ msgstr "Einheiten"
 msgid "No inventory"
 msgstr "Kein Bestand"
 
-#: templates/index.html:229 templates/index.html:319
-#, python-format
-msgid "%(count)d day"
-msgid_plural "%(count)d days"
-msgstr[0] ""
-msgstr[1] ""
-
 #: templates/index.html:231 templates/index.html:238 templates/index.html:321
 #: templates/index.html:328 templates/inventory/index.html:106
 #: templates/inventory/index.html:115 templates/inventory/index.html:199
@@ -975,6 +867,138 @@ msgstr "Neue Bestellung erstellen"
 #: templates/index.html:417
 msgid "View Depletion Forecast"
 msgstr "Verbrauchsprognose anzeigen"
+
+#: templates/layout.html:38 templates/medications/index.html:3
+#: templates/medications/index.html:8 templates/orders/index.html:25
+#: templates/orders/index.html:123 templates/orders/show.html:60
+#: templates/physicians/index.html:34 templates/physicians/show.html:109
+#: templates/settings/data_management.html:88
+#: templates/settings/data_management.html:133
+msgid "Medications"
+msgstr "Medikamente"
+
+#: templates/layout.html:41 templates/medications/edit.html:15
+#: templates/medications/index.html:18
+msgid "All Medications"
+msgstr "Alle Medikamente"
+
+#: templates/inventory/depletion.html:3 templates/inventory/depletion.html:8
+#: templates/inventory/index.html:25 templates/layout.html:44
+#: templates/layout.html:54
+msgid "Depletion Forecast"
+msgstr "Verbrauchsprognose"
+
+#: templates/inventory/index.html:3 templates/inventory/index.html:8
+#: templates/inventory/show.html:3 templates/inventory/show.html:8
+#: templates/layout.html:49 templates/settings/data_management.html:199
+msgid "Inventory"
+msgstr "Bestand"
+
+#: templates/inventory/index.html:33 templates/layout.html:52
+msgid "Inventory Overview"
+msgstr "Bestandsübersicht"
+
+#: templates/layout.html:56 templates/scanner/index.html:3
+#: templates/scanner/index.html:9 templates/scanner/scan.html:3
+#: templates/scanner/scan.html:46
+msgid "Scanner"
+msgstr ""
+
+#: templates/layout.html:62 templates/physicians/index.html:3
+#: templates/physicians/index.html:8 templates/settings/data_management.html:97
+#: templates/settings/data_management.html:155
+msgid "Physicians"
+msgstr "Ärzte"
+
+#: templates/layout.html:65 templates/physicians/edit.html:16
+#: templates/physicians/index.html:18
+msgid "All Physicians"
+msgstr "Alle Ärzte"
+
+#: templates/layout.html:66 templates/physicians/index.html:11
+#: templates/physicians/index.html:85 templates/physicians/new.html:3
+msgid "Add Physician"
+msgstr "Arzt hinzufügen"
+
+#: templates/layout.html:71 templates/settings/data_management.html:221
+#: templates/visits/index.html:3 templates/visits/index.html:8
+msgid "Physician Visits"
+msgstr "Arzttermine"
+
+#: templates/layout.html:74 templates/visits/edit.html:15
+msgid "All Visits"
+msgstr "Alle Termine"
+
+#: templates/layout.html:75 templates/visits/new.html:64
+msgid "Schedule Visit"
+msgstr "Termin planen"
+
+#: templates/layout.html:76
+msgid "Next Visit"
+msgstr "Nächster Termin"
+
+#: templates/layout.html:81 templates/settings/data_management.html:99
+#: templates/settings/data_management.html:243 templates/visits/index.html:32
+#: templates/visits/index.html:129
+msgid "Orders"
+msgstr "Bestellungen"
+
+#: templates/layout.html:84 templates/orders/edit.html:15
+msgid "All Orders"
+msgstr "Alle Bestellungen"
+
+#: templates/layout.html:85
+msgid "New Order"
+msgstr "Neue Bestellung"
+
+#: templates/layout.html:90
+msgid "System"
+msgstr "System"
+
+#: templates/layout.html:93 templates/settings/system.html:140
+#: templates/system/status.html:3 templates/system/status.html:8
+msgid "System Status"
+msgstr "Systemstatus"
+
+#: templates/layout.html:94 templates/settings/system.html:3
+#: templates/settings/system.html:8
+msgid "System Settings"
+msgstr "Systemeinstellungen"
+
+#: templates/layout.html:96
+msgid "Visit Planning"
+msgstr "Terminplanung"
+
+#: templates/layout.html:97 templates/settings/data_management.html:3
+#: templates/settings/data_management.html:8 templates/settings/system.html:114
+msgid "Data Management"
+msgstr "Datenmanagement"
+
+#: templates/layout.html:98
+msgid "Database Updates"
+msgstr "Datenbankmigrationen"
+
+#: templates/layout.html:142 templates/layout.html:208
+#: templates/orders/_fulfill_modal.html:11 templates/orders/show.html:239
+#: templates/schedules/index.html:161
+#: templates/settings/data_management.html:281
+#: templates/settings/data_management.html:335
+#: templates/settings/data_management.html:380
+#: templates/settings/data_management.html:415
+msgid "Close"
+msgstr "Schließen"
+
+#: templates/layout.html:155
+msgid "Timezone"
+msgstr "Zeitzone"
+
+#: templates/layout.html:156 templates/settings/system.html:28
+msgid "Local time"
+msgstr "Lokale Zeit"
+
+#: templates/dashboard/next_but_one.html:13 templates/system/status.html:11
+msgid "Back to Dashboard"
+msgstr "Zurück zum Dashboard"
 
 #: templates/inventory/depletion.html:12 templates/inventory/low.html:12
 #: templates/inventory/show.html:12 templates/medications/new.html:12
@@ -1384,13 +1408,13 @@ msgstr "Wird ausgehen am"
 msgid "Dosage"
 msgstr "Dosis"
 
-#: templates/inventory/show.html:87
-msgid "per day"
-msgstr "pro Tag"
-
 #: templates/inventory/show.html:87 templates/medications/index.html:48
 msgid "Frequency"
 msgstr "Häufigkeit"
+
+#: templates/inventory/show.html:87
+msgid "per day"
+msgstr "pro Tag"
 
 #: templates/inventory/show.html:104
 msgid "Legacy Inventory System"
@@ -1408,6 +1432,10 @@ msgstr ""
 msgid "Adjust Inventory (Relative)"
 msgstr "Bestand anpassen (relativ)"
 
+#: templates/inventory/show.html:126 templates/inventory/show.html:212
+msgid "Use this form to"
+msgstr "Verwende dieses Formular zum"
+
 #: templates/inventory/show.html:126
 msgid "add or subtract"
 msgstr "hinzufügen oder abziehen"
@@ -1415,10 +1443,6 @@ msgstr "hinzufügen oder abziehen"
 #: templates/inventory/show.html:126
 msgid "units from your current inventory."
 msgstr "von Einheiten aus deinem aktuellen Bestand."
-
-#: templates/inventory/show.html:126 templates/inventory/show.html:212
-msgid "Use this form to"
-msgstr "Verwende dieses Formular zum"
 
 #: templates/inventory/show.html:132
 msgid "Adjustment Amount Directly"
@@ -1505,14 +1529,14 @@ msgstr ""
 msgid "You have configured package sizes for this medication. You can now use the barcode scanner to track individual packages with batch numbers and expiry dates."
 msgstr ""
 
-#: templates/inventory/show.html:309
-msgid "Once you start using the package scanning system, you should stop adding inventory through the legacy sum-based method to avoid confusion."
-msgstr ""
-
 #: templates/inventory/show.html:309 templates/medications/new.html:145
 #: templates/settings/data_management.html:269
 msgid "Important:"
 msgstr "Wichtig:"
+
+#: templates/inventory/show.html:309
+msgid "Once you start using the package scanning system, you should stop adding inventory through the legacy sum-based method to avoid confusion."
+msgstr ""
 
 #: templates/inventory/show.html:312
 msgid "Start Scanning Packages"
@@ -1586,134 +1610,6 @@ msgstr "Nachher"
 #: templates/inventory/show.html:460
 msgid "No inventory adjustments recorded yet."
 msgstr "Noch keine Bestandsanpassungen gespeichert."
-
-#: templates/layout.html:38 templates/medications/index.html:3
-#: templates/medications/index.html:8 templates/orders/index.html:25
-#: templates/orders/index.html:123 templates/orders/show.html:60
-#: templates/physicians/index.html:34 templates/physicians/show.html:109
-#: templates/settings/data_management.html:88
-#: templates/settings/data_management.html:133
-msgid "Medications"
-msgstr "Medikamente"
-
-#: templates/layout.html:41 templates/medications/edit.html:15
-#: templates/medications/index.html:18
-msgid "All Medications"
-msgstr "Alle Medikamente"
-
-#: templates/inventory/depletion.html:3 templates/inventory/depletion.html:8
-#: templates/inventory/index.html:25 templates/layout.html:44
-#: templates/layout.html:54
-msgid "Depletion Forecast"
-msgstr "Verbrauchsprognose"
-
-#: templates/inventory/index.html:3 templates/inventory/index.html:8
-#: templates/inventory/show.html:3 templates/inventory/show.html:8
-#: templates/layout.html:49 templates/settings/data_management.html:199
-msgid "Inventory"
-msgstr "Bestand"
-
-#: templates/inventory/index.html:33 templates/layout.html:52
-msgid "Inventory Overview"
-msgstr "Bestandsübersicht"
-
-#: templates/layout.html:56 templates/scanner/index.html:3
-#: templates/scanner/index.html:9 templates/scanner/scan.html:3
-#: templates/scanner/scan.html:46
-msgid "Scanner"
-msgstr ""
-
-#: templates/layout.html:62 templates/physicians/index.html:3
-#: templates/physicians/index.html:8 templates/settings/data_management.html:97
-#: templates/settings/data_management.html:155
-msgid "Physicians"
-msgstr "Ärzte"
-
-#: templates/layout.html:65 templates/physicians/edit.html:16
-#: templates/physicians/index.html:18
-msgid "All Physicians"
-msgstr "Alle Ärzte"
-
-#: templates/layout.html:66 templates/physicians/index.html:11
-#: templates/physicians/index.html:85 templates/physicians/new.html:3
-msgid "Add Physician"
-msgstr "Arzt hinzufügen"
-
-#: templates/layout.html:71 templates/settings/data_management.html:221
-#: templates/visits/index.html:3 templates/visits/index.html:8
-msgid "Physician Visits"
-msgstr "Arzttermine"
-
-#: templates/layout.html:74 templates/visits/edit.html:15
-msgid "All Visits"
-msgstr "Alle Termine"
-
-#: templates/layout.html:75 templates/visits/new.html:64
-msgid "Schedule Visit"
-msgstr "Termin planen"
-
-#: templates/layout.html:76
-msgid "Next Visit"
-msgstr "Nächster Termin"
-
-#: templates/layout.html:81 templates/settings/data_management.html:99
-#: templates/settings/data_management.html:243 templates/visits/index.html:32
-#: templates/visits/index.html:129
-msgid "Orders"
-msgstr "Bestellungen"
-
-#: templates/layout.html:84 templates/orders/edit.html:15
-msgid "All Orders"
-msgstr "Alle Bestellungen"
-
-#: templates/layout.html:85
-msgid "New Order"
-msgstr "Neue Bestellung"
-
-#: templates/layout.html:90
-msgid "System"
-msgstr "System"
-
-#: templates/layout.html:93 templates/settings/system.html:140
-#: templates/system/status.html:3 templates/system/status.html:8
-msgid "System Status"
-msgstr "Systemstatus"
-
-#: templates/layout.html:94 templates/settings/system.html:3
-#: templates/settings/system.html:8
-msgid "System Settings"
-msgstr "Systemeinstellungen"
-
-#: templates/layout.html:96
-msgid "Visit Planning"
-msgstr "Terminplanung"
-
-#: templates/layout.html:97 templates/settings/data_management.html:3
-#: templates/settings/data_management.html:8 templates/settings/system.html:114
-msgid "Data Management"
-msgstr "Datenmanagement"
-
-#: templates/layout.html:98
-msgid "Database Updates"
-msgstr "Datenbankmigrationen"
-
-#: templates/layout.html:142 templates/layout.html:208
-#: templates/orders/_fulfill_modal.html:11 templates/orders/show.html:239
-#: templates/schedules/index.html:161
-#: templates/settings/data_management.html:281
-#: templates/settings/data_management.html:335
-#: templates/settings/data_management.html:380
-#: templates/settings/data_management.html:415
-msgid "Close"
-msgstr "Schließen"
-
-#: templates/layout.html:155
-msgid "Timezone"
-msgstr "Zeitzone"
-
-#: templates/layout.html:156 templates/settings/system.html:28
-msgid "Local time"
-msgstr "Lokale Zeit"
 
 #: templates/medication_packages/edit.html:8
 msgid "Edit Package Configuration"
@@ -2373,13 +2269,13 @@ msgid "Created Date"
 msgstr "Erstellungsdatum"
 
 #: templates/orders/index.html:53 templates/orders/index.html:144
-msgid "medications"
-msgstr "Medikamente"
-
-#: templates/orders/index.html:53 templates/orders/index.html:144
 #: templates/visits/show.html:125
 msgid "medication"
 msgstr "Medikament"
+
+#: templates/orders/index.html:53 templates/orders/index.html:144
+msgid "medications"
+msgstr "Medikamente"
 
 #: templates/orders/index.html:74 templates/orders/index.html:158
 msgid "Printable Version"
@@ -2498,11 +2394,6 @@ msgstr "Bis zum Termin: %(usage)s/Tag × %(days)s Tage = %(units)s Einheiten"
 msgid "Until next visit: %(usage)s/day × %(days)s days = %(units)s units"
 msgstr "Bis zum nächsten Termin: %(usage)s/Tag × %(days)s Tage = %(units)s Einheiten"
 
-#: templates/orders/new.html:126
-#, python-format
-msgid "To order: %(units)s units"
-msgstr "Zur Bestellung: %(units)s Einheiten"
-
 #: templates/orders/new.html:126 templates/orders/new.html:132
 msgid "Total needed"
 msgstr "Gesamt benötigt"
@@ -2511,6 +2402,11 @@ msgstr "Gesamt benötigt"
 #, python-format
 msgid "Current stock: %(units)s units"
 msgstr "Aktuelles Lager: %(units)s Einheiten"
+
+#: templates/orders/new.html:126
+#, python-format
+msgid "To order: %(units)s units"
+msgstr "Zur Bestellung: %(units)s Einheiten"
 
 #: templates/orders/new.html:132
 msgid "Sufficient stock"
@@ -3197,13 +3093,13 @@ msgstr "Zeitpläne für"
 msgid "Automatic Inventory Deduction"
 msgstr "Automatischer Abzug vom Bestand"
 
-#: templates/schedules/index.html:31
-msgid "enabled"
-msgstr "aktiviert"
-
 #: templates/schedules/index.html:31 templates/schedules/index.html:33
 msgid "Automatic deduction is"
 msgstr "Automatischer Abzug ist"
+
+#: templates/schedules/index.html:31
+msgid "enabled"
+msgstr "aktiviert"
 
 #: templates/schedules/index.html:31 templates/schedules/index.html:33
 msgid "for this medication"
@@ -4039,23 +3935,9 @@ msgstr "Keine Medikamente im System gefunden oder keine Bestandsdaten verfügbar
 msgid "Create Order Based on These Needs"
 msgstr "Erstelle eine Bestellung basierend auf diesen Bedürfnissen"
 
-#: templates/visits/show.html:258
-#, python-format
-msgid "%(count)d medication will run out before this visit."
-msgid_plural "%(count)d medications will run out before this visit."
-msgstr[0] ""
-msgstr[1] ""
-
 #: templates/visits/show.html:261
 msgid "Additionally"
 msgstr "Zusätzlich"
-
-#: templates/visits/show.html:262
-#, python-format
-msgid "%(count)d medication is in the safety margin."
-msgid_plural "%(count)d medications are in the safety margin."
-msgstr[0] ""
-msgstr[1] ""
 
 #: templates/visits/show.html:264
 msgid "Please consider creating a gap coverage order to bridge the supply gap."
