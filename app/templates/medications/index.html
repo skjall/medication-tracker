@@ -37,7 +37,7 @@
                         </h5>
                         <span class="badge bg-secondary ms-2">{{ medications_by_physician[physician]|length }}</span>
                     </div>
-                    
+
                     <!-- Medications Table for this Physician -->
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -61,7 +61,7 @@
                                         <td>
                                             <strong>{{ med.name }}</strong>
                                             {% if med.is_otc %}
-                                                <span class="badge bg-warning text-dark ms-2">{{ _('OTC') }}</span>
+                                                <span class="badge bg-primary text-white ms-2">{{ _('OTC') }}</span>
                                             {% endif %}
                                             {% if not med.aut_idem %}
                                                 <i class="fas fa-fingerprint text-info ms-2" title="{{ _('No generic substitution') }}"></i>
@@ -127,7 +127,7 @@
                     </div>
                 </div>
             {% endfor %}
-            
+
             <!-- OTC Medications Section -->
             {% if otc_medications %}
                 <div class="physician-section mb-4">
@@ -139,7 +139,7 @@
                         </h5>
                         <span class="badge bg-secondary ms-2">{{ otc_medications|length }}</span>
                     </div>
-                    
+
                     <!-- OTC Medications Table -->
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -158,7 +158,7 @@
                                     <tr class="medication-row">
                                         <td>
                                             <strong>{{ med.name }}</strong>
-                                            <span class="badge bg-warning text-dark ms-2">{{ _('OTC') }}</span>
+                                            <span class="badge bg-primary text-white ms-2">{{ _('OTC') }}</span>
                                             {% if not med.aut_idem %}
                                                 <i class="fas fa-fingerprint text-info ms-2" title="{{ _('No generic substitution') }}"></i>
                                             {% endif %}
@@ -231,11 +231,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const searchTerm = this.value.toLowerCase();
             const rows = document.querySelectorAll('.medication-row');
             const sections = document.querySelectorAll('.physician-section');
-            
+
             sections.forEach(section => {
                 let hasVisibleMeds = false;
                 const sectionRows = section.querySelectorAll('.medication-row');
-                
+
                 sectionRows.forEach(row => {
                     const medName = row.querySelector('strong').textContent.toLowerCase();
                     if (medName.includes(searchTerm)) {
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         row.style.display = 'none';
                     }
                 });
-                
+
                 // Hide/show entire section based on whether it has visible medications
                 section.style.display = hasVisibleMeds || searchTerm === '' ? '' : 'none';
             });

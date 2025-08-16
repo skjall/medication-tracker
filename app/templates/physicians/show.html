@@ -146,7 +146,7 @@
                             <td>
                                 <strong>{{ med.name }}</strong>
                                 {% if med.is_otc %}
-                                    <span class="badge bg-warning text-dark ms-2">{{ _('OTC') }}</span>
+                                    <span class="badge bg-primary text-white ms-2">{{ _('OTC') }}</span>
                                 {% endif %}
                             </td>
                             <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>

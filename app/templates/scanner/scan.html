@@ -3,30 +3,9 @@
 {% block title %}{{ _('Scanner') }}{% endblock %}
 
 {% block head_extra %}
-<!-- ZXing library for barcode scanning with DataMatrix support -->
+<!-- ZXing library for barcode scanning (DataMatrix, EAN, PZN/Code39, etc.) -->
 <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
 <style>
-    .scan-log {
-        max-height: 500px;
-        overflow-y: auto;
-    }
-    .scan-item {
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-    }
-    .scan-success {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-    }
-    .scan-error {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-    }
-    .scan-timestamp {
-        font-size: 0.85em;
-        color: #6c757d;
-    }
     #scanner-video {
         width: 100%;
         max-width: 600px;
@@ -58,54 +37,90 @@
         50% { border-color: rgba(0, 255, 0, 1); }
         100% { border-color: rgba(0, 255, 0, 0.5); }
     }
+    .mode-toggle {
+        display: inline-flex;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 2px solid #dee2e6;
+    }
+    .mode-toggle input[type="radio"] {
+        display: none;
+    }
+    .mode-toggle label {
+        padding: 8px 20px;
+        cursor: pointer;
+        background: white;
+        color: #6c757d;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .mode-toggle input[type="radio"]:checked + label {
+        background: #007bff;
+        color: white;
+    }
+    .scan-result {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        display: none;
+    }
+    .scan-result.success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+    .scan-result.error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="row">
-        <div class="col-lg-7">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ _('Scanner') }}</h5>
                     <span id="scan-status" class="badge bg-secondary">{{ _('Initializing...') }}</span>
                 </div>
                 <div class="card-body text-center">
+                    <!-- Mode selection -->
+                    <div class="mode-toggle mb-3">
+                        <input type="radio" id="mode-linear" name="scan-mode" value="linear" checked>
+                        <label for="mode-linear">
+                            <i class="fas fa-barcode"></i>
+                            {{ _('Linear') }}
+                        </label>
+                        <input type="radio" id="mode-datamatrix" name="scan-mode" value="datamatrix">
+                        <label for="mode-datamatrix">
+                            <i class="fas fa-qrcode"></i>
+                            {{ _('DataMatrix') }}
+                        </label>
+                    </div>
+
                     <!-- Camera view with overlay -->
                     <div class="scanner-container">
                         <video id="scanner-video" autoplay muted playsinline></video>
                         <div class="scan-indicator"></div>
                     </div>
-                    
+
+                    <!-- Scan result display -->
+                    <div id="scan-result" class="scan-result"></div>
+
                     <!-- Controls -->
                     <div class="mt-3">
                         <button class="btn btn-sm btn-secondary" id="toggle-torch-btn" style="display: none;">
-                            <i class="fas fa-lightbulb"></i> {{ _('Toggle Light') }}
+                            <i class="fas fa-lightbulb"></i> {{ _('Light') }}
                         </button>
                         <button class="btn btn-sm btn-primary d-none" id="retry-camera-btn">
-                            <i class="fas fa-camera"></i> {{ _('Retry Camera') }}
+                            <i class="fas fa-camera"></i> {{ _('Retry') }}
                         </button>
                     </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-5">
-            <!-- Scan log -->
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">{{ _('Scan History') }}</h5>
-                    <div>
-                        <span class="badge bg-success me-2">
-                            <i class="fas fa-check"></i> <span id="success-count">0</span>
-                        </span>
-                        <span class="badge bg-danger">
-                            <i class="fas fa-times"></i> <span id="error-count">0</span>
-                        </span>
-                    </div>
-                </div>
-                <div class="card-body scan-log" id="scan-log">
-                    <p class="text-muted text-center">{{ _('Waiting for scans...') }}</p>
                 </div>
             </div>
         </div>
@@ -119,9 +134,7 @@ let selectedDeviceId = null;
 let isScanning = false;
 let lastScannedCode = null;
 let lastScannedTime = 0;
-let successCount = 0;
-let errorCount = 0;
-let scanAnimationFrame = null;
+let currentMode = 'linear';
 let torchSupported = false;
 
 // Initialize and start immediately
@@ -131,72 +144,115 @@ document.addEventListener('DOMContentLoaded', () => {
         showStatus('{{ _("Scanner error") }}', 'danger');
         return;
     }
-    
-    // Configure ZXing for DataMatrix with optimized hints
-    const hints = new Map();
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-    hints.set(ZXing.DecodeHintType.PURE_BARCODE, false);
-    
-    // Use MultiFormatReader with specific formats for better performance
-    codeReader = new ZXing.BrowserMultiFormatReader(hints);
-    
-    console.log('ZXing initialized with DataMatrix optimization');
+
+    // Initialize with linear mode
+    initializeScanner('linear');
     startScanning();
+
+    // Mode switching
+    document.querySelectorAll('input[name="scan-mode"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            currentMode = e.target.value;
+            console.log('Switching to mode:', currentMode);
+
+            // Stop current scanning
+            if (codeReader) {
+                codeReader.reset();
+            }
+
+            // Reinitialize with new mode
+            initializeScanner(currentMode);
+
+            // Restart scanning with new reader
+            if (isScanning) {
+                isScanning = false;
+                setTimeout(() => startScanning(), 100);
+            }
+        });
+    });
 });
+
+function initializeScanner(mode) {
+    const hints = new Map();
+
+    if (mode === 'datamatrix') {
+        // Optimize for DataMatrix/2D codes
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+            ZXing.BarcodeFormat.DATA_MATRIX
+            // ZXing.BarcodeFormat.QR_CODE,
+            // ZXing.BarcodeFormat.AZTEC
+        ]);
+        codeReader = new ZXing.BrowserMultiFormatReader(hints);
+        console.log('Scanner optimized for DataMatrix/2D codes');
+    } else {
+        // Optimize for linear barcodes (PZN, EAN, etc.)
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+            ZXing.BarcodeFormat.CODE_39,      // PZN
+            // ZXing.BarcodeFormat.CODE_128,
+            ZXing.BarcodeFormat.EAN_13       // Standard retail
+            // ZXing.BarcodeFormat.EAN_8,
+            // ZXing.BarcodeFormat.UPC_A,
+            // ZXing.BarcodeFormat.UPC_E
+        ]);
+        codeReader = new ZXing.BrowserMultiFormatReader(hints);
+        console.log('Scanner optimized for linear barcodes');
+    }
+}
 
 async function startScanning() {
     if (isScanning) return;
-    
+
     try {
         showStatus('{{ _("Starting camera...") }}', 'warning');
-        
+
         // Get available video devices
         const videoInputDevices = await codeReader.listVideoInputDevices();
-        
+
         if (videoInputDevices.length === 0) {
             showStatus('{{ _("No camera found") }}', 'danger');
             document.getElementById('retry-camera-btn').classList.remove('d-none');
             return;
         }
-        
+
         // Select the rear camera if available
         selectedDeviceId = videoInputDevices[0].deviceId;
         for (const device of videoInputDevices) {
-            if (device.label.toLowerCase().includes('back') || 
+            if (device.label.toLowerCase().includes('back') ||
                 device.label.toLowerCase().includes('environment') ||
                 device.label.toLowerCase().includes('rear')) {
                 selectedDeviceId = device.deviceId;
                 break;
             }
         }
-        
+
         console.log('Starting continuous scanning with device:', selectedDeviceId);
         isScanning = true;
         showStatus('{{ _("Scanning...") }}', 'success');
-        
+
         // Start continuous decoding with optimized settings
         await codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
             if (result) {
                 const now = Date.now();
                 // Debounce: Don't scan same code within 2 seconds
                 if (result.text !== lastScannedCode || now - lastScannedTime > 2000) {
-                    console.log('DataMatrix detected:', result.text);
+                    console.log('Barcode detected:', result.text);
                     lastScannedCode = result.text;
                     lastScannedTime = now;
-                    
+
                     // Visual feedback
                     flashScanIndicator();
-                    
+
                     // Process the scan without stopping
                     processScan(result.text);
                 }
             }
-            
+
             if (err && !(err instanceof ZXing.NotFoundException)) {
                 console.error('Scanning error:', err);
             }
         });
-        
+
         // Get the video stream for torch control
         const videoElement = document.getElementById('scanner-video');
         if (videoElement.srcObject) {
@@ -208,7 +264,7 @@ async function startScanning() {
                 document.getElementById('toggle-torch-btn').style.display = 'inline-block';
             }
         }
-        
+
     } catch (err) {
         showStatus('{{ _("Camera error") }}', 'danger');
         document.getElementById('retry-camera-btn').classList.remove('d-none');
@@ -231,10 +287,10 @@ function flashScanIndicator() {
 // Toggle torch/flashlight
 document.getElementById('toggle-torch-btn').addEventListener('click', async () => {
     if (!videoStream || !torchSupported) return;
-    
+
     const track = videoStream.getVideoTracks()[0];
     const constraints = track.getConstraints();
-    
+
     try {
         await track.applyConstraints({
             torch: !constraints.torch
@@ -256,13 +312,13 @@ async function processScan(barcodeData) {
         console.log('Ignoring short code:', barcodeData);
         return;
     }
-    
+
     // Ignore single characters or obvious misreads
     if (barcodeData.length === 1 || (barcodeData.length < 6 && !barcodeData.match(/^\d+$/))) {
         console.log('Ignoring likely misread:', barcodeData);
         return;
     }
-    
+
     try {
         const response = await fetch('{{ url_for("scanner.scan") }}', {
             method: 'POST',
@@ -273,97 +329,54 @@ async function processScan(barcodeData) {
                 barcode: barcodeData
             })
         });
-        
+
         const result = await response.json();
-        
+        const resultDiv = document.getElementById('scan-result');
+
         if (response.ok) {
-            successCount++;
-            document.getElementById('success-count').textContent = successCount;
-            addToLog(result, 'success');
-        } else {
-            // Only show error for codes that look like real barcodes
-            // (at least 6 digits or proper format)
-            if (barcodeData.match(/^\d{6,}$/) || barcodeData.length > 20) {
-                errorCount++;
-                document.getElementById('error-count').textContent = errorCount;
-                addToLog({
-                    error: result.error,
-                    details: result.details,
-                    barcode: barcodeData
-                }, 'error');
-            } else {
-                // Silently ignore unrecognized short codes
-                console.log('Ignoring unrecognized code:', barcodeData);
+            // Show success message
+            let message = '<strong>' + (result.medication ? result.medication.name : '{{ _("Scanned successfully") }}') + '</strong>';
+            if (result.parsed_data) {
+                if (result.parsed_data.national_number) {
+                    message += '<br><small>PZN: ' + result.parsed_data.national_number + '</small>';
+                }
+                if (result.parsed_data.batch) {
+                    message += '<br><small>{{ _("Batch") }}: ' + result.parsed_data.batch + '</small>';
+                }
+                if (result.parsed_data.expiry) {
+                    message += '<br><small>{{ _("Expiry") }}: ' + new Date(result.parsed_data.expiry).toLocaleDateString() + '</small>';
+                }
             }
+
+            resultDiv.innerHTML = message;
+            resultDiv.className = 'scan-result success';
+            resultDiv.style.display = 'block';
+
+            // Hide after 5 seconds
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+            }, 5000);
+        } else {
+            // Show error message
+            let errorMessage = '<strong>' + result.error + '</strong>';
+            if (result.hint) {
+                errorMessage += '<br><small>' + result.hint + '</small>';
+            }
+
+            resultDiv.innerHTML = errorMessage;
+            resultDiv.className = 'scan-result error';
+            resultDiv.style.display = 'block';
+
+            // Hide after 3 seconds
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+            }, 3000);
         }
     } catch (err) {
-        // Only log real errors, not network issues from rapid scanning
         console.log('Scan processing failed:', barcodeData);
     }
 }
 
-function addToLog(data, type) {
-    const logContainer = document.getElementById('scan-log');
-    const now = new Date();
-    const timestamp = now.toLocaleTimeString();
-    
-    // Remove initial message if present
-    if (logContainer.querySelector('.text-muted')) {
-        logContainer.innerHTML = '';
-    }
-    
-    const logItem = document.createElement('div');
-    logItem.className = `scan-item scan-${type}`;
-    
-    let html = '<div class="d-flex justify-content-between align-items-start">';
-    html += '<div class="flex-grow-1">';
-    
-    if (type === 'success') {
-        html += '<strong>' + (data.medication ? data.medication.name : '{{ _("Unknown") }}') + '</strong><br>';
-        if (data.parsed_data) {
-            if (data.parsed_data.national_number) {
-                html += '<small>' + data.parsed_data.national_number + '</small><br>';
-            }
-            if (data.parsed_data.batch) {
-                html += '<small>{{ _("Batch") }}: ' + data.parsed_data.batch + '</small><br>';
-            }
-            if (data.parsed_data.expiry) {
-                html += '<small>{{ _("Expiry") }}: ' + new Date(data.parsed_data.expiry).toLocaleDateString() + '</small>';
-            }
-        }
-    } else {
-        // Show error message prominently
-        html += '<strong style="color: #dc3545;">' + data.error + '</strong><br>';
-        
-        // Show hint if available
-        if (data.hint) {
-            html += '<small class="text-muted">' + data.hint + '</small><br>';
-        }
-        
-        // Show barcode if we couldn't parse it
-        if (!data.details || !data.details.national_number) {
-            if (data.barcode) {
-                // Clean up barcode for display (remove leading minus from PZN barcodes)
-                let cleanBarcode = data.barcode.replace(/^-/, '');
-                html += '<small><code>' + cleanBarcode.substring(0, 30) + (cleanBarcode.length > 30 ? '...' : '') + '</code></small>';
-            }
-        }
-    }
-    
-    html += '</div>';
-    html += '<div class="scan-timestamp">' + timestamp + '</div>';
-    html += '</div>';
-    
-    logItem.innerHTML = html;
-    
-    // Insert at top
-    logContainer.insertBefore(logItem, logContainer.firstChild);
-    
-    // Keep only last 50 items
-    while (logContainer.children.length > 50) {
-        logContainer.removeChild(logContainer.lastChild);
-    }
-}
 
 function showStatus(message, type) {
     const statusBadge = document.getElementById('scan-status');
@@ -373,19 +386,19 @@ function showStatus(message, type) {
 
 function stopScanning() {
     isScanning = false;
-    
+
     // Stop animation frame
     if (scanAnimationFrame) {
         cancelAnimationFrame(scanAnimationFrame);
         scanAnimationFrame = null;
     }
-    
+
     // Stop video stream
     if (videoStream) {
         videoStream.getTracks().forEach(track => track.stop());
         videoStream = null;
     }
-    
+
     // Reset code reader
     if (codeReader) {
         codeReader.reset();

@@ -47,7 +47,7 @@
                     {% endif %}
                 {% endfor %}
             {% endfor %}
-            
+
             {% for physician in sorted_physicians %}
                 <div class="physician-section mb-4">
                     <!-- Physician Header -->
@@ -89,7 +89,7 @@
                                         <td>
                                             <strong>{{ med.name }}</strong>
                                             {% if med.is_otc %}
-                                                <span class="badge bg-warning text-dark ms-2">{{ _('OTC') }}</span>
+                                                <span class="badge bg-primary text-white ms-2">{{ _('OTC') }}</span>
                                             {% endif %}
                                             {% if not med.aut_idem %}
                                                 <i class="fas fa-fingerprint text-info ms-2" title="{{ _('No generic substitution') }}"></i>
@@ -101,7 +101,7 @@
                                                 {% if current_package %}
                                                     <small>
                                                         {% if current_package.scanned_item %}
-                                                            {{ current_package.scanned_item.serial_number[-6:] }}
+                                                            S/N: ...{{ current_package.scanned_item.serial_number[-6:] }}
                                                         {% else %}
                                                             #{{ current_package.id }}
                                                         {% endif %}
@@ -121,7 +121,7 @@
                                                         {% for pkg in all_packages[1:2] %}
                                                             <small>
                                                                 {% if pkg.scanned_item %}
-                                                                    {{ pkg.scanned_item.serial_number[-6:] }}
+                                                                    S/N: ...{{ pkg.scanned_item.serial_number[-6:] }}
                                                                 {% else %}
                                                                     #{{ pkg.id }}
                                                                 {% endif %}
@@ -137,7 +137,7 @@
                                                     {% if first_package %}
                                                         <small>
                                                             {% if first_package.scanned_item %}
-                                                                {{ first_package.scanned_item.serial_number[-6:] }}
+                                                                S/N: ...{{ first_package.scanned_item.serial_number[-6:] }}
                                                             {% else %}
                                                                 #{{ first_package.id }}
                                                             {% endif %}
@@ -250,7 +250,7 @@
                                     <tr class="medication-row">
                                         <td>
                                             <strong>{{ med.name }}</strong>
-                                            <span class="badge bg-warning text-dark ms-2">{{ _('OTC') }}</span>
+                                            <span class="badge bg-primary text-white ms-2">{{ _('OTC') }}</span>
                                             {% if not med.aut_idem %}
                                                 <i class="fas fa-fingerprint text-info ms-2" title="{{ _('No generic substitution') }}"></i>
                                             {% endif %}
@@ -261,7 +261,7 @@
                                                 {% if current_package %}
                                                     <small>
                                                         {% if current_package.scanned_item %}
-                                                            {{ current_package.scanned_item.serial_number[-6:] }}
+                                                            S/N: ...{{ current_package.scanned_item.serial_number[-6:] }}
                                                         {% else %}
                                                             #{{ current_package.id }}
                                                         {% endif %}
@@ -281,7 +281,7 @@
                                                         {% for pkg in all_packages[1:2] %}
                                                             <small>
                                                                 {% if pkg.scanned_item %}
-                                                                    {{ pkg.scanned_item.serial_number[-6:] }}
+                                                                    S/N: ...{{ pkg.scanned_item.serial_number[-6:] }}
                                                                 {% else %}
                                                                     #{{ pkg.id }}
                                                                 {% endif %}
@@ -297,7 +297,7 @@
                                                     {% if first_package %}
                                                         <small>
                                                             {% if first_package.scanned_item %}
-                                                                {{ first_package.scanned_item.serial_number[-6:] }}
+                                                                S/N: ...{{ first_package.scanned_item.serial_number[-6:] }}
                                                             {% else %}
                                                                 #{{ first_package.id }}
                                                             {% endif %}
