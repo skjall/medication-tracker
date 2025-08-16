@@ -166,6 +166,9 @@ def scan():
         if expiry_date:
             expiry_date = expiry_date.date()
     
+    # Determine if this is a GS1 scan (has batch or expiry data)
+    is_gs1 = bool(parsed.get('batch') or parsed.get('expiry'))
+    
     scanned_item = ScannedItem(
         medication_package_id=package.id if package else None,
         gtin=parsed.get('gtin'),
@@ -174,6 +177,7 @@ def scan():
         serial_number=parsed['serial'],
         batch_number=parsed.get('batch'),
         expiry_date=expiry_date,
+        is_gs1=is_gs1,
         raw_data=barcode_data,
         status='active'
     )

@@ -89,6 +89,9 @@ class ScannedItem(db.Model):
         comment="active, consumed, expired, returned"
     )
     
+    # Track if data came from GS1 DataMatrix (has batch/expiry) vs simple barcode
+    is_gs1: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    
     # Raw data for future reference
     raw_data: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     

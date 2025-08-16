@@ -333,6 +333,36 @@ def edit_package(package_id: int):
     scanned_item = package.scanned_item
     
     if request.method == "POST":
+        # Update batch, expiry, and serial for non-GS1 items
+        if scanned_item and not scanned_item.is_gs1:
+            # Update serial number if provided
+            serial_number = request.form.get("serial_number", "").strip()
+            if serial_number and serial_number != scanned_item.serial_number:
+                # Check if new serial number already exists
+                from models import ScannedItem as SI
+                existing = SI.query.filter_by(serial_number=serial_number).first()
+                if existing and existing.id != scanned_item.id:
+                    flash(_("Serial number already exists for another package"), "error")
+                else:
+                    scanned_item.serial_number = serial_number
+            
+            # Update batch number if provided
+            batch_number = request.form.get("batch_number", "").strip()
+            if batch_number != (scanned_item.batch_number or ""):
+                scanned_item.batch_number = batch_number if batch_number else None
+            
+            # Update expiry date if provided
+            expiry_date_str = request.form.get("expiry_date", "").strip()
+            if expiry_date_str:
+                try:
+                    expiry_date = datetime.strptime(expiry_date_str, "%Y-%m-%d").date()
+                    scanned_item.expiry_date = expiry_date
+                except ValueError:
+                    flash(_("Invalid expiry date format"), "warning")
+            elif scanned_item.expiry_date:
+                # Clear expiry date if field was emptied
+                scanned_item.expiry_date = None
+        
         # Update package status
         new_status = request.form.get("status")
         if new_status in ["sealed", "open", "empty", "discarded"]:

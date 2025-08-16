@@ -59,6 +59,9 @@
                                     <small class="text-muted d-block">{{ _('Batch') }}</small>
                                     {% if scanned_item.batch_number %}
                                         <code class="fs-6">{{ scanned_item.batch_number }}</code>
+                                        {% if scanned_item.is_gs1 %}
+                                            <small class="text-muted ms-2">({{ _('from GS1') }})</small>
+                                        {% endif %}
                                     {% else %}
                                         <span class="text-muted">{{ _('Not specified') }}</span>
                                     {% endif %}
@@ -72,6 +75,9 @@
                                                 <i class="fas fa-exclamation-triangle ms-1"></i>
                                             {% endif %}
                                         </span>
+                                        {% if scanned_item.is_gs1 %}
+                                            <small class="text-muted ms-2">({{ _('from GS1') }})</small>
+                                        {% endif %}
                                     {% else %}
                                         <span class="text-muted">{{ _('Not specified') }}</span>
                                     {% endif %}
@@ -81,6 +87,40 @@
                     </div>
 
                     <!-- Editable Fields -->
+                    {% if not scanned_item.is_gs1 %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">{{ _('Package Details') }} <small>({{ _('Not from GS1 scan - can be edited') }})</small></h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="serial_number" class="form-label">{{ _('Serial Number') }}</label>
+                                    <input type="text" class="form-control" id="serial_number" name="serial_number" 
+                                           maxlength="100" value="{{ scanned_item.serial_number }}" required
+                                           placeholder="{{ _('e.g. SN123456789') }}">
+                                    <div class="form-text">{{ _('Unique identifier for this package') }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="batch_number" class="form-label">{{ _('Batch Number') }}</label>
+                                    <input type="text" class="form-control" id="batch_number" name="batch_number" 
+                                           maxlength="50" value="{{ scanned_item.batch_number or '' }}"
+                                           placeholder="{{ _('e.g. LOT123456') }}">
+                                    <div class="form-text">{{ _('Enter the batch/lot number from the package') }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="expiry_date" class="form-label">{{ _('Expiry Date') }}</label>
+                                    <input type="date" class="form-control" id="expiry_date" name="expiry_date" 
+                                           value="{{ scanned_item.expiry_date.strftime('%Y-%m-%d') if scanned_item.expiry_date else '' }}">
+                                    <div class="form-text">{{ _('Select the expiry date from the package') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
                     <div class="mb-4">
                         <label for="status" class="form-label">{{ _('Package Status') }}</label>
                         <select class="form-select" id="status" name="status">

@@ -10,32 +10,198 @@
         width: 100%;
         max-width: 600px;
         height: auto;
+        min-height: 450px; /* Typical 4:3 aspect ratio for 600px width */
         background: #000;
         border-radius: 8px;
+        object-fit: cover; /* Ensure video fills the container */
     }
     .scanner-container {
         position: relative;
         display: inline-block;
         width: 100%;
         max-width: 600px;
+        min-height: 450px; /* Prevent container resize on camera load */
+        overflow: hidden;
+        border-radius: 8px;
+        background: #000; /* Black background while loading */
     }
+    /* Loading spinner for camera initialization */
+    .camera-loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 48px;
+        z-index: 5;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: translate(-50%, -50%) rotate(0deg); }
+        to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    .scanner-container.camera-ready .camera-loading {
+        display: none;
+    }
+    /* Top blur overlay */
+    .blur-top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: calc(50% - 60px); /* Linear: half of 120px */
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        pointer-events: none;
+        z-index: 10;
+        opacity: 0; /* Hidden initially */
+        transition: height 0.3s ease, opacity 0.5s ease;
+    }
+
+    /* Bottom blur overlay */
+    .blur-bottom {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: calc(50% - 60px); /* Linear: half of 120px */
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        pointer-events: none;
+        z-index: 10;
+        opacity: 0; /* Hidden initially */
+        transition: height 0.3s ease, opacity 0.5s ease;
+    }
+
+    /* Left blur overlay */
+    .blur-left {
+        position: absolute;
+        top: calc(50% - 60px);
+        left: 0;
+        width: 10%; /* Linear: (100% - 80%) / 2 */
+        height: 120px;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        pointer-events: none;
+        z-index: 10;
+        opacity: 0; /* Hidden initially */
+        transition: all 0.3s ease, opacity 0.5s ease;
+    }
+
+    /* Right blur overlay */
+    .blur-right {
+        position: absolute;
+        top: calc(50% - 60px);
+        right: 0;
+        width: 10%; /* Linear: (100% - 80%) / 2 */
+        height: 120px;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        pointer-events: none;
+        z-index: 10;
+        opacity: 0; /* Hidden initially */
+        transition: all 0.3s ease, opacity 0.5s ease;
+    }
+    
+    /* Show blur overlays when camera is ready */
+    .scanner-container.camera-ready .blur-top,
+    .scanner-container.camera-ready .blur-bottom,
+    .scanner-container.camera-ready .blur-left,
+    .scanner-container.camera-ready .blur-right {
+        opacity: 1;
+    }
+
+    /* DataMatrix mode adjustments */
+    .scanner-container.datamatrix-active .blur-top {
+        height: calc(50% - 125px); /* Half of 250px */
+    }
+    .scanner-container.datamatrix-active .blur-bottom {
+        height: calc(50% - 125px); /* Half of 250px */
+    }
+    .scanner-container.datamatrix-active .blur-left {
+        top: calc(50% - 125px);
+        width: calc(50% - 125px);
+        height: 250px;
+    }
+    .scanner-container.datamatrix-active .blur-right {
+        top: calc(50% - 125px);
+        width: calc(50% - 125px);
+        height: 250px;
+    }
+    /* Linear mode: 80% width (max 400px), 120px height */
     .scan-indicator {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 200px;
-        height: 200px;
-        border: 2px solid rgba(0, 255, 0, 0.5);
-        border-radius: 10px;
+        width: 80%;
+        height: 120px;
         pointer-events: none;
         z-index: 11;
-        animation: pulse 2s infinite;
+        transition: all 0.3s ease;
     }
-    @keyframes pulse {
-        0% { border-color: rgba(0, 255, 0, 0.5); }
-        50% { border-color: rgba(0, 255, 0, 1); }
-        100% { border-color: rgba(0, 255, 0, 0.5); }
+    /* Square frame for DataMatrix mode */
+    .scan-indicator.datamatrix-mode {
+        width: 250px;
+        height: 250px;
+    }
+    /* Barcode scanner frame */
+    .scan-indicator::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        border-radius: 4px;
+        box-shadow:
+            inset 0 0 0 4px rgba(0, 0, 0, 0.3),
+            0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    /* Red scanning line */
+    .scan-line {
+        position: absolute;
+        top: 50%;
+        left: 5%;
+        right: 5%;
+        height: 2px;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 0, 0, 0.5) 20%,
+            rgba(255, 0, 0, 1) 50%,
+            rgba(255, 0, 0, 0.5) 80%,
+            transparent 100%
+        );
+        box-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
+        transform: translateY(-50%);
+        opacity: 0; /* Hidden by default */
+        animation: none; /* No animation initially */
+    }
+    /* Show and animate the scan line when camera is ready */
+    .scanner-container.camera-ready .scan-line {
+        opacity: 1;
+        animation: scan 2s linear infinite;
+    }
+    @keyframes scan {
+        0% {
+            top: 10%;
+            opacity: 0;
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            top: 90%;
+            opacity: 0;
+        }
     }
     .mode-toggle {
         display: inline-flex;
@@ -107,9 +273,21 @@
                 </div>
                 <div class="card-body text-center">
                     <!-- Camera view with overlay -->
-                    <div class="scanner-container">
+                    <div class="scanner-container" id="scanner-container">
+                        <!-- Loading spinner -->
+                        <div class="camera-loading">
+                            <i class="fas fa-spinner"></i>
+                        </div>
                         <video id="scanner-video" autoplay muted playsinline></video>
-                        <div class="scan-indicator"></div>
+                        <!-- Blur overlays for areas outside scanning area -->
+                        <div class="blur-top"></div>
+                        <div class="blur-bottom"></div>
+                        <div class="blur-left"></div>
+                        <div class="blur-right"></div>
+                        <!-- Scanning indicator -->
+                        <div class="scan-indicator" id="scan-indicator">
+                            <div class="scan-line"></div>
+                        </div>
                     </div>
 
                     <!-- Scan result display -->
@@ -149,6 +327,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initialize with datamatrix mode as default
+    document.getElementById('scan-indicator').classList.add('datamatrix-mode');
+    document.querySelector('.scanner-container').classList.add('datamatrix-active');
     initializeScanner('datamatrix');
     startScanning();
 
@@ -157,6 +337,21 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', (e) => {
             currentMode = e.target.value;
             console.log('Switching to mode:', currentMode);
+
+            // Update UI for mode
+            const scanIndicator = document.getElementById('scan-indicator');
+            const scannerContainer = document.querySelector('.scanner-container');
+            
+            // Remove camera-ready class to hide scan line while reinitializing
+            scannerContainer.classList.remove('camera-ready');
+
+            if (currentMode === 'datamatrix') {
+                scanIndicator.classList.add('datamatrix-mode');
+                scannerContainer.classList.add('datamatrix-active');
+            } else {
+                scanIndicator.classList.remove('datamatrix-mode');
+                scannerContainer.classList.remove('datamatrix-active');
+            }
 
             // Stop current scanning
             if (codeReader) {
@@ -235,6 +430,10 @@ async function startScanning() {
 
         // Start continuous decoding with optimized settings
         const decodingStream = await codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
+            // Mark container as ready on first frame (removes loading spinner)
+            if (!document.getElementById('scanner-container').classList.contains('camera-ready')) {
+                document.getElementById('scanner-container').classList.add('camera-ready');
+            }
             if (result) {
                 const now = Date.now();
                 // Debounce: Don't scan same code within 2 seconds
@@ -279,13 +478,27 @@ async function startScanning() {
 
 
 function flashScanIndicator() {
-    const indicator = document.querySelector('.scan-indicator');
-    indicator.style.borderColor = 'rgba(0, 255, 0, 1)';
-    indicator.style.borderWidth = '4px';
+    const scanLine = document.querySelector('.scan-line');
+    const scanIndicator = document.querySelector('.scan-indicator');
+
+    // Flash the scan line to green
+    scanLine.style.background = 'linear-gradient(90deg, transparent 0%, rgba(0, 255, 0, 0.5) 20%, rgba(0, 255, 0, 1) 50%, rgba(0, 255, 0, 0.5) 80%, transparent 100%)';
+    scanLine.style.boxShadow = '0 0 20px rgba(0, 255, 0, 1)';
+    scanLine.style.height = '4px';
+
+    // Flash the frame border
+    scanIndicator.style.borderColor = 'rgba(0, 255, 0, 0.8)';
+    scanIndicator.style.boxShadow = '0 0 30px rgba(0, 255, 0, 0.6)';
+
+    // Reset after animation
     setTimeout(() => {
-        indicator.style.borderColor = 'rgba(0, 255, 0, 0.5)';
-        indicator.style.borderWidth = '2px';
-    }, 200);
+        scanLine.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255, 0, 0, 0.5) 20%, rgba(255, 0, 0, 1) 50%, rgba(255, 0, 0, 0.5) 80%, transparent 100%)';
+        scanLine.style.boxShadow = '0 0 8px rgba(255, 0, 0, 0.8)';
+        scanLine.style.height = '2px';
+
+        scanIndicator.style.borderColor = '';
+        scanIndicator.style.boxShadow = '';
+    }, 300);
 }
 
 // Toggle torch/flashlight
