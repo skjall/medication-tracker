@@ -5,5 +5,5 @@ api_token_env: CROWDIN_API_TOKEN
 preserve_hierarchy: true
 
 files:
-  - source: "/translations/messages.pot"
-    translation: "/translations/%two_letters_code%/LC_MESSAGES/messages.po"
+  - source: "translations/messages.pot"
+    translation: "translations/%two_letters_code%/LC_MESSAGES/messages.po"

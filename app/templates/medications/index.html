@@ -72,10 +72,18 @@
                                         <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
                                         <td>
                                             <small>
-                                                {% if med.package_size_n1 %}N1: {{ med.package_size_n1 }}{% endif %}
-                                                {% if med.package_size_n2 %}<br>N2: {{ med.package_size_n2 }}{% endif %}
-                                                {% if med.package_size_n3 %}<br>N3: {{ med.package_size_n3 }}{% endif %}
-                                                {% if not med.package_size_n1 and not med.package_size_n2 and not med.package_size_n3 %}
+                                                {% if med.packages %}
+                                                    <!-- Show package system info -->
+                                                    {% for pkg in med.packages %}
+                                                        <span class="badge bg-primary">{{ pkg.package_size }}: {{ pkg.quantity }}</span>
+                                                        {% if not loop.last %}<br>{% endif %}
+                                                    {% endfor %}
+                                                {% elif med.package_size_n1 or med.package_size_n2 or med.package_size_n3 %}
+                                                    <!-- Show legacy package sizes -->
+                                                    {% if med.package_size_n1 %}N1: {{ med.package_size_n1 }}{% endif %}
+                                                    {% if med.package_size_n2 %}<br>N2: {{ med.package_size_n2 }}{% endif %}
+                                                    {% if med.package_size_n3 %}<br>N3: {{ med.package_size_n3 }}{% endif %}
+                                                {% else %}
                                                     <span class="text-muted">{{ _('Not set') }}</span>
                                                 {% endif %}
                                             </small>
@@ -165,10 +173,18 @@
                                         </td>
                                         <td>
                                             <small>
-                                                {% if med.package_size_n1 %}N1: {{ med.package_size_n1 }}{% endif %}
-                                                {% if med.package_size_n2 %}{% if med.package_size_n1 %}, {% endif %}N2: {{ med.package_size_n2 }}{% endif %}
-                                                {% if med.package_size_n3 %}{% if med.package_size_n1 or med.package_size_n2 %}, {% endif %}N3: {{ med.package_size_n3 }}{% endif %}
-                                                {% if not med.package_size_n1 and not med.package_size_n2 and not med.package_size_n3 %}
+                                                {% if med.packages %}
+                                                    <!-- Show package system info -->
+                                                    {% for pkg in med.packages %}
+                                                        <span class="badge bg-primary">{{ pkg.package_size }}: {{ pkg.quantity }}</span>
+                                                        {% if not loop.last %}, {% endif %}
+                                                    {% endfor %}
+                                                {% elif med.package_size_n1 or med.package_size_n2 or med.package_size_n3 %}
+                                                    <!-- Show legacy package sizes -->
+                                                    {% if med.package_size_n1 %}N1: {{ med.package_size_n1 }}{% endif %}
+                                                    {% if med.package_size_n2 %}{% if med.package_size_n1 %}, {% endif %}N2: {{ med.package_size_n2 }}{% endif %}
+                                                    {% if med.package_size_n3 %}{% if med.package_size_n1 or med.package_size_n2 %}, {% endif %}N3: {{ med.package_size_n3 }}{% endif %}
+                                                {% else %}
                                                     <span class="text-muted">{{ _('Not defined') }}</span>
                                                 {% endif %}
                                             </small>

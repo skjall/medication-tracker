@@ -23,6 +23,7 @@
             <th>{{ _('Status') }}</th>
             <th>{{ _('Created Date') }}</th>
             <th>{{ _('Medications') }}</th>
+            <th>{{ _('Packages') }}</th>
             <th class="text-end">{{ _('Actions') }}</th>
           </tr>
         </thead>
@@ -43,14 +44,31 @@
             </td>
             <td>
               <span
-                class="badge {% if order.status == 'planned' %}bg-primary{% elif order.status == 'printed' %}bg-info{% endif %}"
+                class="badge {% if order.status == 'planned' %}bg-secondary{% elif order.status == 'partial' %}bg-warning{% endif %}"
               >
-                {{ order.status|capitalize }}
+                {% if order.status == 'planned' %}{{ _('Open') }}{% elif order.status == 'partial' %}{{ _('Partial') }}{% else %}{{ order.status|capitalize }}{% endif %}
               </span>
             </td>
             <td>{{ format_date(order.created_date) }}</td>
             <td>
-              {{ order.order_items|length }} {% if order.order_items|length == 1 %}{{ _('medication') }}{% else %}{{ _('medications') }}{% endif %}
+              {{ ngettext('%(num)s medication', '%(num)s medications', order.order_items|length, num=order.order_items|length) }}
+            </td>
+            <td>
+              {% set total_linked = namespace(value=0) %}
+              {% set total_needed = namespace(value=0) %}
+              {% for item in order.order_items %}
+                {% set total_needed.value = total_needed.value + item.packages_n1 + item.packages_n2 + item.packages_n3 %}
+                {% if item.linked_packages %}
+                  {% set total_linked.value = total_linked.value + item.linked_packages|length %}
+                {% endif %}
+              {% endfor %}
+              {% if total_needed.value > 0 %}
+                <span class="{% if total_linked.value == total_needed.value %}text-success{% elif total_linked.value > 0 %}text-warning{% else %}text-muted{% endif %}">
+                  {{ total_linked.value }}/{{ total_needed.value }}
+                </span>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
             </td>
             <td class="text-end">
               <div class="btn-group btn-group-sm">
@@ -121,6 +139,7 @@
             <th>{{ _('Visit Date') }}</th>
             <th>{{ _('Created Date') }}</th>
             <th>{{ _('Medications') }}</th>
+            <th>{{ _('Packages') }}</th>
             <th class="text-end">{{ _('Actions') }}</th>
           </tr>
         </thead>
@@ -141,7 +160,24 @@
             </td>
             <td>{{ format_date(order.created_date) }}</td>
             <td>
-              {{ order.order_items|length }} {% if order.order_items|length == 1 %}{{ _('medication') }}{% else %}{{ _('medications') }}{% endif %}
+              {{ ngettext('%(num)s medication', '%(num)s medications', order.order_items|length, num=order.order_items|length) }}
+            </td>
+            <td>
+              {% set total_linked = namespace(value=0) %}
+              {% set total_needed = namespace(value=0) %}
+              {% for item in order.order_items %}
+                {% set total_needed.value = total_needed.value + item.packages_n1 + item.packages_n2 + item.packages_n3 %}
+                {% if item.linked_packages %}
+                  {% set total_linked.value = total_linked.value + item.linked_packages|length %}
+                {% endif %}
+              {% endfor %}
+              {% if total_needed.value > 0 %}
+                <span class="{% if total_linked.value == total_needed.value %}text-success{% elif total_linked.value > 0 %}text-warning{% else %}text-muted{% endif %}">
+                  {{ total_linked.value }}/{{ total_needed.value }}
+                </span>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
             </td>
             <td class="text-end">
               <div class="btn-group btn-group-sm">

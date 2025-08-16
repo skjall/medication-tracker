@@ -45,8 +45,8 @@
             <div class="mb-4">
                 <label for="status" class="form-label">{{ _('Order Status') }}</label>
                 <select class="form-select" id="status" name="status">
-                    <option value="planned" {% if order.status == 'planned' %}selected{% endif %}>{{ _('Planned') }}</option>
-                    <option value="printed" {% if order.status == 'printed' %}selected{% endif %}>{{ _('Printed') }}</option>
+                    <option value="planned" {% if order.status == 'planned' %}selected{% endif %}>{{ _('Open') }}</option>
+                    <option value="partial" {% if order.status == 'partial' %}selected{% endif %}>{{ _('Partial') }}</option>
                     <option value="fulfilled" {% if order.status == 'fulfilled' %}selected{% endif %}>{{ _('Fulfilled') }}</option>
                 </select>
             </div>

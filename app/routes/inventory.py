@@ -87,7 +87,7 @@ def show(id: int):
         .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
         .outerjoin(MedicationPackage, ScannedItem.medication_package_id == MedicationPackage.id)
         .filter(PackageInventory.medication_id == inventory.medication_id)
-        .filter(PackageInventory.status.in_(['sealed', 'open']))
+        .filter(PackageInventory.status.in_(['sealed', 'open', 'empty']))  # Include empty packages
         .order_by(ScannedItem.expiry_date.asc())
         .all()
     )
@@ -109,6 +109,72 @@ def show(id: int):
         today=date.today()
     )
 
+
+@inventory_bp.route("/<int:id>/manual_deduct", methods=["POST"])
+def manual_deduct(id: int):
+    """
+    Manually deduct units from inventory (for on-demand medications or extra doses).
+    Uses the same intelligent deduction system as automatic deductions.
+    """
+    # Get medication by ID (the form sends medication.id, not inventory.id)
+    medication = Medication.query.get_or_404(id)
+    
+    # Ensure the medication has an inventory record
+    if not medication.inventory:
+        flash(_("No inventory record found for this medication"), "error")
+        return redirect(url_for("inventory.index"))
+    
+    # Get the amount to deduct from form
+    # Handle both comma and dot as decimal separator (for German locale)
+    amount_str = request.form.get("amount", "0")
+    amount_str = amount_str.replace(",", ".")
+    try:
+        amount = int(float(amount_str))
+    except (ValueError, TypeError):
+        amount = 0
+    notes = request.form.get("notes", "").strip()
+    
+    if amount <= 0:
+        flash(_("Please enter a valid amount to deduct"), "error")
+        return redirect(url_for("inventory.show", id=medication.inventory.id))
+    
+    # Check if enough inventory available
+    if medication.total_inventory_count < amount:
+        flash(
+            _("Not enough inventory. Available: %(available)s units, Requested: %(requested)s units", 
+              available=medication.total_inventory_count, requested=amount),
+            "error"
+        )
+        return redirect(url_for("inventory.show", id=medication.inventory.id))
+    
+    # Use the same intelligent deduction method as automatic deductions
+    result = medication.deduct_units(
+        amount,
+        f"Manual deduction: {notes if notes else f'{amount} units taken manually'}"
+    )
+    
+    if result['success']:
+        db.session.commit()
+        
+        # Build success message
+        msg = _("Successfully deducted %(amount)s units", amount=amount)
+        
+        if result['legacy_deducted'] > 0:
+            msg += f" ({result['legacy_deducted']} {_('from legacy')})"
+        
+        if result['packages_deducted']:
+            pkg_count = len(result['packages_deducted'])
+            msg += f" ({pkg_count} {_('package') if pkg_count == 1 else _('packages')} {_('used')})"
+        
+        flash(msg, "success")
+    else:
+        flash(
+            _("Failed to deduct units: %(reason)s", 
+              reason="; ".join(result['notes'])),
+            "error"
+        )
+    
+    return redirect(url_for("inventory.show", id=medication.inventory.id))
 
 @inventory_bp.route("/<int:id>/adjust", methods=["POST"])
 def adjust(id: int):
@@ -279,43 +345,59 @@ def edit_package(package_id: int):
         else:
             package.order_item_id = None
         
-        # Update current units
+        # Update current units and track the change
         current_units = request.form.get("current_units")
         if current_units:
             try:
-                units = int(current_units)
-                if 0 <= units <= package.original_units:
-                    package.current_units = units
+                # Store the old value to calculate adjustment
+                old_units = package.current_units
+                new_units = int(current_units)
+                
+                if 0 <= new_units <= package.original_units:
+                    package.current_units = new_units
                     
                     # Auto-update status based on units
-                    if units == 0:
+                    if new_units == 0:
                         package.status = "empty"
-                    elif units < package.original_units and package.status == "sealed":
+                    elif new_units < package.original_units and package.status == "sealed":
                         package.status = "open"
+                    
+                    # Create inventory log if units changed
+                    adjustment = new_units - old_units
+                    if adjustment != 0:
+                        inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
+                        if inventory:
+                            # Get notes from form or create default message
+                            notes = request.form.get("notes", "").strip()
+                            if not notes:
+                                notes = f"Package adjustment (Serial: {scanned_item.serial_number})"
+                            else:
+                                notes = f"Package {scanned_item.serial_number}: {notes}"
+                            
+                            # Update the legacy inventory count to reflect package change
+                            # Note: We're just logging the change, not updating legacy inventory
+                            # since packages are tracked separately
+                            from models import InventoryLog
+                            
+                            # Calculate what the total inventory would be with this change
+                            medication = package.medication
+                            total_before = medication.total_inventory_count - adjustment
+                            total_after = medication.total_inventory_count
+                            
+                            log = InventoryLog(
+                                inventory_id=inventory.id,
+                                previous_count=total_before,
+                                adjustment=adjustment,
+                                new_count=total_after,
+                                notes=notes
+                            )
+                            db.session.add(log)
                 else:
                     flash(_("Units must be between 0 and %(max)s", max=package.original_units), "error")
                     return redirect(url_for("inventory.edit_package", package_id=package_id))
             except ValueError:
                 flash(_("Invalid units value"), "error")
                 return redirect(url_for("inventory.edit_package", package_id=package_id))
-        
-        # Add optional notes
-        notes = request.form.get("notes", "")
-        if notes:
-            # Create an inventory log entry for tracking
-            adjustment = package.current_units - int(request.form.get("original_units", package.current_units))
-            if adjustment != 0:
-                inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
-                if inventory:
-                    from models import InventoryLog
-                    log = InventoryLog(
-                        inventory_id=inventory.id,
-                        previous_count=inventory.current_count - adjustment,
-                        adjustment=adjustment,
-                        new_count=inventory.current_count,
-                        notes=f"Package {scanned_item.serial_number}: {notes}"
-                    )
-                    db.session.add(log)
         
         db.session.commit()
         flash(_("Package updated successfully"), "success")

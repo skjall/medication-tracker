@@ -38,6 +38,16 @@
     </div>
     <div class="card-body">
         {% if medications_by_physician %}
+            {# Check if any medication has packages #}
+            {% set has_packages = namespace(value=false) %}
+            {% for physician in medications_by_physician %}
+                {% for med in medications_by_physician[physician] %}
+                    {% if med.package_inventories and med.package_inventories|length > 0 %}
+                        {% set has_packages.value = true %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            
             {% for physician in sorted_physicians %}
                 <div class="physician-section mb-4">
                     <!-- Physician Header -->
@@ -52,14 +62,19 @@
                         </h5>
                         <span class="badge bg-secondary ms-2">{{ medications_by_physician[physician]|length }}</span>
                     </div>
-                    
+
                     <!-- Medications Table for this Physician -->
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>{{ _('Name') }}</th>
-                                    <th>{{ _('Daily Usage') }}</th>
+                                    {% if has_packages.value %}
+                                        <th>{{ _('Current Package') }}</th>
+                                        <th>{{ _('Next Package') }}</th>
+                                    {% else %}
+                                        <th>{{ _('Daily Usage') }}</th>
+                                    {% endif %}
                                     <th>{{ _('Current Stock') }}</th>
                                     <th>{{ _('Days Left') }}</th>
                                     <th>{{ _('Depletion Date') }}</th>
@@ -80,24 +95,71 @@
                                                 <i class="fas fa-fingerprint text-info ms-2" title="{{ _('No generic substitution') }}"></i>
                                             {% endif %}
                                         </td>
-                                        <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
+                                        {% if has_packages.value %}
+                                            <td>
+                                                {% set current_package = med.get_next_package_for_deduction() %}
+                                                {% if current_package %}
+                                                    <small>
+                                                        {% if current_package.scanned_item %}
+                                                            {{ current_package.scanned_item.serial_number[-6:] }}
+                                                        {% else %}
+                                                            #{{ current_package.id }}
+                                                        {% endif %}
+                                                        <span class="text-muted">({{ current_package.current_units }})</span>
+                                                    </small>
+                                                {% elif med.inventory and med.inventory.current_count > 0 %}
+                                                    <small class="text-muted">{{ _('Legacy') }}</small>
+                                                {% else %}
+                                                    <small class="text-muted">-</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if current_package %}
+                                                    {# Get the next package after the current one #}
+                                                    {% set all_packages = med.package_inventories|selectattr('status', 'in', ['open', 'sealed'])|selectattr('current_units', '>', 0)|list %}
+                                                    {% if all_packages|length > 1 %}
+                                                        {% for pkg in all_packages[1:2] %}
+                                                            <small>
+                                                                {% if pkg.scanned_item %}
+                                                                    {{ pkg.scanned_item.serial_number[-6:] }}
+                                                                {% else %}
+                                                                    #{{ pkg.id }}
+                                                                {% endif %}
+                                                                <span class="text-muted">({{ pkg.current_units }})</span>
+                                                            </small>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <small class="text-muted">-</small>
+                                                    {% endif %}
+                                                {% elif med.inventory and med.inventory.current_count > 0 %}
+                                                    {# Still on legacy, but check if there's a package waiting #}
+                                                    {% set first_package = med.get_next_package_for_deduction() %}
+                                                    {% if first_package %}
+                                                        <small>
+                                                            {% if first_package.scanned_item %}
+                                                                {{ first_package.scanned_item.serial_number[-6:] }}
+                                                            {% else %}
+                                                                #{{ first_package.id }}
+                                                            {% endif %}
+                                                            <span class="text-muted">({{ first_package.current_units }})</span>
+                                                        </small>
+                                                    {% else %}
+                                                        <small class="text-muted">-</small>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <small class="text-muted">-</small>
+                                                {% endif %}
+                                            </td>
+                                        {% else %}
+                                            <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
+                                        {% endif %}
                                         <td class="{{ color_class }}">
                                             {% if med.inventory %}
                                                 <strong>{{ med.total_inventory_count }}</strong> {{ _('units') }}
-                                                {% if med.uses_package_system %}
-                                                    <br><small class="text-success">
-                                                        <i class="fas fa-box"></i> {{ _('Package-based') }}
+                                                {% if med.package_inventories and med.package_inventories|length > 0 %}
+                                                    <br><small class="text-muted">
+                                                        <i class="fas fa-box"></i> {{ med.package_inventories|length }} {{ ngettext('package', 'packages', med.package_inventories|length) }}
                                                     </small>
-                                                {% elif med.packages %}
-                                                    {% set package_count = 0 %}
-                                                    {% if 'package_inventory' in med.__dict__ %}
-                                                        {% set package_count = med.package_inventory|length %}
-                                                    {% endif %}
-                                                    {% if package_count > 0 %}
-                                                        <br><small class="text-muted">
-                                                            <i class="fas fa-qrcode"></i> {{ package_count }} {{ _('packages') }}
-                                                        </small>
-                                                    {% endif %}
                                                 {% endif %}
                                             {% else %}
                                                 <span class="text-muted">{{ _('No inventory') }}</span>
@@ -150,7 +212,7 @@
                     </div>
                 </div>
             {% endfor %}
-            
+
             <!-- OTC Medications Section -->
             {% if otc_medications %}
                 <div class="physician-section mb-4">
@@ -162,14 +224,19 @@
                         </h5>
                         <span class="badge bg-secondary ms-2">{{ otc_medications|length }}</span>
                     </div>
-                    
+
                     <!-- OTC Medications Table -->
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>{{ _('Name') }}</th>
-                                    <th>{{ _('Daily Usage') }}</th>
+                                    {% if has_packages.value %}
+                                        <th>{{ _('Current Package') }}</th>
+                                        <th>{{ _('Next Package') }}</th>
+                                    {% else %}
+                                        <th>{{ _('Daily Usage') }}</th>
+                                    {% endif %}
                                     <th>{{ _('Current Stock') }}</th>
                                     <th>{{ _('Days Left') }}</th>
                                     <th>{{ _('Depletion Date') }}</th>
@@ -188,7 +255,64 @@
                                                 <i class="fas fa-fingerprint text-info ms-2" title="{{ _('No generic substitution') }}"></i>
                                             {% endif %}
                                         </td>
-                                        <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
+                                        {% if has_packages.value %}
+                                            <td>
+                                                {% set current_package = med.get_next_package_for_deduction() %}
+                                                {% if current_package %}
+                                                    <small>
+                                                        {% if current_package.scanned_item %}
+                                                            {{ current_package.scanned_item.serial_number[-6:] }}
+                                                        {% else %}
+                                                            #{{ current_package.id }}
+                                                        {% endif %}
+                                                        <span class="text-muted">({{ current_package.current_units }})</span>
+                                                    </small>
+                                                {% elif med.inventory and med.inventory.current_count > 0 %}
+                                                    <small class="text-muted">{{ _('Legacy') }}</small>
+                                                {% else %}
+                                                    <small class="text-muted">-</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if current_package %}
+                                                    {# Get the next package after the current one #}
+                                                    {% set all_packages = med.package_inventories|selectattr('status', 'in', ['open', 'sealed'])|selectattr('current_units', '>', 0)|list %}
+                                                    {% if all_packages|length > 1 %}
+                                                        {% for pkg in all_packages[1:2] %}
+                                                            <small>
+                                                                {% if pkg.scanned_item %}
+                                                                    {{ pkg.scanned_item.serial_number[-6:] }}
+                                                                {% else %}
+                                                                    #{{ pkg.id }}
+                                                                {% endif %}
+                                                                <span class="text-muted">({{ pkg.current_units }})</span>
+                                                            </small>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <small class="text-muted">-</small>
+                                                    {% endif %}
+                                                {% elif med.inventory and med.inventory.current_count > 0 %}
+                                                    {# Still on legacy, but check if there's a package waiting #}
+                                                    {% set first_package = med.get_next_package_for_deduction() %}
+                                                    {% if first_package %}
+                                                        <small>
+                                                            {% if first_package.scanned_item %}
+                                                                {{ first_package.scanned_item.serial_number[-6:] }}
+                                                            {% else %}
+                                                                #{{ first_package.id }}
+                                                            {% endif %}
+                                                            <span class="text-muted">({{ first_package.current_units }})</span>
+                                                        </small>
+                                                    {% else %}
+                                                        <small class="text-muted">-</small>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <small class="text-muted">-</small>
+                                                {% endif %}
+                                            </td>
+                                        {% else %}
+                                            <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
+                                        {% endif %}
                                         <td class="{{ color_class }}">
                                             {% if med.inventory %}
                                                 <strong>{{ med.total_inventory_count }}</strong> {{ _('units') }}
@@ -271,11 +395,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const searchTerm = this.value.toLowerCase();
             const rows = document.querySelectorAll('.medication-row');
             const sections = document.querySelectorAll('.physician-section');
-            
+
             sections.forEach(section => {
                 let hasVisibleMeds = false;
                 const sectionRows = section.querySelectorAll('.medication-row');
-                
+
                 sectionRows.forEach(row => {
                     const medName = row.querySelector('strong').textContent.toLowerCase();
                     if (medName.includes(searchTerm)) {
@@ -285,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         row.style.display = 'none';
                     }
                 });
-                
+
                 // Hide/show entire section based on whether it has visible medications
                 section.style.display = hasVisibleMeds || searchTerm === '' ? '' : 'none';
             });

@@ -183,13 +183,23 @@ class Medication(db.Model):
         ).scalar()
     
     @property
+    def has_any_packages(self) -> bool:
+        """Check if medication has ANY packages (including empty ones)."""
+        from models import PackageInventory
+        return db.session.query(
+            PackageInventory.query.filter_by(medication_id=self.id).exists()
+        ).scalar()
+    
+    @property
     def uses_package_system(self) -> bool:
         """
         Determine if this medication should use package-based inventory.
-        True when legacy inventory is empty (or doesn't exist) and packages are available.
+        True when legacy inventory is empty (or doesn't exist) and ANY packages exist (even empty).
+        Once packages are registered, we stay in package mode.
         """
         has_legacy = self.inventory and self.inventory.current_count > 0
-        return not has_legacy and self.has_package_inventory
+        # Use package system if no legacy AND any packages exist (even empty ones)
+        return not has_legacy and self.has_any_packages
     
     @property
     def active_package_count(self) -> int:
@@ -243,10 +253,15 @@ class Medication(db.Model):
         
         remaining = amount
         
+        # Capture the original total inventory count before any modifications
+        original_total_count = self.total_inventory_count
+        
         # Step 1: Try to deduct from legacy inventory first
         if self.inventory and self.inventory.current_count > 0:
             legacy_deduction = min(remaining, self.inventory.current_count)
-            self.inventory.update_count(-legacy_deduction, reason or "Automatic deduction")
+            # Only update legacy inventory, don't log yet - we'll log the total at the end
+            self.inventory.current_count -= legacy_deduction
+            self.inventory.last_updated = utcnow()
             remaining -= legacy_deduction
             result['legacy_deducted'] = legacy_deduction
             result['total_deducted'] += legacy_deduction
@@ -281,11 +296,36 @@ class Medication(db.Model):
             
             result['packages_deducted'].append({
                 'package_id': package.id,
-                'serial': package.scanned_item.serial_number,
+                'serial': package.scanned_item.serial_number if package.scanned_item else f"Package #{package.id}",
                 'amount': package_deduction,
                 'remaining': package.current_units
             })
             result['total_deducted'] += package_deduction
+        
+        # Create a single inventory log entry for the entire deduction
+        if self.inventory and result['total_deducted'] > 0:
+            from models import InventoryLog
+            
+            # Build detailed reason string
+            reason_parts = []
+            if result['legacy_deducted'] > 0:
+                reason_parts.append(f"Legacy: {result['legacy_deducted']} units")
+            for pkg in result['packages_deducted']:
+                reason_parts.append(f"Package {pkg['serial']}: {pkg['amount']} units")
+            
+            detailed_reason = f"{reason or 'Automatic deduction'}"
+            if len(reason_parts) > 0:
+                detailed_reason += f" ({', '.join(reason_parts)})"
+            
+            # Create log entry with the correct total counts
+            log = InventoryLog(
+                inventory_id=self.inventory.id,
+                previous_count=original_total_count,
+                adjustment=-result['total_deducted'],
+                new_count=original_total_count - result['total_deducted'],
+                notes=detailed_reason,
+            )
+            db.session.add(log)
         
         result['success'] = remaining == 0
         return result

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-15 22:59+0200\n"
+"POT-Creation-Date: 2025-08-16 22:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,24 +27,49 @@ msgstr ""
 msgid "No upcoming physician visits scheduled."
 msgstr ""
 
-#: routes/inventory.py:147
+#: routes/inventory.py:124
+msgid "No inventory record found for this medication"
+msgstr ""
+
+#: routes/inventory.py:138
+msgid "Please enter a valid amount to deduct"
+msgstr ""
+
+#: routes/inventory.py:144
+#, python-format
+msgid ""
+"Not enough inventory. Available: %(available)s units, Requested: "
+"%(requested)s units"
+msgstr ""
+
+#: routes/inventory.py:160
+#, python-format
+msgid "Successfully deducted %(amount)s units"
+msgstr ""
+
+#: routes/inventory.py:173
+#, python-format
+msgid "Failed to deduct units: %(reason)s"
+msgstr ""
+
+#: routes/inventory.py:213
 msgid "Inventory for {} adjusted by {}"
 msgstr ""
 
-#: routes/inventory.py:217
+#: routes/inventory.py:283
 msgid "Inventory updated for {}"
 msgstr ""
 
-#: routes/inventory.py:296
+#: routes/inventory.py:396
 #, python-format
 msgid "Units must be between 0 and %(max)s"
 msgstr ""
 
-#: routes/inventory.py:299
+#: routes/inventory.py:399
 msgid "Invalid units value"
 msgstr ""
 
-#: routes/inventory.py:321 routes/medication_packages.py:217
+#: routes/inventory.py:403 routes/medication_packages.py:217
 msgid "Package updated successfully"
 msgstr ""
 
@@ -70,7 +95,7 @@ msgid "Package added successfully"
 msgstr ""
 
 #: routes/medication_packages.py:129 routes/medication_packages.py:146
-#: routes/medication_packages.py:227
+#: routes/medication_packages.py:227 routes/orders.py:748
 msgid "Package does not belong to this medication"
 msgstr ""
 
@@ -122,66 +147,82 @@ msgstr ""
 msgid "Order deleted successfully"
 msgstr ""
 
-#: routes/orders.py:462
+#: routes/orders.py:460
 msgid "Order status updated to {}"
 msgstr ""
 
-#: routes/orders.py:464
+#: routes/orders.py:462
 msgid "Invalid status"
 msgstr ""
 
-#: routes/orders.py:481
+#: routes/orders.py:479
 msgid "Order marked as unfulfilled"
 msgstr ""
 
-#: routes/orders.py:507
+#: routes/orders.py:505
 msgid "Order marked as fulfilled and {} items added to inventory"
 msgstr ""
 
-#: routes/orders.py:509
+#: routes/orders.py:507
 msgid "Order marked as fulfilled"
 msgstr ""
 
-#: routes/orders.py:532
+#: routes/orders.py:530
 msgid "Item does not belong to this order"
 msgstr ""
 
-#: routes/orders.py:573
+#: routes/orders.py:571
 msgid "Item {} marked as {}"
 msgstr ""
 
-#: routes/orders.py:573 routes/scanner.py:83 templates/inventory/show.html:368
+#: routes/orders.py:571 routes/scanner.py:83 templates/inventory/show.html:446
 #: templates/scanner/index.html:72 templates/scanner/index.html:155
 #: templates/scanner/package_details.html:30 templates/scanner/scan.html:237
 msgid "Unknown"
 msgstr ""
 
-#: routes/orders.py:605
+#: routes/orders.py:603
 msgid "Successfully fulfilled {} items"
 msgstr ""
 
-#: routes/orders.py:617
+#: routes/orders.py:615 routes/orders.py:642
 msgid "Invalid order item"
 msgstr ""
 
-#: routes/orders.py:622
+#: routes/orders.py:620
 msgid "Can only cancel pending items"
 msgstr ""
 
-#: routes/orders.py:627
-msgid "Cancelled by user"
-msgstr ""
-
-#: routes/orders.py:633
+#: routes/orders.py:630
 msgid "Item cancelled successfully"
 msgstr ""
 
-#: routes/orders.py:649
+#: routes/orders.py:647
+msgid "Can only undo cancellation for cancelled items"
+msgstr ""
+
+#: routes/orders.py:660
+msgid "Cancellation undone successfully"
+msgstr ""
+
+#: routes/orders.py:676
 msgid "No active prescription template found. Please configure a template first."
 msgstr ""
 
-#: routes/orders.py:664
+#: routes/orders.py:691
 msgid "Error generating prescription PDF"
+msgstr ""
+
+#: routes/orders.py:792
+msgid "Package linked successfully"
+msgstr ""
+
+#: routes/orders.py:806
+msgid "Package is not linked to this order item"
+msgstr ""
+
+#: routes/orders.py:844
+msgid "Package unlinked successfully"
 msgstr ""
 
 #: routes/physicians.py:59 routes/physicians.py:117
@@ -599,7 +640,7 @@ msgstr ""
 msgid "Next Physician Visit"
 msgstr ""
 
-#: templates/index.html:31 templates/inventory/show.html:445
+#: templates/index.html:31 templates/inventory/show.html:529
 #: templates/medications/edit.html:98 templates/medications/new.html:157
 #: templates/physicians/edit.html:85 templates/physicians/new.html:75
 #: templates/physicians/show.html:86 templates/physicians/show.html:206
@@ -663,11 +704,12 @@ msgid "Runs out"
 msgstr ""
 
 #: templates/index.html:133 templates/inventory/depletion.html:123
-#: templates/inventory/low.html:72 templates/visits/show.html:212
+#: templates/inventory/low.html:72 templates/orders/show.html:231
+#: templates/visits/show.html:212
 msgid "View Medication"
 msgstr ""
 
-#: templates/index.html:137 templates/orders/show.html:186
+#: templates/index.html:137 templates/orders/show.html:236
 msgid "View Inventory"
 msgstr ""
 
@@ -683,15 +725,15 @@ msgstr ""
 msgid "Medications Overview"
 msgstr ""
 
-#: templates/index.html:188 templates/inventory/index.html:50
+#: templates/index.html:188 templates/inventory/index.html:60
 #: templates/medications/index.html:35
 msgid "Unassigned Medications"
 msgstr ""
 
 #: templates/index.html:199 templates/index.html:291
-#: templates/inventory/index.html:61 templates/inventory/index.html:171
+#: templates/inventory/index.html:71 templates/inventory/index.html:233
 #: templates/inventory/low.html:28 templates/medications/index.html:46
-#: templates/medications/index.html:140 templates/physicians/edit.html:31
+#: templates/medications/index.html:148 templates/physicians/edit.html:31
 #: templates/physicians/index.html:30 templates/physicians/new.html:25
 #: templates/physicians/show.html:34 templates/physicians/show.html:135
 #: templates/prescriptions/index.html:63 templates/system/status.html:159
@@ -700,10 +742,10 @@ msgid "Name"
 msgstr ""
 
 #: templates/index.html:200 templates/index.html:292
-#: templates/inventory/depletion.html:84 templates/inventory/index.html:62
-#: templates/inventory/index.html:172 templates/inventory/low.html:29
+#: templates/inventory/depletion.html:84 templates/inventory/index.html:76
+#: templates/inventory/index.html:238 templates/inventory/low.html:29
 #: templates/inventory/show.html:88 templates/medications/index.html:49
-#: templates/medications/index.html:141 templates/physicians/show.html:136
+#: templates/medications/index.html:149 templates/physicians/show.html:136
 #: templates/visits/show.html:163
 msgid "Daily Usage"
 msgstr ""
@@ -714,38 +756,38 @@ msgid "Current Inventory"
 msgstr ""
 
 #: templates/index.html:202 templates/index.html:294
-#: templates/inventory/depletion.html:86 templates/inventory/index.html:64
-#: templates/inventory/index.html:174 templates/inventory/low.html:32
+#: templates/inventory/depletion.html:86 templates/inventory/index.html:79
+#: templates/inventory/index.html:241 templates/inventory/low.html:32
 msgid "Days Left"
 msgstr ""
 
 #: templates/index.html:203 templates/index.html:295
-#: templates/inventory/depletion.html:87 templates/inventory/index.html:65
-#: templates/inventory/index.html:175 templates/inventory/low.html:33
-#: templates/medications/show.html:390 templates/medications/show.html:393
+#: templates/inventory/depletion.html:87 templates/inventory/index.html:80
+#: templates/inventory/index.html:242 templates/inventory/low.html:33
+#: templates/medications/show.html:392 templates/medications/show.html:395
 msgid "Depletion Date"
 msgstr ""
 
 #: templates/index.html:204 templates/index.html:296
-#: templates/inventory/depletion.html:88 templates/inventory/index.html:66
-#: templates/inventory/index.html:176 templates/inventory/show.html:353
-#: templates/medications/index.html:53 templates/medications/index.html:144
-#: templates/orders/index.html:23 templates/orders/show.html:128
-#: templates/physicians/show.html:138 templates/prescriptions/index.html:66
-#: templates/scanner/index.html:59 templates/scanner/index.html:144
-#: templates/scanner/package_details.html:75
+#: templates/inventory/depletion.html:88 templates/inventory/index.html:81
+#: templates/inventory/index.html:243 templates/inventory/show.html:431
+#: templates/medications/index.html:53 templates/medications/index.html:152
+#: templates/orders/index.html:23 templates/orders/show.html:63
+#: templates/orders/show.html:157 templates/physicians/show.html:138
+#: templates/prescriptions/index.html:66 templates/scanner/index.html:59
+#: templates/scanner/index.html:144 templates/scanner/package_details.html:75
 #: templates/system/migrations.html:55 templates/system/status.html:162
 msgid "Status"
 msgstr ""
 
 #: templates/index.html:205 templates/index.html:297
-#: templates/inventory/depletion.html:89 templates/inventory/index.html:67
-#: templates/inventory/index.html:177 templates/inventory/low.html:35
-#: templates/inventory/show.html:358 templates/medications/index.html:54
-#: templates/medications/index.html:145 templates/medications/show.html:55
-#: templates/medications/show.html:436 templates/orders/edit.html:64
-#: templates/orders/index.html:26 templates/orders/index.html:124
-#: templates/orders/show.html:129 templates/physicians/index.html:36
+#: templates/inventory/depletion.html:89 templates/inventory/index.html:82
+#: templates/inventory/index.html:244 templates/inventory/low.html:35
+#: templates/inventory/show.html:436 templates/medications/index.html:54
+#: templates/medications/index.html:153 templates/medications/show.html:55
+#: templates/medications/show.html:438 templates/orders/edit.html:64
+#: templates/orders/index.html:27 templates/orders/index.html:143
+#: templates/orders/show.html:158 templates/physicians/index.html:36
 #: templates/physicians/show.html:139 templates/physicians/show.html:207
 #: templates/prescriptions/index.html:68 templates/scanner/index.html:60
 #: templates/scanner/package_details.html:162 templates/schedules/index.html:70
@@ -755,87 +797,90 @@ msgid "Actions"
 msgstr ""
 
 #: templates/index.html:215 templates/index.html:306
-#: templates/inventory/index.html:77 templates/inventory/index.html:186
-#: templates/medications/index.html:64 templates/medications/index.html:153
-#: templates/medications/show.html:7 templates/orders/show.html:69
+#: templates/inventory/index.html:92 templates/inventory/index.html:253
+#: templates/medications/index.html:64 templates/medications/index.html:161
+#: templates/medications/show.html:7 templates/orders/show.html:60
 #: templates/physicians/show.html:149
 msgid "OTC"
 msgstr ""
 
 #: templates/index.html:218 templates/index.html:308
 #: templates/inventory/depletion.html:99 templates/inventory/depletion.html:100
-#: templates/inventory/edit_package.html:50 templates/inventory/index.html:83
-#: templates/inventory/index.html:86 templates/inventory/index.html:191
-#: templates/inventory/index.html:194 templates/inventory/low.html:44
+#: templates/inventory/edit_package.html:50 templates/inventory/index.html:154
+#: templates/inventory/index.html:158 templates/inventory/index.html:314
+#: templates/inventory/index.html:318 templates/inventory/low.html:44
 #: templates/inventory/low.html:47 templates/inventory/low.html:65
 #: templates/inventory/show.html:62 templates/inventory/show.html:90
-#: templates/inventory/show.html:139 templates/inventory/show.html:193
-#: templates/inventory/show.html:194 templates/inventory/show.html:225
-#: templates/inventory/show.html:278 templates/inventory/show.html:279
-#: templates/inventory/show.html:338 templates/medications/edit.html:216
+#: templates/inventory/show.html:136 templates/inventory/show.html:168
+#: templates/inventory/show.html:217 templates/inventory/show.html:271
+#: templates/inventory/show.html:272 templates/inventory/show.html:303
+#: templates/inventory/show.html:356 templates/inventory/show.html:357
+#: templates/inventory/show.html:416 templates/medications/edit.html:226
 #: templates/medications/index.html:70 templates/medications/index.html:72
-#: templates/medications/index.html:86 templates/medications/index.html:158
-#: templates/medications/index.html:161 templates/medications/show.html:64
-#: templates/medications/show.html:144 templates/medications/show.html:218
-#: templates/medications/show.html:289 templates/medications/show.html:296
-#: templates/medications/show.html:303 templates/medications/show.html:320
-#: templates/medications/show.html:368 templates/medications/show.html:455
-#: templates/orders/show.html:258 templates/physicians/show.html:152
+#: templates/medications/index.html:94 templates/medications/index.html:166
+#: templates/medications/index.html:169 templates/medications/show.html:64
+#: templates/medications/show.html:144 templates/medications/show.html:217
+#: templates/medications/show.html:290 templates/medications/show.html:297
+#: templates/medications/show.html:304 templates/medications/show.html:322
+#: templates/medications/show.html:370 templates/medications/show.html:457
+#: templates/orders/show.html:176 templates/orders/show.html:192
+#: templates/orders/show.html:205 templates/orders/show.html:355
+#: templates/orders/show.html:567 templates/physicians/show.html:152
 #: templates/schedules/edit.html:40 templates/schedules/new.html:40
 #: templates/visits/show.html:178
 msgid "units"
 msgstr ""
 
 #: templates/index.html:224 templates/index.html:314
-#: templates/inventory/index.html:103 templates/inventory/index.html:205
-#: templates/medications/index.html:88 templates/medications/index.html:163
+#: templates/inventory/index.html:165 templates/inventory/index.html:329
+#: templates/medications/index.html:96 templates/medications/index.html:171
 #: templates/orders/edit.html:87 templates/orders/new.html:113
 #: templates/physicians/show.html:157
 msgid "No inventory"
 msgstr ""
 
 #: templates/index.html:231 templates/index.html:238 templates/index.html:321
-#: templates/index.html:328 templates/inventory/index.html:110
-#: templates/inventory/index.html:119 templates/inventory/index.html:212
-#: templates/inventory/index.html:221 templates/inventory/low.html:53
+#: templates/index.html:328 templates/inventory/index.html:172
+#: templates/inventory/index.html:181 templates/inventory/index.html:336
+#: templates/inventory/index.html:345 templates/inventory/low.html:53
 #: templates/inventory/low.html:60
 msgid "N/A"
 msgstr ""
 
 #: templates/index.html:243 templates/index.html:333
-#: templates/inventory/index.html:124 templates/inventory/index.html:226
-#: templates/medications/index.html:93
+#: templates/inventory/index.html:186 templates/inventory/index.html:350
+#: templates/medications/index.html:101
 msgid "No Data"
 msgstr ""
 
 #: templates/index.html:245 templates/index.html:335
-#: templates/inventory/depletion.html:109 templates/inventory/index.html:126
-#: templates/inventory/index.html:228
+#: templates/inventory/depletion.html:109 templates/inventory/index.html:188
+#: templates/inventory/index.html:352
 msgid "Critical"
 msgstr ""
 
 #: templates/index.html:247 templates/index.html:337
-#: templates/inventory/index.html:21 templates/inventory/index.html:128
-#: templates/inventory/index.html:230 templates/layout.html:53
-#: templates/medications/index.html:95 templates/physicians/show.html:163
+#: templates/inventory/index.html:21 templates/inventory/index.html:190
+#: templates/inventory/index.html:354 templates/layout.html:53
+#: templates/medications/index.html:103 templates/physicians/show.html:163
 msgid "Low Stock"
 msgstr ""
 
 #: templates/index.html:249 templates/index.html:339
-#: templates/inventory/index.html:130 templates/inventory/index.html:232
-#: templates/medications/index.html:97 templates/physicians/show.html:165
+#: templates/inventory/index.html:192 templates/inventory/index.html:356
+#: templates/medications/index.html:105 templates/physicians/show.html:165
 msgid "Running Low"
 msgstr ""
 
 #: templates/index.html:251 templates/index.html:341
-#: templates/inventory/depletion.html:115 templates/inventory/index.html:132
-#: templates/inventory/index.html:234 templates/medications/index.html:99
+#: templates/inventory/depletion.html:115 templates/inventory/index.html:194
+#: templates/inventory/index.html:358 templates/medications/index.html:107
 #: templates/physicians/show.html:167
 msgid "OK"
 msgstr ""
 
-#: templates/index.html:281 templates/inventory/index.html:161
-#: templates/medications/index.html:130
+#: templates/index.html:281 templates/inventory/index.html:223
+#: templates/medications/index.html:138
 msgid "Over-the-Counter (OTC) Medications"
 msgstr ""
 
@@ -869,7 +914,7 @@ msgstr ""
 msgid "Schedule Physician Visit"
 msgstr ""
 
-#: templates/index.html:411 templates/orders/index.html:103
+#: templates/index.html:411 templates/orders/index.html:121
 msgid "Create New Order"
 msgstr ""
 
@@ -879,8 +924,8 @@ msgstr ""
 
 #: templates/layout.html:38 templates/medications/index.html:3
 #: templates/medications/index.html:8 templates/orders/index.html:25
-#: templates/orders/index.html:123 templates/orders/show.html:60
-#: templates/physicians/index.html:34 templates/physicians/show.html:109
+#: templates/orders/index.html:141 templates/physicians/index.html:34
+#: templates/physicians/show.html:109
 #: templates/settings/data_management.html:88
 #: templates/settings/data_management.html:133
 msgid "Medications"
@@ -988,7 +1033,8 @@ msgid "Database Updates"
 msgstr ""
 
 #: templates/layout.html:142 templates/layout.html:208
-#: templates/orders/_fulfill_modal.html:11 templates/orders/show.html:239
+#: templates/orders/_fulfill_modal.html:11 templates/orders/show.html:315
+#: templates/orders/show.html:324 templates/orders/show.html:336
 #: templates/schedules/index.html:161
 #: templates/settings/data_management.html:281
 #: templates/settings/data_management.html:335
@@ -1012,7 +1058,7 @@ msgstr ""
 #: templates/inventory/depletion.html:12 templates/inventory/low.html:12
 #: templates/inventory/show.html:12 templates/medications/new.html:12
 #: templates/medications/show.html:18 templates/orders/new.html:12
-#: templates/orders/show.html:15 templates/physicians/new.html:11
+#: templates/orders/show.html:12 templates/physicians/new.html:11
 #: templates/physicians/show.html:15 templates/prescriptions/new.html:12
 #: templates/prescriptions/show.html:13 templates/schedules/edit.html:13
 #: templates/schedules/new.html:13 templates/visits/new.html:11
@@ -1059,23 +1105,23 @@ msgstr ""
 
 #: templates/inventory/depletion.html:83
 #: templates/inventory/edit_package.html:35 templates/orders/edit.html:62
-#: templates/orders/new.html:76 templates/orders/show.html:123
+#: templates/orders/new.html:76 templates/orders/show.html:153
 #: templates/scanner/index.html:54 templates/scanner/index.html:140
 #: templates/scanner/package_details.html:23
 msgid "Medication"
 msgstr ""
 
-#: templates/inventory/depletion.html:85 templates/inventory/index.html:63
-#: templates/inventory/index.html:173 templates/inventory/low.html:31
-#: templates/medications/index.html:52 templates/medications/index.html:142
+#: templates/inventory/depletion.html:85 templates/inventory/index.html:78
+#: templates/inventory/index.html:240 templates/inventory/low.html:31
+#: templates/medications/index.html:52 templates/medications/index.html:150
 #: templates/orders/edit.html:63 templates/orders/new.html:77
 #: templates/physicians/show.html:137 templates/visits/show.html:166
 msgid "Current Stock"
 msgstr ""
 
-#: templates/inventory/depletion.html:102 templates/inventory/index.html:108
-#: templates/inventory/index.html:210 templates/inventory/low.html:51
-#: templates/medications/show.html:326 templates/physicians/show.html:221
+#: templates/inventory/depletion.html:102 templates/inventory/index.html:170
+#: templates/inventory/index.html:334 templates/inventory/low.html:51
+#: templates/medications/show.html:328 templates/physicians/show.html:221
 #: templates/scanner/index.html:85 templates/settings/data_management.html:393
 #: templates/settings/physician_visits.html:27 templates/visits/index.html:59
 #: templates/visits/index.html:229 templates/visits/show.html:179
@@ -1091,7 +1137,7 @@ msgid "Monitor"
 msgstr ""
 
 #: templates/inventory/depletion.html:120 templates/inventory/low.html:69
-#: templates/medications/show.html:403 templates/visits/show.html:216
+#: templates/medications/show.html:405 templates/visits/show.html:216
 msgid "Manage Inventory"
 msgstr ""
 
@@ -1146,7 +1192,7 @@ msgstr ""
 msgid "Serial Number"
 msgstr ""
 
-#: templates/inventory/edit_package.html:59 templates/inventory/show.html:354
+#: templates/inventory/edit_package.html:59 templates/inventory/show.html:432
 #: templates/scanner/index.html:56 templates/scanner/package_details.html:54
 #: templates/scanner/scan.html:243
 msgid "Batch"
@@ -1227,17 +1273,17 @@ msgstr ""
 
 #: templates/inventory/edit_package.html:167
 #: templates/inventory/edit_package.html:178 templates/orders/show.html:3
-#: templates/orders/show.html:8 templates/orders/show.html:32
+#: templates/orders/show.html:8
 #, python-format
 msgid "Order #%(order_id)s"
 msgstr ""
 
-#: templates/inventory/edit_package.html:169 templates/inventory/index.html:98
-#: templates/inventory/index.html:201
+#: templates/inventory/edit_package.html:169 templates/inventory/index.html:325
+#: templates/orders/show.html:200
 msgid "packages"
 msgstr ""
 
-#: templates/inventory/edit_package.html:175 templates/orders/index.html:112
+#: templates/inventory/edit_package.html:175 templates/orders/index.html:130
 msgid "Fulfilled Orders"
 msgstr ""
 
@@ -1245,8 +1291,8 @@ msgstr ""
 msgid "Link this package to a medication order"
 msgstr ""
 
-#: templates/inventory/edit_package.html:189 templates/inventory/show.html:184
-#: templates/inventory/show.html:269
+#: templates/inventory/edit_package.html:189 templates/inventory/show.html:262
+#: templates/inventory/show.html:347
 msgid "Notes (Optional)"
 msgstr ""
 
@@ -1264,9 +1310,9 @@ msgstr ""
 #: templates/medication_packages/edit.html:67
 #: templates/medication_packages/new.html:10
 #: templates/medication_packages/new.html:76
-#: templates/medications/edit.html:233 templates/orders/_fulfill_modal.html:41
+#: templates/medications/edit.html:243 templates/orders/_fulfill_modal.html:41
 #: templates/orders/edit.html:165 templates/orders/new.html:205
-#: templates/orders/show.html:277 templates/physicians/edit.html:93
+#: templates/orders/show.html:374 templates/physicians/edit.html:93
 #: templates/physicians/new.html:83 templates/schedules/edit.html:99
 #: templates/schedules/index.html:167
 #: templates/settings/data_management.html:321
@@ -1284,7 +1330,7 @@ msgstr ""
 msgid "Current Status"
 msgstr ""
 
-#: templates/inventory/edit_package.html:216 templates/inventory/show.html:376
+#: templates/inventory/edit_package.html:216 templates/inventory/show.html:458
 #: templates/scanner/index.html:102 templates/scanner/package_details.html:103
 msgid "Sealed"
 msgstr ""
@@ -1293,8 +1339,10 @@ msgstr ""
 msgid "This package has not been opened yet"
 msgstr ""
 
-#: templates/inventory/edit_package.html:219 templates/inventory/show.html:378
-#: templates/scanner/index.html:104 templates/scanner/package_details.html:105
+#: templates/inventory/edit_package.html:219 templates/inventory/show.html:460
+#: templates/orders/edit.html:48 templates/orders/index.html:49
+#: templates/orders/show.html:70 templates/scanner/index.html:104
+#: templates/scanner/package_details.html:105 templates/visits/show.html:121
 msgid "Open"
 msgstr ""
 
@@ -1302,7 +1350,7 @@ msgstr ""
 msgid "This package is currently in use"
 msgstr ""
 
-#: templates/inventory/edit_package.html:222
+#: templates/inventory/edit_package.html:222 templates/inventory/show.html:462
 msgid "Empty"
 msgstr ""
 
@@ -1326,8 +1374,9 @@ msgstr ""
 msgid "Units Used"
 msgstr ""
 
-#: templates/inventory/edit_package.html:245 templates/inventory/show.html:357
-#: templates/medications/show.html:54 templates/scanner/package_details.html:72
+#: templates/inventory/edit_package.html:245 templates/inventory/show.html:435
+#: templates/medications/show.html:54 templates/orders/show.html:568
+#: templates/scanner/package_details.html:72
 msgid "Scanned"
 msgstr ""
 
@@ -1335,33 +1384,52 @@ msgstr ""
 msgid "Search medications..."
 msgstr ""
 
-#: templates/inventory/index.html:80 templates/inventory/index.html:188
-#: templates/medications/index.html:67 templates/medications/index.html:155
+#: templates/inventory/index.html:73 templates/inventory/index.html:235
+msgid "Current Package"
+msgstr ""
+
+#: templates/inventory/index.html:74 templates/inventory/index.html:236
+msgid "Next Package"
+msgstr ""
+
+#: templates/inventory/index.html:95 templates/inventory/index.html:255
+#: templates/medications/index.html:67 templates/medications/index.html:163
 #: templates/medications/show.html:10
 msgid "No generic substitution"
 msgstr ""
 
-#: templates/inventory/index.html:89 templates/inventory/index.html:197
-msgid "Package-based"
+#: templates/inventory/index.html:111 templates/inventory/index.html:271
+#: templates/inventory/show.html:43
+msgid "Legacy"
 msgstr ""
 
-#: templates/inventory/index.html:137 templates/inventory/index.html:239
-#: templates/medications/index.html:104 templates/medications/index.html:185
-#: templates/orders/index.html:60 templates/orders/index.html:151
+#: templates/inventory/index.html:161
+msgid "package"
+msgid_plural "packages"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/inventory/index.html:199 templates/inventory/index.html:363
+#: templates/medications/index.html:112 templates/medications/index.html:201
+#: templates/orders/index.html:78 templates/orders/index.html:187
 #: templates/physicians/show.html:177 templates/physicians/show.html:235
 #: templates/prescriptions/index.html:89
 msgid "View"
 msgstr ""
 
-#: templates/inventory/index.html:142 templates/inventory/index.html:244
+#: templates/inventory/index.html:204 templates/inventory/index.html:368
 msgid "Create"
 msgstr ""
 
-#: templates/inventory/index.html:257 templates/medications/index.html:202
+#: templates/inventory/index.html:321
+msgid "Package-based"
+msgstr ""
+
+#: templates/inventory/index.html:381 templates/medications/index.html:218
 msgid "No medications registered yet."
 msgstr ""
 
-#: templates/inventory/index.html:258 templates/medications/index.html:203
+#: templates/inventory/index.html:382 templates/medications/index.html:219
 msgid "Add your first medication"
 msgstr ""
 
@@ -1401,7 +1469,7 @@ msgstr ""
 msgid "Current Inventory Status"
 msgstr ""
 
-#: templates/inventory/show.html:35 templates/orders/show.html:127
+#: templates/inventory/show.html:35
 msgid "Total Units"
 msgstr ""
 
@@ -1409,12 +1477,9 @@ msgstr ""
 msgid "Package-based inventory"
 msgstr ""
 
-#: templates/inventory/show.html:43
-msgid "Legacy"
-msgstr ""
-
-#: templates/inventory/show.html:45 templates/medications/show.html:435
-#: templates/orders/show.html:125 templates/visits/show.html:168
+#: templates/inventory/show.html:45 templates/medications/show.html:437
+#: templates/orders/index.html:26 templates/orders/index.html:142
+#: templates/visits/show.html:168
 msgid "Packages"
 msgstr ""
 
@@ -1426,7 +1491,7 @@ msgstr ""
 msgid "Minimum threshold"
 msgstr ""
 
-#: templates/inventory/show.html:74 templates/medications/show.html:381
+#: templates/inventory/show.html:74 templates/medications/show.html:383
 msgid "Days Remaining"
 msgstr ""
 
@@ -1447,207 +1512,256 @@ msgid "per day"
 msgstr ""
 
 #: templates/inventory/show.html:108
+msgid "Quick Intake"
+msgstr ""
+
+#: templates/inventory/show.html:110
+msgid "Manual Entry"
+msgstr ""
+
+#: templates/inventory/show.html:118
+msgid "Out of Stock"
+msgstr ""
+
+#: templates/inventory/show.html:119
+msgid "No inventory available for manual deduction."
+msgstr ""
+
+#: templates/inventory/show.html:126
+msgid "Amount"
+msgstr ""
+
+#: templates/inventory/show.html:140
+msgid "Reason"
+msgstr ""
+
+#: templates/inventory/show.html:140
+msgid "Optional"
+msgstr ""
+
+#: templates/inventory/show.html:145
+msgid "e.g., Extra dose, pain relief, missed dose..."
+msgstr ""
+
+#: templates/inventory/show.html:149
+msgid "Record Intake"
+msgstr ""
+
+#: templates/inventory/show.html:156
+msgid "Low inventory: Only {} units available."
+msgstr ""
+
+#: templates/inventory/show.html:163
+msgid "For on-demand medications or extra doses outside regular schedule"
+msgstr ""
+
+#: templates/inventory/show.html:168
+msgid "Available"
+msgstr ""
+
+#: templates/inventory/show.html:186
 msgid "Legacy Inventory System"
 msgstr ""
 
-#: templates/inventory/show.html:114
+#: templates/inventory/show.html:192
 msgid "Note:"
 msgstr ""
 
-#: templates/inventory/show.html:114
+#: templates/inventory/show.html:192
 msgid ""
 "You are using the new package scanning system. The forms below should "
 "only be used to adjust existing legacy stock. Please use the barcode "
 "scanner for adding new inventory."
 msgstr ""
 
-#: templates/inventory/show.html:125
+#: templates/inventory/show.html:203
 msgid "Adjust Inventory (Relative)"
 msgstr ""
 
-#: templates/inventory/show.html:130 templates/inventory/show.html:216
+#: templates/inventory/show.html:208 templates/inventory/show.html:294
 msgid "Use this form to"
 msgstr ""
 
-#: templates/inventory/show.html:130
+#: templates/inventory/show.html:208
 msgid "add or subtract"
 msgstr ""
 
-#: templates/inventory/show.html:130
+#: templates/inventory/show.html:208
 msgid "units from your current inventory."
 msgstr ""
 
-#: templates/inventory/show.html:136
+#: templates/inventory/show.html:214
 msgid "Adjustment Amount Directly"
 msgstr ""
 
-#: templates/inventory/show.html:138
+#: templates/inventory/show.html:216
 msgid "Enter adjustment amount"
 msgstr ""
 
-#: templates/inventory/show.html:142
+#: templates/inventory/show.html:220
 msgid ""
 "Enter a positive number to add units, or a negative number to subtract "
 "units"
 msgstr ""
 
-#: templates/inventory/show.html:148
+#: templates/inventory/show.html:226
 msgid "Or Adjust by Package Quantities"
 msgstr ""
 
-#: templates/inventory/show.html:152 templates/inventory/show.html:237
+#: templates/inventory/show.html:230 templates/inventory/show.html:315
 msgid "N1 Packages"
 msgstr ""
 
-#: templates/inventory/show.html:162 templates/inventory/show.html:247
+#: templates/inventory/show.html:240 templates/inventory/show.html:325
 msgid "N2 Packages"
 msgstr ""
 
-#: templates/inventory/show.html:172 templates/inventory/show.html:257
+#: templates/inventory/show.html:250 templates/inventory/show.html:335
 msgid "N3 Packages"
 msgstr ""
 
-#: templates/inventory/show.html:185
+#: templates/inventory/show.html:263
 msgid "Optional notes about this adjustment"
 msgstr ""
 
-#: templates/inventory/show.html:193 templates/inventory/show.html:278
+#: templates/inventory/show.html:271 templates/inventory/show.html:356
 #: templates/settings/system.html:40
 msgid "Current"
 msgstr ""
 
-#: templates/inventory/show.html:194 templates/inventory/show.html:279
+#: templates/inventory/show.html:272 templates/inventory/show.html:357
 msgid "New total"
 msgstr ""
 
-#: templates/inventory/show.html:200
+#: templates/inventory/show.html:278
 msgid "Apply Adjustment"
 msgstr ""
 
-#: templates/inventory/show.html:211
+#: templates/inventory/show.html:289
 msgid "Set Inventory (Absolute)"
 msgstr ""
 
-#: templates/inventory/show.html:216
+#: templates/inventory/show.html:294
 msgid "set absolute values"
 msgstr ""
 
-#: templates/inventory/show.html:216
+#: templates/inventory/show.html:294
 msgid "for your inventory quantities."
 msgstr ""
 
-#: templates/inventory/show.html:222
+#: templates/inventory/show.html:300
 msgid "Set Total Units Directly"
 msgstr ""
 
-#: templates/inventory/show.html:228
+#: templates/inventory/show.html:306
 msgid "Enter the total number of units you currently have"
 msgstr ""
 
-#: templates/inventory/show.html:233
+#: templates/inventory/show.html:311
 msgid "Or Set Package Quantities"
 msgstr ""
 
-#: templates/inventory/show.html:270
+#: templates/inventory/show.html:348
 msgid "Optional notes about this inventory update"
 msgstr ""
 
-#: templates/inventory/show.html:285
+#: templates/inventory/show.html:363
 msgid "Update Inventory"
 msgstr ""
 
-#: templates/inventory/show.html:308
+#: templates/inventory/show.html:386
 msgid "Package Scanning Available"
 msgstr ""
 
-#: templates/inventory/show.html:312
+#: templates/inventory/show.html:390
 msgid ""
 "You have configured package sizes for this medication. You can now use "
 "the barcode scanner to track individual packages with batch numbers and "
 "expiry dates."
 msgstr ""
 
-#: templates/inventory/show.html:313 templates/medications/new.html:145
+#: templates/inventory/show.html:391 templates/medications/new.html:145
 #: templates/settings/data_management.html:269
 msgid "Important:"
 msgstr ""
 
-#: templates/inventory/show.html:313
+#: templates/inventory/show.html:391
 msgid ""
 "Once you start using the package scanning system, you should stop adding "
 "inventory through the legacy sum-based method to avoid confusion."
 msgstr ""
 
-#: templates/inventory/show.html:316
+#: templates/inventory/show.html:394
 msgid "Start Scanning Packages"
 msgstr ""
 
-#: templates/inventory/show.html:333
+#: templates/inventory/show.html:411
 msgid "Scanned Packages"
 msgstr ""
 
-#: templates/inventory/show.html:338
+#: templates/inventory/show.html:416
 msgid "Total"
 msgstr ""
 
-#: templates/inventory/show.html:341
+#: templates/inventory/show.html:419
 msgid "Scan More"
 msgstr ""
 
-#: templates/inventory/show.html:351
+#: templates/inventory/show.html:429
 msgid "Package"
 msgstr ""
 
-#: templates/inventory/show.html:352 templates/scanner/index.html:58
+#: templates/inventory/show.html:430 templates/scanner/index.html:58
 #: templates/scanner/package_details.html:113
 msgid "Units"
 msgstr ""
 
-#: templates/inventory/show.html:355 templates/scanner/index.html:57
+#: templates/inventory/show.html:433 templates/scanner/index.html:57
 #: templates/scanner/index.html:143 templates/scanner/package_details.html:59
 #: templates/scanner/scan.html:246
 msgid "Expiry"
 msgstr ""
 
-#: templates/inventory/show.html:356 templates/scanner/index.html:55
+#: templates/inventory/show.html:434 templates/scanner/index.html:55
 #: templates/scanner/index.html:142 templates/scanner/package_details.html:48
 msgid "Serial"
 msgstr ""
 
-#: templates/inventory/show.html:408 templates/medications/edit.html:3
-#: templates/medications/edit.html:22 templates/medications/index.html:107
-#: templates/medications/index.html:188 templates/medications/show.html:24
-#: templates/orders/index.html:67 templates/physicians/edit.html:3
-#: templates/physicians/index.html:69 templates/physicians/show.html:18
-#: templates/prescriptions/index.html:95 templates/schedules/index.html:114
+#: templates/inventory/show.html:492 templates/medications/edit.html:3
+#: templates/medications/edit.html:22 templates/medications/index.html:115
+#: templates/medications/index.html:204 templates/medications/show.html:24
+#: templates/orders/index.html:85 templates/orders/show.html:101
+#: templates/physicians/edit.html:3 templates/physicians/index.html:69
+#: templates/physicians/show.html:18 templates/prescriptions/index.html:95
+#: templates/schedules/index.html:114
 msgid "Edit"
 msgstr ""
 
-#: templates/inventory/show.html:429
+#: templates/inventory/show.html:513
 msgid "Inventory History"
 msgstr ""
 
-#: templates/inventory/show.html:431
+#: templates/inventory/show.html:515
 msgid "View Full History"
 msgstr ""
 
-#: templates/inventory/show.html:441
+#: templates/inventory/show.html:525
 msgid "Date & Time"
 msgstr ""
 
-#: templates/inventory/show.html:442
+#: templates/inventory/show.html:526
 msgid "Previous Count"
 msgstr ""
 
-#: templates/inventory/show.html:443
+#: templates/inventory/show.html:527
 msgid "Adjustment"
 msgstr ""
 
-#: templates/inventory/show.html:444
+#: templates/inventory/show.html:528
 msgid "New Count"
 msgstr ""
 
-#: templates/inventory/show.html:464
+#: templates/inventory/show.html:548
 msgid "No inventory adjustments recorded yet."
 msgstr ""
 
@@ -1776,7 +1890,7 @@ msgid "Basic Information"
 msgstr ""
 
 #: templates/medications/edit.html:32 templates/medications/new.html:29
-#: templates/orders/show.html:243
+#: templates/orders/show.html:318 templates/orders/show.html:340
 msgid "Medication Name"
 msgstr ""
 
@@ -1831,164 +1945,180 @@ msgstr ""
 msgid "Optional information about this medication"
 msgstr ""
 
-#: templates/medications/edit.html:106 templates/medications/index.html:50
-#: templates/medications/index.html:143 templates/medications/new.html:173
-msgid "Package Sizes"
+#: templates/medications/edit.html:110
+msgid "Package System Active"
 msgstr ""
 
-#: templates/medications/edit.html:107
-msgid "Enter the number of units/pills in each package size (N1, N2, N3)"
+#: templates/medications/edit.html:111
+msgid ""
+"This medication uses the barcode package system. Package sizes are "
+"managed through the Package Configuration section above."
 msgstr ""
 
-#: templates/medications/edit.html:112 templates/medications/new.html:183
+#: templates/medications/edit.html:115
+msgid "Legacy Package Sizes"
+msgstr ""
+
+#: templates/medications/edit.html:116
+msgid ""
+"Enter the number of units/pills in each package size (N1, N2, N3). Note: "
+"Consider using the Package Configuration system above for better "
+"tracking."
+msgstr ""
+
+#: templates/medications/edit.html:121 templates/medications/new.html:183
 msgid "N1 Package"
 msgstr ""
 
-#: templates/medications/edit.html:118 templates/medications/new.html:197
+#: templates/medications/edit.html:127 templates/medications/new.html:197
 msgid "N2 Package"
 msgstr ""
 
-#: templates/medications/edit.html:124 templates/medications/new.html:211
+#: templates/medications/edit.html:133 templates/medications/new.html:211
 msgid "N3 Package"
 msgstr ""
 
-#: templates/medications/edit.html:130 templates/medications/new.html:224
+#: templates/medications/edit.html:140 templates/medications/new.html:224
 msgid "Inventory Settings"
 msgstr ""
 
-#: templates/medications/edit.html:135 templates/medications/new.html:230
+#: templates/medications/edit.html:145 templates/medications/new.html:230
 msgid "Minimum Threshold"
 msgstr ""
 
-#: templates/medications/edit.html:137 templates/medications/new.html:241
+#: templates/medications/edit.html:147 templates/medications/new.html:241
 msgid "Alert when stock falls below this level"
 msgstr ""
 
-#: templates/medications/edit.html:142 templates/medications/new.html:248
+#: templates/medications/edit.html:152 templates/medications/new.html:248
 msgid "Safety Margin (days)"
 msgstr ""
 
-#: templates/medications/edit.html:144 templates/medications/new.html:259
+#: templates/medications/edit.html:154 templates/medications/new.html:259
 msgid "Extra days to add when calculating needs"
 msgstr ""
 
-#: templates/medications/edit.html:153
+#: templates/medications/edit.html:163
 msgid "Medication Scheduling"
 msgstr ""
 
-#: templates/medications/edit.html:159 templates/medications/show.html:143
-#: templates/medications/show.html:252 templates/medications/show.html:273
+#: templates/medications/edit.html:169 templates/medications/show.html:143
+#: templates/medications/show.html:251 templates/medications/show.html:272
 msgid "Daily Usage:"
 msgstr ""
 
-#: templates/medications/edit.html:161 templates/medications/show.html:255
-#: templates/medications/show.html:275 templates/schedules/index.html:135
+#: templates/medications/edit.html:171 templates/medications/show.html:254
+#: templates/medications/show.html:274 templates/schedules/index.html:135
 msgid "units per day"
 msgstr ""
 
-#: templates/medications/edit.html:162 templates/medications/show.html:145
+#: templates/medications/edit.html:172 templates/medications/show.html:145
 msgid "based on"
 msgstr ""
 
-#: templates/medications/edit.html:162 templates/medications/show.html:146
-#: templates/medications/show.html:265
+#: templates/medications/edit.html:172 templates/medications/show.html:264
 msgid "schedule"
 msgstr ""
 
-#: templates/medications/edit.html:164 templates/medications/show.html:257
+#: templates/medications/edit.html:174 templates/medications/show.html:256
 msgid "No schedules defined"
 msgstr ""
 
-#: templates/medications/edit.html:170
+#: templates/medications/edit.html:180
 msgid "Manage Medication Schedules"
 msgstr ""
 
-#: templates/medications/edit.html:180 templates/medications/show.html:176
-#: templates/orders/show.html:69
+#: templates/medications/edit.html:190 templates/medications/show.html:175
+#: templates/orders/show.html:59
 msgid "Type"
 msgstr ""
 
-#: templates/medications/edit.html:181 templates/medications/show.html:177
+#: templates/medications/edit.html:191 templates/medications/show.html:176
 #: templates/schedules/index.html:66
 msgid "Details"
 msgstr ""
 
-#: templates/medications/edit.html:182 templates/medications/show.html:178
+#: templates/medications/edit.html:192 templates/medications/show.html:177
 #: templates/schedules/index.html:65
 msgid "Times"
 msgstr ""
 
-#: templates/medications/edit.html:183 templates/medications/show.html:179
+#: templates/medications/edit.html:193 templates/medications/show.html:178
 msgid "Dose"
 msgstr ""
 
-#: templates/medications/edit.html:191 templates/medications/show.html:187
+#: templates/medications/edit.html:201 templates/medications/show.html:186
 #: templates/schedules/index.html:78
 msgid "Daily"
 msgstr ""
 
-#: templates/medications/edit.html:193 templates/medications/edit.html:205
-#: templates/medications/show.html:190 templates/medications/show.html:207
+#: templates/medications/edit.html:203 templates/medications/edit.html:215
+#: templates/medications/show.html:189 templates/medications/show.html:206
 #: templates/schedules/index.html:80 templates/schedules/index.html:98
 msgid "Every"
 msgstr ""
 
-#: templates/medications/edit.html:193 templates/medications/edit.html:205
-#: templates/medications/show.html:190 templates/medications/show.html:207
+#: templates/medications/edit.html:203 templates/medications/edit.html:215
+#: templates/medications/show.html:189 templates/medications/show.html:206
 #: templates/schedules/index.html:80 templates/schedules/index.html:98
 msgid "day(s)"
 msgstr ""
 
-#: templates/medications/edit.html:195 templates/medications/show.html:193
+#: templates/medications/edit.html:205 templates/medications/show.html:192
 #: templates/schedules/edit.html:31 templates/schedules/index.html:82
 #: templates/schedules/new.html:31
 msgid "Selected Days of Week"
 msgstr ""
 
-#: templates/medications/edit.html:207 templates/medications/show.html:210
+#: templates/medications/edit.html:217 templates/medications/show.html:209
 #: templates/schedules/index.html:100
 msgid "Every day"
 msgstr ""
 
-#: templates/medications/edit.html:225
+#: templates/medications/edit.html:235
 msgid ""
 "No medication schedules defined. Please set up schedules to define when "
 "to take this medication."
 msgstr ""
 
-#: templates/medications/edit.html:237
+#: templates/medications/edit.html:247
 msgid "Update Medication"
 msgstr ""
 
-#: templates/medications/edit.html:241 templates/schedules/index.html:16
+#: templates/medications/edit.html:251 templates/schedules/index.html:16
 msgid "Add Schedule"
+msgstr ""
+
+#: templates/medications/index.html:50 templates/medications/index.html:151
+#: templates/medications/new.html:173
+msgid "Package Sizes"
 msgstr ""
 
 #: templates/medications/index.html:71
 msgid "day"
 msgstr ""
 
-#: templates/medications/index.html:79
+#: templates/medications/index.html:87
 msgid "Not set"
 msgstr ""
 
-#: templates/medications/index.html:110
+#: templates/medications/index.html:118
 msgid "Stock"
 msgstr ""
 
-#: templates/medications/index.html:172
+#: templates/medications/index.html:188
 msgid "Not defined"
 msgstr ""
 
-#: templates/medications/index.html:178
+#: templates/medications/index.html:194
 msgid "schedule(s)"
 msgstr ""
 
-#: templates/medications/index.html:180
+#: templates/medications/index.html:196
 msgid "No schedule"
 msgstr ""
 
-#: templates/medications/new.html:18 templates/medications/show.html:247
+#: templates/medications/new.html:18 templates/medications/show.html:246
 msgid "Medication Information"
 msgstr ""
 
@@ -2053,7 +2183,7 @@ msgstr ""
 msgid "Size"
 msgstr ""
 
-#: templates/medications/show.html:51 templates/medications/show.html:434
+#: templates/medications/show.html:51 templates/medications/show.html:436
 msgid "Quantity"
 msgstr ""
 
@@ -2087,117 +2217,125 @@ msgstr ""
 msgid "Automatic deduction disabled"
 msgstr ""
 
-#: templates/medications/show.html:147
+#: templates/medications/show.html:146
+#, python-format
+msgid "%(num)s schedule"
+msgid_plural "%(num)s schedules"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/medications/show.html:146
 msgid "no schedules defined"
 msgstr ""
 
-#: templates/medications/show.html:161 templates/schedules/index.html:43
+#: templates/medications/show.html:160 templates/schedules/index.html:43
 msgid "Disable Auto-Deduction"
 msgstr ""
 
-#: templates/medications/show.html:162 templates/schedules/index.html:45
+#: templates/medications/show.html:161 templates/schedules/index.html:45
 msgid "Enable Auto-Deduction"
 msgstr ""
 
-#: templates/medications/show.html:171 templates/settings/system.html:158
+#: templates/medications/show.html:170 templates/settings/system.html:158
 #: templates/system/status.html:113
 msgid "Active Schedules:"
 msgstr ""
 
-#: templates/medications/show.html:228
+#: templates/medications/show.html:227
 msgid ""
 "No detailed schedules defined yet. Define schedules to enable automatic "
 "inventory deduction and precise daily usage calculation."
 msgstr ""
 
-#: templates/medications/show.html:234 templates/schedules/index.html:149
+#: templates/medications/show.html:233 templates/schedules/index.html:149
 msgid "Add First Schedule"
 msgstr ""
 
-#: templates/medications/show.html:262
+#: templates/medications/show.html:261
 msgid "Schedules:"
 msgstr ""
 
-#: templates/medications/show.html:267
+#: templates/medications/show.html:266
 msgid "None"
 msgstr ""
 
-#: templates/medications/show.html:279
+#: templates/medications/show.html:278
 msgid "Notes:"
 msgstr ""
 
-#: templates/medications/show.html:283
-msgid "Package Sizes:"
+#: templates/medications/show.html:284
+msgid "Legacy Package Sizes:"
 msgstr ""
 
-#: templates/medications/show.html:310
-msgid "No package sizes defined"
+#: templates/medications/show.html:311
+msgid "No legacy package sizes defined"
 msgstr ""
 
-#: templates/medications/show.html:315
+#: templates/medications/show.html:317
 msgid "Inventory Settings:"
 msgstr ""
 
-#: templates/medications/show.html:319
+#: templates/medications/show.html:321
 msgid "Min Threshold:"
 msgstr ""
 
-#: templates/medications/show.html:325
+#: templates/medications/show.html:327
 msgid "Safety Margin:"
 msgstr ""
 
-#: templates/medications/show.html:342
+#: templates/medications/show.html:344
 #: templates/scanner/package_details.html:96
 msgid "Inventory Status"
 msgstr ""
 
-#: templates/medications/show.html:352
+#: templates/medications/show.html:354
 msgid "Current Units"
 msgstr ""
 
-#: templates/medications/show.html:367
+#: templates/medications/show.html:369
 msgid "Minimum threshold:"
 msgstr ""
 
-#: templates/medications/show.html:409
+#: templates/medications/show.html:411
 msgid "No inventory record found for this medication."
 msgstr ""
 
-#: templates/medications/show.html:412
+#: templates/medications/show.html:414
 msgid ""
 "An inventory record should have been created automatically. Please "
 "contact the administrator."
 msgstr ""
 
-#: templates/medications/show.html:423
+#: templates/medications/show.html:425
 msgid "Order History"
 msgstr ""
 
-#: templates/medications/show.html:431 templates/orders/index.html:21
-#: templates/orders/index.html:120
+#: templates/medications/show.html:433 templates/orders/index.html:21
+#: templates/orders/index.html:138
 msgid "Order #"
 msgstr ""
 
-#: templates/medications/show.html:432 templates/orders/index.html:22
-#: templates/orders/index.html:121 templates/physicians/show.html:204
+#: templates/medications/show.html:434 templates/orders/index.html:22
+#: templates/orders/index.html:139 templates/physicians/show.html:204
 #: templates/visits/edit.html:29 templates/visits/index.html:28
 #: templates/visits/index.html:126 templates/visits/new.html:24
 msgid "Visit Date"
 msgstr ""
 
-#: templates/medications/show.html:433 templates/orders/edit.html:46
+#: templates/medications/show.html:435 templates/orders/edit.html:46
+#: templates/orders/show.html:65
 msgid "Order Status"
 msgstr ""
 
-#: templates/medications/show.html:483
+#: templates/medications/show.html:485
 msgid "No orders found for this medication."
 msgstr ""
 
-#: templates/medications/show.html:494
+#: templates/medications/show.html:496
 msgid "Are you sure you want to delete this medication? This cannot be undone."
 msgstr ""
 
-#: templates/medications/show.html:497
+#: templates/medications/show.html:499
 msgid "Delete Medication"
 msgstr ""
 
@@ -2265,15 +2403,12 @@ msgstr ""
 msgid "Showing over-the-counter medications and supplements only."
 msgstr ""
 
-#: templates/orders/edit.html:48 templates/orders/show.html:35
-msgid "Planned"
+#: templates/orders/edit.html:49 templates/orders/index.html:49
+#: templates/orders/show.html:77 templates/visits/show.html:121
+msgid "Partial"
 msgstr ""
 
-#: templates/orders/edit.html:49 templates/orders/show.html:36
-msgid "Printed"
-msgstr ""
-
-#: templates/orders/edit.html:50 templates/orders/show.html:171
+#: templates/orders/edit.html:50 templates/orders/show.html:84
 msgid "Fulfilled"
 msgstr ""
 
@@ -2284,7 +2419,6 @@ msgstr ""
 #: templates/orders/edit.html:85 templates/orders/new.html:111
 #: templates/orders/new.html:119 templates/orders/new.html:126
 #: templates/orders/new.html:127 templates/orders/new.html:132
-#: templates/orders/show.html:162
 #, python-format
 msgid "%(units)s units"
 msgstr ""
@@ -2324,32 +2458,31 @@ msgstr ""
 msgid "Medication Orders"
 msgstr ""
 
-#: templates/orders/index.html:24 templates/orders/index.html:122
+#: templates/orders/index.html:24 templates/orders/index.html:140
 msgid "Created Date"
 msgstr ""
 
-#: templates/orders/index.html:53 templates/orders/index.html:144
-#: templates/visits/show.html:125
-msgid "medication"
-msgstr ""
+#: templates/orders/index.html:54 templates/orders/index.html:163
+#: templates/orders/show.html:53
+#, python-format
+msgid "%(num)s medication"
+msgid_plural "%(num)s medications"
+msgstr[0] ""
+msgstr[1] ""
 
-#: templates/orders/index.html:53 templates/orders/index.html:144
-msgid "medications"
-msgstr ""
-
-#: templates/orders/index.html:74 templates/orders/index.html:158
+#: templates/orders/index.html:92 templates/orders/index.html:194
 msgid "Printable Version"
 msgstr ""
 
-#: templates/orders/index.html:83
+#: templates/orders/index.html:101
 msgid "Fulfill Order"
 msgstr ""
 
-#: templates/orders/index.html:100
+#: templates/orders/index.html:118
 msgid "No pending orders found."
 msgstr ""
 
-#: templates/orders/index.html:172
+#: templates/orders/index.html:208
 msgid "No fulfilled orders found."
 msgstr ""
 
@@ -2357,7 +2490,7 @@ msgstr ""
 msgid "Create Medication Order"
 msgstr ""
 
-#: templates/orders/new.html:15 templates/orders/show.html:18
+#: templates/orders/new.html:15 templates/orders/show.html:15
 msgid "Visit Details"
 msgstr ""
 
@@ -2424,7 +2557,7 @@ msgstr ""
 msgid "Additional Needed"
 msgstr ""
 
-#: templates/orders/new.html:106 templates/orders/show.html:137
+#: templates/orders/new.html:106
 #, python-format
 msgid "%(usage)s units/day"
 msgstr ""
@@ -2483,191 +2616,240 @@ msgstr ""
 msgid "Sufficient"
 msgstr ""
 
-#: templates/orders/show.html:10
-msgid "Partial"
-msgstr ""
-
-#: templates/orders/show.html:28
+#: templates/orders/show.html:26
 msgid "Order Information"
 msgstr ""
 
-#: templates/orders/show.html:37
-msgid "Partly Fulfilled"
+#: templates/orders/show.html:33
+msgid "Order ID"
 msgstr ""
 
-#: templates/orders/show.html:38
-msgid "Fully Fulfilled"
+#: templates/orders/show.html:36
+msgid "Visit"
 msgstr ""
 
-#: templates/orders/show.html:44
-msgid "Associated Visit"
-msgstr ""
-
-#: templates/orders/show.html:49
+#: templates/orders/show.html:42
 #, python-format
-msgid "%(days)s days away"
+msgid "%(days)s days"
 msgstr ""
 
-#: templates/orders/show.html:51 templates/physicians/show.html:217
-#: templates/visits/show.html:41
-msgid "Past visit"
-msgstr ""
-
-#: templates/orders/show.html:56 templates/prescriptions/index.html:67
+#: templates/orders/show.html:46 templates/prescriptions/index.html:67
 #: templates/prescriptions/show.html:50 templates/visits/show.html:79
 msgid "Created"
 msgstr ""
 
-#: templates/orders/show.html:60
-msgid "item"
+#: templates/orders/show.html:52
+msgid "Items"
 msgstr ""
 
-#: templates/orders/show.html:60
-msgid "items"
-msgstr ""
-
-#: templates/orders/show.html:65 templates/physicians/edit.html:3
+#: templates/orders/show.html:56 templates/physicians/edit.html:3
 #: templates/visits/edit.html:38 templates/visits/index.html:29
 #: templates/visits/index.html:127 templates/visits/new.html:33
 #: templates/visits/show.html:48
 msgid "Physician"
 msgstr ""
 
-#: templates/orders/show.html:76
-msgid "Edit Order"
-msgstr ""
-
-#: templates/orders/show.html:79 templates/orders/show.html:99
+#: templates/orders/show.html:105
 msgid "Print"
 msgstr ""
 
-#: templates/orders/show.html:82
-msgid "Mark Fulfilled"
+#: templates/orders/show.html:109
+msgid "Fulfill"
 msgstr ""
 
-#: templates/orders/show.html:86
+#: templates/orders/show.html:114
+msgid "Unfulfill"
+msgstr ""
+
+#: templates/orders/show.html:121
 msgid "Are you sure you want to delete this order? This cannot be undone."
 msgstr ""
 
-#: templates/orders/show.html:88
-msgid "Delete Order"
+#: templates/orders/show.html:123 templates/prescriptions/index.html:105
+#: templates/schedules/index.html:117 templates/schedules/index.html:169
+msgid "Delete"
 msgstr ""
 
-#: templates/orders/show.html:94
-msgid "This order has been marked as fulfilled."
-msgstr ""
-
-#: templates/orders/show.html:103
-msgid "Mark Unfulfilled"
-msgstr ""
-
-#: templates/orders/show.html:115
+#: templates/orders/show.html:140
 msgid "Order Contents"
 msgstr ""
 
-#: templates/orders/show.html:124
-msgid "Amount Needed"
-msgstr ""
-
-#: templates/orders/show.html:126
-msgid "Linked"
-msgstr ""
-
-#: templates/orders/show.html:142
+#: templates/orders/show.html:143
 #, python-format
-msgid "%(quantity)s units"
+msgid "%(num)s item"
+msgid_plural "%(num)s items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/orders/show.html:154
+msgid "Required"
 msgstr ""
 
-#: templates/orders/show.html:164
-#, python-format
-msgid "Received: %(quantity)s units"
+#: templates/orders/show.html:155
+msgid "Order Details"
 msgstr ""
 
-#: templates/orders/show.html:169 templates/system/migrations.html:71
+#: templates/orders/show.html:156
+msgid "Fulfillment"
+msgstr ""
+
+#: templates/orders/show.html:167
+msgid "units/day"
+msgstr ""
+
+#: templates/orders/show.html:214 templates/system/migrations.html:71
 msgid "Pending"
 msgstr ""
 
-#: templates/orders/show.html:173
+#: templates/orders/show.html:216
+msgid "Done"
+msgstr ""
+
+#: templates/orders/show.html:218
 msgid "Modified"
 msgstr ""
 
-#: templates/orders/show.html:175
+#: templates/orders/show.html:220
 msgid "Cancelled"
 msgstr ""
 
-#: templates/orders/show.html:183
-msgid "View Medication Details"
+#: templates/orders/show.html:246 templates/orders/show.html:314
+msgid "Manage Package Links"
 msgstr ""
 
-#: templates/orders/show.html:196
-msgid "Fulfill Item"
+#: templates/orders/show.html:259
+msgid "Mark Fulfilled"
 msgstr ""
 
-#: templates/orders/show.html:200
+#: templates/orders/show.html:264
 msgid "Are you sure you want to cancel this item?"
 msgstr ""
 
-#: templates/orders/show.html:201
+#: templates/orders/show.html:266
 msgid "Cancel Item"
 msgstr ""
 
-#: templates/orders/show.html:216
-msgid "No medications in this order."
+#: templates/orders/show.html:275
+msgid "Undo Cancel"
 msgstr ""
 
-#: templates/orders/show.html:221
-msgid "Edit Order to Add Medications"
+#: templates/orders/show.html:292
+msgid "No medications in this order yet."
 msgstr ""
 
-#: templates/orders/show.html:238
+#: templates/orders/show.html:296
+msgid "Add Medications"
+msgstr ""
+
+#: templates/orders/show.html:335
 msgid "Fulfill Medication"
 msgstr ""
 
-#: templates/orders/show.html:246
+#: templates/orders/show.html:343
 msgid "Fulfillment Status"
 msgstr ""
 
-#: templates/orders/show.html:248
+#: templates/orders/show.html:345
 msgid "Fulfilled - Delivered as ordered"
 msgstr ""
 
-#: templates/orders/show.html:249
+#: templates/orders/show.html:346
 msgid "Modified - Different quantity received"
 msgstr ""
 
-#: templates/orders/show.html:250
+#: templates/orders/show.html:347
 msgid "Cancelled - Not available"
 msgstr ""
 
-#: templates/orders/show.html:255
+#: templates/orders/show.html:352
 msgid "Actual Quantity Received"
 msgstr ""
 
-#: templates/orders/show.html:260
+#: templates/orders/show.html:357
 #, python-format
 msgid "Original order: %(quantity)s units"
 msgstr ""
 
-#: templates/orders/show.html:264
+#: templates/orders/show.html:361
 msgid "Notes (optional)"
 msgstr ""
 
-#: templates/orders/show.html:265
+#: templates/orders/show.html:362
 msgid "e.g., Doctor modified prescription, pharmacy substitution, etc."
 msgstr ""
 
-#: templates/orders/show.html:271
+#: templates/orders/show.html:368
 msgid "Add to inventory"
 msgstr ""
 
-#: templates/orders/show.html:273
+#: templates/orders/show.html:370
 msgid ""
 "Check this to automatically update your inventory with the received "
 "medication"
 msgstr ""
 
-#: templates/orders/show.html:279
+#: templates/orders/show.html:376
 msgid "Update Status"
+msgstr ""
+
+#: templates/orders/show.html:477
+msgid "Loading..."
+msgstr ""
+
+#: templates/orders/show.html:508
+msgid "Currently Linked Packages"
+msgstr ""
+
+#: templates/orders/show.html:512
+msgid "No S/N"
+msgstr ""
+
+#: templates/orders/show.html:515
+msgid "Unlink"
+msgstr ""
+
+#: templates/orders/show.html:522
+msgid "No packages currently linked"
+msgstr ""
+
+#: templates/orders/show.html:526
+msgid "Search Available Packages"
+msgstr ""
+
+#: templates/orders/show.html:529
+msgid "Enter serial number..."
+msgstr ""
+
+#: templates/orders/show.html:531
+msgid "Search"
+msgstr ""
+
+#: templates/orders/show.html:534
+msgid "Search for packages scanned after the order date"
+msgstr ""
+
+#: templates/orders/show.html:550
+msgid "Please enter a serial number to search"
+msgstr ""
+
+#: templates/orders/show.html:554
+msgid "Searching..."
+msgstr ""
+
+#: templates/orders/show.html:560
+msgid "Search Results"
+msgstr ""
+
+#: templates/orders/show.html:572
+msgid "Link"
+msgstr ""
+
+#: templates/orders/show.html:580
+msgid "No packages found matching your search"
+msgstr ""
+
+#: templates/orders/show.html:584
+msgid "Error searching packages"
 msgstr ""
 
 #: templates/physicians/edit.html:8
@@ -2780,6 +2962,10 @@ msgstr ""
 msgid "Days Until"
 msgstr ""
 
+#: templates/physicians/show.html:217 templates/visits/show.html:41
+msgid "Past visit"
+msgstr ""
+
 #: templates/physicians/show.html:228
 msgid "No notes"
 msgstr ""
@@ -2887,11 +3073,6 @@ msgstr ""
 
 #: templates/prescriptions/index.html:104 templates/prescriptions/show.html:65
 msgid "Are you sure you want to delete this template?"
-msgstr ""
-
-#: templates/prescriptions/index.html:105 templates/schedules/index.html:117
-#: templates/schedules/index.html:169
-msgid "Delete"
 msgstr ""
 
 #: templates/prescriptions/index.html:120
@@ -4006,6 +4187,10 @@ msgstr ""
 
 #: templates/visits/show.html:116
 msgid "Order"
+msgstr ""
+
+#: templates/visits/show.html:125
+msgid "medication"
 msgstr ""
 
 #: templates/visits/show.html:132

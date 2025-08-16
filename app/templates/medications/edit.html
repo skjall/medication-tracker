@@ -103,8 +103,17 @@
 
                 <!-- Package Sizes & Thresholds -->
                 <div class="col-md-6">
-                    <h5 class="mb-3">{{ _('Package Sizes') }}</h5>
-                    <p class="text-muted small">{{ _('Enter the number of units/pills in each package size (N1, N2, N3)') }}</p>
+                    {% if medication.packages %}
+                    <!-- Package system is active - show info message -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>{{ _('Package System Active') }}</strong><br>
+                        <small>{{ _('This medication uses the barcode package system. Package sizes are managed through the Package Configuration section above.') }}</small>
+                    </div>
+                    {% else %}
+                    <!-- Show legacy package sizes only if no packages configured -->
+                    <h5 class="mb-3">{{ _('Legacy Package Sizes') }}</h5>
+                    <p class="text-muted small">{{ _('Enter the number of units/pills in each package size (N1, N2, N3). Note: Consider using the Package Configuration system above for better tracking.') }}</p>
 
                     <div class="row">
                         <div class="col-md-4">
@@ -126,6 +135,7 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
 
                     <h5 class="mt-4 mb-3">{{ _('Inventory Settings') }}</h5>
 

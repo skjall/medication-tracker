@@ -12,12 +12,6 @@ services:
     ports:
       - '8087:8087'
     volumes:
-      # Mount local app directory for live code changes (development only)
-      - ./app:/app/app
-      # Mount migrations directory
-      - ./migrations:/app/migrations
-      # Mount alembic.ini
-      - ./alembic.ini:/app/alembic.ini
       # Persistent data volumes
       - medication_tracker_dev_data:/app/data
       - medication_tracker_dev_logs:/app/logs
@@ -41,7 +35,7 @@ services:
       retries: 3
       start_period: 10s
     # Override the command to use Flask's development server with auto-reload
-    command: python app/main.py
+    command: python main.py
 
 volumes:
   medication_tracker_dev_data:

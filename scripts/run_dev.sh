@@ -58,7 +58,7 @@ echo ""
 
 # Show build progress without clearing screen for debugging
 echo "Starting Docker build with detailed output..."
-docker-compose -f docker-compose.dev.yml build
+docker-compose -f docker-compose.dev.yml build --progress=plain
 
 echo ""
 echo "Starting container..."

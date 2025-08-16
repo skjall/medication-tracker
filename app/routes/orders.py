@@ -44,7 +44,7 @@ def index():
     """Display list of all medication orders."""
     # Get planned/pending orders
     pending_orders = (
-        Order.query.filter(Order.status.in_(["planned", "printed"]))
+        Order.query.filter(Order.status.in_(["planned", "partial"]))
         .order_by(Order.created_date.desc())
         .all()
     )
@@ -299,7 +299,7 @@ def edit(id: int):
     if request.method == "POST":
         # Update order status if provided
         new_status = request.form.get("status")
-        if new_status in ["planned", "printed", "fulfilled"]:
+        if new_status in ["planned", "partial", "fulfilled"]:
             order.status = new_status
 
         # Filter medications based on the visit's physician
@@ -406,10 +406,8 @@ def printable(id: int):
     """Generate a printable view of the order."""
     order = Order.query.get_or_404(id)
 
-    # Mark as printed if not already
-    if order.status == "planned":
-        order.status = "printed"
-        db.session.commit()
+    # No need to update status when generating printable view
+    # The status is managed through the regular workflow
 
     # Render a printer-friendly template
     response = make_response(
@@ -435,7 +433,7 @@ def update_status(id: int):
     order = Order.query.get_or_404(id)
     
     new_status = request.form.get("status")
-    if new_status in ["planned", "printed", "fulfilled", "partial"]:
+    if new_status in ["planned", "partial", "fulfilled"]:
         old_status = order.status
         order.status = new_status
         
@@ -447,8 +445,8 @@ def update_status(id: int):
                     item.fulfilled_at = datetime.now(timezone.utc)
                     item.fulfilled_quantity = item.total_units_ordered
         
-        # If manually setting from fulfilled/partial to planned/printed, reset fulfilled items
-        elif old_status in ["fulfilled", "partial"] and new_status in ["planned", "printed"]:
+        # If manually setting from fulfilled/partial to planned, reset fulfilled items
+        elif old_status in ["fulfilled", "partial"] and new_status == "planned":
             for item in order.order_items:
                 if item.fulfillment_status in ["fulfilled", "modified"]:
                     item.fulfillment_status = "pending"
@@ -624,13 +622,42 @@ def cancel_item(order_id: int, item_id: int):
     
     # Cancel the item
     item.fulfillment_status = "cancelled"
-    item.fulfillment_notes = _("Cancelled by user")
     
     # Update order status
     order.update_status_from_items()
     db.session.commit()
     
     flash(_("Item cancelled successfully"), "success")
+    return redirect(url_for("orders.show", id=order_id))
+
+
+@order_bp.route("/<int:order_id>/item/<int:item_id>/undo_cancel", methods=["POST"])
+def undo_cancel_item(order_id: int, item_id: int):
+    """Undo cancellation of an order item."""
+    order = Order.query.get_or_404(order_id)
+    item = OrderItem.query.get_or_404(item_id)
+    
+    # Verify item belongs to order
+    if item.order_id != order.id:
+        flash(_("Invalid order item"), "error")
+        return redirect(url_for("orders.show", id=order_id))
+    
+    # Only allow undoing cancellation for cancelled items
+    if item.fulfillment_status != "cancelled":
+        flash(_("Can only undo cancellation for cancelled items"), "warning")
+        return redirect(url_for("orders.show", id=order_id))
+    
+    # Restore the item to pending status
+    item.fulfillment_status = "pending"
+    item.fulfillment_notes = None  # Clear any cancellation notes
+    item.fulfilled_quantity = None
+    item.fulfilled_at = None
+    
+    # Update order status
+    order.update_status_from_items()
+    db.session.commit()
+    
+    flash(_("Cancellation undone successfully"), "success")
     return redirect(url_for("orders.show", id=order_id))
 
 
@@ -663,3 +690,156 @@ def prescription(id: int):
     else:
         flash(_("Error generating prescription PDF"), "error")
         return redirect(url_for("orders.show", id=id))
+
+
+@order_bp.route("/item/<int:item_id>/search_packages")
+def search_packages(item_id: int):
+    """Search for packages by serial number for linking to an order item."""
+    from models import PackageInventory
+    
+    order_item = OrderItem.query.get_or_404(item_id)
+    search_term = request.args.get('search', '').strip()
+    
+    if not search_term:
+        return {"packages": []}
+    
+    # Get the order date
+    order_date = order_item.order.created_date
+    
+    # Search for packages by serial number that:
+    # 1. Belong to the same medication
+    # 2. Are not yet linked to any order
+    # 3. Were scanned after the order was created
+    # 4. Match the search term
+    from models import ScannedItem
+    
+    available = PackageInventory.query.join(PackageInventory.scanned_item).filter(
+        PackageInventory.medication_id == order_item.medication_id,
+        PackageInventory.order_item_id.is_(None),
+        PackageInventory.status.in_(["sealed", "open"]),
+        ScannedItem.scanned_at >= order_date,
+        ScannedItem.serial_number.ilike(f"%{search_term}%")
+    ).limit(10).all()
+    
+    # Format for JSON response
+    packages_data = []
+    for pkg in available:
+        packages_data.append({
+            "id": pkg.id,
+            "serial_number": pkg.scanned_item.serial_number if pkg.scanned_item else "No S/N",
+            "status": pkg.status,
+            "units": pkg.current_units,
+            "scanned_date": pkg.scanned_item.scanned_at.strftime("%Y-%m-%d") if pkg.scanned_item and pkg.scanned_item.scanned_at else ""
+        })
+    
+    return {"packages": packages_data}
+
+
+@order_bp.route("/item/<int:item_id>/link_package/<int:package_id>", methods=["POST"])
+def link_package(item_id: int, package_id: int):
+    """Link a package to an order item."""
+    from models import PackageInventory
+    
+    order_item = OrderItem.query.get_or_404(item_id)
+    package = PackageInventory.query.get_or_404(package_id)
+    
+    # Verify the package belongs to the same medication
+    if package.medication_id != order_item.medication_id:
+        flash(_("Package does not belong to this medication"), "error")
+        return redirect(url_for("orders.show", id=order_item.order_id))
+    
+    # Link the package to the order item
+    package.order_item_id = order_item.id
+    
+    # Flush to ensure the relationship is visible
+    db.session.flush()
+    
+    # Update order status if needed
+    order = order_item.order
+    # Always check status when linking packages (don't restrict to certain statuses)
+    if order.status != "fulfilled":
+        # Count total packages needed and linked
+        total_needed = 0
+        total_linked = 0
+        for item in order.order_items:
+            total_needed += item.packages_n1 + item.packages_n2 + item.packages_n3
+            # Refresh the item to get updated linked_packages
+            db.session.refresh(item)
+            total_linked += len(item.linked_packages) if item.linked_packages else 0
+        
+        print(f"DEBUG: Order {order.id} - Current status: {order.status}, Linked: {total_linked}, Needed: {total_needed}")
+        
+        if total_linked == 0:
+            # Keep current status if no packages linked
+            if order.status == "partial":
+                order.status = "planned"
+        elif total_linked < total_needed and total_linked > 0:
+            print(f"DEBUG: Setting order {order.id} to partial")
+            order.status = "partial"
+        elif total_linked == total_needed and total_needed > 0:
+            # All packages are linked - mark as fulfilled
+            print(f"DEBUG: Setting order {order.id} to fulfilled")
+            order.status = "fulfilled"
+            # Also update item fulfillment status
+            for item in order.order_items:
+                if item.fulfillment_status == "pending":
+                    item.fulfillment_status = "fulfilled"
+                    item.fulfilled_quantity = item.total_units_ordered
+                    item.fulfilled_at = datetime.now(timezone.utc)
+    
+    db.session.commit()
+    
+    flash(_("Package linked successfully"), "success")
+    return redirect(url_for("orders.show", id=order_item.order_id))
+
+
+@order_bp.route("/item/<int:item_id>/unlink_package/<int:package_id>", methods=["POST"])
+def unlink_package(item_id: int, package_id: int):
+    """Unlink a package from an order item."""
+    from models import PackageInventory
+    
+    order_item = OrderItem.query.get_or_404(item_id)
+    package = PackageInventory.query.get_or_404(package_id)
+    
+    # Verify the package is linked to this order item
+    if package.order_item_id != order_item.id:
+        flash(_("Package is not linked to this order item"), "error")
+        return redirect(url_for("orders.show", id=order_item.order_id))
+    
+    # Unlink the package from the order item
+    package.order_item_id = None
+    
+    # Update order status if needed
+    order = order_item.order
+    if order.status in ["partial", "fulfilled"]:
+        # Ensure the unlink is visible in the query
+        db.session.flush()
+        
+        # Count total packages needed and linked
+        total_needed = 0
+        total_linked = 0
+        for item in order.order_items:
+            total_needed += item.packages_n1 + item.packages_n2 + item.packages_n3
+            total_linked += len(item.linked_packages) if item.linked_packages else 0
+        
+        if total_linked == 0:
+            order.status = "planned"
+            # Reset fulfillment status if it was fulfilled
+            for item in order.order_items:
+                if item.fulfillment_status == "fulfilled":
+                    item.fulfillment_status = "pending"
+                    item.fulfilled_quantity = None
+                    item.fulfilled_at = None
+        elif total_linked < total_needed:
+            order.status = "partial"
+            # Reset fulfillment status if it was fulfilled
+            for item in order.order_items:
+                if item.fulfillment_status == "fulfilled":
+                    item.fulfillment_status = "pending"
+                    item.fulfilled_quantity = None
+                    item.fulfilled_at = None
+    
+    db.session.commit()
+    
+    flash(_("Package unlinked successfully"), "success")
+    return redirect(url_for("orders.show", id=order_item.order_id))

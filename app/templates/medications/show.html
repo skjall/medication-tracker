@@ -143,8 +143,7 @@
           <strong>{{ _('Daily Usage:') }}</strong> {{
           medication.daily_usage|round(2) }} {{ _('units') }} {% if
           medication.schedules %} ({{ _('based on') }} {{
-          medication.schedules|length }} {{ _('schedule') }}{{ 's' if
-          medication.schedules|length != 1 }}) {% else %} ({{ _('no schedules defined') }}) {% endif %}
+          medication.schedules|length }} {{ ngettext('%(num)s schedule', '%(num)s schedules', medication.schedules|length, num=medication.schedules|length) }}) {% else %} ({{ _('no schedules defined') }}) {% endif %}
         </p>
       </div>
 
@@ -280,7 +279,9 @@
         <p class="mb-4">{{ medication.notes }}</p>
         {% endif %}
 
-        <h6>{{ _('Package Sizes:') }}</h6>
+        {% if not medication.packages %}
+        <!-- Only show legacy package sizes if no packages are configured -->
+        <h6>{{ _('Legacy Package Sizes:') }}</h6>
         <div class="row mb-4">
           {% if medication.package_size_n1 %}
           <div class="col-md-4">
@@ -307,10 +308,11 @@
           medication.package_size_n2 and not
           medication.package_size_n3 %}
           <div class="col-12">
-            <p class="text-muted">{{ _('No package sizes defined') }}</p>
+            <p class="text-muted">{{ _('No legacy package sizes defined') }}</p>
           </div>
           {% endif %}
         </div>
+        {% endif %}
 
         <h6>{{ _('Inventory Settings:') }}</h6>
         <div class="row">

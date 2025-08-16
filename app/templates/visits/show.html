@@ -117,8 +117,8 @@
                                     <small class="text-muted">{{ format_date(order.created_date) }}</small>
                                 </div>
                                 <p class="mb-1">
-                                    <span class="badge {% if order.status == 'planned' %}bg-primary{% elif order.status == 'printed' %}bg-info{% elif order.status == 'fulfilled' %}bg-success{% endif %}">
-                                        {{ order.status|capitalize }}
+                                    <span class="badge {% if order.status == 'planned' %}bg-secondary{% elif order.status == 'partial' %}bg-warning{% elif order.status == 'fulfilled' %}bg-success{% endif %}">
+                                        {% if order.status == 'planned' %}{{ _('Open') }}{% elif order.status == 'partial' %}{{ _('Partial') }}{% else %}{{ order.status|capitalize }}{% endif %}
                                     </span>
                                 </p>
                                 <small>

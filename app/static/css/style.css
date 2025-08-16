@@ -29,6 +29,9 @@
   background-color: #ff8000 !important;
   color: white !important;
 }
+.btn-warning-success {
+  color: white !important;
+}
 
 .bg-primary {
   background-color: #2979a9 !important;
@@ -405,7 +408,7 @@ label.form-label {
     right: 0;
     padding: 0.5rem !important;
   }
-  
+
   .toast-container .toast {
     max-width: 100%;
     width: 100%;
