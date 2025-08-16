@@ -246,6 +246,29 @@
         border: 1px solid #f5c6cb;
         color: #721c24;
     }
+    /* Camera switch button */
+    #switch-camera-btn {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        font-size: 20px;
+        display: none;
+        z-index: 12;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #switch-camera-btn:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+    #switch-camera-btn:active {
+        transform: scale(0.95);
+    }
 </style>
 {% endblock %}
 
@@ -288,6 +311,10 @@
                         <div class="scan-indicator" id="scan-indicator">
                             <div class="scan-line"></div>
                         </div>
+                        <!-- Camera switch button (mobile) -->
+                        <button id="switch-camera-btn" onclick="switchCamera()" aria-label="Switch Camera">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
                     </div>
 
                     <!-- Scan result display -->
@@ -413,14 +440,24 @@ async function startScanning() {
             return;
         }
 
-        // Select the rear camera if available
-        selectedDeviceId = videoInputDevices[0].deviceId;
-        for (const device of videoInputDevices) {
-            if (device.label.toLowerCase().includes('back') ||
-                device.label.toLowerCase().includes('environment') ||
-                device.label.toLowerCase().includes('rear')) {
-                selectedDeviceId = device.deviceId;
-                break;
+        // Store available devices globally for camera switching
+        window.videoDevices = videoInputDevices;
+        
+        // Show camera switch button if multiple cameras
+        if (videoInputDevices.length > 1) {
+            document.getElementById('switch-camera-btn').style.display = 'block';
+        }
+
+        // Use previously selected device if available, otherwise select rear camera
+        if (!selectedDeviceId) {
+            selectedDeviceId = videoInputDevices[0].deviceId;
+            for (const device of videoInputDevices) {
+                if (device.label.toLowerCase().includes('back') ||
+                    device.label.toLowerCase().includes('environment') ||
+                    device.label.toLowerCase().includes('rear')) {
+                    selectedDeviceId = device.deviceId;
+                    break;
+                }
             }
         }
 
@@ -499,6 +536,32 @@ function flashScanIndicator() {
         scanIndicator.style.borderColor = '';
         scanIndicator.style.boxShadow = '';
     }, 300);
+}
+
+// Switch camera function
+function switchCamera() {
+    if (!window.videoDevices || window.videoDevices.length < 2) return;
+    
+    // Find current device index
+    let currentIndex = window.videoDevices.findIndex(device => device.deviceId === selectedDeviceId);
+    
+    // Switch to next camera
+    currentIndex = (currentIndex + 1) % window.videoDevices.length;
+    selectedDeviceId = window.videoDevices[currentIndex].deviceId;
+    
+    console.log('Switching to camera:', window.videoDevices[currentIndex].label || 'Camera ' + currentIndex);
+    
+    // Stop current scanning
+    if (codeReader) {
+        codeReader.reset();
+    }
+    
+    // Remove camera-ready class to show loading state
+    document.getElementById('scanner-container').classList.remove('camera-ready');
+    
+    // Restart with new camera
+    isScanning = false;
+    setTimeout(() => startScanning(), 100);
 }
 
 // Toggle torch/flashlight
@@ -603,12 +666,6 @@ function showStatus(message, type) {
 
 function stopScanning() {
     isScanning = false;
-
-    // Stop animation frame
-    if (scanAnimationFrame) {
-        cancelAnimationFrame(scanAnimationFrame);
-        scanAnimationFrame = null;
-    }
 
     // Stop video stream
     if (videoStream) {
