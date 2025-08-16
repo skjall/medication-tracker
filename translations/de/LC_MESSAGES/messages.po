@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-16 22:19\n"
+"PO-Revision-Date: 2025-08-16 22:24\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -3428,12 +3428,12 @@ msgid "Raw Data"
 msgstr "Rohdaten"
 
 #: /app/templates/scanner/scan.html:97
-msgid "Linear barcodes (EAN, PZN)"
-msgstr ""
+msgid "DataMatrix codes"
+msgstr "DataMatrix-Codes"
 
 #: /app/templates/scanner/scan.html:101
-msgid "DataMatrix codes"
-msgstr ""
+msgid "Linear barcodes (EAN, PZN)"
+msgstr "Lineare Barcodes (EAN, PZN)"
 
 #: /app/templates/scanner/scan.html:105
 msgid "Initializing..."
@@ -3441,11 +3441,11 @@ msgstr "Initialisierung..."
 
 #: /app/templates/scanner/scan.html:121
 msgid "Light"
-msgstr ""
+msgstr "Licht"
 
 #: /app/templates/scanner/scan.html:124
 msgid "Retry"
-msgstr ""
+msgstr "Erneut versuchen"
 
 #: /app/templates/scanner/scan.html:147
 msgid "Scanner error"
@@ -3469,7 +3469,7 @@ msgstr "Kamerafehler"
 
 #: /app/templates/scanner/scan.html:342
 msgid "Scanned successfully"
-msgstr ""
+msgstr "Erfolgreich gescannt"
 
 #: /app/templates/schedules/edit.html:4 /app/templates/schedules/edit.html:20
 msgid "Edit Schedule for"

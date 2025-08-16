@@ -3493,11 +3493,11 @@ msgid "Raw Data"
 msgstr ""
 
 #: /app/templates/scanner/scan.html:97
-msgid "Linear barcodes (EAN, PZN)"
+msgid "DataMatrix codes"
 msgstr ""
 
 #: /app/templates/scanner/scan.html:101
-msgid "DataMatrix codes"
+msgid "Linear barcodes (EAN, PZN)"
 msgstr ""
 
 #: /app/templates/scanner/scan.html:105
