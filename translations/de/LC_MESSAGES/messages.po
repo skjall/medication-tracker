@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-16 21:46\n"
+"PO-Revision-Date: 2025-08-16 22:19\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -207,7 +207,6 @@ msgstr "Artikel {} als {} markiert"
 #: /app/templates/inventory/show.html:446 /app/templates/scanner/index.html:72
 #: /app/templates/scanner/index.html:155
 #: /app/templates/scanner/package_details.html:30
-#: /app/templates/scanner/scan.html:322
 msgid "Unknown"
 msgstr "Unbekannt"
 
@@ -747,7 +746,7 @@ msgstr "Details anzeigen"
 msgid "Create Order"
 msgstr "Bestellung erstellen"
 
-#: /app/templates/index.html:45 /app/templates/index.html:405
+#: /app/templates/index.html:45 /app/templates/index.html:398
 #: /app/templates/visits/index.html:107 /app/templates/visits/new.html:3
 #: /app/templates/visits/new.html:8
 msgid "Schedule a Visit"
@@ -761,8 +760,8 @@ msgstr "Warnung wegen niedriger Lagerbestände"
 msgid "The following medications are below minimum threshold:"
 msgstr "Folgende Medikamente liegen unter ihrem Grenzwert:"
 
-#: /app/templates/index.html:70 /app/templates/index.html:222
-#: /app/templates/index.html:312 /app/templates/physicians/show.html:155
+#: /app/templates/index.html:70 /app/templates/index.html:219
+#: /app/templates/index.html:305 /app/templates/physicians/show.html:155
 #: /app/templates/test_translation.html:6
 #: /app/templates/test_translation.html:7
 #: /app/templates/test_translation.html:10
@@ -854,7 +853,7 @@ msgstr "Medikamentenübersicht"
 msgid "Unassigned Medications"
 msgstr "Nicht zugewiesene Medikamente"
 
-#: /app/templates/index.html:199 /app/templates/index.html:291
+#: /app/templates/index.html:199 /app/templates/index.html:288
 #: /app/templates/inventory/index.html:71
 #: /app/templates/inventory/index.html:233 /app/templates/inventory/low.html:28
 #: /app/templates/medications/index.html:46
@@ -868,7 +867,7 @@ msgstr "Nicht zugewiesene Medikamente"
 msgid "Name"
 msgstr "Name"
 
-#: /app/templates/index.html:200 /app/templates/index.html:292
+#: /app/templates/index.html:200 /app/templates/index.html:289
 #: /app/templates/inventory/depletion.html:84
 #: /app/templates/inventory/index.html:76
 #: /app/templates/inventory/index.html:238 /app/templates/inventory/low.html:29
@@ -879,19 +878,19 @@ msgstr "Name"
 msgid "Daily Usage"
 msgstr "Tagesverbrauch"
 
-#: /app/templates/index.html:201 /app/templates/index.html:293
+#: /app/templates/index.html:201 /app/templates/index.html:290
 #: /app/templates/scanner/index.html:46
 msgid "Current Inventory"
 msgstr "Aktueller Bestand"
 
-#: /app/templates/index.html:202 /app/templates/index.html:294
+#: /app/templates/index.html:202 /app/templates/index.html:291
 #: /app/templates/inventory/depletion.html:86
 #: /app/templates/inventory/index.html:79
 #: /app/templates/inventory/index.html:241 /app/templates/inventory/low.html:32
 msgid "Days Left"
 msgstr "Tage übrig"
 
-#: /app/templates/index.html:203 /app/templates/index.html:295
+#: /app/templates/index.html:203 /app/templates/index.html:292
 #: /app/templates/inventory/depletion.html:87
 #: /app/templates/inventory/index.html:80
 #: /app/templates/inventory/index.html:242 /app/templates/inventory/low.html:33
@@ -900,7 +899,7 @@ msgstr "Tage übrig"
 msgid "Depletion Date"
 msgstr "Verbrauchsdatum"
 
-#: /app/templates/index.html:204 /app/templates/index.html:296
+#: /app/templates/index.html:204 /app/templates/index.html:293
 #: /app/templates/inventory/depletion.html:88
 #: /app/templates/inventory/index.html:81
 #: /app/templates/inventory/index.html:243
@@ -917,7 +916,7 @@ msgstr "Verbrauchsdatum"
 msgid "Status"
 msgstr "Status"
 
-#: /app/templates/index.html:205 /app/templates/index.html:297
+#: /app/templates/index.html:205 /app/templates/index.html:294
 #: /app/templates/inventory/depletion.html:89
 #: /app/templates/inventory/index.html:82
 #: /app/templates/inventory/index.html:244 /app/templates/inventory/low.html:35
@@ -938,17 +937,7 @@ msgstr "Status"
 msgid "Actions"
 msgstr "Aktionen"
 
-#: /app/templates/index.html:215 /app/templates/index.html:306
-#: /app/templates/inventory/index.html:92
-#: /app/templates/inventory/index.html:253
-#: /app/templates/medications/index.html:64
-#: /app/templates/medications/index.html:161
-#: /app/templates/medications/show.html:7 /app/templates/orders/show.html:60
-#: /app/templates/physicians/show.html:149
-msgid "OTC"
-msgstr "OTC"
-
-#: /app/templates/index.html:218 /app/templates/index.html:308
+#: /app/templates/index.html:215 /app/templates/index.html:301
 #: /app/templates/inventory/depletion.html:99
 #: /app/templates/inventory/depletion.html:100
 #: /app/templates/inventory/edit_package.html:50
@@ -990,7 +979,7 @@ msgstr "OTC"
 msgid "units"
 msgstr "Einheiten"
 
-#: /app/templates/index.html:224 /app/templates/index.html:314
+#: /app/templates/index.html:221 /app/templates/index.html:307
 #: /app/templates/inventory/index.html:165
 #: /app/templates/inventory/index.html:329
 #: /app/templates/medications/index.html:96
@@ -999,15 +988,15 @@ msgstr "Einheiten"
 msgid "No inventory"
 msgstr "Kein Bestand"
 
-#: /app/templates/index.html:229 /app/templates/index.html:319
+#: /app/templates/index.html:226 /app/templates/index.html:312
 #, python-format
 msgid "%(count)d day"
 msgid_plural "%(count)d days"
 msgstr[0] "%(count)d Tag"
 msgstr[1] "%(count)d Tage"
 
-#: /app/templates/index.html:231 /app/templates/index.html:238
-#: /app/templates/index.html:321 /app/templates/index.html:328
+#: /app/templates/index.html:228 /app/templates/index.html:235
+#: /app/templates/index.html:314 /app/templates/index.html:321
 #: /app/templates/inventory/index.html:172
 #: /app/templates/inventory/index.html:181
 #: /app/templates/inventory/index.html:336
@@ -1016,21 +1005,21 @@ msgstr[1] "%(count)d Tage"
 msgid "N/A"
 msgstr "N/A"
 
-#: /app/templates/index.html:243 /app/templates/index.html:333
+#: /app/templates/index.html:240 /app/templates/index.html:326
 #: /app/templates/inventory/index.html:186
 #: /app/templates/inventory/index.html:350
 #: /app/templates/medications/index.html:101
 msgid "No Data"
 msgstr "Keine Daten"
 
-#: /app/templates/index.html:245 /app/templates/index.html:335
+#: /app/templates/index.html:242 /app/templates/index.html:328
 #: /app/templates/inventory/depletion.html:109
 #: /app/templates/inventory/index.html:188
 #: /app/templates/inventory/index.html:352
 msgid "Critical"
 msgstr "Kritisch"
 
-#: /app/templates/index.html:247 /app/templates/index.html:337
+#: /app/templates/index.html:244 /app/templates/index.html:330
 #: /app/templates/inventory/index.html:21
 #: /app/templates/inventory/index.html:190
 #: /app/templates/inventory/index.html:354 /app/templates/layout.html:53
@@ -1039,7 +1028,7 @@ msgstr "Kritisch"
 msgid "Low Stock"
 msgstr "Niedriger Bestand"
 
-#: /app/templates/index.html:249 /app/templates/index.html:339
+#: /app/templates/index.html:246 /app/templates/index.html:332
 #: /app/templates/inventory/index.html:192
 #: /app/templates/inventory/index.html:356
 #: /app/templates/medications/index.html:105
@@ -1047,7 +1036,7 @@ msgstr "Niedriger Bestand"
 msgid "Running Low"
 msgstr "Fast leer"
 
-#: /app/templates/index.html:251 /app/templates/index.html:341
+#: /app/templates/index.html:248 /app/templates/index.html:334
 #: /app/templates/inventory/depletion.html:115
 #: /app/templates/inventory/index.html:194
 #: /app/templates/inventory/index.html:358
@@ -1056,42 +1045,42 @@ msgstr "Fast leer"
 msgid "OK"
 msgstr "Ok"
 
-#: /app/templates/index.html:281 /app/templates/inventory/index.html:223
+#: /app/templates/index.html:278 /app/templates/inventory/index.html:223
 #: /app/templates/medications/index.html:138
 msgid "Over-the-Counter (OTC) Medications"
 msgstr "Rezeptfreie Medikamente (OTC)"
 
-#: /app/templates/index.html:364
+#: /app/templates/index.html:357
 msgid "No medications found in the system."
 msgstr "Keine Medikamente im System gefunden."
 
-#: /app/templates/index.html:366 /app/templates/layout.html:42
+#: /app/templates/index.html:359 /app/templates/layout.html:42
 #: /app/templates/medications/index.html:11
 #: /app/templates/medications/new.html:1
 msgid "Add Medication"
 msgstr "Medikament hinzufügen"
 
-#: /app/templates/index.html:373
+#: /app/templates/index.html:366
 msgid "Manage Medications"
 msgstr "Medikamente verwalten"
 
-#: /app/templates/index.html:376
+#: /app/templates/index.html:369
 msgid "Inventory Detail"
 msgstr "Bestandsübersicht"
 
-#: /app/templates/index.html:391 /app/templates/settings/system.html:170
+#: /app/templates/index.html:384 /app/templates/settings/system.html:170
 msgid "Quick Actions"
 msgstr "Schnellaktionen"
 
-#: /app/templates/index.html:399 /app/templates/medications/new.html:5
+#: /app/templates/index.html:392 /app/templates/medications/new.html:5
 msgid "Add New Medication"
 msgstr "Neues Medikament hinzufügen"
 
-#: /app/templates/index.html:411 /app/templates/orders/index.html:121
+#: /app/templates/index.html:404 /app/templates/orders/index.html:121
 msgid "Create New Order"
 msgstr "Neue Bestellung erstellen"
 
-#: /app/templates/index.html:417
+#: /app/templates/index.html:410
 msgid "View Depletion Forecast"
 msgstr "Verbrauchsprognose anzeigen"
 
@@ -1245,7 +1234,7 @@ msgstr "Seriennummer"
 #: /app/templates/inventory/edit_package.html:59
 #: /app/templates/inventory/show.html:432 /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:328
+#: /app/templates/scanner/scan.html:348
 msgid "Batch"
 msgstr "Charge"
 
@@ -1445,6 +1434,15 @@ msgstr "Aktuelle Packung"
 #: /app/templates/inventory/index.html:236
 msgid "Next Package"
 msgstr "Nächste Packung"
+
+#: /app/templates/inventory/index.html:92
+#: /app/templates/inventory/index.html:253
+#: /app/templates/medications/index.html:64
+#: /app/templates/medications/index.html:161
+#: /app/templates/medications/show.html:7 /app/templates/orders/show.html:60
+#: /app/templates/physicians/show.html:149
+msgid "OTC"
+msgstr "OTC"
 
 #: /app/templates/inventory/index.html:95
 #: /app/templates/inventory/index.html:255
@@ -1778,7 +1776,7 @@ msgstr "Einheiten"
 #: /app/templates/inventory/show.html:433 /app/templates/scanner/index.html:57
 #: /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:331
+#: /app/templates/scanner/scan.html:351
 msgid "Expiry"
 msgstr "Verwendbar bis"
 
@@ -1864,7 +1862,7 @@ msgstr "Bestandsübersicht"
 
 #: /app/templates/layout.html:56 /app/templates/scanner/index.html:3
 #: /app/templates/scanner/index.html:9 /app/templates/scanner/scan.html:3
-#: /app/templates/scanner/scan.html:70
+#: /app/templates/scanner/scan.html:92
 msgid "Scanner"
 msgstr "Scanner"
 
@@ -3429,45 +3427,49 @@ msgstr "Als abgelaufen markieren"
 msgid "Raw Data"
 msgstr "Rohdaten"
 
-#: /app/templates/scanner/scan.html:71
+#: /app/templates/scanner/scan.html:97
+msgid "Linear barcodes (EAN, PZN)"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:101
+msgid "DataMatrix codes"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:105
 msgid "Initializing..."
 msgstr "Initialisierung..."
 
-#: /app/templates/scanner/scan.html:83
-msgid "Toggle Light"
-msgstr "Licht ein/aus"
+#: /app/templates/scanner/scan.html:121
+msgid "Light"
+msgstr ""
 
-#: /app/templates/scanner/scan.html:86
-msgid "Retry Camera"
-msgstr "Kamera nochmals initialisieren"
+#: /app/templates/scanner/scan.html:124
+msgid "Retry"
+msgstr ""
 
-#: /app/templates/scanner/scan.html:97
-msgid "Scan History"
-msgstr "Scanverlauf"
-
-#: /app/templates/scanner/scan.html:108
-msgid "Waiting for scans..."
-msgstr "Warte auf Scan..."
-
-#: /app/templates/scanner/scan.html:131
+#: /app/templates/scanner/scan.html:147
 msgid "Scanner error"
 msgstr "Scanner-Fehler"
 
-#: /app/templates/scanner/scan.html:151
+#: /app/templates/scanner/scan.html:210
 msgid "Starting camera..."
 msgstr "Kamera wird gestartet..."
 
-#: /app/templates/scanner/scan.html:157
+#: /app/templates/scanner/scan.html:216
 msgid "No camera found"
 msgstr "Keine Kamera gefunden"
 
-#: /app/templates/scanner/scan.html:175
+#: /app/templates/scanner/scan.html:234
 msgid "Scanning..."
 msgstr "Scanne..."
 
-#: /app/templates/scanner/scan.html:213
+#: /app/templates/scanner/scan.html:273
 msgid "Camera error"
 msgstr "Kamerafehler"
+
+#: /app/templates/scanner/scan.html:342
+msgid "Scanned successfully"
+msgstr ""
 
 #: /app/templates/schedules/edit.html:4 /app/templates/schedules/edit.html:20
 msgid "Edit Schedule for"

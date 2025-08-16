@@ -39,22 +39,26 @@
     }
     .mode-toggle {
         display: inline-flex;
-        border-radius: 20px;
+        border-radius: 6px;
         overflow: hidden;
-        border: 2px solid #dee2e6;
+        border: 1px solid #dee2e6;
+        background: white;
     }
     .mode-toggle input[type="radio"] {
         display: none;
     }
     .mode-toggle label {
-        padding: 8px 20px;
+        padding: 6px 12px;
         cursor: pointer;
-        background: white;
+        background: transparent;
         color: #6c757d;
-        transition: all 0.3s;
+        transition: all 0.2s;
         display: flex;
         align-items: center;
-        gap: 8px;
+        font-size: 0.9rem;
+    }
+    .mode-toggle label:hover {
+        background: #f8f9fa;
     }
     .mode-toggle input[type="radio"]:checked + label {
         background: #007bff;
@@ -86,23 +90,22 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ _('Scanner') }}</h5>
-                    <span id="scan-status" class="badge bg-secondary">{{ _('Initializing...') }}</span>
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Mode selection -->
+                        <div class="mode-toggle">
+                            <input type="radio" id="mode-datamatrix" name="scan-mode" value="datamatrix" checked>
+                            <label for="mode-datamatrix" title="{{ _('DataMatrix codes') }}">
+                                <i class="fas fa-qrcode"></i>
+                            </label>
+                            <input type="radio" id="mode-linear" name="scan-mode" value="linear">
+                            <label for="mode-linear" title="{{ _('Linear barcodes (EAN, PZN)') }}">
+                                <i class="fas fa-barcode"></i>
+                            </label>
+                        </div>
+                        <span id="scan-status" class="badge bg-secondary">{{ _('Initializing...') }}</span>
+                    </div>
                 </div>
                 <div class="card-body text-center">
-                    <!-- Mode selection -->
-                    <div class="mode-toggle mb-3">
-                        <input type="radio" id="mode-linear" name="scan-mode" value="linear" checked>
-                        <label for="mode-linear">
-                            <i class="fas fa-barcode"></i>
-                            {{ _('Linear') }}
-                        </label>
-                        <input type="radio" id="mode-datamatrix" name="scan-mode" value="datamatrix">
-                        <label for="mode-datamatrix">
-                            <i class="fas fa-qrcode"></i>
-                            {{ _('DataMatrix') }}
-                        </label>
-                    </div>
-
                     <!-- Camera view with overlay -->
                     <div class="scanner-container">
                         <video id="scanner-video" autoplay muted playsinline></video>
@@ -134,7 +137,7 @@ let selectedDeviceId = null;
 let isScanning = false;
 let lastScannedCode = null;
 let lastScannedTime = 0;
-let currentMode = 'linear';
+let currentMode = 'datamatrix';
 let torchSupported = false;
 
 // Initialize and start immediately
@@ -145,8 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Initialize with linear mode
-    initializeScanner('linear');
+    // Initialize with datamatrix mode as default
+    initializeScanner('datamatrix');
     startScanning();
 
     // Mode switching
@@ -231,7 +234,7 @@ async function startScanning() {
         showStatus('{{ _("Scanning...") }}', 'success');
 
         // Start continuous decoding with optimized settings
-        await codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
+        const decodingStream = await codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
             if (result) {
                 const now = Date.now();
                 // Debounce: Don't scan same code within 2 seconds
@@ -240,16 +243,17 @@ async function startScanning() {
                     lastScannedCode = result.text;
                     lastScannedTime = now;
 
-                    // Visual feedback
-                    flashScanIndicator();
-
-                    // Process the scan without stopping
-                    processScan(result.text);
+                    // Use requestAnimationFrame for smoother UI updates
+                    requestAnimationFrame(() => {
+                        flashScanIndicator();
+                        processScan(result.text);
+                    });
                 }
             }
 
+            // Silently ignore NotFoundException - it's normal when no code is visible
             if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.error('Scanning error:', err);
+                console.debug('Scan error:', err.message);
             }
         });
 
