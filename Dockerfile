@@ -77,6 +77,10 @@ RUN pybabel extract \
   /app \
   --add-comments="TRANSLATORS:" --sort-by-file
 
+# 2.1a: Normalize POT file to prevent false "new string" detections in Crowdin
+# Remove POT-Creation-Date which changes on every build
+RUN sed -i '/^"POT-Creation-Date:/d' /app/translations/messages.pot
+
 # 2.2: Sync with Crowdin
 RUN if [ -n "${CROWDIN_API_TOKEN}" ] && [ -n "${CROWDIN_PROJECT_ID}" ]; then \
   crowdin upload sources --no-progress --config /app/crowdin.yml --base-path /app && \

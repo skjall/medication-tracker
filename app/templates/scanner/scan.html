@@ -3,7 +3,7 @@
 {% block title %}{{ _('Scanner') }}{% endblock %}
 
 {% block head_extra %}
-<!-- ZXing library for barcode scanning -->
+<!-- ZXing library for barcode scanning with DataMatrix support -->
 <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
 <style>
     .scan-log {
@@ -34,6 +34,30 @@
         background: #000;
         border-radius: 8px;
     }
+    .scanner-container {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        max-width: 600px;
+    }
+    .scan-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 200px;
+        border: 2px solid rgba(0, 255, 0, 0.5);
+        border-radius: 10px;
+        pointer-events: none;
+        z-index: 11;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% { border-color: rgba(0, 255, 0, 0.5); }
+        50% { border-color: rgba(0, 255, 0, 1); }
+        100% { border-color: rgba(0, 255, 0, 0.5); }
+    }
 </style>
 {% endblock %}
 
@@ -47,13 +71,21 @@
                     <span id="scan-status" class="badge bg-secondary">{{ _('Initializing...') }}</span>
                 </div>
                 <div class="card-body text-center">
-                    <!-- Camera view -->
-                    <video id="scanner-video" autoplay muted playsinline></video>
+                    <!-- Camera view with overlay -->
+                    <div class="scanner-container">
+                        <video id="scanner-video" autoplay muted playsinline></video>
+                        <div class="scan-indicator"></div>
+                    </div>
                     
-                    <!-- Start button (only shown if camera fails) -->
-                    <button class="btn btn-primary d-none" id="retry-camera-btn">
-                        <i class="fas fa-camera"></i> {{ _('Retry Camera') }}
-                    </button>
+                    <!-- Controls -->
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-secondary" id="toggle-torch-btn" style="display: none;">
+                            <i class="fas fa-lightbulb"></i> {{ _('Toggle Light') }}
+                        </button>
+                        <button class="btn btn-sm btn-primary d-none" id="retry-camera-btn">
+                            <i class="fas fa-camera"></i> {{ _('Retry Camera') }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -82,12 +114,15 @@
 
 <script>
 let codeReader = null;
+let videoStream = null;
 let selectedDeviceId = null;
 let isScanning = false;
 let lastScannedCode = null;
 let lastScannedTime = 0;
 let successCount = 0;
 let errorCount = 0;
+let scanAnimationFrame = null;
+let torchSupported = false;
 
 // Initialize and start immediately
 document.addEventListener('DOMContentLoaded', () => {
@@ -97,13 +132,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
-    codeReader = new ZXing.BrowserMultiFormatReader();
-    console.log('ZXing initialized');
+    // Configure ZXing for DataMatrix with optimized hints
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    hints.set(ZXing.DecodeHintType.PURE_BARCODE, false);
+    
+    // Use MultiFormatReader with specific formats for better performance
+    codeReader = new ZXing.BrowserMultiFormatReader(hints);
+    
+    console.log('ZXing initialized with DataMatrix optimization');
     startScanning();
 });
 
 async function startScanning() {
-    if (!codeReader || isScanning) return;
+    if (isScanning) return;
     
     try {
         showStatus('{{ _("Starting camera...") }}', 'warning');
@@ -132,15 +174,18 @@ async function startScanning() {
         isScanning = true;
         showStatus('{{ _("Scanning...") }}', 'success');
         
-        // Start continuous decoding
-        codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
+        // Start continuous decoding with optimized settings
+        await codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
             if (result) {
                 const now = Date.now();
-                // Debounce: Don't scan same code within 3 seconds
-                if (result.text !== lastScannedCode || now - lastScannedTime > 3000) {
-                    console.log('Barcode detected:', result.text);
+                // Debounce: Don't scan same code within 2 seconds
+                if (result.text !== lastScannedCode || now - lastScannedTime > 2000) {
+                    console.log('DataMatrix detected:', result.text);
                     lastScannedCode = result.text;
                     lastScannedTime = now;
+                    
+                    // Visual feedback
+                    flashScanIndicator();
                     
                     // Process the scan without stopping
                     processScan(result.text);
@@ -152,6 +197,18 @@ async function startScanning() {
             }
         });
         
+        // Get the video stream for torch control
+        const videoElement = document.getElementById('scanner-video');
+        if (videoElement.srcObject) {
+            videoStream = videoElement.srcObject;
+            const track = videoStream.getVideoTracks()[0];
+            const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+            if (capabilities.torch) {
+                torchSupported = true;
+                document.getElementById('toggle-torch-btn').style.display = 'inline-block';
+            }
+        }
+        
     } catch (err) {
         showStatus('{{ _("Camera error") }}', 'danger');
         document.getElementById('retry-camera-btn').classList.remove('d-none');
@@ -160,8 +217,36 @@ async function startScanning() {
     }
 }
 
+
+function flashScanIndicator() {
+    const indicator = document.querySelector('.scan-indicator');
+    indicator.style.borderColor = 'rgba(0, 255, 0, 1)';
+    indicator.style.borderWidth = '4px';
+    setTimeout(() => {
+        indicator.style.borderColor = 'rgba(0, 255, 0, 0.5)';
+        indicator.style.borderWidth = '2px';
+    }, 200);
+}
+
+// Toggle torch/flashlight
+document.getElementById('toggle-torch-btn').addEventListener('click', async () => {
+    if (!videoStream || !torchSupported) return;
+    
+    const track = videoStream.getVideoTracks()[0];
+    const constraints = track.getConstraints();
+    
+    try {
+        await track.applyConstraints({
+            torch: !constraints.torch
+        });
+    } catch (err) {
+        console.error('Failed to toggle torch:', err);
+    }
+});
+
 document.getElementById('retry-camera-btn').addEventListener('click', () => {
     document.getElementById('retry-camera-btn').classList.add('d-none');
+    stopScanning();
     startScanning();
 });
 
@@ -286,11 +371,30 @@ function showStatus(message, type) {
     statusBadge.className = 'badge bg-' + type;
 }
 
-// Cleanup on page unload
-window.addEventListener('beforeunload', () => {
+function stopScanning() {
+    isScanning = false;
+    
+    // Stop animation frame
+    if (scanAnimationFrame) {
+        cancelAnimationFrame(scanAnimationFrame);
+        scanAnimationFrame = null;
+    }
+    
+    // Stop video stream
+    if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+    }
+    
+    // Reset code reader
     if (codeReader) {
         codeReader.reset();
     }
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    stopScanning();
 });
 </script>
 {% endblock %}

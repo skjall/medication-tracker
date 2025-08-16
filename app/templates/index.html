@@ -108,7 +108,7 @@
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    <strong>{{ _n('%(count)d medication', '%(count)d medications', gap_info.medications|length, count=gap_info.medications|length) }}</strong> 
+                    <strong>{{ _n('%(count)d medication', '%(count)d medications', gap_info.medications|length, count=gap_info.medications|length) }}</strong>
                     {{ _n('will run out before your visit', 'will run out before your visit', gap_info.medications|length) }}
                     {% if gap_info.visit.physician %}{{ _('with') }} {{ gap_info.visit.physician.name }}{% endif %}
                     {{ _('on') }} <strong>{{ format_date(gap_info.visit.visit_date) }}</strong> ({{ _n('%(count)d day away', '%(count)d days away', gap_info.visit.days_until, count=gap_info.visit.days_until) }}).
@@ -190,7 +190,7 @@
                                 </h6>
                                 <span class="badge bg-secondary ms-2">{{ medications_by_physician[physician]|length }}</span>
                             </div>
-                            
+
                             <!-- Medications Table for this Physician -->
                             <div class="table-responsive">
                                 <table class="table table-hover table-sm">
@@ -270,7 +270,7 @@
                             </div>
                         </div>
                     {% endfor %}
-                    
+
                     <!-- OTC Medications Section -->
                     {% if otc_medications %}
                         <div class="physician-section mb-4">
@@ -282,7 +282,7 @@
                                 </h6>
                                 <span class="badge bg-secondary ms-2">{{ otc_medications|length }}</span>
                             </div>
-                            
+
                             <!-- OTC Medications Table -->
                             <div class="table-responsive">
                                 <table class="table table-hover table-sm">
@@ -402,7 +402,7 @@
                     <div class="col-md-3 mb-3">
                         <a href="{{ url_for('visits.new') }}" class="btn btn-outline-primary w-100 h-100 py-3">
                             <i class="fas fa-calendar-plus fa-2x mb-2"></i>
-                            <div>{{ _('Schedule Physician Visit') }}</div>
+                            <div>{{ _('Schedule a Visit') }}</div>
                         </a>
                     </div>
                     <div class="col-md-3 mb-3">

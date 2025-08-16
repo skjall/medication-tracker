@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 22:24+0200\n"
+"POT-Creation-Date: 2025-08-16 23:25+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -177,7 +177,7 @@ msgstr ""
 
 #: routes/orders.py:571 routes/scanner.py:83 templates/inventory/show.html:446
 #: templates/scanner/index.html:72 templates/scanner/index.html:155
-#: templates/scanner/package_details.html:30 templates/scanner/scan.html:237
+#: templates/scanner/package_details.html:30 templates/scanner/scan.html:322
 msgid "Unknown"
 msgstr ""
 
@@ -663,7 +663,9 @@ msgstr ""
 msgid "Create Order"
 msgstr ""
 
-#: templates/index.html:45 templates/visits/index.html:107
+#: templates/index.html:45 templates/index.html:405
+#: templates/visits/index.html:107 templates/visits/new.html:3
+#: templates/visits/new.html:8
 msgid "Schedule a Visit"
 msgstr ""
 
@@ -909,11 +911,6 @@ msgstr ""
 msgid "Add New Medication"
 msgstr ""
 
-#: templates/index.html:405 templates/visits/new.html:3
-#: templates/visits/new.html:8
-msgid "Schedule Physician Visit"
-msgstr ""
-
 #: templates/index.html:411 templates/orders/index.html:121
 msgid "Create New Order"
 msgstr ""
@@ -954,7 +951,7 @@ msgstr ""
 
 #: templates/layout.html:56 templates/scanner/index.html:3
 #: templates/scanner/index.html:9 templates/scanner/scan.html:3
-#: templates/scanner/scan.html:46
+#: templates/scanner/scan.html:70
 msgid "Scanner"
 msgstr ""
 
@@ -1194,7 +1191,7 @@ msgstr ""
 
 #: templates/inventory/edit_package.html:59 templates/inventory/show.html:432
 #: templates/scanner/index.html:56 templates/scanner/package_details.html:54
-#: templates/scanner/scan.html:243
+#: templates/scanner/scan.html:328
 msgid "Batch"
 msgstr ""
 
@@ -1718,7 +1715,7 @@ msgstr ""
 
 #: templates/inventory/show.html:433 templates/scanner/index.html:57
 #: templates/scanner/index.html:143 templates/scanner/package_details.html:59
-#: templates/scanner/scan.html:246
+#: templates/scanner/scan.html:331
 msgid "Expiry"
 msgstr ""
 
@@ -2016,9 +2013,12 @@ msgstr ""
 msgid "based on"
 msgstr ""
 
-#: templates/medications/edit.html:172 templates/medications/show.html:264
+#: templates/medications/edit.html:172 templates/medications/index.html:194
+#: templates/medications/show.html:264
 msgid "schedule"
-msgstr ""
+msgid_plural "schedules"
+msgstr[0] ""
+msgstr[1] ""
 
 #: templates/medications/edit.html:174 templates/medications/show.html:256
 msgid "No schedules defined"
@@ -2108,10 +2108,6 @@ msgstr ""
 
 #: templates/medications/index.html:188
 msgid "Not defined"
-msgstr ""
-
-#: templates/medications/index.html:194
-msgid "schedule(s)"
 msgstr ""
 
 #: templates/medications/index.html:196
@@ -3201,39 +3197,43 @@ msgstr ""
 msgid "Raw Data"
 msgstr ""
 
-#: templates/scanner/scan.html:47
+#: templates/scanner/scan.html:71
 msgid "Initializing..."
 msgstr ""
 
-#: templates/scanner/scan.html:55
+#: templates/scanner/scan.html:83
+msgid "Toggle Light"
+msgstr ""
+
+#: templates/scanner/scan.html:86
 msgid "Retry Camera"
 msgstr ""
 
-#: templates/scanner/scan.html:65
+#: templates/scanner/scan.html:97
 msgid "Scan History"
 msgstr ""
 
-#: templates/scanner/scan.html:76
+#: templates/scanner/scan.html:108
 msgid "Waiting for scans..."
 msgstr ""
 
-#: templates/scanner/scan.html:96
+#: templates/scanner/scan.html:131
 msgid "Scanner error"
 msgstr ""
 
-#: templates/scanner/scan.html:109
+#: templates/scanner/scan.html:151
 msgid "Starting camera..."
 msgstr ""
 
-#: templates/scanner/scan.html:115
+#: templates/scanner/scan.html:157
 msgid "No camera found"
 msgstr ""
 
-#: templates/scanner/scan.html:133
+#: templates/scanner/scan.html:175
 msgid "Scanning..."
 msgstr ""
 
-#: templates/scanner/scan.html:156
+#: templates/scanner/scan.html:213
 msgid "Camera error"
 msgstr ""
 

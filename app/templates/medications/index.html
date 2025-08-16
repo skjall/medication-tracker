@@ -191,7 +191,7 @@
                                         </td>
                                         <td>
                                             {% if med.schedules|length > 0 %}
-                                                <span class="badge bg-success">{{ med.schedules|length }} {{ _('schedule(s)') }}</span>
+                                                <span class="badge bg-success">{{ med.schedules|length }} {{ ngettext('schedule', 'schedules', med.schedules|length) }}</span>
                                             {% else %}
                                                 <span class="badge bg-secondary">{{ _('No schedule') }}</span>
                                             {% endif %}
