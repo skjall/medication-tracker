@@ -246,11 +246,10 @@
         border: 1px solid #f5c6cb;
         color: #721c24;
     }
-    /* Camera switch button */
-    #switch-camera-btn {
+    /* Camera control buttons */
+    #switch-camera-btn, #toggle-torch-btn {
         position: absolute;
         bottom: 20px;
-        right: 20px;
         width: 48px;
         height: 48px;
         border-radius: 50%;
@@ -263,10 +262,16 @@
         cursor: pointer;
         transition: background 0.2s;
     }
-    #switch-camera-btn:hover {
+    #switch-camera-btn {
+        right: 20px;
+    }
+    #toggle-torch-btn {
+        left: 20px;
+    }
+    #switch-camera-btn:hover, #toggle-torch-btn:hover {
         background: rgba(0, 0, 0, 0.8);
     }
-    #switch-camera-btn:active {
+    #switch-camera-btn:active, #toggle-torch-btn:active {
         transform: scale(0.95);
     }
 </style>
@@ -311,7 +316,11 @@
                         <div class="scan-indicator" id="scan-indicator">
                             <div class="scan-line"></div>
                         </div>
-                        <!-- Camera switch button (mobile) -->
+                        <!-- Torch/Light button (left) -->
+                        <button id="toggle-torch-btn" aria-label="Toggle Light">
+                            <i class="fas fa-lightbulb"></i>
+                        </button>
+                        <!-- Camera switch button (right) -->
                         <button id="switch-camera-btn" onclick="switchCamera()" aria-label="Switch Camera">
                             <i class="fas fa-sync-alt"></i>
                         </button>
@@ -322,9 +331,6 @@
 
                     <!-- Controls -->
                     <div class="mt-3">
-                        <button class="btn btn-sm btn-secondary" id="toggle-torch-btn" style="display: none;">
-                            <i class="fas fa-lightbulb"></i> {{ _('Light') }}
-                        </button>
                         <button class="btn btn-sm btn-primary d-none" id="retry-camera-btn">
                             <i class="fas fa-camera"></i> {{ _('Retry') }}
                         </button>
@@ -627,7 +633,7 @@ function handleScanResult(result, err) {
             const capabilities = track.getCapabilities ? track.getCapabilities() : {};
             if (capabilities.torch) {
                 torchSupported = true;
-                document.getElementById('toggle-torch-btn').style.display = 'inline-block';
+                document.getElementById('toggle-torch-btn').style.display = 'block';
             }
         }
     }

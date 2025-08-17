@@ -1255,7 +1255,7 @@ msgstr ""
 #: /app/templates/inventory/edit_package.html:59
 #: /app/templates/inventory/show.html:432 /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:750
+#: /app/templates/scanner/scan.html:747
 msgid "Batch"
 msgstr ""
 
@@ -1843,7 +1843,7 @@ msgstr ""
 #: /app/templates/inventory/show.html:433 /app/templates/scanner/index.html:57
 #: /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:753
+#: /app/templates/scanner/scan.html:750
 msgid "Expiry"
 msgstr ""
 
@@ -3572,11 +3572,11 @@ msgstr ""
 msgid "Scanning..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:591
+#: /app/templates/scanner/scan.html:588
 msgid "Camera error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:744
+#: /app/templates/scanner/scan.html:741
 msgid "Scanned successfully"
 msgstr ""
 
