@@ -41,7 +41,7 @@
         to { transform: translate(-50%, -50%) rotate(360deg); }
     }
     .scanner-container.camera-ready .camera-loading {
-        display: none;
+        display: none !important;
     }
     /* Top blur overlay */
     .blur-top {
@@ -112,7 +112,8 @@
     .scanner-container.camera-ready .blur-bottom,
     .scanner-container.camera-ready .blur-left,
     .scanner-container.camera-ready .blur-right {
-        opacity: 1;
+        opacity: 1 !important;
+        display: block !important;
     }
 
     /* DataMatrix mode adjustments */
@@ -407,10 +408,26 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedDeviceId = preservedDeviceId;
             console.log('Restored camera device ID:', selectedDeviceId);
             
+            // Show loading spinner again while reinitializing
+            const scannerContainer = document.getElementById('scanner-container');
+            const loadingSpinner = scannerContainer.querySelector('.camera-loading');
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'block';
+            }
+            
             // Restart scanning with preserved camera
             // Add delay to ensure iOS properly releases camera
             setTimeout(async () => {
-                await startScanning();
+                try {
+                    await startScanning();
+                } catch (e) {
+                    console.error('Failed to restart scanning:', e);
+                    // Hide spinner on error
+                    if (loadingSpinner) {
+                        loadingSpinner.style.display = 'none';
+                    }
+                    scannerContainer.classList.add('camera-ready');
+                }
                 isInitializing = false;
             }, 300);
         });
@@ -576,6 +593,16 @@ async function startScanning() {
                     handleScanResult(result, err);
                 });
                 
+                // Ensure container is marked as ready for iOS Chrome
+                setTimeout(() => {
+                    const container = document.getElementById('scanner-container');
+                    if (!container.classList.contains('camera-ready')) {
+                        container.classList.add('camera-ready');
+                        const spinner = container.querySelector('.camera-loading');
+                        if (spinner) spinner.style.display = 'none';
+                    }
+                }, 500);
+                
             } catch (e) {
                 console.log('Constraints-based approach failed, falling back to device ID:', e);
                 // Fall back to regular approach
@@ -599,9 +626,15 @@ async function startScanning() {
 }
 
 function handleScanResult(result, err) {
-    // Mark container as ready on first frame (removes loading spinner)
-    if (!document.getElementById('scanner-container').classList.contains('camera-ready')) {
-        document.getElementById('scanner-container').classList.add('camera-ready');
+    // Mark container as ready on first frame (removes loading spinner and shows blur)
+    const scannerContainer = document.getElementById('scanner-container');
+    if (!scannerContainer.classList.contains('camera-ready')) {
+        scannerContainer.classList.add('camera-ready');
+        // Explicitly hide spinner for iOS Chrome
+        const loadingSpinner = scannerContainer.querySelector('.camera-loading');
+        if (loadingSpinner) {
+            loadingSpinner.style.display = 'none';
+        }
     }
     if (result) {
         const now = Date.now();

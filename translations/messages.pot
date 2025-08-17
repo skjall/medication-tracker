@@ -1255,7 +1255,7 @@ msgstr ""
 #: /app/templates/inventory/edit_package.html:59
 #: /app/templates/inventory/show.html:432 /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:747
+#: /app/templates/scanner/scan.html:753
 msgid "Batch"
 msgstr ""
 
@@ -1843,7 +1843,7 @@ msgstr ""
 #: /app/templates/inventory/show.html:433 /app/templates/scanner/index.html:57
 #: /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:750
+#: /app/templates/scanner/scan.html:756
 msgid "Expiry"
 msgstr ""
 
@@ -1929,7 +1929,7 @@ msgstr ""
 
 #: /app/templates/layout.html:56 /app/templates/scanner/index.html:3
 #: /app/templates/scanner/index.html:9 /app/templates/scanner/scan.html:3
-#: /app/templates/scanner/scan.html:281
+#: /app/templates/scanner/scan.html:286
 msgid "Scanner"
 msgstr ""
 
@@ -3536,47 +3536,43 @@ msgstr ""
 msgid "Raw Data"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:286
+#: /app/templates/scanner/scan.html:291
 msgid "DataMatrix codes"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:290
+#: /app/templates/scanner/scan.html:295
 msgid "Linear barcodes (EAN, PZN)"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:294
+#: /app/templates/scanner/scan.html:299
 msgid "Initializing..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:326
-msgid "Light"
-msgstr ""
-
-#: /app/templates/scanner/scan.html:329
+#: /app/templates/scanner/scan.html:335
 msgid "Retry"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:353
+#: /app/templates/scanner/scan.html:359
 msgid "Scanner error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:457
+#: /app/templates/scanner/scan.html:463
 msgid "Starting camera..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:471
+#: /app/templates/scanner/scan.html:477
 msgid "No camera found"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:540
+#: /app/templates/scanner/scan.html:546
 msgid "Scanning..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:588
+#: /app/templates/scanner/scan.html:594
 msgid "Camera error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:741
+#: /app/templates/scanner/scan.html:747
 msgid "Scanned successfully"
 msgstr ""
 
