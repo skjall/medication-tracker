@@ -539,10 +539,7 @@ async function startScanning() {
         isScanning = true;
         showStatus('{{ _("Scanning...") }}', 'success');
         
-        // For iOS Chrome, try using constraints-based approach
-        const isIOSChrome = /CriOS/.test(navigator.userAgent) || 
-                           (/iPhone|iPad|iPod/.test(navigator.userAgent) && /Chrome/.test(navigator.userAgent));
-        
+        // isIOSChrome already declared above
         let decodingStream;
         
         if (isIOSChrome && videoInputDevices.length > 1) {

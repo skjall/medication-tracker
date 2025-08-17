@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-17 02:11\n"
+"PO-Revision-Date: 2025-08-17 08:37\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -1244,7 +1244,7 @@ msgstr "Seriennummer"
 #: /app/templates/inventory/edit_package.html:59
 #: /app/templates/inventory/show.html:432 /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:624
+#: /app/templates/scanner/scan.html:750
 msgid "Batch"
 msgstr "Charge"
 
@@ -1820,7 +1820,7 @@ msgstr "Einheiten"
 #: /app/templates/inventory/show.html:433 /app/templates/scanner/index.html:57
 #: /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:627
+#: /app/templates/scanner/scan.html:753
 msgid "Expiry"
 msgstr "Verwendbar bis"
 
@@ -3491,27 +3491,27 @@ msgstr "Licht"
 msgid "Retry"
 msgstr "Erneut versuchen"
 
-#: /app/templates/scanner/scan.html:352
+#: /app/templates/scanner/scan.html:353
 msgid "Scanner error"
 msgstr "Scanner-Fehler"
 
-#: /app/templates/scanner/scan.html:432
+#: /app/templates/scanner/scan.html:457
 msgid "Starting camera..."
 msgstr "Kamera wird gestartet..."
 
-#: /app/templates/scanner/scan.html:438
+#: /app/templates/scanner/scan.html:471
 msgid "No camera found"
 msgstr "Keine Kamera gefunden"
 
-#: /app/templates/scanner/scan.html:466
+#: /app/templates/scanner/scan.html:540
 msgid "Scanning..."
 msgstr "Scanne..."
 
-#: /app/templates/scanner/scan.html:509
+#: /app/templates/scanner/scan.html:591
 msgid "Camera error"
 msgstr "Kamerafehler"
 
-#: /app/templates/scanner/scan.html:618
+#: /app/templates/scanner/scan.html:744
 msgid "Scanned successfully"
 msgstr "Erfolgreich gescannt"
 
