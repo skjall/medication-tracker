@@ -344,6 +344,7 @@ let lastScannedCode = null;
 let lastScannedTime = 0;
 let currentMode = 'datamatrix';
 let torchSupported = false;
+let isInitializing = false; // Prevent concurrent initializations
 
 // Initialize and start immediately
 document.addEventListener('DOMContentLoaded', () => {
@@ -361,7 +362,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mode switching
     document.querySelectorAll('input[name="scan-mode"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
+        radio.addEventListener('change', async (e) => {
+            if (isInitializing) {
+                console.log('Already initializing, ignoring mode change');
+                return;
+            }
+            
             currentMode = e.target.value;
             console.log('Switching to mode:', currentMode);
 
@@ -380,24 +386,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 scannerContainer.classList.remove('datamatrix-active');
             }
 
-            // Stop current scanning
-            if (codeReader) {
-                codeReader.reset();
-            }
-
+            // Store the current camera selection before stopping
+            const preservedDeviceId = selectedDeviceId;
+            console.log('Preserving camera device ID:', preservedDeviceId);
+            
+            // Stop current scanning and video stream completely
+            isInitializing = true;
+            await stopScanning();
+            
             // Reinitialize with new mode
             initializeScanner(currentMode);
 
-            // Restart scanning with new reader
-            if (isScanning) {
-                isScanning = false;
-                setTimeout(() => startScanning(), 100);
-            }
+            // Restore the camera selection
+            selectedDeviceId = preservedDeviceId;
+            console.log('Restored camera device ID:', selectedDeviceId);
+            
+            // Restart scanning with preserved camera
+            // Add delay to ensure iOS properly releases camera
+            setTimeout(async () => {
+                await startScanning();
+                isInitializing = false;
+            }, 300);
         });
     });
 });
 
 function initializeScanner(mode) {
+    // Stop and clean up existing reader completely before creating new one
+    if (codeReader) {
+        try {
+            codeReader.reset();
+            // Small delay to ensure cleanup on iOS
+            codeReader = null;
+        } catch (e) {
+            console.log('Error resetting reader:', e);
+        }
+    }
+    
     const hints = new Map();
 
     if (mode === 'datamatrix') {
@@ -431,6 +456,14 @@ async function startScanning() {
     try {
         showStatus('{{ _("Starting camera...") }}', 'warning');
 
+        // Detect iOS Chrome
+        const isIOSChrome = /CriOS/.test(navigator.userAgent) || 
+                           (/iPhone|iPad|iPod/.test(navigator.userAgent) && /Chrome/.test(navigator.userAgent));
+        
+        if (isIOSChrome) {
+            console.log('iOS Chrome detected, using special handling');
+        }
+
         // Get available video devices
         const videoInputDevices = await codeReader.listVideoInputDevices();
 
@@ -448,52 +481,148 @@ async function startScanning() {
             document.getElementById('switch-camera-btn').style.display = 'block';
         }
 
+        // Debug: Log all available cameras
+        console.log('Available cameras:', videoInputDevices.map(d => ({
+            id: d.deviceId,
+            label: d.label
+        })));
+        
         // Use previously selected device if available, otherwise select rear camera
         if (!selectedDeviceId) {
-            selectedDeviceId = videoInputDevices[0].deviceId;
-            for (const device of videoInputDevices) {
-                if (device.label.toLowerCase().includes('back') ||
-                    device.label.toLowerCase().includes('environment') ||
-                    device.label.toLowerCase().includes('rear')) {
-                    selectedDeviceId = device.deviceId;
-                    break;
+            console.log('No previous camera selected, finding back camera...');
+            
+            // Check localStorage for saved preference
+            const savedDeviceId = localStorage.getItem('preferredCameraId');
+            if (savedDeviceId && videoInputDevices.some(d => d.deviceId === savedDeviceId)) {
+                selectedDeviceId = savedDeviceId;
+                console.log('Using saved camera preference:', selectedDeviceId);
+            } else {
+                // On first load, try to find back camera
+                selectedDeviceId = videoInputDevices[0].deviceId;
+                
+                // Try to identify back camera by label
+                for (const device of videoInputDevices) {
+                    const label = device.label.toLowerCase();
+                    if (label.includes('back') ||
+                        label.includes('environment') ||
+                        label.includes('rear') ||
+                        label.includes('posteriore') || // Italian
+                        label.includes('arrière') || // French
+                        label.includes('trasera') || // Spanish
+                        label.includes('hinten') || // German
+                        label.includes('后置')) { // Chinese
+                        selectedDeviceId = device.deviceId;
+                        console.log('Selected back camera by label:', device.label);
+                        break;
+                    }
                 }
+                
+                // If we have multiple cameras and couldn't identify back camera,
+                // assume the last one is the back camera (common pattern on iOS)
+                if (videoInputDevices.length > 1 && 
+                    selectedDeviceId === videoInputDevices[0].deviceId &&
+                    !videoInputDevices[0].label.toLowerCase().includes('back')) {
+                    selectedDeviceId = videoInputDevices[videoInputDevices.length - 1].deviceId;
+                    console.log('Selected last camera as likely back camera');
+                }
+                
+                // Save the selection
+                localStorage.setItem('preferredCameraId', selectedDeviceId);
             }
+        } else {
+            console.log('Using previously selected camera:', selectedDeviceId);
+            // Update saved preference
+            localStorage.setItem('preferredCameraId', selectedDeviceId);
         }
 
         console.log('Starting continuous scanning with device:', selectedDeviceId);
         isScanning = true;
         showStatus('{{ _("Scanning...") }}', 'success');
-
-        // Start continuous decoding with optimized settings
-        const decodingStream = await codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
-            // Mark container as ready on first frame (removes loading spinner)
-            if (!document.getElementById('scanner-container').classList.contains('camera-ready')) {
-                document.getElementById('scanner-container').classList.add('camera-ready');
+        
+        // For iOS Chrome, try using constraints-based approach
+        const isIOSChrome = /CriOS/.test(navigator.userAgent) || 
+                           (/iPhone|iPad|iPod/.test(navigator.userAgent) && /Chrome/.test(navigator.userAgent));
+        
+        let decodingStream;
+        
+        if (isIOSChrome && videoInputDevices.length > 1) {
+            // Try to use constraints instead of device ID for iOS Chrome
+            try {
+                console.log('Using constraints-based approach for iOS Chrome');
+                
+                // Determine if we want front or back camera based on device selection
+                const currentDeviceIndex = videoInputDevices.findIndex(d => d.deviceId === selectedDeviceId);
+                const wantsFrontCamera = currentDeviceIndex === 0 && videoInputDevices.length > 1;
+                
+                const constraints = {
+                    video: {
+                        facingMode: wantsFrontCamera ? 'user' : { ideal: 'environment' }
+                    }
+                };
+                
+                console.log('Requesting camera with constraints:', constraints);
+                
+                // Get stream manually first
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById('scanner-video');
+                videoElement.srcObject = stream;
+                videoStream = stream;
+                
+                // Then use ZXing with the element
+                await codeReader.decodeFromVideoElement(videoElement, (result, err) => {
+                    handleScanResult(result, err);
+                });
+                
+            } catch (e) {
+                console.log('Constraints-based approach failed, falling back to device ID:', e);
+                // Fall back to regular approach
+                decodingStream = await codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
+                    handleScanResult(result, err);
+                });
             }
-            if (result) {
-                const now = Date.now();
-                // Debounce: Don't scan same code within 2 seconds
-                if (result.text !== lastScannedCode || now - lastScannedTime > 2000) {
-                    console.log('Barcode detected:', result.text);
-                    lastScannedCode = result.text;
-                    lastScannedTime = now;
+        } else {
+            // Regular approach for non-iOS Chrome
+            decodingStream = await codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
+                handleScanResult(result, err);
+            });
+        }
 
-                    // Use requestAnimationFrame for smoother UI updates
-                    requestAnimationFrame(() => {
-                        flashScanIndicator();
-                        processScan(result.text);
-                    });
-                }
-            }
+    } catch (err) {
+        showStatus('{{ _("Camera error") }}', 'danger');
+        document.getElementById('retry-camera-btn').classList.remove('d-none');
+        console.error(err);
+        isScanning = false;
+    }
+}
 
-            // Silently ignore NotFoundException - it's normal when no code is visible
-            if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.debug('Scan error:', err.message);
-            }
-        });
+function handleScanResult(result, err) {
+    // Mark container as ready on first frame (removes loading spinner)
+    if (!document.getElementById('scanner-container').classList.contains('camera-ready')) {
+        document.getElementById('scanner-container').classList.add('camera-ready');
+    }
+    if (result) {
+        const now = Date.now();
+        // Debounce: Don't scan same code within 2 seconds
+        if (result.text !== lastScannedCode || now - lastScannedTime > 2000) {
+            console.log('Barcode detected:', result.text);
+            lastScannedCode = result.text;
+            lastScannedTime = now;
 
-        // Get the video stream for torch control
+            // Use requestAnimationFrame for smoother UI updates
+            requestAnimationFrame(() => {
+                flashScanIndicator();
+                processScan(result.text);
+            });
+        }
+    }
+
+    // Silently ignore NotFoundException - it's normal when no code is visible
+    if (err && !(err instanceof ZXing.NotFoundException)) {
+        console.debug('Scan error:', err.message);
+    }
+    
+    // Get the video stream for torch control if not already set
+    if (!videoStream) {
         const videoElement = document.getElementById('scanner-video');
         if (videoElement.srcObject) {
             videoStream = videoElement.srcObject;
@@ -504,12 +633,6 @@ async function startScanning() {
                 document.getElementById('toggle-torch-btn').style.display = 'inline-block';
             }
         }
-
-    } catch (err) {
-        showStatus('{{ _("Camera error") }}', 'danger');
-        document.getElementById('retry-camera-btn').classList.remove('d-none');
-        console.error(err);
-        isScanning = false;
     }
 }
 
@@ -550,6 +673,9 @@ function switchCamera() {
     selectedDeviceId = window.videoDevices[currentIndex].deviceId;
     
     console.log('Switching to camera:', window.videoDevices[currentIndex].label || 'Camera ' + currentIndex);
+    
+    // Save the new selection
+    localStorage.setItem('preferredCameraId', selectedDeviceId);
     
     // Stop current scanning
     if (codeReader) {
@@ -664,19 +790,31 @@ function showStatus(message, type) {
     statusBadge.className = 'badge bg-' + type;
 }
 
-function stopScanning() {
+async function stopScanning() {
     isScanning = false;
 
     // Stop video stream
     if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
+        console.log('Stopping video stream...');
+        videoStream.getTracks().forEach(track => {
+            track.stop();
+            console.log('Stopped track:', track.kind, track.label);
+        });
         videoStream = null;
     }
 
     // Reset code reader
     if (codeReader) {
-        codeReader.reset();
+        try {
+            console.log('Resetting code reader...');
+            codeReader.reset();
+        } catch (e) {
+            console.log('Error resetting reader:', e);
+        }
     }
+    
+    // Small delay to ensure iOS releases camera
+    await new Promise(resolve => setTimeout(resolve, 100));
 }
 
 // Cleanup on page unload

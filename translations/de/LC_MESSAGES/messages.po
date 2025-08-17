@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-16 23:18\n"
+"PO-Revision-Date: 2025-08-17 02:11\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -1244,7 +1244,7 @@ msgstr "Seriennummer"
 #: /app/templates/inventory/edit_package.html:59
 #: /app/templates/inventory/show.html:432 /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:561
+#: /app/templates/scanner/scan.html:624
 msgid "Batch"
 msgstr "Charge"
 
@@ -1820,7 +1820,7 @@ msgstr "Einheiten"
 #: /app/templates/inventory/show.html:433 /app/templates/scanner/index.html:57
 #: /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:564
+#: /app/templates/scanner/scan.html:627
 msgid "Expiry"
 msgstr "Verwendbar bis"
 
@@ -1906,7 +1906,7 @@ msgstr "Bestandsübersicht"
 
 #: /app/templates/layout.html:56 /app/templates/scanner/index.html:3
 #: /app/templates/scanner/index.html:9 /app/templates/scanner/scan.html:3
-#: /app/templates/scanner/scan.html:258
+#: /app/templates/scanner/scan.html:281
 msgid "Scanner"
 msgstr "Scanner"
 
@@ -3471,47 +3471,47 @@ msgstr "Als abgelaufen markieren"
 msgid "Raw Data"
 msgstr "Rohdaten"
 
-#: /app/templates/scanner/scan.html:263
+#: /app/templates/scanner/scan.html:286
 msgid "DataMatrix codes"
 msgstr "DataMatrix-Codes"
 
-#: /app/templates/scanner/scan.html:267
+#: /app/templates/scanner/scan.html:290
 msgid "Linear barcodes (EAN, PZN)"
 msgstr "Lineare Barcodes (EAN, PZN)"
 
-#: /app/templates/scanner/scan.html:271
+#: /app/templates/scanner/scan.html:294
 msgid "Initializing..."
 msgstr "Initialisierung..."
 
-#: /app/templates/scanner/scan.html:299
+#: /app/templates/scanner/scan.html:326
 msgid "Light"
 msgstr "Licht"
 
-#: /app/templates/scanner/scan.html:302
+#: /app/templates/scanner/scan.html:329
 msgid "Retry"
 msgstr "Erneut versuchen"
 
-#: /app/templates/scanner/scan.html:325
+#: /app/templates/scanner/scan.html:352
 msgid "Scanner error"
 msgstr "Scanner-Fehler"
 
-#: /app/templates/scanner/scan.html:405
+#: /app/templates/scanner/scan.html:432
 msgid "Starting camera..."
 msgstr "Kamera wird gestartet..."
 
-#: /app/templates/scanner/scan.html:411
+#: /app/templates/scanner/scan.html:438
 msgid "No camera found"
 msgstr "Keine Kamera gefunden"
 
-#: /app/templates/scanner/scan.html:429
+#: /app/templates/scanner/scan.html:466
 msgid "Scanning..."
 msgstr "Scanne..."
 
-#: /app/templates/scanner/scan.html:472
+#: /app/templates/scanner/scan.html:509
 msgid "Camera error"
 msgstr "Kamerafehler"
 
-#: /app/templates/scanner/scan.html:555
+#: /app/templates/scanner/scan.html:618
 msgid "Scanned successfully"
 msgstr "Erfolgreich gescannt"
 
