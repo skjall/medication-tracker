@@ -247,6 +247,14 @@
         border: 1px solid #f5c6cb;
         color: #721c24;
     }
+    .scan-result.warning {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+    }
+    .scan-result.warning .btn {
+        margin-top: 0.5rem;
+    }
     /* Camera control buttons */
     #switch-camera-btn, #toggle-torch-btn {
         position: absolute;
@@ -824,20 +832,37 @@ async function processScan(barcodeData) {
                 resultDiv.style.display = 'none';
             }, 5000);
         } else {
-            // Show error message
-            let errorMessage = '<strong>' + result.error + '</strong>';
-            if (result.hint) {
-                errorMessage += '<br><small>' + result.hint + '</small>';
+            // Check if this is an unknown package that needs onboarding
+            if (result.action_required === 'onboard_package' && result.onboarding_url) {
+                // Show onboarding message with button
+                let errorMessage = '<strong>' + result.error + '</strong>';
+                if (result.hint) {
+                    errorMessage += '<br><small>' + result.hint + '</small>';
+                }
+                errorMessage += '<br><a href="' + result.onboarding_url + '" class="btn btn-sm btn-primary mt-2">';
+                errorMessage += '<i class="fas fa-plus-circle me-1"></i>{{ _("Add this package") }}</a>';
+                
+                resultDiv.innerHTML = errorMessage;
+                resultDiv.className = 'scan-result warning';
+                resultDiv.style.display = 'block';
+                
+                // Don't auto-hide for onboarding messages
+            } else {
+                // Show regular error message
+                let errorMessage = '<strong>' + result.error + '</strong>';
+                if (result.hint) {
+                    errorMessage += '<br><small>' + result.hint + '</small>';
+                }
+
+                resultDiv.innerHTML = errorMessage;
+                resultDiv.className = 'scan-result error';
+                resultDiv.style.display = 'block';
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 3000);
             }
-
-            resultDiv.innerHTML = errorMessage;
-            resultDiv.className = 'scan-result error';
-            resultDiv.style.display = 'block';
-
-            // Hide after 3 seconds
-            setTimeout(() => {
-                resultDiv.style.display = 'none';
-            }, 3000);
         }
     } catch (err) {
         console.log('Scan processing failed:', barcodeData);

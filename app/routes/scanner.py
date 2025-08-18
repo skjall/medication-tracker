@@ -371,6 +371,21 @@ def scan():
             error_msg = _('Unrecognized barcode format')
             hint = _("This barcode type is not supported")
         
+        # Build onboarding URL with scanned data
+        onboarding_params = {
+            'gtin': parsed.get('gtin'),
+            'national_number': parsed.get('national_number'),
+            'national_number_type': parsed.get('national_number_type'),
+            'batch': parsed.get('batch'),
+            'expiry': parse_expiry_date(parsed['expiry']).isoformat() if parsed.get('expiry') else None,
+            'serial': parsed.get('serial')
+        }
+        
+        # Build query string
+        from urllib.parse import urlencode
+        query_string = urlencode({k: v for k, v in onboarding_params.items() if v})
+        onboarding_url = url_for('package_onboarding.onboard_package', _external=False) + '?' + query_string
+        
         return jsonify({
             'error': error_msg,
             'hint': hint,
@@ -380,7 +395,9 @@ def scan():
                 'gtin': parsed.get('gtin'),
                 'batch': parsed.get('batch'),
                 'expiry': parse_expiry_date(parsed['expiry']).isoformat() if parsed.get('expiry') else None
-            }
+            },
+            'onboarding_url': onboarding_url,
+            'action_required': 'onboard_package'
         }), 404
     
     # Use existing scanned item or create new one
