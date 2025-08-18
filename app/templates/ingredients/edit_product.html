@@ -1,0 +1,133 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Edit Product') }} - {{ product.brand_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-edit me-2"></i>{{ _('Edit Product') }}
+    </h1>
+    <a href="{{ url_for('ingredients.show_product', id=product.id) }}" class="btn btn-outline-secondary">
+        <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+    </a>
+</div>
+
+<form method="POST" action="{{ url_for('ingredients.edit_product', id=product.id) }}">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ _('Product Information') }}</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Active Ingredient (readonly) -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ _('Active Ingredient') }}</label>
+                        <input type="text" class="form-control" value="{{ product.active_ingredient.full_name }}" readonly>
+                        <div class="form-text">{{ _('Cannot be changed after creation') }}</div>
+                    </div>
+                    
+                    <!-- Brand Name -->
+                    <div class="mb-3">
+                        <label for="brand_name" class="form-label">
+                            {{ _('Brand Name') }} <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="brand_name" name="brand_name" 
+                               value="{{ product.brand_name }}" required>
+                    </div>
+                    
+                    <!-- Manufacturer -->
+                    <div class="mb-3">
+                        <label for="manufacturer" class="form-label">{{ _('Manufacturer') }}</label>
+                        <input type="text" class="form-control" id="manufacturer" name="manufacturer"
+                               value="{{ product.manufacturer or '' }}">
+                    </div>
+                    
+                    
+                    <!-- Notes -->
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">{{ _('Notes') }}</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3">{{ product.notes or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Prescription Settings -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">{{ _('Prescription Settings') }}</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Aut idem -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="aut_idem" name="aut_idem" 
+                               {% if product.aut_idem %}checked{% endif %}>
+                        <label class="form-check-label" for="aut_idem">
+                            <strong>{{ _('Allow substitution (Aut idem)') }}</strong>
+                            <div class="form-text">{{ _('Pharmacist may substitute with generic equivalent') }}</div>
+                        </label>
+                    </div>
+                    
+                    <!-- OTC -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="is_otc" name="is_otc"
+                               {% if product.is_otc %}checked{% endif %}>
+                        <label class="form-check-label" for="is_otc">
+                            <strong>{{ _('Over-the-counter (OTC)') }}</strong>
+                            <div class="form-text">{{ _('No prescription required') }}</div>
+                        </label>
+                    </div>
+                    
+                    <!-- Physician -->
+                    <div class="mb-3">
+                        <label for="physician_id" class="form-label">{{ _('Prescribing Physician') }}</label>
+                        <select class="form-select" id="physician_id" name="physician_id">
+                            <option value="">{{ _('None (OTC or general)') }}</option>
+                            {% for physician in physicians %}
+                            <option value="{{ physician.id }}" {% if product.physician_id == physician.id %}selected{% endif %}>{{ physician.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit -->
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save me-2"></i>{{ _('Save Changes') }}
+                </button>
+                <a href="{{ url_for('ingredients.show_product', id=product.id) }}" class="btn btn-outline-secondary">
+                    {{ _('Cancel') }}
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-disable physician if OTC is checked
+    const otcCheckbox = document.getElementById('is_otc');
+    const physicianSelect = document.getElementById('physician_id');
+    
+    function updatePhysicianState() {
+        if (otcCheckbox.checked) {
+            physicianSelect.value = '';
+            physicianSelect.disabled = true;
+        } else {
+            physicianSelect.disabled = false;
+        }
+    }
+    
+    // Initial state
+    updatePhysicianState();
+    
+    // Handle changes
+    otcCheckbox.addEventListener('change', updatePhysicianState);
+});
+</script>
+{% endblock %}

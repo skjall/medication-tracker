@@ -12,6 +12,7 @@ from .base import db, utcnow
 
 if TYPE_CHECKING:
     from .medication import Medication
+    from .medication_product import MedicationProduct
     from .visit import OrderItem
 
 
@@ -25,6 +26,11 @@ class MedicationPackage(db.Model):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     medication_id: Mapped[int] = mapped_column(Integer, ForeignKey("medications.id"), nullable=False)
+    
+    # New link to product (will be migrated from medication_id)
+    product_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("medication_products.id"), nullable=True
+    )
     
     # Package identification
     package_size: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # N1, N2, N3, or custom
@@ -42,6 +48,11 @@ class MedicationPackage(db.Model):
     
     # Relationships
     medication: Mapped["Medication"] = relationship("Medication", back_populates="packages")
+    product: Mapped[Optional["MedicationProduct"]] = relationship(
+        "MedicationProduct", 
+        foreign_keys=[product_id],
+        backref="legacy_packages"
+    )
     scanned_items: Mapped[list["ScannedItem"]] = relationship("ScannedItem", back_populates="package")
     
     def __repr__(self):

@@ -93,115 +93,135 @@
 <body>
     <div class="print-button no-print">
         <button class="btn btn-primary" id="print-order-btn">
-            <i class="fas fa-print me-1"></i>Print Order
-        </button>
+            <i class="fas fa-print me-1"></i>{{ _('Print Order') }}        </button>
         <a href="{{ url_for('orders.show', id=order.id) }}" class="btn btn-outline-secondary ms-2">
-            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Details') }}
-        </a>
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Details') }}        </a>
     </div>
 
     <div class="print-container">
         <div class="page-header">
-            <h1 class="text-center">Medication Order</h1>
+            <h1 class="text-center">{{ _('Medication Order') }}</h1>
         </div>
 
         <div class="order-meta row">
             <div class="col-6">
-                <h4>Order Information</h4>
+                <h4>{{ _('Order Information') }}</h4>
                 <p>
-                    <strong>Order #:</strong> {{ order.id }}<br>
-                    <strong>Date Created:</strong> {{ format_date(order.created_date) }}<br>
-                    <strong>Status:</strong> {{ order.status|capitalize }}<br>
-                    <strong>Physician Visit:</strong> {{ format_date(visit.visit_date) }}
-                </p>
+                    <strong>{{ _('Order #') }}:</strong> {{ order.id }}<br>
+                    <strong>{{ _('Date Created') }}:</strong> {{ format_date(order.created_date) }}<br>
+                    <strong>{{ _('Status') }}:</strong> {{ order.status|capitalize }}<br>
+                    <strong>{{ _('Physician Visit') }}:</strong> {{ format_date(visit.visit_date) }}</p>
             </div>
             <div class="col-6 text-end">
-                <h4>Print Information</h4>
+                <h4>{{ _('Print Information') }}</h4>
                 <p>
-                    <strong>Printed:</strong> {{ format_datetime(print_date) }}<br>
-                    <strong>Days Until Visit:</strong> {{ visit.days_until }} days
-                </p>
+                    <strong>{{ _('Printed') }}:</strong> {{ format_datetime(print_date) }}<br>
+                    <strong>{{ _('Days Until Visit') }}:</strong> {{ visit.days_until }} {{ _('days') }}</p>
             </div>
         </div>
 
         <div class="order-table">
-            <h4>Medications Ordered</h4>
+            <h4>{{ _('Medications Ordered') }}</h4>
 
             {% if order_items %}
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Medication Name</th>
-                            <th>Dosage</th>
-                            <th>Frequency</th>
-                            <th>Packages</th>
-                            <th>Total Units</th>
+                            <th>{{ _('Medication Name') }}</th>
+                            <th>{{ _('Quantity Needed') }}</th>
+                            <th>{{ _('Daily Usage') }}</th>
+                            <th>{{ _('Packages') }}</th>
+                            <th>{{ _('Total Units') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in order_items %}
                             <tr>
-                                <td>{{ item.medication.name }}</td>
-                                <td>{{ item.medication.dosage }} units</td>
-                                <td>{{ item.medication.frequency }} times/day</td>
                                 <td>
-                                    {% if item.packages_n1 > 0 %}
-                                        N1: {{ item.packages_n1 }} ({{ item.medication.package_size_n1 }} units each)<br>
-                                    {% endif %}
-                                    {% if item.packages_n2 > 0 %}
-                                        N2: {{ item.packages_n2 }} ({{ item.medication.package_size_n2 }} units each)<br>
-                                    {% endif %}
-                                    {% if item.packages_n3 > 0 %}
-                                        N3: {{ item.packages_n3 }} ({{ item.medication.package_size_n3 }} units each)
+                                    {% set product = item.medication.default_product or (item.medication.migrated_product[0] if item.medication.migrated_product and item.medication.migrated_product|length > 0 else None) %}
+                                    {% if product %}
+                                        <strong>{{ product.active_ingredient.name }}</strong><br>
+                                        <small>→ {{ product.display_name }}</small>
+                                    {% else %}
+                                        <strong>{{ item.medication.name }}</strong>
                                     {% endif %}
                                 </td>
+                                <td>{{ item.quantity_needed }} {{ ngettext('unit', 'units', item.quantity_needed) }}</td>
+                                <td>{{ item.medication.daily_usage|round(1) }} {{ ngettext('unit/day', 'units/day', item.medication.daily_usage|round(1)) }}</td>
                                 <td>
                                     {% set total_units = 0 %}
-                                    {% if item.medication.package_size_n1 %}
-                                        {% set total_units = total_units + (item.packages_n1 * item.medication.package_size_n1) %}
+                                    {% set output_lines = [] %}
+
+                                    {# Build package display - prefer ProductPackage data if available #}
+                                    {% if product and product.packages and product.packages|length > 0 %}
+                                        {# Use new ProductPackage system #}
+                                        {% set package_map = {} %}
+                                        {% for pkg in product.packages %}
+                                            {% set _ = package_map.update({pkg.package_size: pkg.quantity}) %}
+                                        {% endfor %}
+
+                                        {% if item.packages_n1 > 0 and 'N1' in package_map %}
+                                            {% set _ = output_lines.append('N1: ' ~ item.packages_n1 ~ ' × ' ~ package_map['N1'] ~ ' ' ~ ngettext('unit', 'units', package_map['N1'])) %}
+                                            {% set total_units = total_units + (item.packages_n1 * package_map['N1']) %}
+                                        {% elif item.packages_n1 > 0 and item.medication.package_size_n1 %}
+                                            {% set _ = output_lines.append('N1: ' ~ item.packages_n1 ~ ' × ' ~ item.medication.package_size_n1 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n1)) %}
+                                            {% set total_units = total_units + (item.packages_n1 * item.medication.package_size_n1) %}
+                                        {% endif %}
+
+                                        {% if item.packages_n2 > 0 and 'N2' in package_map %}
+                                            {% set _ = output_lines.append('N2: ' ~ item.packages_n2 ~ ' × ' ~ package_map['N2'] ~ ' ' ~ ngettext('unit', 'units', package_map['N2'])) %}
+                                            {% set total_units = total_units + (item.packages_n2 * package_map['N2']) %}
+                                        {% elif item.packages_n2 > 0 and item.medication.package_size_n2 %}
+                                            {% set _ = output_lines.append('N2: ' ~ item.packages_n2 ~ ' × ' ~ item.medication.package_size_n2 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n2)) %}
+                                            {% set total_units = total_units + (item.packages_n2 * item.medication.package_size_n2) %}
+                                        {% endif %}
+
+                                        {% if item.packages_n3 > 0 and 'N3' in package_map %}
+                                            {% set _ = output_lines.append('N3: ' ~ item.packages_n3 ~ ' × ' ~ package_map['N3'] ~ ' ' ~ ngettext('unit', 'units', package_map['N3'])) %}
+                                            {% set total_units = total_units + (item.packages_n3 * package_map['N3']) %}
+                                        {% elif item.packages_n3 > 0 and item.medication.package_size_n3 %}
+                                            {% set _ = output_lines.append('N3: ' ~ item.packages_n3 ~ ' × ' ~ item.medication.package_size_n3 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n3)) %}
+                                            {% set total_units = total_units + (item.packages_n3 * item.medication.package_size_n3) %}
+                                        {% endif %}
+                                    {% else %}
+                                        {# Use legacy system #}
+                                        {% if item.packages_n1 > 0 and item.medication.package_size_n1 %}
+                                            {% set _ = output_lines.append('N1: ' ~ item.packages_n1 ~ ' × ' ~ item.medication.package_size_n1 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n1)) %}
+                                            {% set total_units = total_units + (item.packages_n1 * item.medication.package_size_n1) %}
+                                        {% endif %}
+
+                                        {% if item.packages_n2 > 0 and item.medication.package_size_n2 %}
+                                            {% set _ = output_lines.append('N2: ' ~ item.packages_n2 ~ ' × ' ~ item.medication.package_size_n2 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n2)) %}
+                                            {% set total_units = total_units + (item.packages_n2 * item.medication.package_size_n2) %}
+                                        {% endif %}
+
+                                        {% if item.packages_n3 > 0 and item.medication.package_size_n3 %}
+                                            {% set _ = output_lines.append('N3: ' ~ item.packages_n3 ~ ' × ' ~ item.medication.package_size_n3 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n3)) %}
+                                            {% set total_units = total_units + (item.packages_n3 * item.medication.package_size_n3) %}
+                                        {% endif %}
                                     {% endif %}
-                                    {% if item.medication.package_size_n2 %}
-                                        {% set total_units = total_units + (item.packages_n2 * item.medication.package_size_n2) %}
+
+                                    {# Display output #}
+                                    {% if output_lines %}
+                                        {{ output_lines|join('<br>')|safe }}
+                                    {% else %}
+                                        <em>{{ _('No packages ordered') }}</em>
                                     {% endif %}
-                                    {% if item.medication.package_size_n3 %}
-                                        {% set total_units = total_units + (item.packages_n3 * item.medication.package_size_n3) %}
-                                    {% endif %}
-                                    {{ total_units }} units
                                 </td>
+                                <td><strong>{% set final_units = total_units or item.quantity_needed %}{{ final_units }} {{ ngettext('unit', 'units', final_units) }}</strong></td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             {% else %}
                 <div class="alert alert-warning">
-                    <p>No medications in this order.</p>
+                    <p>{{ _('No medications in this order.') }}</p>
                 </div>
             {% endif %}
         </div>
 
-        <div class="order-signature">
-            <div class="row">
-                <div class="col-6">
-                    <p class="mb-5">
-                        <strong>Provider Signature:</strong> ________________________________
-                    </p>
-                    <p>
-                        <strong>Date:</strong> _________________
-                    </p>
-                </div>
-                <div class="col-6">
-                    <p class="mb-5">
-                        <strong>Received By:</strong> ________________________________
-                    </p>
-                    <p>
-                        <strong>Date:</strong> _________________
-                    </p>
-                </div>
-            </div>
-        </div>
-
         <div class="text-center mt-5 small text-muted">
-            <p>Generated by Medication Tracker</p>
+            <p>{{ _('Generated by Medication Tracker') }}</p>
         </div>
     </div>
 

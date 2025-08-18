@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Edit Active Ingredient') }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>{{ _('Edit Active Ingredient') }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">{{ _('Name') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ ingredient.name }}" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="strength" class="form-label">{{ _('Strength') }}</label>
+                            <input type="text" class="form-control" id="strength" name="strength" 
+                                   value="{{ ingredient.strength or '' }}"
+                                   placeholder="{{ _('e.g., 500') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="strength_unit" class="form-label">{{ _('Strength Unit') }}</label>
+                            <input type="text" class="form-control" id="strength_unit" name="strength_unit" 
+                                   value="{{ ingredient.strength_unit or '' }}"
+                                   placeholder="{{ _('e.g., mg') }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="form" class="form-label">{{ _('Form') }}</label>
+                        <input type="text" class="form-control" id="form" name="form" 
+                               value="{{ ingredient.form or '' }}"
+                               placeholder="{{ _('e.g., Tablet, Capsule, Syrup') }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="atc_code" class="form-label">{{ _('ATC Code') }}</label>
+                        <input type="text" class="form-control" id="atc_code" name="atc_code" 
+                               value="{{ ingredient.atc_code or '' }}"
+                               placeholder="{{ _('e.g., N02BE01') }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">{{ _('Notes') }}</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3">{{ ingredient.notes or '' }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('ingredients.show', id=ingredient.id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>{{ _('Save Changes') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

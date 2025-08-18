@@ -29,7 +29,7 @@ from models import (
     db,
 )
 from pdf_utils import generate_prescription_pdf
-from utils import to_local_timezone
+from utils import to_local_timezone, format_date, format_datetime
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -113,9 +113,45 @@ def new():
             if f"include_{med.id}" in request.form:
                 # Extract form data
                 quantity_needed = int(request.form.get(f"quantity_{med.id}", 0) or 0)
-                packages_n1 = int(request.form.get(f"packages_n1_{med.id}", 0) or 0)
-                packages_n2 = int(request.form.get(f"packages_n2_{med.id}", 0) or 0)
-                packages_n3 = int(request.form.get(f"packages_n3_{med.id}", 0) or 0)
+                
+                # Try to get packages from new ProductPackage system first
+                packages_n1 = 0
+                packages_n2 = 0
+                packages_n3 = 0
+                
+                # Check if medication uses new product system
+                product = med.default_product or (med.migrated_product[0] if med.migrated_product and len(med.migrated_product) > 0 else None)
+                if product and product.packages:
+                    # Look for new package inputs based on package names
+                    for package in product.packages:
+                        package_input_name = f"packages_{package.package_size}_{med.id}"
+                        package_count = int(request.form.get(package_input_name, 0) or 0)
+                        
+                        # Map to legacy N1/N2/N3 for storage (temporary solution)
+                        if package.package_size == 'N1':
+                            packages_n1 = package_count
+                        elif package.package_size == 'N2':
+                            packages_n2 = package_count
+                        elif package.package_size == 'N3':
+                            packages_n3 = package_count
+                        # For non-standard package names, try to map them
+                        elif 'N1' in package.package_size:
+                            packages_n1 = package_count
+                        elif 'N2' in package.package_size:
+                            packages_n2 = package_count
+                        elif 'N3' in package.package_size:
+                            packages_n3 = package_count
+                        elif packages_n1 == 0:  # Use first available slot
+                            packages_n1 = package_count
+                        elif packages_n2 == 0:  # Use second available slot
+                            packages_n2 = package_count
+                        elif packages_n3 == 0:  # Use third available slot
+                            packages_n3 = package_count
+                else:
+                    # Fall back to legacy inputs
+                    packages_n1 = int(request.form.get(f"packages_n1_{med.id}", 0) or 0)
+                    packages_n2 = int(request.form.get(f"packages_n2_{med.id}", 0) or 0)
+                    packages_n3 = int(request.form.get(f"packages_n3_{med.id}", 0) or 0)
 
                 # Create order item
                 order_item = OrderItem(
@@ -323,9 +359,45 @@ def edit(id: int):
 
                 # Extract form data
                 quantity_needed = int(request.form.get(f"quantity_{med.id}", 0) or 0)
-                packages_n1 = int(request.form.get(f"packages_n1_{med.id}", 0) or 0)
-                packages_n2 = int(request.form.get(f"packages_n2_{med.id}", 0) or 0)
-                packages_n3 = int(request.form.get(f"packages_n3_{med.id}", 0) or 0)
+                
+                # Try to get packages from new ProductPackage system first
+                packages_n1 = 0
+                packages_n2 = 0
+                packages_n3 = 0
+                
+                # Check if medication uses new product system
+                product = med.default_product or (med.migrated_product[0] if med.migrated_product and len(med.migrated_product) > 0 else None)
+                if product and product.packages:
+                    # Look for new package inputs based on package names
+                    for package in product.packages:
+                        package_input_name = f"packages_{package.package_size}_{med.id}"
+                        package_count = int(request.form.get(package_input_name, 0) or 0)
+                        
+                        # Map to legacy N1/N2/N3 for storage (temporary solution)
+                        if package.package_size == 'N1':
+                            packages_n1 = package_count
+                        elif package.package_size == 'N2':
+                            packages_n2 = package_count
+                        elif package.package_size == 'N3':
+                            packages_n3 = package_count
+                        # For non-standard package names, try to map them
+                        elif 'N1' in package.package_size:
+                            packages_n1 = package_count
+                        elif 'N2' in package.package_size:
+                            packages_n2 = package_count
+                        elif 'N3' in package.package_size:
+                            packages_n3 = package_count
+                        elif packages_n1 == 0:  # Use first available slot
+                            packages_n1 = package_count
+                        elif packages_n2 == 0:  # Use second available slot
+                            packages_n2 = package_count
+                        elif packages_n3 == 0:  # Use third available slot
+                            packages_n3 = package_count
+                else:
+                    # Fall back to legacy inputs
+                    packages_n1 = int(request.form.get(f"packages_n1_{med.id}", 0) or 0)
+                    packages_n2 = int(request.form.get(f"packages_n2_{med.id}", 0) or 0)
+                    packages_n3 = int(request.form.get(f"packages_n3_{med.id}", 0) or 0)
 
                 # Find existing order item or create new one
                 order_item = None

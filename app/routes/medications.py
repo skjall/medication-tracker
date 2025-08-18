@@ -36,39 +36,17 @@ medication_bp = Blueprint("medications", __name__, url_prefix="/medications")
 
 @medication_bp.route("/")
 def index():
-    """Display list of all medications grouped by physician."""
-    medications = Medication.query.order_by(Medication.name).all()
-    
-    # Group medications by physician or OTC status
-    medications_by_physician = {}
-    otc_medications = []
-    
-    for med in medications:
-        if med.is_otc:
-            otc_medications.append(med)
-        else:
-            physician_key = med.physician if med.physician else None
-            if physician_key not in medications_by_physician:
-                medications_by_physician[physician_key] = []
-            medications_by_physician[physician_key].append(med)
-    
-    # Sort physicians by name, with unassigned at the end
-    sorted_physicians = sorted(
-        medications_by_physician.keys(),
-        key=lambda p: (p is None, p.name if p else "")
-    )
-    
-    return render_template(
-        "medications/index.html",
-        local_time=to_local_timezone(datetime.now(timezone.utc)),
-        medications_by_physician=medications_by_physician,
-        sorted_physicians=sorted_physicians,
-        otc_medications=otc_medications,
-    )
+    """Redirect to new ingredients/products view."""
+    return redirect(url_for('ingredients.index'))
 
 
 @medication_bp.route("/new", methods=["GET", "POST"])
 def new():
+    """Redirect to new product creation."""
+    return redirect(url_for('ingredients.new_product'))
+
+@medication_bp.route("/legacy/new", methods=["GET", "POST"])
+def legacy_new():
     """Create a new medication."""
     if request.method == "POST":
         # Extract form data

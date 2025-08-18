@@ -162,7 +162,13 @@
                                 {% for item in order_items %}
                                     <tr class="{% if item.fulfillment_status == 'cancelled' %}table-danger{% elif item.fulfillment_status == 'fulfilled' %}table-success{% endif %}">
                                         <td>
-                                            <div class="fw-bold">{{ item.medication.name }}</div>
+                                            {% set product = item.medication.default_product or (item.medication.migrated_product[0] if item.medication.migrated_product and item.medication.migrated_product|length > 0 else None) %}
+                                            {% if product %}
+                                                <div class="fw-bold">{{ product.active_ingredient.name }}</div>
+                                                <div class="text-muted small">→ {{ product.display_name }}</div>
+                                            {% else %}
+                                                <div class="fw-bold">{{ item.medication.name }}</div>
+                                            {% endif %}
                                             <small class="text-muted">
                                                 <i class="fas fa-chart-line me-1"></i>{{ item.medication.daily_usage|round(1) }} {{ _('units/day') }}
                                             </small>
@@ -194,28 +200,40 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <div class="small">
-                                                <i class="fas fa-link me-1"></i>
-                                                <span class="{% if item.linked_packages and item.linked_packages|length == (item.packages_n1 + item.packages_n2 + item.packages_n3) %}text-success{% elif item.linked_packages and item.linked_packages|length > 0 %}text-warning{% else %}text-muted{% endif %}">
-                                                    {{ item.linked_packages|length if item.linked_packages else 0 }}/{{ item.packages_n1 + item.packages_n2 + item.packages_n3 }} {{ _('packages') }}
-                                                </span>
-                                            </div>
-                                            {% if item.fulfilled_quantity %}
-                                                <div class="mt-2 {% if item.fulfilled_quantity == item.total_units_ordered %}text-success{% else %}text-warning{% endif %}">
-                                                    <i class="fas fa-check-circle me-1"></i>{{ item.fulfilled_quantity }} {{ _('units') }}
-                                                </div>
-                                                {% if item.fulfilled_at %}
-                                                    <small class="text-muted">{{ format_date(item.fulfilled_at) }}</small>
+                                            <div class="mb-1">
+                                                <strong>{{ item.units_received }}/{{ item.quantity_needed }}</strong> {{ _('units') }}
+                                                {% if item.units_received > 0 %}
+                                                    <div class="progress mt-1" style="height: 5px;">
+                                                        <div class="progress-bar {% if item.units_received >= item.quantity_needed %}bg-success{% else %}bg-warning{% endif %}" 
+                                                             role="progressbar" 
+                                                             style="width: {{ [item.fulfillment_percentage, 100]|min }}%"
+                                                             aria-valuenow="{{ item.units_received }}" 
+                                                             aria-valuemin="0" 
+                                                             aria-valuemax="{{ item.quantity_needed }}">
+                                                        </div>
+                                                    </div>
                                                 {% endif %}
+                                            </div>
+                                            {% if item.linked_packages %}
+                                                <div class="small text-muted">
+                                                    <i class="fas fa-box me-1"></i>{{ item.linked_packages|length }} {{ _('package(s) linked') }}
+                                                </div>
+                                            {% endif %}
+                                            {% if item.fulfilled_at %}
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar-check me-1"></i>{{ format_date(item.fulfilled_at) }}
+                                                </small>
                                             {% endif %}
                                         </td>
                                         <td>
                                             {% if item.fulfillment_status == 'pending' %}
                                                 <span class="badge bg-secondary">{{ _('Pending') }}</span>
+                                            {% elif item.fulfillment_status == 'partial' %}
+                                                <span class="badge bg-warning">{{ _('Partial') }}</span>
                                             {% elif item.fulfillment_status == 'fulfilled' %}
                                                 <span class="badge bg-success">{{ _('Done') }}</span>
                                             {% elif item.fulfillment_status == 'modified' %}
-                                                <span class="badge bg-warning">{{ _('Modified') }}</span>
+                                                <span class="badge bg-info">{{ _('Modified') }}</span>
                                             {% elif item.fulfillment_status == 'cancelled' %}
                                                 <span class="badge bg-danger">{{ _('Cancelled') }}</span>
                                             {% endif %}

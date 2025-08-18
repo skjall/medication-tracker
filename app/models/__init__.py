@@ -10,6 +10,9 @@ import logging
 from .base import db, utcnow
 from .physician import Physician
 from .medication import Medication
+from .active_ingredient import ActiveIngredient
+from .medication_product import MedicationProduct
+from .product_package import ProductPackage
 from .inventory import Inventory, InventoryLog
 from .visit import PhysicianVisit, Order, OrderItem
 from .schedule import ScheduleType, MedicationSchedule
@@ -31,6 +34,9 @@ __all__ = [
     "utcnow",
     "Physician",
     "Medication",
+    "ActiveIngredient",
+    "MedicationProduct",
+    "ProductPackage",
     "Inventory",
     "InventoryLog",
     "PhysicianVisit",

@@ -1,0 +1,303 @@
+=== Development Environment Startup Script ===
+📁 Working directory: /Users/jan.grossheim/VSCodeProjects/github-skjall/medication-tracker
+
+📄 Loading environment variables from /Users/jan.grossheim/VSCodeProjects/github-skjall/medication-tracker/.env...
+✅ Crowdin credentials found - translations will be synced during build
+   Project ID: 819294
+   Token (first 5 chars): 493fc...
+   Token length: 80
+   Cache bust: 1755501907 (forces fresh download)
+
+🔨 Stopping existing containers...
+
+🚀 Building and starting development container...
+   This will:
+   - Extract strings from source code
+   - Upload strings to Crowdin
+   - Download latest translations from Crowdin
+   - Compile translations
+
+Starting Docker build with detailed output...
+Compose can now delegate builds to bake for better performance.
+ To do so, set COMPOSE_BAKE=true.
+#0 building with "postkeeper-builder" instance using docker-container driver
+
+#1 [medication-tracker internal] load build definition from Dockerfile
+#1 transferring dockerfile: 5.20kB done
+#1 DONE 0.0s
+
+#2 [medication-tracker] resolve image config for docker-image://docker.io/docker/dockerfile:1.17@sha256:38387523653efa0039f8e1c89bb74a30504e76ee9f565e25c9a09841f9427b05
+#2 ...
+
+#3 [medication-tracker auth] docker/dockerfile:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [medication-tracker] resolve image config for docker-image://docker.io/docker/dockerfile:1.17@sha256:38387523653efa0039f8e1c89bb74a30504e76ee9f565e25c9a09841f9427b05
+#2 DONE 1.3s
+
+#4 [medication-tracker] docker-image://docker.io/docker/dockerfile:1.17@sha256:38387523653efa0039f8e1c89bb74a30504e76ee9f565e25c9a09841f9427b05
+#4 resolve docker.io/docker/dockerfile:1.17@sha256:38387523653efa0039f8e1c89bb74a30504e76ee9f565e25c9a09841f9427b05 done
+#4 CACHED
+
+#5 [medication-tracker auth] library/python:pull token for registry-1.docker.io
+#5 DONE 0.0s
+
+#6 [medication-tracker internal] load metadata for docker.io/library/python:3.13-slim@sha256:4d55aff3915a8622fdb8e6ab3645992de771bd97c3dd1279860cd5e18bcd7582
+#6 DONE 0.5s
+
+#7 [medication-tracker internal] load .dockerignore
+#7 transferring context: 616B done
+#7 DONE 0.0s
+
+#8 [medication-tracker translator  1/15] FROM docker.io/library/python:3.13-slim@sha256:4d55aff3915a8622fdb8e6ab3645992de771bd97c3dd1279860cd5e18bcd7582
+#8 resolve docker.io/library/python:3.13-slim@sha256:4d55aff3915a8622fdb8e6ab3645992de771bd97c3dd1279860cd5e18bcd7582 done
+#8 DONE 0.0s
+
+#9 [medication-tracker translator  2/15] RUN apt-get update && apt-get install -y --no-install-recommends   curl   unzip   openjdk-21-jre-headless   && rm -rf /var/lib/apt/lists/*   && pip install --no-cache-dir babel flask-babel   && curl -L https://github.com/crowdin/crowdin-cli/releases/download/4.9.1/crowdin-cli.zip -o /tmp/crowdin-cli.zip   && unzip /tmp/crowdin-cli.zip -d /opt/   && rm /tmp/crowdin-cli.zip   && CROWDIN_DIR=$(ls -d /opt/*/ | head -n1)   && chmod +x ${CROWDIN_DIR}crowdin   && ln -s ${CROWDIN_DIR}crowdin-cli.jar /opt/crowdin-cli.jar   && ln -s ${CROWDIN_DIR}crowdin /opt/crowdin
+#9 CACHED
+
+#10 [medication-tracker internal] load build context
+#10 transferring context: 20.35kB 0.0s done
+#10 DONE 0.0s
+
+#11 [medication-tracker translator  3/15] RUN echo "Cache bust: 1755501907"
+#11 0.062 Cache bust: 1755501907
+#11 DONE 0.1s
+
+#12 [medication-tracker translator  4/15] COPY app/ /app/
+#12 DONE 0.1s
+
+#13 [medication-tracker translator  5/15] COPY babel.cfg /babel.cfg
+#13 DONE 0.0s
+
+#14 [medication-tracker translator  6/15] COPY translations/ /app/translations/
+#14 DONE 0.0s
+
+#15 [medication-tracker translator  7/15] COPY crowdin.yml /app/crowdin.yml
+#15 DONE 0.0s
+
+#16 [medication-tracker translator  8/15] WORKDIR /app
+#16 DONE 0.0s
+
+#17 [medication-tracker translator  9/15] RUN pybabel extract   -F /babel.cfg   -k _l -k _ -k _n:1,2   -o /app/translations/messages.pot   /app   --add-comments="TRANSLATORS:" --sort-by-file
+#17 0.139 extracting messages from /app/__init__.py
+#17 0.153 extracting messages from /app/barcode_validator.py
+#17 0.154 extracting messages from /app/data_utils.py
+#17 0.158 extracting messages from /app/database_init.py
+#17 0.159 extracting messages from /app/deduction_service.py
+#17 0.161 extracting messages from /app/init_data.py
+#17 0.162 extracting messages from /app/jinja_config.py
+#17 0.162 extracting messages from /app/logging_config.py
+#17 0.162 extracting messages from /app/main.py
+#17 0.164 extracting messages from /app/migration_cli.py
+#17 0.164 extracting messages from /app/migration_utils.py
+#17 0.166 extracting messages from /app/pdf_utils.py
+#17 0.167 extracting messages from /app/physician_visit_utils.py
+#17 0.168 extracting messages from /app/route_registration.py
+#17 0.168 extracting messages from /app/scanner_parser.py
+#17 0.169 extracting messages from /app/task_scheduler.py
+#17 0.171 extracting messages from /app/timezone_helper.py
+#17 0.171 extracting messages from /app/translation_config.py
+#17 0.173 extracting messages from /app/utils.py
+#17 0.174 extracting messages from /app/version.py
+#17 0.175 extracting messages from /app/models/__init__.py
+#17 0.175 extracting messages from /app/models/active_ingredient.py
+#17 0.175 extracting messages from /app/models/base.py
+#17 0.176 extracting messages from /app/models/inventory.py
+#17 0.176 extracting messages from /app/models/medication.py
+#17 0.178 extracting messages from /app/models/medication_product.py
+#17 0.179 extracting messages from /app/models/physician.py
+#17 0.180 extracting messages from /app/models/prescription.py
+#17 0.181 extracting messages from /app/models/product_package.py
+#17 0.181 extracting messages from /app/models/scanner.py
+#17 0.182 extracting messages from /app/models/schedule.py
+#17 0.183 extracting messages from /app/models/settings.py
+#17 0.183 extracting messages from /app/models/visit.py
+#17 0.185 extracting messages from /app/routes/__init__.py
+#17 0.185 extracting messages from /app/routes/ingredients.py
+#17 0.187 extracting messages from /app/routes/inventory.py
+#17 0.189 extracting messages from /app/routes/medication_packages.py
+#17 0.191 extracting messages from /app/routes/medications.py
+#17 0.192 extracting messages from /app/routes/orders.py
+#17 0.195 extracting messages from /app/routes/physicians.py
+#17 0.197 extracting messages from /app/routes/prescription_templates.py
+#17 0.198 extracting messages from /app/routes/scanner.py
+#17 0.201 extracting messages from /app/routes/schedule.py
+#17 0.202 extracting messages from /app/routes/settings.py
+#17 0.205 extracting messages from /app/routes/system.py
+#17 0.206 extracting messages from /app/routes/visits.py
+#17 0.207 extracting messages from /app/templates/404.html
+#17 0.236 extracting messages from /app/templates/index.html
+#17 0.248 extracting messages from /app/templates/layout.html
+#17 0.253 extracting messages from /app/templates/macros.html
+#17 0.254 extracting messages from /app/templates/test_translation.html
+#17 0.255 extracting messages from /app/templates/dashboard/next_but_one.html
+#17 0.259 extracting messages from /app/templates/ingredients/edit.html
+#17 0.261 extracting messages from /app/templates/ingredients/edit_package.html
+#17 0.264 extracting messages from /app/templates/ingredients/edit_product.html
+#17 0.267 extracting messages from /app/templates/ingredients/index.html
+#17 0.271 extracting messages from /app/templates/ingredients/new_package.html
+#17 0.274 extracting messages from /app/templates/ingredients/new_product.html
+#17 0.277 extracting messages from /app/templates/ingredients/show.html
+#17 0.283 extracting messages from /app/templates/ingredients/show_product.html
+#17 0.291 extracting messages from /app/templates/inventory/depletion.html
+#17 0.296 extracting messages from /app/templates/inventory/edit_package.html
+#17 0.304 extracting messages from /app/templates/inventory/index.html
+#17 0.318 extracting messages from /app/templates/inventory/logs.html
+#17 0.320 extracting messages from /app/templates/inventory/low.html
+#17 0.324 extracting messages from /app/templates/inventory/show.html
+#17 0.340 extracting messages from /app/templates/medication_packages/edit.html
+#17 0.342 extracting messages from /app/templates/medication_packages/new.html
+#17 0.344 extracting messages from /app/templates/medications/edit.html
+#17 0.351 extracting messages from /app/templates/medications/index.html
+#17 0.358 extracting messages from /app/templates/medications/new.html
+#17 0.361 extracting messages from /app/templates/medications/show.html
+#17 0.377 extracting messages from /app/templates/orders/_fulfill_modal.html
+#17 0.378 extracting messages from /app/templates/orders/edit.html
+#17 0.386 extracting messages from /app/templates/orders/index.html
+#17 0.392 extracting messages from /app/templates/orders/new.html
+#17 0.405 extracting messages from /app/templates/orders/printable.html
+#17 0.413 extracting messages from /app/templates/orders/show.html
+#17 0.427 extracting messages from /app/templates/physicians/edit.html
+#17 0.429 extracting messages from /app/templates/physicians/index.html
+#17 0.432 extracting messages from /app/templates/physicians/new.html
+#17 0.434 extracting messages from /app/templates/physicians/show.html
+#17 0.440 extracting messages from /app/templates/prescriptions/edit.html
+#17 0.443 extracting messages from /app/templates/prescriptions/index.html
+#17 0.446 extracting messages from /app/templates/prescriptions/new.html
+#17 0.449 extracting messages from /app/templates/prescriptions/show.html
+#17 0.452 extracting messages from /app/templates/scanner/index.html
+#17 0.457 extracting messages from /app/templates/scanner/package_details.html
+#17 0.462 extracting messages from /app/templates/scanner/scan.html
+#17 0.467 extracting messages from /app/templates/schedules/edit.html
+#17 0.471 extracting messages from /app/templates/schedules/index.html
+#17 0.476 extracting messages from /app/templates/schedules/new.html
+#17 0.479 extracting messages from /app/templates/settings/data_management.html
+#17 0.488 extracting messages from /app/templates/settings/physician_visits.html
+#17 0.490 extracting messages from /app/templates/settings/system.html
+#17 0.495 extracting messages from /app/templates/system/migrations.html
+#17 0.497 extracting messages from /app/templates/system/status.html
+#17 0.503 extracting messages from /app/templates/visits/edit.html
+#17 0.506 extracting messages from /app/templates/visits/index.html
+#17 0.512 extracting messages from /app/templates/visits/new.html
+#17 0.513 extracting messages from /app/templates/visits/show.html
+#17 0.522 writing PO template file to /app/translations/messages.pot
+#17 DONE 0.6s
+
+#18 [medication-tracker translator 10/15] RUN sed -i '/^"POT-Creation-Date:/d' /app/translations/messages.pot
+#18 DONE 0.1s
+
+#19 [medication-tracker translator 11/15] RUN if [ -n "493fce9e273a82eeefca77c9fbb6350f71487cdef2bd41619d2511dfa5d6e5ac5656d87920456206" ] && [ -n "819294" ]; then   crowdin upload sources --no-progress --config /app/crowdin.yml --base-path /app &&   crowdin download       --no-progress --config /app/crowdin.yml --base-path /app ;   else   echo "Crowdin sync skipped - missing credentials" ;   fi
+#19 3.378 ??  Fetching project info
+#19 5.946 ??  File 'translations/messages.pot'
+#19 9.898 ??  Fetching project info
+#19 9.901 ??  Building ZIP archive with the latest translations
+#19 13.77 ??  Building translation (100%)
+#19 15.19 ??  Downloading translations
+#19 15.21 ??  Extracting archive
+#19 15.23 ??  translations/de/LC_MESSAGES/messages.po
+#19 DONE 15.5s
+
+#20 [medication-tracker translator 12/15] RUN pybabel update -i /app/translations/messages.pot -d /app/translations || true
+#20 0.118 updating catalog /app/translations/de/LC_MESSAGES/messages.po based on /app/translations/messages.pot
+#20 DONE 0.2s
+
+#21 [medication-tracker translator 13/15] RUN pybabel compile -d /app/translations || echo "Translation compilation had errors but continuing"
+#21 0.112 compiling catalog /app/translations/de/LC_MESSAGES/messages.po to /app/translations/de/LC_MESSAGES/messages.mo
+#21 DONE 0.1s
+
+#22 [medication-tracker translator 14/15] RUN ls -R /app/translations &&   find /app/translations -type f ( -name "*.po" -o -name "*.mo" -o -name "messages.pot" ) | head -n 20
+#22 0.044 /app/translations:
+#22 0.044 de
+#22 0.044 messages.pot
+#22 0.044 
+#22 0.044 /app/translations/de:
+#22 0.044 LC_MESSAGES
+#22 0.044 
+#22 0.044 /app/translations/de/LC_MESSAGES:
+#22 0.044 messages.mo
+#22 0.044 messages.po
+#22 0.045 /app/translations/messages.pot
+#22 0.045 /app/translations/de/LC_MESSAGES/messages.po
+#22 0.045 /app/translations/de/LC_MESSAGES/messages.mo
+#22 DONE 0.1s
+
+#23 [medication-tracker builder 5/7] COPY requirements.txt /app/requirements.txt
+#23 CACHED
+
+#24 [medication-tracker builder 2/7] WORKDIR /app
+#24 CACHED
+
+#25 [medication-tracker builder 4/7] RUN pip install --no-cache-dir pip-tools wheel
+#25 CACHED
+
+#26 [medication-tracker builder 3/7] RUN apt-get update && apt-get install -y --no-install-recommends   build-essential   gcc   python3-dev   && rm -rf /var/lib/apt/lists/*
+#26 CACHED
+
+#27 [medication-tracker runtime  3/12] COPY --from=builder /opt/venv /opt/venv
+#27 CACHED
+
+#28 [medication-tracker runtime  6/12] COPY migrations/ /app/migrations/
+#28 CACHED
+
+#29 [medication-tracker runtime  4/12] RUN apt-get update && apt-get install -y --no-install-recommends   wget   sqlite3   && rm -rf /var/lib/apt/lists/*
+#29 CACHED
+
+#30 [medication-tracker runtime  5/12] COPY app/ /app/
+#30 CACHED
+
+#31 [medication-tracker builder 7/7] RUN pip install --no-cache-dir -r /app/requirements.txt
+#31 CACHED
+
+#32 [medication-tracker runtime  7/12] COPY alembic.ini /app/alembic.ini
+#32 CACHED
+
+#33 [medication-tracker builder 6/7] RUN python -m venv /opt/venv
+#33 CACHED
+
+#34 [medication-tracker runtime  8/12] COPY babel.cfg /app/babel.cfg
+#34 CACHED
+
+#35 [medication-tracker runtime  9/12] COPY --from=translator /app/translations/ /app/translations/
+#35 DONE 0.0s
+
+#36 [medication-tracker runtime 10/12] RUN ls -R /app/translations || (echo "translations missing in runtime image" && exit 1)
+#36 0.041 /app/translations:
+#36 0.041 de
+#36 0.041 messages.pot
+#36 0.041 
+#36 0.041 /app/translations/de:
+#36 0.041 LC_MESSAGES
+#36 0.041 
+#36 0.041 /app/translations/de/LC_MESSAGES:
+#36 0.041 messages.mo
+#36 0.041 messages.po
+#36 DONE 0.0s
+
+#37 [medication-tracker runtime 11/12] COPY entrypoint.sh /app/entrypoint.sh
+#37 DONE 0.0s
+
+#38 [medication-tracker runtime 12/12] RUN chmod +x /app/entrypoint.sh
+#38 DONE 0.1s
+
+#39 [medication-tracker] exporting to docker image format
+#39 exporting layers 0.0s done
+#39 exporting manifest sha256:38ab93eabe0559def6a01a3df58e2a9f1534ae208a2edc4722b1aaba559f0499 done
+#39 exporting config sha256:6daabee81baeb669cada07dfa81e36e9427f11a1b284dcd3892b8417cd21367b done
+#39 sending tarball
+#39 sending tarball 1.2s done
+#39 DONE 1.2s
+
+#40 [medication-tracker] importing to docker
+#40 loading layer 8ff0c179ded7 84.28kB / 84.28kB 0.0s done
+#40 loading layer 5f70bf18a086 32B / 32B 0.0s done
+#40 loading layer 170bb0cb5de4 486B / 486B 0.0s done
+#40 DONE 0.0s
+
+#41 [medication-tracker] resolving provenance for metadata file
+#41 DONE 0.0s
+
+Starting container...
+Attaching to medication-tracker-dev
+medication-tracker-dev  |  * Serving Flask app 'main'
+medication-tracker-dev  |  * Debug mode: on

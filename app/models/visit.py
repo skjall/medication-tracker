@@ -18,6 +18,7 @@ from utils import calculate_days_until
 if TYPE_CHECKING:
     from .medication import Medication
     from .physician import Physician
+    from .scanner import PackageInventory
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -151,12 +152,20 @@ class OrderItem(db.Model):
     fulfillment_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     fulfilled_quantity: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     fulfilled_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    
+    # Track actual units received vs ordered
+    units_received: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=False,
+        comment="Actual units received through scanning"
+    )
 
     # Relationships
     order: Mapped["Order"] = relationship("Order", back_populates="order_items")
     medication: Mapped["Medication"] = relationship(
         "Medication", back_populates="order_items"
     )
+    
+    # Note: linked_packages relationship is defined via backref in PackageInventory model
     
     @property
     def total_units_ordered(self) -> int:
@@ -179,11 +188,41 @@ class OrderItem(db.Model):
         return 0
     
     @property
+    def units_from_linked_packages(self) -> int:
+        """Calculate total units from linked packages."""
+        total = 0
+        if hasattr(self, 'linked_packages'):
+            for package in self.linked_packages:
+                if package.status in ['sealed', 'open']:
+                    total += package.original_units
+        return total
+    
+    @property
     def fulfillment_progress(self) -> str:
         """Get fulfillment progress as a string."""
-        count = self.linked_package_count
-        total = self.packages_n1 + self.packages_n2 + self.packages_n3
-        return f"{count}/{total}"
+        return f"{self.units_received}/{self.quantity_needed}"
+    
+    @property
+    def is_fully_fulfilled(self) -> bool:
+        """Check if order item is fully fulfilled."""
+        return self.units_received >= self.quantity_needed
+    
+    @property
+    def fulfillment_percentage(self) -> float:
+        """Calculate fulfillment percentage."""
+        if self.quantity_needed == 0:
+            return 100.0
+        return (self.units_received / self.quantity_needed) * 100
+    
+    def update_fulfillment_status(self):
+        """Update fulfillment status based on received units."""
+        if self.units_received >= self.quantity_needed:
+            self.fulfillment_status = "fulfilled"
+            self.fulfilled_at = datetime.utcnow()
+        elif self.units_received > 0:
+            self.fulfillment_status = "partial"
+        else:
+            self.fulfillment_status = "pending"
 
     def __repr__(self) -> str:
         med_name = self.medication.name if self.medication else "Unknown medication"

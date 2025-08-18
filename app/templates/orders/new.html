@@ -29,14 +29,27 @@
                     {% if gap_coverage %}
                         <h5 class="mb-2">{{ _('Gap Coverage Order') }}</h5>
                         <p class="mb-0">
-                            <strong>{{ _('This is a gap coverage order.') }}</strong> {{ _('Some medications will run out before your visit on %(date)s (in %(days)s days).', date=format_date(visit.visit_date)|safe, days=visit.days_until) }}
+                            <strong>{{ _('This is a gap coverage order.') }}</strong> 
+                            {% if visit.days_until < 0 %}
+                                {{ _('Some medications ran out before your visit on %(date)s (%(days)s days ago).', date=format_date(visit.visit_date)|safe, days=(-visit.days_until)) }}
+                            {% elif visit.days_until == 0 %}
+                                {{ _('Some medications will run out before your visit today (%(date)s).', date=format_date(visit.visit_date)|safe) }}
+                            {% else %}
+                                {{ _('Some medications will run out before your visit on %(date)s (in %(days)s days).', date=format_date(visit.visit_date)|safe, days=visit.days_until) }}
+                            {% endif %}
                         </p>
                         <p class="mb-0 mt-2">
                             {{ _('Only medications that will deplete before the visit are shown below, with quantities calculated to bridge the gap between when they run out and your visit date.') }}
                         </p>
                     {% else %}
                         <p class="mb-0">
-                            {{ _('This order is for your physician visit in %(days)s days on %(date)s.', days=visit.days_until|safe, date=format_date(visit.visit_date)|safe) }}
+                            {% if visit.days_until < 0 %}
+                                {{ _('This order was for your physician visit %(days)s days ago on %(date)s.', days=(-visit.days_until)|safe, date=format_date(visit.visit_date)|safe) }}
+                            {% elif visit.days_until == 0 %}
+                                {{ _('This order is for your physician visit today (%(date)s).', date=format_date(visit.visit_date)|safe) }}
+                            {% else %}
+                                {{ _('This order is for your physician visit in %(days)s days on %(date)s.', days=visit.days_until|safe, date=format_date(visit.visit_date)|safe) }}
+                            {% endif %}
                         </p>
                         <p class="mb-0 mt-2">
                             {% if consider_next_but_one %}
@@ -102,7 +115,13 @@
                                         </td>
                                         <td>
                                             <label for="include_{{ med.id }}" class="form-check-label">
-                                                <strong>{{ med.name }}</strong>
+                                                {% set product = med.default_product or (med.migrated_product[0] if med.migrated_product and med.migrated_product|length > 0 else None) %}
+                                                {% if product %}
+                                                    <strong>{{ product.active_ingredient.name }}</strong>
+                                                    <div class="small text-muted">→ {{ product.display_name }}</div>
+                                                {% else %}
+                                                    <strong>{{ med.name }}</strong>
+                                                {% endif %}
                                                 <div class="small text-muted">{{ _('%(usage)s units/day', usage=med.daily_usage|round(1)) }}</div>
                                             </label>
                                         </td>
@@ -146,6 +165,31 @@
                                                         <label for="quantity_{{ med.id }}" class="form-label">{{ _('Quantity Needed') }}</label>
                                                         <input type="number" class="form-control" id="quantity_{{ med.id }}" name="quantity_{{ med.id }}" min="0" value="{{ med_need.additional_needed if med_need.additional_needed > 0 else 0 }}">
                                                     </div>
+                                                    
+                                                    {# Product selection - show all products for the ingredient #}
+                                                    {% set product = med.default_product or (med.migrated_product[0] if med.migrated_product and med.migrated_product|length > 0 else None) %}
+                                                    {% if product %}
+                                                        {% set all_products = product.active_ingredient.products %}
+                                                        {% if all_products|length > 1 %}
+                                                        <div class="mb-3">
+                                                            <label for="product_{{ med.id }}" class="form-label">{{ _('Product') }}</label>
+                                                            <select class="form-select product-selector" id="product_{{ med.id }}" name="product_{{ med.id }}" data-medication-id="{{ med.id }}">
+                                                                {% for prod in all_products %}
+                                                                    <option value="{{ prod.id }}" 
+                                                                            {% if med.default_product_id == prod.id or (not med.default_product_id and prod == product) %}selected{% endif %}
+                                                                            data-packages='{{ prod.packages_as_dict | tojson }}'>
+                                                                        {{ prod.display_name }}
+                                                                        {% if prod.id == product.active_ingredient.default_product_id %}
+                                                                            ⭐
+                                                                        {% endif %}
+                                                                    </option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                        {% else %}
+                                                            <input type="hidden" name="product_{{ med.id }}" value="{{ product.id }}">
+                                                        {% endif %}
+                                                    {% endif %}
                                                 </div>
 
                                                 <div class="col-md-8">
@@ -158,34 +202,53 @@
                                                         </div>
 
                                                         <div class="row">
-                                                            {% if med.package_size_n1 %}
-                                                                <div class="col-md-4">
-                                                                    <div class="input-group mb-2">
-                                                                        <span class="input-group-text">N1</span>
-                                                                        <input type="number" class="form-control" id="packages_n1_{{ med.id }}" name="packages_n1_{{ med.id }}" min="0" value="{{ med_need.packages.N1 if med_need.additional_needed > 0 else 0 }}">
+                                                            {# Use new ProductPackage system if available #}
+                                                            {% set product = med.default_product or (med.migrated_product[0] if med.migrated_product and med.migrated_product|length > 0 else None) %}
+                                                            {% if product and product.packages %}
+                                                                {% for package in product.packages %}
+                                                                    {% if package.quantity > 0 %}
+                                                                        <div class="col-md-4">
+                                                                            <div class="input-group mb-2">
+                                                                                <span class="input-group-text">{{ package.package_size }}</span>
+                                                                                <input type="number" class="form-control" id="packages_{{ package.package_size }}_{{ med.id }}" 
+                                                                                       name="packages_{{ package.package_size }}_{{ med.id }}" min="0" 
+                                                                                       value="{{ med_need.packages.get(package.package_size, 0) if med_need.additional_needed > 0 else 0 }}">
+                                                                            </div>
+                                                                            <small class="text-muted">{{ _('%(units)s units each', units=package.quantity) }}</small>
+                                                                        </div>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            {% else %}
+                                                                {# Fall back to legacy N1/N2/N3 system if no product packages #}
+                                                                {% if med.package_size_n1 %}
+                                                                    <div class="col-md-4">
+                                                                        <div class="input-group mb-2">
+                                                                            <span class="input-group-text">N1</span>
+                                                                            <input type="number" class="form-control" id="packages_n1_{{ med.id }}" name="packages_n1_{{ med.id }}" min="0" value="{{ med_need.packages.N1 if med_need.additional_needed > 0 else 0 }}">
+                                                                        </div>
+                                                                        <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n1) }}</small>
                                                                     </div>
-                                                                    <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n1) }}</small>
-                                                                </div>
-                                                            {% endif %}
+                                                                {% endif %}
 
-                                                            {% if med.package_size_n2 %}
-                                                                <div class="col-md-4">
-                                                                    <div class="input-group mb-2">
-                                                                        <span class="input-group-text">N2</span>
-                                                                        <input type="number" class="form-control" id="packages_n2_{{ med.id }}" name="packages_n2_{{ med.id }}" min="0" value="{{ med_need.packages.N2 if med_need.additional_needed > 0 else 0 }}">
+                                                                {% if med.package_size_n2 %}
+                                                                    <div class="col-md-4">
+                                                                        <div class="input-group mb-2">
+                                                                            <span class="input-group-text">N2</span>
+                                                                            <input type="number" class="form-control" id="packages_n2_{{ med.id }}" name="packages_n2_{{ med.id }}" min="0" value="{{ med_need.packages.N2 if med_need.additional_needed > 0 else 0 }}">
+                                                                        </div>
+                                                                        <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n2) }}</small>
                                                                     </div>
-                                                                    <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n2) }}</small>
-                                                                </div>
-                                                            {% endif %}
+                                                                {% endif %}
 
-                                                            {% if med.package_size_n3 %}
-                                                                <div class="col-md-4">
-                                                                    <div class="input-group mb-2">
-                                                                        <span class="input-group-text">N3</span>
-                                                                        <input type="number" class="form-control" id="packages_n3_{{ med.id }}" name="packages_n3_{{ med.id }}" min="0" value="{{ med_need.packages.N3 if med_need.additional_needed > 0 else 0 }}">
+                                                                {% if med.package_size_n3 %}
+                                                                    <div class="col-md-4">
+                                                                        <div class="input-group mb-2">
+                                                                            <span class="input-group-text">N3</span>
+                                                                            <input type="number" class="form-control" id="packages_n3_{{ med.id }}" name="packages_n3_{{ med.id }}" min="0" value="{{ med_need.packages.N3 if med_need.additional_needed > 0 else 0 }}">
+                                                                        </div>
+                                                                        <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n3) }}</small>
                                                                     </div>
-                                                                    <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n3) }}</small>
-                                                                </div>
+                                                                {% endif %}
                                                             {% endif %}
                                                         </div>
                                                     </div>

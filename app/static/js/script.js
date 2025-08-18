@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Setup print button functionality
   setupPrintButton();
+
+  // Setup product selection changes
+  setupProductSelection();
 });
 
 /**
@@ -102,19 +105,40 @@ function setupPackageCalculation() {
         .then((data) => {
           // Update the package inputs
           if (data.packages) {
-            const n1Input = document.getElementById(
-              `packages_n1_${medicationId}`
+            // Handle both new ProductPackage system and legacy N1/N2/N3
+            Object.keys(data.packages).forEach(packageName => {
+              // Try new package naming convention first
+              let input = document.getElementById(
+                `packages_${packageName}_${medicationId}`
+              );
+              
+              // Fall back to legacy naming if not found
+              if (!input && packageName.startsWith('N')) {
+                input = document.getElementById(
+                  `packages_${packageName.toLowerCase()}_${medicationId}`
+                );
+              }
+              
+              if (input) {
+                input.value = data.packages[packageName] || 0;
+              }
+            });
+            
+            // Also clear any package inputs not in the response
+            const allPackageInputs = document.querySelectorAll(
+              `input[id^="packages_"][id$="_${medicationId}"]`
             );
-            const n2Input = document.getElementById(
-              `packages_n2_${medicationId}`
-            );
-            const n3Input = document.getElementById(
-              `packages_n3_${medicationId}`
-            );
-
-            if (n1Input) n1Input.value = data.packages.N1 || 0;
-            if (n2Input) n2Input.value = data.packages.N2 || 0;
-            if (n3Input) n3Input.value = data.packages.N3 || 0;
+            allPackageInputs.forEach(input => {
+              const packageNameMatch = input.id.match(/packages_(.+)_\d+/);
+              if (packageNameMatch) {
+                const packageName = packageNameMatch[1];
+                // Check both exact match and uppercase version for legacy
+                if (!data.packages[packageName] && 
+                    !data.packages[packageName.toUpperCase()]) {
+                  input.value = 0;
+                }
+              }
+            });
           }
         })
         .catch((error) => {
@@ -218,4 +242,78 @@ function formatDate(date) {
   const day = String(date.getDate()).padStart(2, '0');
 
   return `${year}-${month}-${day}`;
+}
+
+/**
+ * Setup product selection dropdowns.
+ * When a product is changed, update the package inputs and recalculate.
+ */
+function setupProductSelection() {
+  const productSelectors = document.querySelectorAll('.product-selector');
+  
+  productSelectors.forEach((selector) => {
+    selector.addEventListener('change', function() {
+      const medicationId = this.dataset.medicationId;
+      const selectedOption = this.options[this.selectedIndex];
+      const packagesData = selectedOption.dataset.packages;
+      
+      if (packagesData) {
+        try {
+          const packages = JSON.parse(packagesData);
+          updatePackageInputs(medicationId, packages);
+          
+          // Trigger recalculation if quantity is set
+          const quantityInput = document.getElementById(`quantity_${medicationId}`);
+          if (quantityInput && quantityInput.value) {
+            // Trigger the calculate button click
+            const calculateBtn = document.querySelector(`.calculate-packages-btn[data-medication-id="${medicationId}"]`);
+            if (calculateBtn) {
+              calculateBtn.click();
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing package data:', e);
+        }
+      }
+    });
+  });
+}
+
+/**
+ * Update package inputs based on selected product packages.
+ */
+function updatePackageInputs(medicationId, packages) {
+  // First, hide all existing package inputs for this medication
+  const allPackageInputs = document.querySelectorAll(`input[id^="packages_"][id$="_${medicationId}"]`);
+  allPackageInputs.forEach(input => {
+    input.closest('.col-md-4').style.display = 'none';
+  });
+  
+  // Get the container for package inputs
+  const detailsRow = document.getElementById(`medication_details_${medicationId}`);
+  if (!detailsRow) return;
+  
+  const packageContainer = detailsRow.querySelector('.row > .col-md-8 > .mb-3 > .row');
+  if (!packageContainer) return;
+  
+  // Clear and rebuild package inputs for new product
+  packageContainer.innerHTML = '';
+  
+  packages.forEach(pkg => {
+    if (pkg.quantity > 0) {
+      const packageDiv = document.createElement('div');
+      packageDiv.className = 'col-md-4';
+      packageDiv.innerHTML = `
+        <div class="input-group mb-2">
+          <span class="input-group-text">${pkg.package_size}</span>
+          <input type="number" class="form-control" 
+                 id="packages_${pkg.package_size}_${medicationId}" 
+                 name="packages_${pkg.package_size}_${medicationId}" 
+                 min="0" value="0">
+        </div>
+        <small class="text-muted">${pkg.quantity} units each</small>
+      `;
+      packageContainer.appendChild(packageDiv);
+    }
+  });
 }

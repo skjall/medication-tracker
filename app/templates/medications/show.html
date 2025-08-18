@@ -9,6 +9,9 @@
     {% if not medication.aut_idem %}
       <i class="fas fa-fingerprint text-info ms-2" title="{{ _('No generic substitution') }}"></i>
     {% endif %}
+    {% if medication.migrated_product and medication.migrated_product|length > 0 %}
+      <span class="badge bg-success ms-2">{{ _('Migrated') }}</span>
+    {% endif %}
   </h1>
   <div>
     <a
@@ -17,6 +20,14 @@
     >
       <i class="fas fa-arrow-left me-1"></i>{{ _('Back to List') }}
     </a>
+    {% if medication.migrated_product and medication.migrated_product|length > 0 %}
+    <a
+      href="{{ url_for('ingredients.show_product', id=medication.migrated_product[0].id) }}"
+      class="btn btn-success ms-2"
+    >
+      <i class="fas fa-box-open me-1"></i>{{ _('View Product') }}
+    </a>
+    {% endif %}
     <a
       href="{{ url_for('medications.edit', id=medication.id) }}"
       class="btn btn-primary ms-2"
@@ -26,6 +37,50 @@
   </div>
 </div>
 
+<!-- Migration Card for non-migrated medications -->
+{% if not medication.migrated_product or medication.migrated_product|length == 0 %}
+<div class="card mb-4 border-warning">
+  <div class="card-header bg-warning text-dark">
+    <h5 class="mb-0">
+      <i class="fas fa-exclamation-triangle me-2"></i>{{ _('Migration Required') }}
+    </h5>
+  </div>
+  <div class="card-body">
+    <p class="mb-3">
+      {{ _('This medication is using the legacy system. Migrate to the new product system to:') }}
+    </p>
+    <ul class="mb-3">
+      <li>{{ _('Better package management with GTIN and national drug codes') }}</li>
+      <li>{{ _('Support for multiple package configurations') }}</li>
+      <li>{{ _('Improved barcode scanning capabilities') }}</li>
+      <li>{{ _('Active ingredient tracking and substitution management') }}</li>
+    </ul>
+    <form method="POST" action="{{ url_for('ingredients.migrate_medication', medication_id=medication.id) }}" class="row g-3">
+      <div class="col-md-4">
+        <label for="ingredient_name" class="form-label">{{ _('Active Ingredient') }}</label>
+        <input type="text" class="form-control" id="ingredient_name" name="ingredient_name" 
+               value="{{ medication.active_ingredient or medication.name }}" required>
+      </div>
+      <div class="col-md-4">
+        <label for="manufacturer" class="form-label">{{ _('Manufacturer') }}</label>
+        <input type="text" class="form-control" id="manufacturer" name="manufacturer" 
+               placeholder="{{ _('e.g., Pfizer, Ratiopharm') }}">
+      </div>
+      <div class="col-md-4">
+        <label for="pzn" class="form-label">{{ _('National Drug Code (optional)') }}</label>
+        <input type="text" class="form-control" id="pzn" name="pzn" 
+               placeholder="{{ _('e.g., PZN, CIP13, CNK') }}">
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-rocket me-1"></i>{{ _('Migrate to New System') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
 <!-- Package Configuration Card -->
 <div class="card mb-4">
   <div class="card-header bg-primary text-white">
@@ -33,16 +88,22 @@
       <h5 class="mb-0">
         <i class="fas fa-qrcode me-2"></i>{{ _('Package Configuration') }}
       </h5>
+      {% if medication.migrated_product and medication.migrated_product|length > 0 %}
       <a
-        href="{{ url_for('medication_packages.new', medication_id=medication.id) }}"
+        href="{{ url_for('ingredients.new_package', id=medication.migrated_product[0].id) }}"
         class="btn btn-light btn-sm"
       >
         <i class="fas fa-plus me-1"></i>{{ _('Add Package') }}
       </a>
+      {% else %}
+      <button class="btn btn-light btn-sm" disabled title="{{ _('Migrate to product system first') }}">
+        <i class="fas fa-plus me-1"></i>{{ _('Add Package') }}
+      </button>
+      {% endif %}
     </div>
   </div>
   <div class="card-body">
-    {% if medication.packages %}
+    {% if medication.migrated_product and medication.migrated_product|length > 0 and medication.migrated_product[0].packages %}
     <div class="table-responsive">
       <table class="table table-sm table-hover mb-0">
         <thead>
@@ -51,16 +112,77 @@
             <th>{{ _('Quantity') }}</th>
             <th>{{ _('National Number') }}</th>
             <th>GTIN</th>
-            <th>{{ _('Scanned') }}</th>
             <th>{{ _('Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for package in medication.migrated_product[0].packages %}
+          <tr>
+            <td>
+              <strong>{{ package.package_size }}</strong>
+            </td>
+            <td>{{ package.quantity }} {{ _('units') }}</td>
+            <td>
+              {% if package.national_number %}
+                <code>{{ package.national_number }}</code>
+                {% if package.national_number_type %}
+                  <small class="text-muted">({{ package.national_number_type }})</small>
+                {% endif %}
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if package.gtin %}
+                <small><code>{{ package.gtin }}</code></small>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('ingredients.edit_package', id=package.id) }}"
+                 class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i>
+              </a>
+              <form method="POST" action="{{ url_for('ingredients.delete_package', id=package.id) }}"
+                    class="d-inline" onsubmit="return confirm('{{ _('Are you sure?') }}');">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% elif medication.migrated_product and medication.migrated_product|length > 0 %}
+    <p class="text-muted mb-0">{{ _('No packages configured yet. Add package configurations to enable barcode scanning.') }}</p>
+    <div class="mt-2">
+      <a href="{{ url_for('ingredients.show_product', id=medication.migrated_product[0].id) }}" class="btn btn-sm btn-info">
+        <i class="fas fa-arrow-right me-1"></i>{{ _('View Product Details') }}
+      </a>
+    </div>
+    {% elif medication.packages %}
+    <!-- Show legacy packages if not migrated but has old packages -->
+    <div class="alert alert-warning">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      {{ _('This medication uses the legacy package system. Consider migrating to the new product system for better features.') }}
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead>
+          <tr>
+            <th>{{ _('Size') }}</th>
+            <th>{{ _('Quantity') }}</th>
+            <th>{{ _('National Number') }}</th>
+            <th>GTIN</th>
           </tr>
         </thead>
         <tbody>
           {% for package in medication.packages %}
           <tr>
-            <td>
-              <strong>{{ package.package_size }}</strong>
-            </td>
+            <td><strong>{{ package.package_size }}</strong></td>
             <td>{{ package.quantity }} {{ _('units') }}</td>
             <td>
               {% if package.national_number %}
@@ -76,34 +198,13 @@
                 <span class="text-muted">-</span>
               {% endif %}
             </td>
-            <td>
-              {% if package.scanned_items %}
-                <span class="badge bg-success">{{ package.scanned_items|length }}</span>
-              {% else %}
-                <span class="badge bg-secondary">0</span>
-              {% endif %}
-            </td>
-            <td>
-              <a href="{{ url_for('medication_packages.edit', medication_id=medication.id, package_id=package.id) }}"
-                 class="btn btn-sm btn-outline-primary">
-                <i class="fas fa-edit"></i>
-              </a>
-              {% if not package.scanned_items %}
-              <form method="POST" action="{{ url_for('medication_packages.delete', medication_id=medication.id, package_id=package.id) }}"
-                    class="d-inline" onsubmit="return confirm('{{ _('Are you sure?') }}');">
-                <button type="submit" class="btn btn-sm btn-outline-danger">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </form>
-              {% endif %}
-            </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
     {% else %}
-    <p class="text-muted mb-0">{{ _('No packages configured yet. Add package configurations to enable barcode scanning.') }}</p>
+    <p class="text-muted mb-0">{{ _('No packages configured yet. This medication needs to be migrated to the new product system.') }}</p>
     {% endif %}
   </div>
 </div>
@@ -273,14 +374,29 @@
         <p class="mb-4">
           {{ medication.daily_usage|round(1) }} {{ _('units per day') }}
         </p>
+        
+        {% if medication.migrated_product and medication.migrated_product|length > 0 %}
+        <h6>{{ _('Default Product for Orders:') }}</h6>
+        <p class="mb-4">
+          {% if medication.default_product %}
+            <strong>{{ medication.default_product.display_name }}</strong>
+            <a href="{{ url_for('ingredients.show_product', id=medication.default_product.id) }}" class="btn btn-sm btn-outline-primary ms-2">
+              <i class="fas fa-eye"></i> {{ _('View') }}
+            </a>
+          {% else %}
+            <span class="text-warning">{{ _('No default product set') }}</span>
+            <br><small class="text-muted">{{ _('Using first available product') }}: {{ medication.migrated_product[0].display_name }}</small>
+          {% endif %}
+        </p>
+        {% endif %}
 
         {% if medication.notes %}
         <h6>{{ _('Notes:') }}</h6>
         <p class="mb-4">{{ medication.notes }}</p>
         {% endif %}
 
-        {% if not medication.packages %}
-        <!-- Only show legacy package sizes if no packages are configured -->
+        {% if (not medication.migrated_product or medication.migrated_product|length == 0) and not medication.packages %}
+        <!-- Only show legacy package sizes if not migrated and no packages are configured -->
         <h6>{{ _('Legacy Package Sizes:') }}</h6>
         <div class="row mb-4">
           {% if medication.package_size_n1 %}

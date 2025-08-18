@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from .schedule import MedicationSchedule
     from .physician import Physician
     from .scanner import MedicationPackage
+    from .medication_product import MedicationProduct
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -91,6 +92,14 @@ class Medication(db.Model):
         nullable=True,
         comment="legacy, packages, or hybrid"
     )
+    
+    # Default product for ordering (when multiple products exist for this medication)
+    default_product_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("medication_products.id"),
+        nullable=True,
+        comment="Default product to use for ordering packages"
+    )
 
     # Relationships
     physician: Mapped[Optional["Physician"]] = relationship(
@@ -114,6 +123,13 @@ class Medication(db.Model):
     # Scanner system relationship
     packages: Mapped[List["MedicationPackage"]] = relationship(
         "MedicationPackage", back_populates="medication", cascade="all, delete-orphan"
+    )
+    
+    # Default product relationship
+    default_product: Mapped[Optional["MedicationProduct"]] = relationship(
+        "MedicationProduct",
+        foreign_keys=[default_product_id],
+        post_update=True  # Avoid circular dependency issues
     )
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -476,13 +492,31 @@ class Medication(db.Model):
         """
         Convert required units into package quantities, using only a single package type.
         Chooses the package type that minimizes overage, with preference for larger packages.
+        
+        Uses default product's ProductPackage configurations if set,
+        otherwise falls back to legacy N1/N2/N3 system.
 
         Args:
             units_needed: Total number of units/pills needed
 
         Returns:
-            Dictionary with keys 'N1', 'N2', 'N3' and corresponding package counts
+            Dictionary with package names as keys and counts as values
+            For default product: Uses actual package names from ProductPackage
+            For legacy: Uses 'N1', 'N2', 'N3' keys
         """
+        # First check if we have a default product set
+        if self.default_product and self.default_product.packages:
+            return self._calculate_packages_from_product(self.default_product, units_needed)
+        
+        # Otherwise check if this medication has been migrated to the new product system
+        # and use the first migrated product as fallback
+        if self.migrated_product and len(self.migrated_product) > 0:
+            product = self.migrated_product[0]
+            if product.packages and len(product.packages) > 0:
+                # Use new ProductPackage system
+                return self._calculate_packages_from_product(product, units_needed)
+        
+        # Fall back to legacy N1/N2/N3 system
         packages = {"N1": 0, "N2": 0, "N3": 0}
 
         # If no units needed, return empty packages
@@ -527,4 +561,62 @@ class Medication(db.Model):
         if best_package:
             packages[best_package[0]] = best_package[1]
 
+        return packages
+    
+    def _calculate_packages_from_product(self, product, units_needed: int) -> Dict[str, int]:
+        """
+        Calculate optimal package combination using ProductPackage configurations.
+        
+        Args:
+            product: MedicationProduct with ProductPackage configurations
+            units_needed: Total units required
+            
+        Returns:
+            Dictionary with package_size names as keys and counts as values
+        """
+        packages = {}
+        
+        # If no units needed, return empty
+        if units_needed <= 0:
+            return packages
+        
+        # Build list of available packages from ProductPackage
+        available_packages = []
+        for pkg in product.packages:
+            if pkg.quantity and pkg.quantity > 0:
+                # Initialize the package count to 0
+                packages[pkg.package_size] = 0
+                available_packages.append((pkg.package_size, pkg.quantity))
+        
+        # Sort by package size in descending order (largest first)
+        available_packages.sort(key=lambda x: x[1], reverse=True)
+        
+        # If no packages defined, fall back to legacy system
+        if not available_packages:
+            # Fall back to legacy if product has no packages configured
+            legacy_packages = {"N1": 0, "N2": 0, "N3": 0}
+            if self.package_size_n1:
+                legacy_packages["N1"] = (units_needed + self.package_size_n1 - 1) // self.package_size_n1
+            return legacy_packages
+        
+        best_package = None
+        min_overage = float("inf")
+        
+        # Find the optimal package with minimum overage
+        for package_name, package_size in available_packages:
+            # Calculate how many packages we need and the resulting overage
+            count = (units_needed + package_size - 1) // package_size  # Ceiling division
+            total_units = count * package_size
+            overage = total_units - units_needed
+            
+            # Choose package with minimum overage
+            # If same overage, prefer larger packages (they come first in sorted list)
+            if overage < min_overage:
+                min_overage = overage
+                best_package = (package_name, count)
+        
+        # Set the count for the best package
+        if best_package:
+            packages[best_package[0]] = best_package[1]
+        
         return packages

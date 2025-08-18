@@ -380,17 +380,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Update UI for mode
             const scanIndicator = document.getElementById('scan-indicator');
-            const scannerContainer = document.querySelector('.scanner-container');
+            const container = document.querySelector('.scanner-container');
             
             // Remove camera-ready class to hide scan line while reinitializing
-            scannerContainer.classList.remove('camera-ready');
+            container.classList.remove('camera-ready');
 
             if (currentMode === 'datamatrix') {
                 scanIndicator.classList.add('datamatrix-mode');
-                scannerContainer.classList.add('datamatrix-active');
+                container.classList.add('datamatrix-active');
             } else {
                 scanIndicator.classList.remove('datamatrix-mode');
-                scannerContainer.classList.remove('datamatrix-active');
+                container.classList.remove('datamatrix-active');
             }
 
             // Store the current camera selection before stopping
@@ -409,8 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Restored camera device ID:', selectedDeviceId);
             
             // Show loading spinner again while reinitializing
-            const scannerContainer = document.getElementById('scanner-container');
-            const loadingSpinner = scannerContainer.querySelector('.camera-loading');
+            const loadingSpinner = container.querySelector('.camera-loading');
             if (loadingSpinner) {
                 loadingSpinner.style.display = 'block';
             }
@@ -426,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (loadingSpinner) {
                         loadingSpinner.style.display = 'none';
                     }
-                    scannerContainer.classList.add('camera-ready');
+                    container.classList.add('camera-ready');
                 }
                 isInitializing = false;
             }, 300);
@@ -777,16 +776,42 @@ async function processScan(barcodeData) {
 
         if (response.ok) {
             // Show success message
-            let message = '<strong>' + (result.medication ? result.medication.name : '{{ _("Scanned successfully") }}') + '</strong>';
+            let message = '';
+            
+            // Check if it's a new product package or old medication package
+            if (result.product_package && result.package_info) {
+                // New ProductPackage found
+                message = '<strong>' + result.package_info.product_name + '</strong>';
+                message += '<br><small>' + result.package_info.package_size + ' (' + result.package_info.quantity + ' {{ _("units") }})' + '</small>';
+            } else if (result.medication) {
+                // Old MedicationPackage found
+                message = '<strong>' + result.medication.name + '</strong>';
+            } else {
+                message = '<strong>{{ _("Scanned successfully") }}</strong>';
+            }
+            
             if (result.parsed_data) {
                 if (result.parsed_data.national_number) {
-                    message += '<br><small>PZN: ' + result.parsed_data.national_number + '</small>';
+                    message += '<br><small>NDC: ' + result.parsed_data.national_number + '</small>';
                 }
                 if (result.parsed_data.batch) {
                     message += '<br><small>{{ _("Batch") }}: ' + result.parsed_data.batch + '</small>';
                 }
                 if (result.parsed_data.expiry) {
                     message += '<br><small>{{ _("Expiry") }}: ' + new Date(result.parsed_data.expiry).toLocaleDateString() + '</small>';
+                }
+            }
+            
+            // Use custom message if provided
+            if (result.message) {
+                message = '<strong>' + result.message + '</strong>';
+                if (result.parsed_data && (result.parsed_data.batch || result.parsed_data.expiry)) {
+                    if (result.parsed_data.batch) {
+                        message += '<br><small>{{ _("Batch") }}: ' + result.parsed_data.batch + '</small>';
+                    }
+                    if (result.parsed_data.expiry) {
+                        message += '<br><small>{{ _("Expiry") }}: ' + new Date(result.parsed_data.expiry).toLocaleDateString() + '</small>';
+                    }
                 }
             }
 
