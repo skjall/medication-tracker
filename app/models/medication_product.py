@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from .inventory import Inventory
     from .schedule import MedicationSchedule
     from .visit import OrderItem
+    from .product_package import ProductPackage
 
 
 class MedicationProduct(db.Model):

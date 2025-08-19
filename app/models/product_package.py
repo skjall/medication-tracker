@@ -3,11 +3,14 @@ Product package model for tracking different package configurations.
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from sqlalchemy import String, Integer, ForeignKey, DateTime, UniqueConstraint, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from . import db
+
+if TYPE_CHECKING:
+    from .medication_product import MedicationProduct
 
 
 class ProductPackage(db.Model):
