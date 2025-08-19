@@ -22,6 +22,7 @@ def register_blueprints(app):
     from routes.medication_packages import bp as medication_packages_bp
     from routes.ingredients import ingredients_bp
     from routes.package_onboarding import bp as package_onboarding_bp
+    from routes.pdf_mapper import bp as pdf_mapper_bp
 
     app.register_blueprint(medication_bp)
     app.register_blueprint(physician_bp)
@@ -36,5 +37,6 @@ def register_blueprints(app):
     app.register_blueprint(medication_packages_bp)
     app.register_blueprint(ingredients_bp)
     app.register_blueprint(package_onboarding_bp)
+    app.register_blueprint(pdf_mapper_bp)
     
     logger.info("All blueprints registered successfully")

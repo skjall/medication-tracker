@@ -264,3 +264,28 @@ def calculate_needs(id: int):
             "packages": packages,
         }
     )
+
+
+@medication_bp.route("/api/list")
+def api_list():
+    """API endpoint to list all medications."""
+    medications = Medication.query.order_by(Medication.name).all()
+    
+    med_list = []
+    for med in medications:
+        # Get unit from product's active ingredient if available
+        unit = ''
+        if med.default_product and med.default_product.active_ingredient:
+            unit = med.default_product.active_ingredient.strength_unit or ''
+        
+        med_list.append({
+            'id': med.id,
+            'name': med.name,
+            'active_ingredient': med.active_ingredient,
+            'dosage': med.dosage,
+            'unit': unit,  # Unit comes from ActiveIngredient.strength_unit
+            'physician': med.physician.display_name if med.physician else None,
+            'is_otc': med.is_otc
+        })
+    
+    return jsonify({'medications': med_list})

@@ -1,0 +1,508 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Structure Mapping') }} - {{ template.name }}{% endblock %}
+
+{% block head_extra %}
+<style>
+    .structure-container {
+        padding: 20px;
+    }
+    
+    .detected-fields-box {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .field-chip {
+        display: inline-block;
+        padding: 6px 12px;
+        margin: 4px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 20px;
+        cursor: move;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+    
+    .field-chip:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .field-chip.dragging {
+        opacity: 0.5;
+    }
+    
+    .field-chip.used {
+        background: #e7f5ff;
+        border-color: #339af0;
+        opacity: 0.6;
+    }
+    
+    .structure-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .structure-table th {
+        background: #495057;
+        color: white;
+        padding: 12px;
+        text-align: center;
+        font-weight: 500;
+        border-right: 1px solid #6c757d;
+    }
+    
+    .structure-table th:last-child {
+        border-right: none;
+    }
+    
+    .structure-table td {
+        padding: 8px;
+        border-right: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+        background: white;
+        vertical-align: top;
+    }
+    
+    .structure-table td:last-child {
+        border-right: none;
+    }
+    
+    .structure-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .drop-cell {
+        min-height: 40px;
+        border: 2px dashed #dee2e6;
+        border-radius: 4px;
+        padding: 8px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    
+    .drop-cell.drag-over {
+        background: #e7f5ff;
+        border-color: #339af0;
+    }
+    
+    .drop-cell .placeholder {
+        color: #adb5bd;
+        font-size: 0.85rem;
+    }
+    
+    .mapped-field {
+        background: #339af0;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        font-size: 0.85rem;
+    }
+    
+    .mapped-field .remove-btn {
+        margin-left: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .row-label {
+        background: #f8f9fa;
+        padding: 8px;
+        text-align: center;
+        font-weight: 500;
+        color: #495057;
+        border-right: 2px solid #dee2e6;
+    }
+    
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+    
+    .action-buttons {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    
+    .status-indicator.complete {
+        background: #51cf66;
+    }
+    
+    .status-indicator.pending {
+        background: #ffd43b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('pdf_mapper.index') }}">{{ _('Templates') }}</a></li>
+            <li class="breadcrumb-item">{{ template.name }}</li>
+            <li class="breadcrumb-item active">
+                <span class="status-indicator pending"></span>
+                {{ _('Structure Mapping') }}
+            </li>
+            <li class="breadcrumb-item text-muted">{{ _('Content Mapping') }}</li>
+        </ol>
+    </nav>
+    
+    <h1 class="mb-4">
+        <i class="fas fa-table me-2"></i>{{ _('Structure Mapping') }}
+        <small class="text-muted">{{ template.name }}</small>
+    </h1>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        {{ _('Drag the detected PDF form fields to their corresponding positions in the table below.') }}
+    </div>
+    
+    <div class="structure-container">
+        <!-- Detected Fields -->
+        <div class="detected-fields-box">
+            <h5 class="mb-3">
+                <i class="fas fa-file-pdf me-2"></i>{{ _('Detected PDF Form Fields') }}
+                <button class="btn btn-sm btn-outline-primary float-end" onclick="detectFields()">
+                    <i class="fas fa-sync me-1"></i>{{ _('Re-detect') }}
+                </button>
+            </h5>
+            <div id="detected-fields">
+                {% if detected_fields %}
+                    {% for field in detected_fields %}
+                    <div class="field-chip" draggable="true" data-field="{{ field.name }}">
+                        {{ field.name }}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">{{ _('No fields detected yet.') }} 
+                        <a href="javascript:detectFields()">{{ _('Click here to detect fields') }}</a>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Structure Table -->
+        <h5 class="mb-3">
+            <i class="fas fa-grip-horizontal me-2"></i>{{ _('Table Structure') }}
+        </h5>
+        
+        <div class="table-responsive">
+            <table class="structure-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">{{ _('Row') }}</th>
+                        {% for header in column_headers %}
+                        <th>{{ header.label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in range(1, 11) %}
+                    <tr>
+                        <td class="row-label">{{ _('Row') }} {{ row }}</td>
+                        {% for header in column_headers %}
+                        <td>
+                            <div class="drop-cell" data-row="{{ row }}" data-col="{{ loop.index }}" data-col-type="{{ header.id }}">
+                                <span class="placeholder">{{ _('Drop here') }}</span>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{{ url_for('pdf_mapper.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Templates') }}
+            </a>
+            
+            <div>
+                <button class="btn btn-outline-warning" onclick="clearAllMappings()">
+                    <i class="fas fa-redo me-1"></i>{{ _('Clear All') }}
+                </button>
+                <button class="btn btn-success" onclick="saveStructure()">
+                    <i class="fas fa-save me-1"></i>{{ _('Save & Continue') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 11"></div>
+
+<script>
+let draggedElement = null;
+let structureMapping = {};
+
+// Initialize structure mapping from template if exists
+{% if template.structure_mapping %}
+structureMapping = {{ template.structure_mapping | tojson }};
+// Apply existing mappings to the table
+applyExistingMappings();
+{% endif %}
+
+function initializeDragDrop() {
+    // Make field chips draggable
+    document.querySelectorAll('.field-chip').forEach(chip => {
+        chip.addEventListener('dragstart', handleDragStart);
+        chip.addEventListener('dragend', handleDragEnd);
+    });
+    
+    // Make drop cells droppable
+    document.querySelectorAll('.drop-cell').forEach(cell => {
+        cell.addEventListener('dragover', handleDragOver);
+        cell.addEventListener('dragleave', handleDragLeave);
+        cell.addEventListener('drop', handleDrop);
+    });
+}
+
+function handleDragStart(e) {
+    draggedElement = e.target;
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('text/plain', e.target.dataset.field);
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    e.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    
+    const cell = e.currentTarget;
+    const fieldName = e.dataTransfer.getData('text/plain');
+    const row = cell.dataset.row;
+    const col = cell.dataset.col;
+    const colType = cell.dataset.colType;
+    
+    // Create mapped field element
+    const mappedField = document.createElement('div');
+    mappedField.className = 'mapped-field';
+    mappedField.innerHTML = `
+        ${fieldName}
+        <span class="remove-btn" onclick="removeMapping(this, '${row}', '${col}')">&times;</span>
+    `;
+    
+    // Clear placeholder and add mapped field
+    cell.innerHTML = '';
+    cell.appendChild(mappedField);
+    
+    // Mark original chip as used
+    if (draggedElement) {
+        draggedElement.classList.add('used');
+    }
+    
+    // Store mapping
+    const key = `${row}_${col}`;
+    structureMapping[key] = {
+        field: fieldName,
+        row: parseInt(row),
+        col: parseInt(col),
+        colType: colType
+    };
+}
+
+function removeMapping(btn, row, col) {
+    const cell = btn.closest('.drop-cell');
+    cell.innerHTML = '<span class="placeholder">{{ _("Drop here") }}</span>';
+    
+    // Remove from mapping
+    const key = `${row}_${col}`;
+    const fieldName = structureMapping[key]?.field;
+    delete structureMapping[key];
+    
+    // Unmark the field chip
+    if (fieldName) {
+        const chip = document.querySelector(`.field-chip[data-field="${fieldName}"]`);
+        if (chip) {
+            chip.classList.remove('used');
+        }
+    }
+}
+
+function clearAllMappings() {
+    if (!confirm('{{ _("Are you sure you want to clear all mappings?") }}')) {
+        return;
+    }
+    
+    // Clear all cells
+    document.querySelectorAll('.drop-cell').forEach(cell => {
+        cell.innerHTML = '<span class="placeholder">{{ _("Drop here") }}</span>';
+    });
+    
+    // Unmark all chips
+    document.querySelectorAll('.field-chip').forEach(chip => {
+        chip.classList.remove('used');
+    });
+    
+    // Clear mapping object
+    structureMapping = {};
+}
+
+function applyExistingMappings() {
+    Object.entries(structureMapping).forEach(([key, mapping]) => {
+        const cell = document.querySelector(`.drop-cell[data-row="${mapping.row}"][data-col="${mapping.col}"]`);
+        if (cell) {
+            const mappedField = document.createElement('div');
+            mappedField.className = 'mapped-field';
+            mappedField.innerHTML = `
+                ${mapping.field}
+                <span class="remove-btn" onclick="removeMapping(this, '${mapping.row}', '${mapping.col}')">&times;</span>
+            `;
+            cell.innerHTML = '';
+            cell.appendChild(mappedField);
+            
+            // Mark chip as used
+            const chip = document.querySelector(`.field-chip[data-field="${mapping.field}"]`);
+            if (chip) {
+                chip.classList.add('used');
+            }
+        }
+    });
+}
+
+function detectFields() {
+    showToast('{{ _("Detecting PDF form fields...") }}', 'info');
+    
+    fetch(`/pdf-mapper/template/{{ template.id }}/detect-fields`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.fields) {
+            showToast(`{{ _("Found") }} ${data.fields.length} {{ _("fields") }}`, 'success');
+            
+            // Update detected fields display
+            const container = document.getElementById('detected-fields');
+            container.innerHTML = '';
+            
+            data.fields.forEach(field => {
+                const chip = document.createElement('div');
+                chip.className = 'field-chip';
+                chip.draggable = true;
+                chip.dataset.field = field.name;
+                chip.textContent = field.name;
+                container.appendChild(chip);
+            });
+            
+            // Reinitialize drag and drop
+            initializeDragDrop();
+        } else {
+            showToast(data.message || '{{ _("Failed to detect fields") }}', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('{{ _("Error detecting fields") }}', 'error');
+        console.error(error);
+    });
+}
+
+function saveStructure() {
+    // Validate that at least some mappings exist
+    if (Object.keys(structureMapping).length === 0) {
+        showToast('{{ _("Please map at least one field before saving") }}', 'warning');
+        return;
+    }
+    
+    showToast('{{ _("Saving structure mapping...") }}', 'info');
+    
+    fetch(`/pdf-mapper/template/{{ template.id }}/save-structure`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            structure_mapping: structureMapping
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            // Redirect to content mapping after a short delay
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 1000);
+        } else {
+            showToast(data.error || '{{ _("Failed to save structure") }}', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('{{ _("Error saving structure") }}', 'error');
+        console.error(error);
+    });
+}
+
+function showToast(message, type = 'info') {
+    const toastHtml = `
+        <div class="toast show align-items-center text-white bg-${type === 'error' ? 'danger' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'primary'} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    const toastElement = document.createElement('div');
+    toastElement.innerHTML = toastHtml;
+    container.appendChild(toastElement);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        toastElement.remove();
+    }, 5000);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initializeDragDrop();
+    
+    // Auto-detect fields if none are present
+    {% if not detected_fields %}
+    detectFields();
+    {% endif %}
+});
+</script>
+{% endblock %}

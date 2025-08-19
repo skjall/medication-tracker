@@ -1,0 +1,232 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('PDF Form Templates') }} - {{ _('Medication Tracker') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-file-pdf me-2"></i>{{ _('PDF Form Templates') }}
+        </h1>
+        <a href="{{ url_for('pdf_mapper.new_template') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i>{{ _('New Template') }}
+        </a>
+    </div>
+
+    {% if templates %}
+    <div class="row">
+        {% for template in templates %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title">
+                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                            {{ template.name }}
+                            {% if template.is_default %}
+                            <span class="badge bg-primary ms-2">{{ _('Default') }}</span>
+                            {% endif %}
+                        </h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('pdf_mapper.structure_view', id=template.id) }}">
+                                        <i class="fas fa-table me-2"></i>{{ _('Edit Structure') }}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('pdf_mapper.content_view', id=template.id) }}">
+                                        <i class="fas fa-database me-2"></i>{{ _('Edit Content') }}
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ url_for('pdf_mapper.delete_template', id=template.id) }}" 
+                                          onsubmit="return confirm('{{ _('Are you sure you want to delete this template?') }}');" 
+                                          class="d-inline">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-trash me-2"></i>{{ _('Delete') }}
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    {% if template.description %}
+                    <p class="card-text text-muted small">{{ template.description }}</p>
+                    {% endif %}
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="text-muted small">{{ _('Rows') }}</div>
+                            <div class="fw-bold">{{ template.rows_per_page }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-muted small">{{ _('Columns') }}</div>
+                            <div class="fw-bold">{{ template.columns_count }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-muted small">{{ _('Fields') }}</div>
+                            <div class="fw-bold">
+                                {% if template.has_fields %}
+                                    <span class="text-success">{{ template.total_fields }}</span>
+                                {% else %}
+                                    <span class="text-warning">{{ _('Not configured') }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('pdf_mapper.structure_view', id=template.id) }}" 
+                           class="btn btn-sm btn-outline-info flex-fill">
+                            <i class="fas fa-table me-1"></i>{{ _('Structure') }}
+                        </a>
+                        <a href="{{ url_for('pdf_mapper.content_view', id=template.id) }}" 
+                           class="btn btn-sm btn-outline-primary flex-fill">
+                            <i class="fas fa-database me-1"></i>{{ _('Content') }}
+                        </a>
+                        {% if template.has_fields %}
+                        <button class="btn btn-sm btn-success flex-fill" 
+                                onclick="generatePDF({{ template.id }})">
+                            <i class="fas fa-file-export me-1"></i>{{ _('Generate') }}
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-muted text-end mt-2" style="font-size: 0.75rem;">
+                        {{ _('Created') }}: {{ template.created_at.strftime('%Y-%m-%d') if template.created_at else '' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        {{ _('No PDF templates found. Upload a PDF form to get started.') }}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Medication Selection Modal -->
+<div class="modal fade" id="medicationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ _('Select Medications for PDF') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="medication-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                <button type="button" class="btn btn-primary" id="generate-btn">
+                    <i class="fas fa-file-export me-1"></i>{{ _('Generate PDF') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedTemplateId = null;
+
+function generatePDF(templateId) {
+    selectedTemplateId = templateId;
+    
+    // Load medications
+    fetch('/medications/api/list')
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById('medication-list');
+            list.innerHTML = '';
+            
+            if (data.medications && data.medications.length > 0) {
+                const checkboxes = data.medications.map(med => `
+                    <div class="form-check">
+                        <input class="form-check-input medication-checkbox" type="checkbox" 
+                               value="${med.id}" id="med_${med.id}">
+                        <label class="form-check-label" for="med_${med.id}">
+                            ${med.name}
+                            ${med.active_ingredient ? `<small class="text-muted">(${med.active_ingredient})</small>` : ''}
+                        </label>
+                    </div>
+                `).join('');
+                
+                list.innerHTML = `
+                    <div class="mb-3">
+                        <button class="btn btn-sm btn-outline-primary" onclick="selectAll()">
+                            {{ _('Select All') }}
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="selectNone()">
+                            {{ _('Select None') }}
+                        </button>
+                    </div>
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        ${checkboxes}
+                    </div>
+                `;
+            } else {
+                list.innerHTML = '<div class="alert alert-warning">{{ _("No medications found") }}</div>';
+            }
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('medicationModal'));
+            modal.show();
+        });
+}
+
+function selectAll() {
+    document.querySelectorAll('.medication-checkbox').forEach(cb => cb.checked = true);
+}
+
+function selectNone() {
+    document.querySelectorAll('.medication-checkbox').forEach(cb => cb.checked = false);
+}
+
+document.getElementById('generate-btn').addEventListener('click', function() {
+    const selectedMeds = Array.from(document.querySelectorAll('.medication-checkbox:checked'))
+        .map(cb => parseInt(cb.value));
+    
+    if (selectedMeds.length === 0) {
+        showToast('{{ _("Please select at least one medication") }}', 'warning');
+        return;
+    }
+    
+    // Generate PDF
+    fetch(`/pdf-mapper/template/${selectedTemplateId}/generate`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            medication_ids: selectedMeds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Download the generated PDF
+            window.location.href = data.download_url;
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('medicationModal')).hide();
+            showToast('{{ _("PDF generated successfully!") }}', 'success');
+        } else {
+            showToast(data.error || '{{ _("Error generating PDF") }}', 'error');
+        }
+    });
+});
+</script>
+{% endblock %}
