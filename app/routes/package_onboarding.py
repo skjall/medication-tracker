@@ -213,7 +213,7 @@ def onboard_package():
     ingredients = ActiveIngredient.query.order_by(ActiveIngredient.name).all()
     
     # Get all physicians for order settings
-    physicians = Physician.query.filter_by(active=True).order_by(Physician.name).all()
+    physicians = Physician.query.order_by(Physician.name).all()
     
     # Get all medications for linking (optional)
     medications = Medication.query.order_by(Medication.name).all()
@@ -271,8 +271,8 @@ def search_ingredients():
             'id': ing.id,
             'name': ing.name,
             'strength': ing.strength,
-            'unit': ing.unit,
-            'display': f"{ing.name} {ing.strength}{ing.unit}" if ing.strength else ing.name
+            'unit': ing.strength_unit,
+            'display': f"{ing.name} {ing.strength}{ing.strength_unit}" if ing.strength else ing.name
         })
     
     return jsonify({'ingredients': results})

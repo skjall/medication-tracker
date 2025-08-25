@@ -179,7 +179,7 @@
                                                 <i class="fas fa-chart-line me-1"></i>{{ item.medication.daily_usage|round(1) }} {{ _('units/day') }}
                                             </small>
                                             {% if item.fulfillment_notes %}
-                                                <div class="small text-info mt-1">
+                                                <div class="small mt-1">
                                                     <i class="fas fa-info-circle me-1"></i>{{ item.fulfillment_notes }}
                                                 </div>
                                             {% endif %}
@@ -222,7 +222,7 @@
                                             </div>
                                             {% if item.linked_packages %}
                                                 <div class="small text-muted">
-                                                    <i class="fas fa-box me-1"></i>{{ item.linked_packages|length }} {{ _('package(s) linked') }}
+                                                    <i class="fas fa-box me-1"></i>{{ ngettext('%(num)s package linked', '%(num)s packages linked', item.linked_packages|length, num=item.linked_packages|length) }}
                                                 </div>
                                             {% endif %}
                                             {% if item.fulfilled_at %}
@@ -406,7 +406,7 @@
 </div>
 {% endblock %}
 
-{% block styles %}
+{% block head_extra %}
 <style>
 /* Fix text color for all buttons when selected */
 .btn-check:checked + .btn-outline-secondary,
@@ -415,15 +415,25 @@
     color: white !important;
 }
 
-/* Ensure white text for warning button specifically (Bootstrap's yellow background) */
+/* Ensure white text for warning button specifically (using custom warning color) */
 .btn-check:checked + .btn-outline-warning,
 .btn-check:checked + .btn-outline-warning:hover {
     color: white !important;
+    background-color: #ff8000 !important;
+    border-color: #ff8000 !important;
 }
 
 /* Also fix hover state for consistency */
 .btn-outline-warning:hover {
     color: white !important;
+}
+
+/* Make sure the active state is properly styled */
+.btn-outline-warning:active,
+.btn-outline-warning.active {
+    color: white !important;
+    background-color: var(--bs-warning) !important;
+    border-color: var(--bs-warning) !important;
 }
 </style>
 {% endblock %}

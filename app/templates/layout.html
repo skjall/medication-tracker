@@ -130,7 +130,7 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    {% set toast_class = 'text-bg-success' if category == 'success' else 'text-bg-danger' if category in ['error', 'danger'] else 'text-bg-warning' if category == 'warning' else 'text-bg-info' %}
+                    {% set toast_class = 'text-bg-success' if category == 'success' else 'text-bg-danger' if category in ['error', 'danger'] else 'text-bg-warning' if category == 'warning' else 'bg-info text-white' %}
                     {% set icon = 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' if category in ['error', 'danger'] else 'fa-exclamation-triangle' if category == 'warning' else 'fa-info-circle' %}
                     <div class="toast align-items-center {{ toast_class }} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
                         <div class="d-flex">
@@ -182,7 +182,7 @@
                 const toastContainer = document.querySelector('.toast-container');
 
                 // Determine toast styling based on category
-                let toastClass = 'text-bg-info';
+                let toastClass = 'bg-info text-white';
                 let icon = 'fa-info-circle';
 
                 if (category === 'success') {
