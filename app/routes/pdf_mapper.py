@@ -887,6 +887,15 @@ def reupload_template(id):
 
 def generate_preview_pdf(template, sample_data):
     """Generate a preview PDF with sample data."""
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    # Suppress pypdf warnings
+    pypdf_logger = logging.getLogger("pypdf._writer")
+    original_level = pypdf_logger.level
+    pypdf_logger.setLevel(logging.ERROR)
+    
     # Use the helper function to resolve the PDF path
     pdf_path = resolve_pdf_path(template)
 
