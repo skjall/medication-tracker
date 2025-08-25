@@ -298,6 +298,9 @@
                                         {% for med in otc_medications %}
                                             {% set color_class = 'text-danger' if med.inventory and med.inventory.is_low else ('text-warning' if med.days_remaining and med.days_remaining < 30 else 'text-success') %}
                                             <tr>
+                                                <td>
+                                                    <strong>{{ med.name }}</strong>
+                                                </td>
                                                 <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
                                                 <td>
                                                     {% set total_count = med.total_inventory_count %}

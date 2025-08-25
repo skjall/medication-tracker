@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-25 11:08\n"
+"PO-Revision-Date: 2025-08-25 12:11\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -1033,7 +1033,7 @@ msgstr "Details anzeigen"
 msgid "Create Order"
 msgstr "Bestellung erstellen"
 
-#: /app/templates/index.html:45 /app/templates/index.html:398
+#: /app/templates/index.html:45 /app/templates/index.html:401
 #: /app/templates/visits/index.html:107 /app/templates/visits/new.html:3
 #: /app/templates/visits/new.html:8
 msgid "Schedule a Visit"
@@ -1048,7 +1048,7 @@ msgid "The following medications are below minimum threshold:"
 msgstr "Folgende Medikamente liegen unter ihrem Grenzwert:"
 
 #: /app/templates/index.html:70 /app/templates/index.html:219
-#: /app/templates/index.html:305 /app/templates/physicians/show.html:168
+#: /app/templates/index.html:308 /app/templates/physicians/show.html:168
 #: /app/templates/test_translation.html:6
 #: /app/templates/test_translation.html:7
 #: /app/templates/test_translation.html:10
@@ -1227,7 +1227,7 @@ msgstr "Status"
 msgid "Actions"
 msgstr "Aktionen"
 
-#: /app/templates/index.html:215 /app/templates/index.html:301
+#: /app/templates/index.html:215 /app/templates/index.html:304
 #: /app/templates/ingredients/index.html:45
 #: /app/templates/ingredients/index.html:105
 #: /app/templates/ingredients/show.html:59
@@ -1262,14 +1262,14 @@ msgstr "Aktionen"
 msgid "units"
 msgstr "Einheiten"
 
-#: /app/templates/index.html:221 /app/templates/index.html:307
+#: /app/templates/index.html:221 /app/templates/index.html:310
 #: /app/templates/inventory/index.html:165
 #: /app/templates/inventory/index.html:329 /app/templates/orders/edit.html:99
 #: /app/templates/orders/new.html:132 /app/templates/physicians/show.html:170
 msgid "No inventory"
 msgstr "Kein Bestand"
 
-#: /app/templates/index.html:226 /app/templates/index.html:312
+#: /app/templates/index.html:226 /app/templates/index.html:315
 #, python-format
 msgid "%(count)d day"
 msgid_plural "%(count)d days"
@@ -1277,7 +1277,7 @@ msgstr[0] "%(count)d Tag"
 msgstr[1] "%(count)d Tage"
 
 #: /app/templates/index.html:228 /app/templates/index.html:235
-#: /app/templates/index.html:314 /app/templates/index.html:321
+#: /app/templates/index.html:317 /app/templates/index.html:324
 #: /app/templates/inventory/index.html:172
 #: /app/templates/inventory/index.html:181
 #: /app/templates/inventory/index.html:336
@@ -1286,20 +1286,20 @@ msgstr[1] "%(count)d Tage"
 msgid "N/A"
 msgstr "N/A"
 
-#: /app/templates/index.html:240 /app/templates/index.html:326
+#: /app/templates/index.html:240 /app/templates/index.html:329
 #: /app/templates/inventory/index.html:186
 #: /app/templates/inventory/index.html:350
 msgid "No Data"
 msgstr "Keine Daten"
 
-#: /app/templates/index.html:242 /app/templates/index.html:328
+#: /app/templates/index.html:242 /app/templates/index.html:331
 #: /app/templates/inventory/depletion.html:109
 #: /app/templates/inventory/index.html:188
 #: /app/templates/inventory/index.html:352
 msgid "Critical"
 msgstr "Kritisch"
 
-#: /app/templates/index.html:244 /app/templates/index.html:330
+#: /app/templates/index.html:244 /app/templates/index.html:333
 #: /app/templates/inventory/index.html:21
 #: /app/templates/inventory/index.html:190
 #: /app/templates/inventory/index.html:354 /app/templates/layout.html:52
@@ -1307,14 +1307,14 @@ msgstr "Kritisch"
 msgid "Low Stock"
 msgstr "Niedriger Bestand"
 
-#: /app/templates/index.html:246 /app/templates/index.html:332
+#: /app/templates/index.html:246 /app/templates/index.html:335
 #: /app/templates/inventory/index.html:192
 #: /app/templates/inventory/index.html:356
 #: /app/templates/physicians/show.html:178
 msgid "Running Low"
 msgstr "Fast leer"
 
-#: /app/templates/index.html:248 /app/templates/index.html:334
+#: /app/templates/index.html:248 /app/templates/index.html:337
 #: /app/templates/inventory/depletion.html:115
 #: /app/templates/inventory/index.html:194
 #: /app/templates/inventory/index.html:358
@@ -1326,36 +1326,36 @@ msgstr "Ok"
 msgid "Over-the-Counter (OTC) Medications"
 msgstr "Rezeptfreie Medikamente (OTC)"
 
-#: /app/templates/index.html:357
+#: /app/templates/index.html:360
 msgid "No medications found in the system."
 msgstr "Keine Medikamente im System gefunden."
 
-#: /app/templates/index.html:359
+#: /app/templates/index.html:362
 msgid "Add Medication"
 msgstr "Medikament hinzufügen"
 
-#: /app/templates/index.html:366
+#: /app/templates/index.html:369
 msgid "Manage Medications"
 msgstr "Medikamente verwalten"
 
-#: /app/templates/index.html:369
+#: /app/templates/index.html:372
 msgid "Inventory Detail"
 msgstr "Bestandsübersicht"
 
-#: /app/templates/index.html:384 /app/templates/ingredients/show.html:287
+#: /app/templates/index.html:387 /app/templates/ingredients/show.html:287
 #: /app/templates/settings/system.html:170
 msgid "Quick Actions"
 msgstr "Schnellaktionen"
 
-#: /app/templates/index.html:392
+#: /app/templates/index.html:395
 msgid "Add New Medication"
 msgstr "Neues Medikament hinzufügen"
 
-#: /app/templates/index.html:404 /app/templates/orders/index.html:132
+#: /app/templates/index.html:407 /app/templates/orders/index.html:132
 msgid "Create New Order"
 msgstr "Neue Bestellung erstellen"
 
-#: /app/templates/index.html:410
+#: /app/templates/index.html:413
 msgid "View Depletion Forecast"
 msgstr "Verbrauchsprognose anzeigen"
 
