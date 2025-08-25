@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-25 10:57\n"
+"PO-Revision-Date: 2025-08-25 11:08\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -3636,7 +3636,7 @@ msgstr "Bitte überprüfe die Infos"
 
 #: /app/templates/package_onboarding/onboard.html:440
 msgid "Order Required"
-msgstr ""
+msgstr "Bestellung erforderlich"
 
 #: /app/templates/package_onboarding/onboard.html:443
 msgid "Barcode Data"
@@ -4001,7 +4001,7 @@ msgstr "Vorlagenname"
 
 #: /app/templates/pdf_mapper/new.html:79
 msgid "e.g., Order Form 2024"
-msgstr ""
+msgstr "z. B. Bestellformular 2024"
 
 #: /app/templates/pdf_mapper/new.html:82
 #: /app/templates/pdf_mapper/reupload.html:70
@@ -4232,8 +4232,8 @@ msgstr "Keine Vorlage zugewiesen"
 
 #: /app/templates/physicians/edit.html:106
 #: /app/templates/physicians/new.html:96
-msgid "PDF template to use for orders from this physician"
-msgstr ""
+msgid "PDF template to use for orders at this physician"
+msgstr "PDF-Vorlage für Bestellungen bei diesem Arzt"
 
 #: /app/templates/physicians/edit.html:114
 msgid "Update Physician"
@@ -4457,7 +4457,7 @@ msgstr "Erfolgreich gescannt"
 
 #: /app/templates/scanner/scan.html:843
 msgid "Add this package"
-msgstr ""
+msgstr "Diese Packung hinzufügen"
 
 #: /app/templates/schedules/edit.html:4 /app/templates/schedules/edit.html:20
 #: /app/templates/schedules/edit_ingredient.html:8
@@ -4596,12 +4596,12 @@ msgstr "Einnahmeplan aktualisieren"
 #: /app/templates/schedules/edit_ingredient.html:11
 #: /app/templates/schedules/new_ingredient.html:11
 msgid "Back to Schedules"
-msgstr ""
+msgstr "Zurück zu Einnahmeplänen"
 
 #: /app/templates/schedules/edit_ingredient.html:19
 #: /app/templates/schedules/new_ingredient.html:19
 msgid "Schedule Information"
-msgstr ""
+msgstr "Informationen zum Einnahmeplan"
 
 #: /app/templates/schedules/edit_ingredient.html:30
 #: /app/templates/schedules/edit_ingredient.html:122
@@ -4625,68 +4625,68 @@ msgstr "Intervall"
 #: /app/templates/schedules/new_ingredient.html:39
 #: /app/templates/schedules/new_ingredient.html:122
 msgid "Specific Weekdays"
-msgstr ""
+msgstr "Bestimmte Wochentage"
 
 #: /app/templates/schedules/edit_ingredient.html:49
 #: /app/templates/schedules/new_ingredient.html:46
 msgid "Interval (days)"
-msgstr ""
+msgstr "Intervall (Tage)"
 
 #: /app/templates/schedules/edit_ingredient.html:52
 #: /app/templates/schedules/new_ingredient.html:48
 msgid "Take medication every X days"
-msgstr ""
+msgstr "Nimm die Medikamente alle X Tage ein"
 
 #: /app/templates/schedules/edit_ingredient.html:57
 #: /app/templates/schedules/new_ingredient.html:53
 msgid "Select Days"
-msgstr ""
+msgstr "Tage auswählen"
 
 #: /app/templates/schedules/edit_ingredient.html:81
 #: /app/templates/schedules/index_ingredient.html:87
 #: /app/templates/schedules/new_ingredient.html:75
 msgid "Units per Dose"
-msgstr ""
+msgstr "Einheiten pro Dosis"
 
 #: /app/templates/schedules/edit_ingredient.html:84
 #: /app/templates/schedules/new_ingredient.html:78
 msgid "Number of units (pills, tablets, etc.) to take per dose"
-msgstr ""
+msgstr "Anzahl der Einheiten (Pillen, Tabletten usw.) pro Dosis"
 
 #: /app/templates/schedules/edit_ingredient.html:94
 #: /app/templates/schedules/new_ingredient.html:88
 msgid "Add Time"
-msgstr ""
+msgstr "Zeit hinzufügen"
 
 #: /app/templates/schedules/edit_ingredient.html:97
 #: /app/templates/schedules/new_ingredient.html:91
 msgid "Add at least one time when the medication should be taken"
-msgstr ""
+msgstr "Gib mindestens eine Zeit an, wann das Medikament eingenommen werden soll"
 
 #: /app/templates/schedules/edit_ingredient.html:119
 #: /app/templates/schedules/new_ingredient.html:113
 msgid "Schedule Types"
-msgstr ""
+msgstr "Einnahmeplan-Typen"
 
 #: /app/templates/schedules/edit_ingredient.html:123
 #: /app/templates/schedules/new_ingredient.html:117
 msgid "Take medication every day at specified times"
-msgstr ""
+msgstr "Nimm deine Medikamente jeden Tag zur gleichen Zeit ein"
 
 #: /app/templates/schedules/edit_ingredient.html:126
 #: /app/templates/schedules/new_ingredient.html:120
 msgid "Take medication every X days (e.g., every 2 days, every 3 days)"
-msgstr ""
+msgstr "Nimm die Medikamente alle X Tage (z. B. alle 2 Tage, alle 3 Tage)"
 
 #: /app/templates/schedules/edit_ingredient.html:129
 #: /app/templates/schedules/new_ingredient.html:123
 msgid "Take medication only on selected days of the week"
-msgstr ""
+msgstr "Nimm Medikamente nur an bestimmten Tagen der Woche ein"
 
 #: /app/templates/schedules/edit_ingredient.html:197
 #: /app/templates/schedules/new_ingredient.html:184
 msgid "Please select at least one weekday"
-msgstr ""
+msgstr "Bitte wähle mindestens ein Medikament aus"
 
 #: /app/templates/schedules/index.html:4 /app/templates/schedules/index.html:56
 #: /app/templates/schedules/index_ingredient.html:8
@@ -4825,43 +4825,43 @@ msgstr "Bist du sicher, dass du diesen Einnahmeplan löschen möchten? Diese Akt
 
 #: /app/templates/schedules/index_ingredient.html:15
 msgid "Back to Ingredient"
-msgstr ""
+msgstr "Zurück zu den Wirkstoffen"
 
 #: /app/templates/schedules/index_ingredient.html:25
 msgid "Automatic Deduction"
-msgstr ""
+msgstr "Automatische Abzug"
 
 #: /app/templates/schedules/index_ingredient.html:29
 msgid "since"
-msgstr ""
+msgstr "seit"
 
 #: /app/templates/schedules/index_ingredient.html:38
 msgid "Disable"
-msgstr ""
+msgstr "Deaktivieren"
 
 #: /app/templates/schedules/index_ingredient.html:40
 msgid "Enable"
-msgstr ""
+msgstr "Aktivieren"
 
 #: /app/templates/schedules/index_ingredient.html:54
 msgid "Active Schedules"
-msgstr ""
+msgstr "Aktive Einnahmepläne"
 
 #: /app/templates/schedules/index_ingredient.html:58
 msgid "Units per Day"
-msgstr ""
+msgstr "Einheiten pro Tag"
 
 #: /app/templates/schedules/index_ingredient.html:102
 msgid "Weekdays"
-msgstr ""
+msgstr "Wochentage"
 
 #: /app/templates/schedules/index_ingredient.html:135
 msgid "Are you sure you want to delete this schedule?"
-msgstr ""
+msgstr "Sind Sie sicher, dass Sie diesen Einnahmeplan löschen möchten?"
 
 #: /app/templates/schedules/index_ingredient.html:150
 msgid "No schedules defined yet. Add a schedule to enable automatic deduction."
-msgstr ""
+msgstr "Noch keine Einnahmepläne festgelegt. Füge einen Einnahmeplan hinzu, um den automatischen Abzug zu aktivieren."
 
 #: /app/templates/schedules/new.html:4 /app/templates/schedules/new.html:20
 msgid "New Schedule for"
@@ -4889,7 +4889,7 @@ msgstr "Einnahmeplan speichern"
 
 #: /app/templates/schedules/new_ingredient.html:8
 msgid "Add Schedule for"
-msgstr ""
+msgstr "Einnahmeplan hinzufügen für"
 
 #: /app/templates/settings/data_management.html:11
 #: /app/templates/settings/physician_visits.html:12

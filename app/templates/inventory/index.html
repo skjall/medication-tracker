@@ -17,11 +17,11 @@
             {% endfor %}
         {% endfor %}
         {% if ns.low_stock_count > 0 %}
-            <a href="{{ url_for('inventory.low') }}" class="btn btn-warning">
+            <a href="{{ url_for('inventory.low') }}" class="btn btn-outline-warning">
                 <i class="fas fa-exclamation-triangle me-1"></i>{{ _('Low Stock') }} ({{ ns.low_stock_count }})
             </a>
         {% endif %}
-        <a href="{{ url_for('inventory.depletion') }}" class="btn btn-primary ms-2">
+        <a href="{{ url_for('inventory.depletion') }}" class="btn btn-outline-primary ms-2">
             <i class="fas fa-chart-line me-1"></i>{{ _('Depletion Forecast') }}
         </a>
     </div>

@@ -4300,7 +4300,7 @@ msgstr ""
 
 #: /app/templates/physicians/edit.html:106
 #: /app/templates/physicians/new.html:96
-msgid "PDF template to use for orders from this physician"
+msgid "PDF template to use for orders at this physician"
 msgstr ""
 
 #: /app/templates/physicians/edit.html:114

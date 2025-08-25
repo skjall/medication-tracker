@@ -114,7 +114,7 @@
                                                         {% if product.is_otc %}
                                                             <span class="badge bg-success">{{ _('OTC') }}</span>
                                                         {% elif product.physician %}
-                                                            <span class="badge bg-warning">Rx</span>
+                                                            <span class="badge bg-primary">Rx</span>
                                                         {% endif %}
                                                         {% if stat.ingredient.default_product_id == product.id %}
                                                             <span class="badge bg-primary" title="{{ _('Default Product') }}">

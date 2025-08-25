@@ -30,18 +30,18 @@
                         <label for="name" class="form-label">
                             <i class="fas fa-user me-1"></i>{{ _('Name') }} <span class="text-danger">*</span>
                         </label>
-                        <input type="text" class="form-control" id="name" name="name" 
+                        <input type="text" class="form-control" id="name" name="name"
                                value="{{ physician.name }}" required maxlength="200" autocomplete="name">
                         <div class="form-text">{{ _('Full name of the physician') }}</div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="specialty" class="form-label">
                             <i class="fas fa-stethoscope me-1"></i>{{ _('Specialty') }}
                         </label>
-                        <input type="text" class="form-control" id="specialty" name="specialty" 
+                        <input type="text" class="form-control" id="specialty" name="specialty"
                                value="{{ physician.specialty or '' }}" maxlength="100" autocomplete="organization-title">
                         <div class="form-text">{{ _('Medical specialty (e.g., Cardiology, Gynecology)') }}</div>
                     </div>
@@ -54,18 +54,18 @@
                         <label for="phone" class="form-label">
                             <i class="fas fa-phone me-1"></i>{{ _('Phone') }}
                         </label>
-                        <input type="tel" class="form-control" id="phone" name="phone" 
+                        <input type="tel" class="form-control" id="phone" name="phone"
                                value="{{ physician.phone or '' }}" maxlength="50" autocomplete="tel">
                         <div class="form-text">{{ _('Contact phone number') }}</div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="email" class="form-label">
                             <i class="fas fa-envelope me-1"></i>{{ _('Email') }}
                         </label>
-                        <input type="email" class="form-control" id="email" name="email" 
+                        <input type="email" class="form-control" id="email" name="email"
                                value="{{ physician.email or '' }}" maxlength="200" autocomplete="email">
                         <div class="form-text">{{ _('Email address') }}</div>
                     </div>
@@ -103,7 +103,7 @@
                     </option>
                     {% endfor %}
                 </select>
-                <div class="form-text">{{ _('PDF template to use for orders from this physician') }}</div>
+                <div class="form-text">{{ _('PDF template to use for orders at this physician') }}</div>
             </div>
 
             <div class="d-flex justify-content-between">

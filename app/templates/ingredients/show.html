@@ -8,10 +8,10 @@
         <i class="fas fa-atom me-2"></i>{{ ingredient.full_name }}
     </h1>
     <div>
-        <a href="{{ url_for('ingredients.edit', id=ingredient.id) }}" class="btn btn-warning">
+        <a href="{{ url_for('ingredients.edit', id=ingredient.id) }}" class="btn btn-outline-primary">
             <i class="fas fa-edit me-1"></i>{{ _('Edit') }}
         </a>
-        <a href="{{ url_for('ingredients.new_product') }}" class="btn btn-primary">
+        <a href="{{ url_for('ingredients.new_product') }}" class="btn btn-outline-primary">
             <i class="fas fa-plus me-1"></i>{{ _('Add Product') }}
         </a>
         <a href="{{ url_for('ingredients.index') }}" class="btn btn-outline-secondary">
@@ -80,7 +80,7 @@
         
         <!-- Products List -->
         <div class="card">
-            <div class="card-header bg-secondary text-white">
+            <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">{{ _('Available Products') }} ({{ products|length }})</h5>
             </div>
             {% if products %}
@@ -127,7 +127,7 @@
                                 {% if product.is_otc %}
                                     <span class="badge bg-success">{{ _('OTC') }}</span>
                                 {% elif product.physician %}
-                                    <span class="badge bg-warning">Rx</span>
+                                    <span class="badge bg-primary">Rx</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -144,14 +144,14 @@
                                     {% if ingredient.default_product_id != product.id %}
                                     <form method="POST" action="{{ url_for('ingredients.set_default_product', ingredient_id=ingredient.id, product_id=product.id) }}" 
                                           class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-warning" title="{{ _('Set as Default') }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary" title="{{ _('Set as Default') }}">
                                             <i class="fas fa-star"></i>
                                         </button>
                                     </form>
                                     {% else %}
                                     <form method="POST" action="{{ url_for('ingredients.clear_default_product', ingredient_id=ingredient.id) }}" 
                                           class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-warning" title="{{ _('Remove Default') }}">
+                                        <button type="submit" class="btn btn-sm btn-primary" title="{{ _('Remove Default') }}">
                                             <i class="fas fa-star-half-alt"></i>
                                         </button>
                                     </form>
@@ -184,7 +184,7 @@
     <div class="col-lg-4">
         <!-- Auto-Deduction Settings -->
         <div class="card mb-4">
-            <div class="card-header {% if ingredient.auto_deduction_enabled %}bg-success{% else %}bg-secondary{% endif %} text-white">
+            <div class="card-header {% if ingredient.auto_deduction_enabled %}bg-success{% else %}bg-primary{% endif %} text-white">
                 <h6 class="mb-0">
                     <i class="fas fa-clock me-2"></i>{{ _('Auto-Deduction') }}
                 </h6>
@@ -192,7 +192,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span>{{ _('Status') }}:</span>
-                    <span class="badge {% if ingredient.auto_deduction_enabled %}bg-success{% else %}bg-secondary{% endif %}">
+                    <span class="badge {% if ingredient.auto_deduction_enabled %}bg-success{% else %}bg-primary{% endif %}">
                         {% if ingredient.auto_deduction_enabled %}
                             <i class="fas fa-check-circle me-1"></i>{{ _('Enabled') }}
                         {% else %}
