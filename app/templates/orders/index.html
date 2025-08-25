@@ -88,7 +88,7 @@
                 </a>
                 {% if order.physician_visit.physician and order.physician_visit.physician.pdf_template %}
                 <a
-                  href="{{ url_for('orders.prescription', id=order.id) }}"
+                  href="{{ url_for('orders.order_pdf', id=order.id) }}"
                   class="btn btn-outline-primary"
                   title="{{ _('Print PDF') }}"
                   target="_blank"
@@ -201,7 +201,7 @@
                 </a>
                 {% if order.physician_visit.physician and order.physician_visit.physician.pdf_template %}
                 <a
-                  href="{{ url_for('orders.prescription', id=order.id) }}"
+                  href="{{ url_for('orders.order_pdf', id=order.id) }}"
                   class="btn btn-outline-primary"
                   title="{{ _('Print PDF') }}"
                   target="_blank"

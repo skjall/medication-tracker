@@ -255,7 +255,7 @@ def edit_product(id: int):
         product.aut_idem = request.form.get("aut_idem") == "on"
         product.notes = request.form.get("notes", "").strip() or None
 
-        # Update prescription settings
+        # Update order settings
         product.is_otc = request.form.get("is_otc") == "on"
         physician_id = request.form.get("physician_id")
         if physician_id:

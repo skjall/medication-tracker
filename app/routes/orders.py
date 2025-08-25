@@ -28,7 +28,7 @@ from models import (
     OrderItem,
     db,
 )
-from pdf_utils import generate_prescription_pdf
+from pdf_utils import generate_order_pdf
 from utils import to_local_timezone, format_date, format_datetime
 
 # Create a logger for this module
@@ -100,12 +100,12 @@ def new():
 
         # Filter medications based on the visit's physician
         if visit.physician_id:
-            # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+            # If visit has a physician, only show medications assigned to that physician (no OTC)
             medications = Medication.query.filter(
                 (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
             ).all()
         else:
-            # If visit has no physician, show no medications (can't create prescription orders without physician)
+            # If visit has no physician, show no medications (can't create orders without physician)
             medications = []
 
         # Process each medication
@@ -181,12 +181,12 @@ def new():
 
     # Filter medications based on the visit's physician
     if visit.physician_id:
-        # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+        # If visit has a physician, only show medications assigned to that physician (no OTC)
         medications = Medication.query.filter(
             (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
         ).all()
     else:
-        # If visit has no physician, show no medications (can't create prescription orders without physician)
+        # If visit has no physician, show no medications (can't create orders without physician)
         medications = []
 
     def calculate_medication_needs(med, visit_date, gap_coverage=False, consider_next_but_one=False):
@@ -341,12 +341,12 @@ def edit(id: int):
         # Filter medications based on the visit's physician
         visit = order.physician_visit
         if visit.physician_id:
-            # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+            # If visit has a physician, only show medications assigned to that physician (no OTC)
             medications = Medication.query.filter(
                 (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
             ).all()
         else:
-            # If visit has no physician, show no medications (can't create prescription orders without physician)
+            # If visit has no physician, show no medications (can't create orders without physician)
             medications = []
 
         # Track which medications are included in the updated order
@@ -431,12 +431,12 @@ def edit(id: int):
     # Filter medications based on the visit's physician
     visit = order.physician_visit
     if visit.physician_id:
-        # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
+        # If visit has a physician, only show medications assigned to that physician (no OTC)
         medications = Medication.query.filter(
             (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
         ).all()
     else:
-        # If visit has no physician, show no medications (can't create prescription orders without physician)
+        # If visit has no physician, show no medications (can't create orders without physician)
         medications = []
 
     # Create a lookup map for existing order items
@@ -733,17 +733,17 @@ def undo_cancel_item(order_id: int, item_id: int):
     return redirect(url_for("orders.show", id=order_id))
 
 
-@order_bp.route("/<int:id>/prescription", methods=["GET"])
-def prescription(id: int):
-    """Generate a prescription PDF for the order."""
+@order_bp.route("/<int:id>/pdf", methods=["GET"])
+def order_pdf(id: int):
+    """Generate a PDF for the order."""
     order = Order.query.get_or_404(id)
 
     # Generate the PDF (will use physician's PDF template or fallback to legacy template)
-    pdf_path = generate_prescription_pdf(order.id)
+    pdf_path = generate_order_pdf(order.id)
 
     if pdf_path:
         # Determine the filename for download
-        filename = f"prescription_order_{order.id}.pdf"
+        filename = f"order_{order.id}.pdf"
 
         # Return the file for download
         return send_file(pdf_path, download_name=filename, as_attachment=True)

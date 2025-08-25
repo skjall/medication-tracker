@@ -342,7 +342,7 @@ def content_view(id):
             {"id": "days_supply", "label": _("Days Supply"), "icon": "📅"},
             {"id": "months_supply", "label": _("Months Supply"), "icon": "📅"},
         ],
-        "prescription": [
+        "order_info": [
             {"id": "physician", "label": _("Physician"), "icon": "👨‍⚕️"},
             {"id": "instructions", "label": _("Instructions"), "icon": "📋"},
             {"id": "notes", "label": _("Notes"), "icon": "📝"},

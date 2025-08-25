@@ -16,7 +16,6 @@ def register_blueprints(app):
     from routes.orders import order_bp
     from routes.settings import settings_bp
     from routes.schedule import schedule_bp
-    # from routes.prescription_templates import prescription_bp  # Legacy - replaced by pdf_mapper
     from routes.system import system_bp
     from routes.scanner import bp as scanner_bp
     from routes.medication_packages import bp as medication_packages_bp
@@ -31,12 +30,11 @@ def register_blueprints(app):
     app.register_blueprint(order_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(schedule_bp)
-    # app.register_blueprint(prescription_bp)  # Legacy - replaced by pdf_mapper
     app.register_blueprint(system_bp)
     app.register_blueprint(scanner_bp)
     app.register_blueprint(medication_packages_bp)
     app.register_blueprint(ingredients_bp)
     app.register_blueprint(package_onboarding_bp)
     app.register_blueprint(pdf_mapper_bp)
-    
+
     logger.info("All blueprints registered successfully")

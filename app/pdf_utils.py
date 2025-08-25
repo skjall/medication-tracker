@@ -1,5 +1,6 @@
-"""
-This module provides functionality to fill a PDF prescription form
+"""PDF Utilities for generating order PDFs.
+
+This module provides functionality to fill a PDF order form
 """
 
 # Standard library imports
@@ -16,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 
-def generate_prescription_pdf(
+def generate_order_pdf(
     order_id: int, template_id: Optional[int] = None
 ) -> Optional[str]:
     """
-    Generate a filled prescription PDF for the given order.
+    Generate a filled order PDF for the given order.
 
     Args:
         order_id: ID of the order to generate PDF for
@@ -73,12 +74,12 @@ def generate_prescription_pdf(
         
         # Create the output directory if it doesn't exist
         from utils import get_data_directory
-        output_dir = os.path.join(get_data_directory(), "prescriptions")
+        output_dir = os.path.join(get_data_directory(), "orders")
         os.makedirs(output_dir, exist_ok=True)
 
         # Generate a unique filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"prescription_order_{order_id}_{timestamp}.pdf"
+        output_filename = f"order_{order_id}_{timestamp}.pdf"
         output_path = os.path.join(output_dir, output_filename)
         
         try:
@@ -98,5 +99,5 @@ def generate_prescription_pdf(
             return None
 
     except Exception as e:
-        logger.error(f"Error generating prescription PDF: {e}")
+        logger.error(f"Error generating order PDF: {e}")
         return None

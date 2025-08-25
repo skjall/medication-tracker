@@ -53,7 +53,7 @@
                         </dl>
                     </div>
                     <div class="col-md-6">
-                        <h6 class="text-muted">{{ _('Prescription Information') }}</h6>
+                        <h6 class="text-muted">{{ _('Order Information') }}</h6>
                         <dl>
                             <dt>{{ _('Substitution') }}</dt>
                             <dd>
@@ -73,7 +73,7 @@
                                 {% if product.is_otc %}
                                     <span class="badge bg-success">{{ _('Over-the-counter') }}</span>
                                 {% else %}
-                                    <span class="badge bg-warning">{{ _('Prescription required') }}</span>
+                                    <span class="badge bg-warning">{{ _('Order required') }}</span>
                                 {% endif %}
                             </dd>
                             

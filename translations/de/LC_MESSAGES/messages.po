@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-25 10:39\n"
+"PO-Revision-Date: 2025-08-25 10:57\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -1537,8 +1537,8 @@ msgstr "Kann nach dem Erstellen nicht mehr geändert werden"
 #: /app/templates/ingredients/edit_product.html:60
 #: /app/templates/ingredients/new_product.html:104
 #: /app/templates/package_onboarding/onboard.html:318
-msgid "Prescription Settings"
-msgstr "Verschreibungseinstellungen"
+msgid "Order Settings"
+msgstr "Bestell-Einstellungen"
 
 #: /app/templates/ingredients/edit_product.html:68
 #: /app/templates/ingredients/new_product.html:111
@@ -1557,8 +1557,8 @@ msgstr "Rezeptfreie Medikamente (OTC)"
 
 #: /app/templates/ingredients/edit_product.html:79
 #: /app/templates/ingredients/new_product.html:121
-msgid "No prescription required"
-msgstr "Keine Verschreibung nötig"
+msgid "No order required (OTC)"
+msgstr "Keine Bestellung erforderlich (OTC)"
 
 #: /app/templates/ingredients/edit_product.html:85
 #: /app/templates/ingredients/new_product.html:127
@@ -1900,8 +1900,9 @@ msgid "Basic Information"
 msgstr "Grundlegende Informationen"
 
 #: /app/templates/ingredients/show_product.html:56
-msgid "Prescription Information"
-msgstr "Verschreibungsinformationen"
+#: /app/templates/orders/printable.html:108 /app/templates/orders/show.html:26
+msgid "Order Information"
+msgstr "Bestelldaten"
 
 #: /app/templates/ingredients/show_product.html:58
 msgid "Substitution"
@@ -1925,8 +1926,8 @@ msgid "Over-the-counter"
 msgstr "Rezeptfrei"
 
 #: /app/templates/ingredients/show_product.html:76
-msgid "Prescription required"
-msgstr "Rezept erforderlich"
+msgid "Order required"
+msgstr "Bestellung erforderlich"
 
 #: /app/templates/ingredients/show_product.html:90
 msgid "Package Sizes"
@@ -3213,10 +3214,6 @@ msgstr "Bestellung drucken"
 msgid "Medication Order"
 msgstr "Medikamentenbestellung"
 
-#: /app/templates/orders/printable.html:108 /app/templates/orders/show.html:26
-msgid "Order Information"
-msgstr "Bestelldaten"
-
 #: /app/templates/orders/printable.html:111
 msgid "Date Created"
 msgstr "Erstellungsdatum"
@@ -3423,8 +3420,8 @@ msgid "Notes (optional)"
 msgstr "Notizen (optional)"
 
 #: /app/templates/orders/show.html:386
-msgid "e.g., Doctor modified prescription, pharmacy substitution, etc."
-msgstr "z. B. Doktor verändertes Rezept, Apothekensubstitution, etc."
+msgid "e.g., Doctor modified order, pharmacy substitution, etc."
+msgstr "z. B. vom Arzt geänderte Bestellung, Ersatz durch Apotheke usw."
 
 #: /app/templates/orders/show.html:392
 msgid "Add to inventory"
@@ -3578,8 +3575,8 @@ msgid "e.g., 1A Pharma"
 msgstr "z. B. 1A Pharma"
 
 #: /app/templates/package_onboarding/onboard.html:324
-msgid "Over-the-counter (OTC) - No prescription required"
-msgstr "Rezeptfrei (OTC) – Verschreibung nicht nötig"
+msgid "Over-the-counter (OTC) - No order required"
+msgstr "Rezeptfrei (OTC) – Keine Bestellung nötig"
 
 #: /app/templates/package_onboarding/onboard.html:342
 msgid "Allow generic substitution (Aut idem)"
@@ -3638,8 +3635,8 @@ msgid "Please review the information"
 msgstr "Bitte überprüfe die Infos"
 
 #: /app/templates/package_onboarding/onboard.html:440
-msgid "Prescription Required"
-msgstr "Verschreibung erforderlich"
+msgid "Order Required"
+msgstr ""
 
 #: /app/templates/package_onboarding/onboard.html:443
 msgid "Barcode Data"
@@ -4003,8 +4000,8 @@ msgid "Template Name"
 msgstr "Vorlagenname"
 
 #: /app/templates/pdf_mapper/new.html:79
-msgid "e.g., Prescription Form 2024"
-msgstr "z. B. Rezeptformular 2024"
+msgid "e.g., Order Form 2024"
+msgstr ""
 
 #: /app/templates/pdf_mapper/new.html:82
 #: /app/templates/pdf_mapper/reupload.html:70
@@ -4235,7 +4232,7 @@ msgstr "Keine Vorlage zugewiesen"
 
 #: /app/templates/physicians/edit.html:106
 #: /app/templates/physicians/new.html:96
-msgid "PDF template to use for prescriptions from this physician"
+msgid "PDF template to use for orders from this physician"
 msgstr ""
 
 #: /app/templates/physicians/edit.html:114

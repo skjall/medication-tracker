@@ -26,24 +26,24 @@
                         <input type="text" class="form-control" value="{{ product.active_ingredient.full_name }}" readonly>
                         <div class="form-text">{{ _('Cannot be changed after creation') }}</div>
                     </div>
-                    
+
                     <!-- Brand Name -->
                     <div class="mb-3">
                         <label for="brand_name" class="form-label">
                             {{ _('Brand Name') }} <span class="text-danger">*</span>
                         </label>
-                        <input type="text" class="form-control" id="brand_name" name="brand_name" 
+                        <input type="text" class="form-control" id="brand_name" name="brand_name"
                                value="{{ product.brand_name }}" required>
                     </div>
-                    
+
                     <!-- Manufacturer -->
                     <div class="mb-3">
                         <label for="manufacturer" class="form-label">{{ _('Manufacturer') }}</label>
                         <input type="text" class="form-control" id="manufacturer" name="manufacturer"
                                value="{{ product.manufacturer or '' }}">
                     </div>
-                    
-                    
+
+
                     <!-- Notes -->
                     <div class="mb-3">
                         <label for="notes" class="form-label">{{ _('Notes') }}</label>
@@ -52,34 +52,34 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-4">
-            <!-- Prescription Settings -->
+            <!-- Order Settings -->
             <div class="card mb-4">
                 <div class="card-header bg-secondary text-white">
-                    <h6 class="mb-0">{{ _('Prescription Settings') }}</h6>
+                    <h6 class="mb-0">{{ _('Order Settings') }}</h6>
                 </div>
                 <div class="card-body">
                     <!-- Aut idem -->
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="aut_idem" name="aut_idem" 
+                        <input class="form-check-input" type="checkbox" id="aut_idem" name="aut_idem"
                                {% if product.aut_idem %}checked{% endif %}>
                         <label class="form-check-label" for="aut_idem">
                             <strong>{{ _('Allow substitution (Aut idem)') }}</strong>
                             <div class="form-text">{{ _('Pharmacist may substitute with generic equivalent') }}</div>
                         </label>
                     </div>
-                    
+
                     <!-- OTC -->
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="is_otc" name="is_otc"
                                {% if product.is_otc %}checked{% endif %}>
                         <label class="form-check-label" for="is_otc">
                             <strong>{{ _('Over-the-counter (OTC)') }}</strong>
-                            <div class="form-text">{{ _('No prescription required') }}</div>
+                            <div class="form-text">{{ _('No order required (OTC)') }}</div>
                         </label>
                     </div>
-                    
+
                     <!-- Physician -->
                     <div class="mb-3">
                         <label for="physician_id" class="form-label">{{ _('Prescribing Physician') }}</label>
@@ -92,7 +92,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Submit -->
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary btn-lg">
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto-disable physician if OTC is checked
     const otcCheckbox = document.getElementById('is_otc');
     const physicianSelect = document.getElementById('physician_id');
-    
+
     function updatePhysicianState() {
         if (otcCheckbox.checked) {
             physicianSelect.value = '';
@@ -122,10 +122,10 @@ document.addEventListener('DOMContentLoaded', function() {
             physicianSelect.disabled = false;
         }
     }
-    
+
     // Initial state
     updatePhysicianState();
-    
+
     // Handle changes
     otcCheckbox.addEventListener('change', updatePhysicianState);
 });

@@ -73,18 +73,18 @@ class MedicationProduct(db.Model):
         comment="True if generic substitution is allowed by physician"
     )
     
-    # Physician and prescription info
+    # Physician and order info
     physician_id: Mapped[Optional[int]] = mapped_column(
         Integer, 
         ForeignKey("physicians.id"), 
         nullable=True,
-        comment="Prescribing physician if prescription-only"
+        comment="Prescribing physician for this medication"
     )
     
     is_otc: Mapped[bool] = mapped_column(
         Boolean, 
         default=False,
-        comment="True if over-the-counter (no prescription needed)"
+        comment="True if over-the-counter (no order needed)"
     )
     
     # Legacy reference for migration

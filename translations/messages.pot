@@ -1560,7 +1560,7 @@ msgstr ""
 #: /app/templates/ingredients/edit_product.html:60
 #: /app/templates/ingredients/new_product.html:104
 #: /app/templates/package_onboarding/onboard.html:318
-msgid "Prescription Settings"
+msgid "Order Settings"
 msgstr ""
 
 #: /app/templates/ingredients/edit_product.html:68
@@ -1580,7 +1580,7 @@ msgstr ""
 
 #: /app/templates/ingredients/edit_product.html:79
 #: /app/templates/ingredients/new_product.html:121
-msgid "No prescription required"
+msgid "No order required (OTC)"
 msgstr ""
 
 #: /app/templates/ingredients/edit_product.html:85
@@ -1925,7 +1925,8 @@ msgid "Basic Information"
 msgstr ""
 
 #: /app/templates/ingredients/show_product.html:56
-msgid "Prescription Information"
+#: /app/templates/orders/printable.html:108 /app/templates/orders/show.html:26
+msgid "Order Information"
 msgstr ""
 
 #: /app/templates/ingredients/show_product.html:58
@@ -1950,7 +1951,7 @@ msgid "Over-the-counter"
 msgstr ""
 
 #: /app/templates/ingredients/show_product.html:76
-msgid "Prescription required"
+msgid "Order required"
 msgstr ""
 
 #: /app/templates/ingredients/show_product.html:90
@@ -3269,10 +3270,6 @@ msgstr ""
 msgid "Medication Order"
 msgstr ""
 
-#: /app/templates/orders/printable.html:108 /app/templates/orders/show.html:26
-msgid "Order Information"
-msgstr ""
-
 #: /app/templates/orders/printable.html:111
 msgid "Date Created"
 msgstr ""
@@ -3479,7 +3476,7 @@ msgid "Notes (optional)"
 msgstr ""
 
 #: /app/templates/orders/show.html:386
-msgid "e.g., Doctor modified prescription, pharmacy substitution, etc."
+msgid "e.g., Doctor modified order, pharmacy substitution, etc."
 msgstr ""
 
 #: /app/templates/orders/show.html:392
@@ -3636,7 +3633,7 @@ msgid "e.g., 1A Pharma"
 msgstr ""
 
 #: /app/templates/package_onboarding/onboard.html:324
-msgid "Over-the-counter (OTC) - No prescription required"
+msgid "Over-the-counter (OTC) - No order required"
 msgstr ""
 
 #: /app/templates/package_onboarding/onboard.html:342
@@ -3696,7 +3693,7 @@ msgid "Please review the information"
 msgstr ""
 
 #: /app/templates/package_onboarding/onboard.html:440
-msgid "Prescription Required"
+msgid "Order Required"
 msgstr ""
 
 #: /app/templates/package_onboarding/onboard.html:443
@@ -4063,7 +4060,7 @@ msgid "Template Name"
 msgstr ""
 
 #: /app/templates/pdf_mapper/new.html:79
-msgid "e.g., Prescription Form 2024"
+msgid "e.g., Order Form 2024"
 msgstr ""
 
 #: /app/templates/pdf_mapper/new.html:82
@@ -4303,7 +4300,7 @@ msgstr ""
 
 #: /app/templates/physicians/edit.html:106
 #: /app/templates/physicians/new.html:96
-msgid "PDF template to use for prescriptions from this physician"
+msgid "PDF template to use for orders from this physician"
 msgstr ""
 
 #: /app/templates/physicians/edit.html:114

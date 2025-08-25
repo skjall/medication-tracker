@@ -108,7 +108,7 @@ def onboard_package():
                 product = existing
                 flash(_('Product already exists, using existing one'), 'info')
             else:
-                # Handle prescription settings
+                # Handle order settings
                 is_otc = request.form.get('is_otc') == 'on'
                 physician_id = None if is_otc else request.form.get('physician_id')
                 
@@ -212,7 +212,7 @@ def onboard_package():
     # Get all active ingredients for dropdown
     ingredients = ActiveIngredient.query.order_by(ActiveIngredient.name).all()
     
-    # Get all physicians for prescription settings
+    # Get all physicians for order settings
     physicians = Physician.query.filter_by(active=True).order_by(Physician.name).all()
     
     # Get all medications for linking (optional)

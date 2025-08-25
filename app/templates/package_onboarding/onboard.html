@@ -10,7 +10,7 @@
         margin-bottom: 2rem;
         position: relative;
     }
-    
+
     .step-indicator::before {
         content: '';
         position: absolute;
@@ -21,14 +21,14 @@
         background: #dee2e6;
         z-index: 0;
     }
-    
+
     .step {
         flex: 1;
         text-align: center;
         position: relative;
         z-index: 1;
     }
-    
+
     .step-circle {
         width: 40px;
         height: 40px;
@@ -42,38 +42,38 @@
         margin-bottom: 0.5rem;
         position: relative;
     }
-    
+
     .step.active .step-circle {
         background: var(--bs-primary);
         border-color: var(--bs-primary);
         color: white;
     }
-    
+
     .step.completed .step-circle {
         background: var(--bs-success);
         border-color: var(--bs-success);
         color: white;
     }
-    
+
     .step-label {
         font-size: 0.875rem;
         color: #6c757d;
     }
-    
+
     .step.active .step-label {
         color: var(--bs-primary);
         font-weight: 500;
     }
-    
+
     .step.completed .step-label {
         color: var(--bs-success);
     }
-    
+
     .scanned-data-card {
         background: #f8f9fa;
         border-left: 4px solid var(--bs-info);
     }
-    
+
     .form-section {
         background: white;
         border-radius: 0.5rem;
@@ -81,23 +81,23 @@
         margin-bottom: 1.5rem;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     }
-    
+
     .option-card {
         cursor: pointer;
         transition: all 0.3s;
         border: 2px solid transparent;
     }
-    
+
     .option-card:hover {
         border-color: var(--bs-primary);
         box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
     }
-    
+
     .option-card.selected {
         border-color: var(--bs-primary);
         background: #f0f8ff;
     }
-    
+
     .autocomplete-suggestions {
         position: absolute;
         top: 100%;
@@ -111,20 +111,20 @@
         z-index: 1000;
         display: none;
     }
-    
+
     .autocomplete-suggestions.show {
         display: block;
     }
-    
+
     .autocomplete-item {
         padding: 0.5rem 1rem;
         cursor: pointer;
     }
-    
+
     .autocomplete-item:hover {
         background: #f8f9fa;
     }
-    
+
     .autocomplete-item.selected {
         background: var(--bs-primary);
         color: white;
@@ -206,17 +206,17 @@
         <!-- Step 1: Active Ingredient -->
         <div class="form-section" id="section-1">
             <h4 class="mb-3">{{ _('Step 1: Select or Create Active Ingredient') }}</h4>
-            
+
             <div class="mb-3">
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="ingredient_option" 
+                    <input class="form-check-input" type="radio" name="ingredient_option"
                            id="ingredient_existing" value="existing" checked>
                     <label class="form-check-label" for="ingredient_existing">
                         {{ _('Select Existing Ingredient') }}
                     </label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="ingredient_option" 
+                    <input class="form-check-input" type="radio" name="ingredient_option"
                            id="ingredient_new" value="new">
                     <label class="form-check-label" for="ingredient_new">
                         {{ _('Create New Ingredient') }}
@@ -227,12 +227,12 @@
             <!-- Existing Ingredient Selection -->
             <div id="existing_ingredient_section">
                 <div class="position-relative">
-                    <input type="text" class="form-control form-control-lg" 
+                    <input type="text" class="form-control form-control-lg"
                            id="ingredient_search" placeholder="{{ _('Search for active ingredient...') }}">
                     <div class="autocomplete-suggestions" id="ingredient_suggestions"></div>
                 </div>
                 <input type="hidden" name="ingredient_id" id="ingredient_id">
-                
+
                 <!-- Popular Ingredients -->
                 <div class="mt-3">
                     <small class="text-muted">{{ _('Popular ingredients:') }}</small>
@@ -252,17 +252,17 @@
                 <div class="row">
                     <div class="col-md-6">
                         <label for="ingredient_name" class="form-label">{{ _('Ingredient Name') }} *</label>
-                        <input type="text" class="form-control" id="ingredient_name" 
+                        <input type="text" class="form-control" id="ingredient_name"
                                name="ingredient_name" placeholder="{{ _('e.g., Ibuprofen') }}">
                     </div>
                     <div class="col-md-3">
                         <label for="ingredient_strength" class="form-label">{{ _('Strength') }}</label>
-                        <input type="text" class="form-control" id="ingredient_strength" 
+                        <input type="text" class="form-control" id="ingredient_strength"
                                name="ingredient_strength" placeholder="{{ _('e.g., 400') }}">
                     </div>
                     <div class="col-md-3">
                         <label for="ingredient_unit" class="form-label">{{ _('Unit') }}</label>
-                        <input type="text" class="form-control" id="ingredient_unit" 
+                        <input type="text" class="form-control" id="ingredient_unit"
                                name="ingredient_unit" placeholder="{{ _('e.g., mg') }}">
                     </div>
                 </div>
@@ -272,17 +272,17 @@
         <!-- Step 2: Product -->
         <div class="form-section" id="section-2" style="display: none;">
             <h4 class="mb-3">{{ _('Step 2: Select or Create Product') }}</h4>
-            
+
             <div class="mb-3">
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="product_option" 
+                    <input class="form-check-input" type="radio" name="product_option"
                            id="product_existing" value="existing" checked>
                     <label class="form-check-label" for="product_existing">
                         {{ _('Select Existing Product') }}
                     </label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="product_option" 
+                    <input class="form-check-input" type="radio" name="product_option"
                            id="product_new" value="new">
                     <label class="form-check-label" for="product_new">
                         {{ _('Create New Product') }}
@@ -302,29 +302,29 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="brand_name" class="form-label">{{ _('Product/Brand Name') }} *</label>
-                        <input type="text" class="form-control" id="brand_name" 
+                        <input type="text" class="form-control" id="brand_name"
                                name="brand_name" placeholder="{{ _('e.g., Ibuprofen 1A Pharma') }}">
                     </div>
                     <div class="col-md-6">
                         <label for="manufacturer" class="form-label">{{ _('Manufacturer') }}</label>
-                        <input type="text" class="form-control" id="manufacturer" 
+                        <input type="text" class="form-control" id="manufacturer"
                                name="manufacturer" placeholder="{{ _('e.g., 1A Pharma') }}">
                     </div>
                 </div>
-                
-                <!-- Prescription Settings -->
+
+                <!-- Order Settings -->
                 <div class="card">
                     <div class="card-header bg-light">
-                        <h6 class="mb-0">{{ _('Prescription Settings') }}</h6>
+                        <h6 class="mb-0">{{ _('Order Settings') }}</h6>
                     </div>
                     <div class="card-body">
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="is_otc" name="is_otc">
                             <label class="form-check-label" for="is_otc">
-                                {{ _('Over-the-counter (OTC) - No prescription required') }}
+                                {{ _('Over-the-counter (OTC) - No order required') }}
                             </label>
                         </div>
-                        
+
                         <div id="physician_section">
                             <label for="physician_id" class="form-label">{{ _('Prescribing Physician') }}</label>
                             <select class="form-select" id="physician_id" name="physician_id">
@@ -334,9 +334,9 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        
+
                         <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="aut_idem" 
+                            <input class="form-check-input" type="checkbox" id="aut_idem"
                                    name="aut_idem" checked>
                             <label class="form-check-label" for="aut_idem">
                                 {{ _('Allow generic substitution (Aut idem)') }}
@@ -350,7 +350,7 @@
         <!-- Step 3: Package Size -->
         <div class="form-section" id="section-3" style="display: none;">
             <h4 class="mb-3">{{ _('Step 3: Package Configuration') }}</h4>
-            
+
             <div class="row">
                 <div class="col-md-4">
                     <label for="package_size" class="form-label">{{ _('Package Size') }} *</label>
@@ -360,29 +360,29 @@
                         <option value="N3">N3 - {{ _('Large Package') }}</option>
                         <option value="custom">{{ _('Custom Size') }}</option>
                     </select>
-                    <input type="text" class="form-control mt-2" id="custom_package_size" 
-                           name="custom_package_size" placeholder="{{ _('Enter custom size...') }}" 
+                    <input type="text" class="form-control mt-2" id="custom_package_size"
+                           name="custom_package_size" placeholder="{{ _('Enter custom size...') }}"
                            style="display: none;">
                 </div>
                 <div class="col-md-4">
                     <label for="quantity" class="form-label">{{ _('Units per Package') }} *</label>
-                    <input type="number" class="form-control" id="quantity" name="quantity" 
+                    <input type="number" class="form-control" id="quantity" name="quantity"
                            min="1" placeholder="{{ _('e.g., 100') }}" required>
                 </div>
                 <div class="col-md-4">
                     <label for="list_price" class="form-label">{{ _('List Price') }}</label>
                     <div class="input-group">
                         <span class="input-group-text">€</span>
-                        <input type="number" class="form-control" id="list_price" 
+                        <input type="number" class="form-control" id="list_price"
                                name="list_price" step="0.01" min="0" placeholder="{{ _('0.00') }}">
                     </div>
                 </div>
             </div>
-            
+
             <div class="row mt-3">
                 <div class="col-md-6">
                     <label for="package_manufacturer" class="form-label">{{ _('Package Manufacturer') }}</label>
-                    <input type="text" class="form-control" id="package_manufacturer" 
+                    <input type="text" class="form-control" id="package_manufacturer"
                            name="package_manufacturer" placeholder="{{ _('If different from product') }}">
                 </div>
             </div>
@@ -394,13 +394,13 @@
                 </div>
                 <div class="card-body">
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="link_medication" 
+                        <input class="form-check-input" type="checkbox" id="link_medication"
                                name="link_medication">
                         <label class="form-check-label" for="link_medication">
                             {{ _('Enable inventory tracking for this product') }}
                         </label>
                     </div>
-                    
+
                     <div id="medication_link_section" style="display: none;">
                         <label for="medication_id" class="form-label">
                             {{ _('Link to existing medication (optional)') }}
@@ -422,24 +422,24 @@
         <!-- Step 4: Review -->
         <div class="form-section" id="section-4" style="display: none;">
             <h4 class="mb-3">{{ _('Step 4: Review and Save') }}</h4>
-            
+
             <div class="card">
                 <div class="card-body">
                     <h6 class="card-subtitle mb-3 text-muted">{{ _('Please review the information') }}</h6>
-                    
+
                     <dl class="row">
                         <dt class="col-sm-3">{{ _('Active Ingredient') }}</dt>
                         <dd class="col-sm-9" id="review_ingredient">-</dd>
-                        
+
                         <dt class="col-sm-3">{{ _('Product') }}</dt>
                         <dd class="col-sm-9" id="review_product">-</dd>
-                        
+
                         <dt class="col-sm-3">{{ _('Package Size') }}</dt>
                         <dd class="col-sm-9" id="review_package">-</dd>
-                        
-                        <dt class="col-sm-3">{{ _('Prescription Required') }}</dt>
-                        <dd class="col-sm-9" id="review_prescription">-</dd>
-                        
+
+                        <dt class="col-sm-3">{{ _('Order Required') }}</dt>
+                        <dd class="col-sm-9" id="review_order">-</dd>
+
                         <dt class="col-sm-3">{{ _('Barcode Data') }}</dt>
                         <dd class="col-sm-9">
                             {% if scanned_data.gtin %}
@@ -474,7 +474,7 @@
 <script>
     let currentStep = 1;
     const totalSteps = 4;
-    
+
     // Form data storage
     let formData = {
         ingredient: null,
@@ -487,16 +487,16 @@
         // Step navigation
         document.getElementById('nextBtn').addEventListener('click', nextStep);
         document.getElementById('prevBtn').addEventListener('click', prevStep);
-        
+
         // Radio button toggles
         document.querySelectorAll('input[name="ingredient_option"]').forEach(radio => {
             radio.addEventListener('change', toggleIngredientSection);
         });
-        
+
         document.querySelectorAll('input[name="product_option"]').forEach(radio => {
             radio.addEventListener('change', toggleProductSection);
         });
-        
+
         // OTC checkbox
         document.getElementById('is_otc').addEventListener('change', function() {
             const physicianSection = document.getElementById('physician_section');
@@ -507,7 +507,7 @@
                 physicianSection.style.display = 'block';
             }
         });
-        
+
         // Package size selector
         document.getElementById('package_size').addEventListener('change', function() {
             const customInput = document.getElementById('custom_package_size');
@@ -519,16 +519,16 @@
                 customInput.required = false;
             }
         });
-        
+
         // Link medication checkbox
         document.getElementById('link_medication').addEventListener('change', function() {
             const linkSection = document.getElementById('medication_link_section');
             linkSection.style.display = this.checked ? 'block' : 'none';
         });
-        
+
         // Ingredient search
         setupIngredientSearch();
-        
+
         // Quick select buttons
         document.querySelectorAll('.ingredient-quick-select').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -553,16 +553,16 @@
         const searchInput = document.getElementById('ingredient_search');
         const suggestions = document.getElementById('ingredient_suggestions');
         let searchTimeout;
-        
+
         searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const query = this.value.trim();
-            
+
             if (query.length < 2) {
                 suggestions.classList.remove('show');
                 return;
             }
-            
+
             searchTimeout = setTimeout(() => {
                 fetch(`{{ url_for('package_onboarding.search_ingredients') }}?q=${encodeURIComponent(query)}`)
                     .then(response => response.json())
@@ -587,7 +587,7 @@
                     });
             }, 300);
         });
-        
+
         // Hide suggestions when clicking outside
         document.addEventListener('click', function(e) {
             if (!searchInput.contains(e.target) && !suggestions.contains(e.target)) {
@@ -601,7 +601,7 @@
         document.getElementById('ingredient_search').value = name;
         document.getElementById('ingredient_suggestions').classList.remove('show');
         formData.ingredient = { id: id, name: name };
-        
+
         // Load products for this ingredient
         loadProductsForIngredient(id);
     }
@@ -612,7 +612,7 @@
             .then(data => {
                 const select = document.getElementById('product_id');
                 select.innerHTML = '<option value="">{{ _("Select a product...") }}</option>';
-                
+
                 if (data.products.length === 0) {
                     select.innerHTML += '<option value="" disabled>{{ _("No products found - create new") }}</option>';
                     document.getElementById('product_new').checked = true;
@@ -650,7 +650,7 @@
                     formData.ingredient = { name: ingredientName };
                 }
                 return true;
-                
+
             case 2:
                 // Validate product selection
                 if (document.getElementById('product_existing').checked) {
@@ -669,12 +669,12 @@
                     formData.product = { name: brandName };
                 }
                 return true;
-                
+
             case 3:
                 // Validate package configuration
                 const packageSize = document.getElementById('package_size').value;
                 const quantity = document.getElementById('quantity').value;
-                
+
                 if (packageSize === 'custom') {
                     const customSize = document.getElementById('custom_package_size').value.trim();
                     if (!customSize) {
@@ -682,18 +682,18 @@
                         return false;
                     }
                 }
-                
+
                 if (!quantity || quantity < 1) {
                     alert('{{ _("Please enter the number of units per package") }}');
                     return false;
                 }
-                
-                formData.package = { 
+
+                formData.package = {
                     size: packageSize === 'custom' ? document.getElementById('custom_package_size').value : packageSize,
-                    quantity: quantity 
+                    quantity: quantity
                 };
                 return true;
-                
+
             default:
                 return true;
         }
@@ -702,13 +702,13 @@
     function updateReviewSection() {
         // Update review display
         document.getElementById('review_ingredient').textContent = formData.ingredient?.name || '-';
-        document.getElementById('review_product').textContent = formData.product?.name || 
+        document.getElementById('review_product').textContent = formData.product?.name ||
             document.getElementById('brand_name')?.value || '-';
-        document.getElementById('review_package').textContent = 
+        document.getElementById('review_package').textContent =
             `${formData.package?.size || '-'} (${formData.package?.quantity || '-'} units)`;
-        
+
         const isOtc = document.getElementById('is_otc').checked;
-        document.getElementById('review_prescription').textContent = 
+        document.getElementById('review_order').textContent =
             isOtc ? '{{ _("No (OTC)") }}' : '{{ _("Yes") }}';
     }
 
@@ -716,21 +716,21 @@
         if (!validateStep(currentStep)) {
             return;
         }
-        
+
         if (currentStep < totalSteps) {
             // Hide current section
             document.getElementById(`section-${currentStep}`).style.display = 'none';
             document.getElementById(`step-${currentStep}`).classList.remove('active');
             document.getElementById(`step-${currentStep}`).classList.add('completed');
-            
+
             // Show next section
             currentStep++;
             document.getElementById(`section-${currentStep}`).style.display = 'block';
             document.getElementById(`step-${currentStep}`).classList.add('active');
-            
+
             // Update buttons
             document.getElementById('prevBtn').style.display = 'inline-block';
-            
+
             if (currentStep === totalSteps) {
                 document.getElementById('nextBtn').style.display = 'none';
                 document.getElementById('submitBtn').style.display = 'inline-block';
@@ -744,18 +744,18 @@
             // Hide current section
             document.getElementById(`section-${currentStep}`).style.display = 'none';
             document.getElementById(`step-${currentStep}`).classList.remove('active');
-            
+
             // Show previous section
             currentStep--;
             document.getElementById(`section-${currentStep}`).style.display = 'block';
             document.getElementById(`step-${currentStep}`).classList.remove('completed');
             document.getElementById(`step-${currentStep}`).classList.add('active');
-            
+
             // Update buttons
             if (currentStep === 1) {
                 document.getElementById('prevBtn').style.display = 'none';
             }
-            
+
             document.getElementById('nextBtn').style.display = 'inline-block';
             document.getElementById('submitBtn').style.display = 'none';
         }

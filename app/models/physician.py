@@ -38,12 +38,12 @@ class Physician(db.Model):
     # Additional notes
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
-    # PDF Template for prescriptions
+    # PDF Template for orders
     pdf_template_id: Mapped[Optional[int]] = mapped_column(
         Integer, 
         ForeignKey("pdf_templates.id", ondelete="SET NULL"),
         nullable=True,
-        comment="PDF template to use for this physician's prescriptions"
+        comment="PDF template to use for this physician's orders"
     )
 
     # Relationships

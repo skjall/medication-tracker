@@ -102,7 +102,7 @@
                             </a>
                         {% endif %}
                         {% if visit.physician and visit.physician.pdf_template %}
-                            <a href="{{ url_for('orders.prescription', id=order.id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <a href="{{ url_for('orders.order_pdf', id=order.id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
                                 <i class="fas fa-file-pdf me-1"></i>{{ _('Print PDF') }}
                             </a>
                         {% else %}
@@ -383,7 +383,7 @@
 
                     <div class="mb-3">
                         <label for="itemNotes" class="form-label">{{ _('Notes (optional)') }}</label>
-                        <textarea class="form-control" id="itemNotes" name="notes" rows="2" placeholder="{{ _('e.g., Doctor modified prescription, pharmacy substitution, etc.') }}"></textarea>
+                        <textarea class="form-control" id="itemNotes" name="notes" rows="2" placeholder="{{ _('e.g., Doctor modified order, pharmacy substitution, etc.') }}"></textarea>
                     </div>
 
                     <div class="form-check">
