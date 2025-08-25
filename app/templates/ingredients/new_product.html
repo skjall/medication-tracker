@@ -50,6 +50,8 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <input type="text" class="form-control mb-2" name="strength"
+                                           pattern="^[0-9]+([\.\,][0-9]+)?$"
+                                           title="{{ _('Please enter a valid number (e.g., 500 or 1.25)') }}"
                                            placeholder="{{ _('Strength (e.g., 400)') }}">
                                 </div>
                                 <div class="col-md-6">
@@ -233,6 +235,43 @@ document.addEventListener('DOMContentLoaded', function() {
             physicianSelect.prop('disabled', false);
         }
     });
+
+    // Add real-time validation for strength field
+    const strengthInput = document.querySelector('input[name="strength"]');
+
+    if (strengthInput) {
+        strengthInput.addEventListener('input', function() {
+            const value = this.value.trim();
+
+            if (value === '') {
+                // Empty is valid (optional field)
+                this.classList.remove('is-invalid');
+                this.classList.remove('is-valid');
+                return;
+            }
+
+            // Allow numbers with dot or comma as decimal separator
+            const pattern = /^[0-9]+([\.,][0-9]+)?$/;
+
+            if (pattern.test(value)) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            }
+        });
+
+        // Replace comma with dot before submitting
+        const form = strengthInput.closest('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (strengthInput.value) {
+                    strengthInput.value = strengthInput.value.replace(',', '.');
+                }
+            });
+        }
+    }
 });
 </script>
 {% endblock %}

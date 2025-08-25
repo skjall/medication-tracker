@@ -6,13 +6,14 @@ This represents the actual pharmaceutical substance, independent of brand or man
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import DateTime, Integer, String, Text, UniqueConstraint, ForeignKey
+from sqlalchemy import Boolean, DateTime, Integer, String, Text, UniqueConstraint, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import db, utcnow
 
 if TYPE_CHECKING:
     from .medication_product import MedicationProduct
+    from .schedule import MedicationSchedule
 
 
 class ActiveIngredient(db.Model):
@@ -36,6 +37,15 @@ class ActiveIngredient(db.Model):
             name="uq_ingredient_name_strength_form",
         ),
     )
+    
+    def __init__(self, **kwargs):
+        """Initialize ingredient and set auto_deduction_enabled_at if needed."""
+        super().__init__(**kwargs)
+        
+        # If auto_deduction is enabled on creation, set the enabled_at timestamp
+        # This prevents retroactive deductions for periods before the ingredient was added
+        if self.auto_deduction_enabled and self.auto_deduction_enabled_at is None:
+            self.auto_deduction_enabled_at = utcnow()
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
@@ -81,6 +91,36 @@ class ActiveIngredient(db.Model):
         nullable=True,
         comment="Default product to prefer when multiple options exist"
     )
+    
+    # Auto-deduction settings
+    auto_deduction_enabled: Mapped[bool] = mapped_column(
+        Boolean, 
+        default=True,
+        nullable=False,
+        comment="Enable automatic inventory deduction for scheduled doses"
+    )
+    
+    # Track when auto deduction was enabled to prevent retroactive deductions
+    auto_deduction_enabled_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, 
+        nullable=True,
+        comment="UTC timestamp when auto-deduction was last enabled"
+    )
+    
+    # Inventory thresholds
+    min_threshold: Mapped[int] = mapped_column(
+        Integer, 
+        default=0, 
+        nullable=False,
+        comment="Minimum inventory level before warning"
+    )
+    
+    safety_margin_days: Mapped[int] = mapped_column(
+        Integer, 
+        default=30,
+        nullable=False, 
+        comment="Extra days to add when calculating needs"
+    )
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
@@ -103,6 +143,13 @@ class ActiveIngredient(db.Model):
         "MedicationProduct",
         foreign_keys=[default_product_id],
         post_update=True  # Avoid circular dependency issues
+    )
+    
+    # Medication schedules
+    schedules: Mapped[list["MedicationSchedule"]] = relationship(
+        "MedicationSchedule", 
+        back_populates="active_ingredient", 
+        cascade="all, delete-orphan"
     )
 
     def __repr__(self):
@@ -152,3 +199,36 @@ class ActiveIngredient(db.Model):
             if product.id != exclude_product_id and product.aut_idem:
                 substitutable.append(product)
         return substitutable
+    
+    @property
+    def daily_usage(self) -> float:
+        """Calculate daily usage based on schedules."""
+        if not self.schedules:
+            return 0.0
+        return sum(schedule.calculate_daily_usage() for schedule in self.schedules)
+    
+    @property
+    def total_inventory_count(self) -> float:
+        """Get total inventory across all products."""
+        total = 0
+        for product in self.products:
+            total += product.total_inventory_count
+        return total
+    
+    @property
+    def days_remaining(self) -> Optional[float]:
+        """Calculate how many days of medication remain based on current inventory."""
+        if self.daily_usage == 0:
+            return None
+        total_count = self.total_inventory_count
+        if total_count == 0:
+            return None
+        return total_count / self.daily_usage
+    
+    @property
+    def depletion_date(self) -> Optional[datetime]:
+        """Calculate the date when medication will run out."""
+        from datetime import timedelta
+        if self.days_remaining is None:
+            return None
+        return utcnow() + timedelta(days=self.days_remaining)

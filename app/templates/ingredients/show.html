@@ -137,7 +137,7 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <a href="{{ url_for('ingredients.edit_product', id=product.id) }}" 
-                                       class="btn btn-sm btn-outline-secondary" title="{{ _('Edit') }}">
+                                       class="btn btn-sm btn-outline-primary" title="{{ _('Edit') }}">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     
@@ -182,6 +182,71 @@
     </div>
     
     <div class="col-lg-4">
+        <!-- Auto-Deduction Settings -->
+        <div class="card mb-4">
+            <div class="card-header {% if ingredient.auto_deduction_enabled %}bg-success{% else %}bg-secondary{% endif %} text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>{{ _('Auto-Deduction') }}
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>{{ _('Status') }}:</span>
+                    <span class="badge {% if ingredient.auto_deduction_enabled %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if ingredient.auto_deduction_enabled %}
+                            <i class="fas fa-check-circle me-1"></i>{{ _('Enabled') }}
+                        {% else %}
+                            <i class="fas fa-times-circle me-1"></i>{{ _('Disabled') }}
+                        {% endif %}
+                    </span>
+                </div>
+                
+                {% if ingredient.auto_deduction_enabled and ingredient.auto_deduction_enabled_at %}
+                <div class="text-muted small mb-3">
+                    {{ _('Enabled since') }}: {{ format_datetime(ingredient.auto_deduction_enabled_at) }}
+                </div>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('schedules.toggle_auto_deduction_ingredient', ingredient_id=ingredient.id) }}">
+                    <button type="submit" class="btn btn-sm {% if ingredient.auto_deduction_enabled %}btn-outline-danger{% else %}btn-outline-success{% endif %} w-100">
+                        {% if ingredient.auto_deduction_enabled %}
+                            <i class="fas fa-stop me-1"></i>{{ _('Disable Auto-Deduction') }}
+                        {% else %}
+                            <i class="fas fa-play me-1"></i>{{ _('Enable Auto-Deduction') }}
+                        {% endif %}
+                    </button>
+                </form>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>{{ _('Schedules') }}:</span>
+                    <span class="badge bg-primary">{{ ingredient.schedules|length }}</span>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('schedules.index_ingredient', ingredient_id=ingredient.id) }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-calendar-alt me-1"></i>{{ _('Manage Schedules') }}
+                    </a>
+                    <a href="{{ url_for('schedules.new_ingredient', ingredient_id=ingredient.id) }}" 
+                       class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-plus me-1"></i>{{ _('Add Schedule') }}
+                    </a>
+                </div>
+                
+                {% if ingredient.schedules %}
+                <hr>
+                <div class="small text-muted">
+                    <strong>{{ _('Daily Usage') }}:</strong> {{ ingredient.daily_usage }} {{ _('units/day') }}
+                    {% if ingredient.days_remaining %}
+                    <br><strong>{{ _('Days Remaining') }}:</strong> {{ ingredient.days_remaining|round(0)|int }}
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
         <!-- Substitution Info -->
         {% if substitutable %}
         <div class="card mb-4">

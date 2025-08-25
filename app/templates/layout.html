@@ -38,9 +38,7 @@
                             <i class="fas fa-pills me-1"></i>{{ _('Medications') }}
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('ingredients.index') }}">
-                                <i class="fas fa-flask me-1"></i>{{ _('All Medications') }}
-                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('ingredients.index') }}">{{ _('All Medications') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('inventory.depletion') }}">{{ _('Depletion Forecast') }}</a></li>
                         </ul>
@@ -54,7 +52,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('inventory.low') }}">{{ _('Low Stock') }}</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('inventory.depletion') }}">{{ _('Depletion Forecast') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('scanner.index') }}"><i class="fas fa-qrcode me-1"></i>{{ _('Scanner') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('scanner.index') }}">{{ _('Scanner') }}</a></li>
                         </ul>
                     </li>
 
@@ -94,13 +92,10 @@
                             <li><a class="dropdown-item" href="{{ url_for('system.status') }}">{{ _('System Status') }}</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('settings.system') }}">{{ _('System Settings') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('pdf_mapper.index') }}">
-                                <i class="fas fa-file-pdf me-1"></i>{{ _('PDF Form Templates') }}
-                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('pdf_mapper.index') }}">{{ _('PDF Form Templates') }}</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('settings.physician_visits') }}">{{ _('Visit Planning') }}</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('settings.data_management') }}">{{ _('Data Management') }}</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('system.migrations') }}">{{ _('Database Updates') }}</a></li>
-                            <!-- <li><a class="dropdown-item" href="{{ url_for('prescriptions.index') }}">Prescription Templates</a></li> -->
 
                         </ul>
                     </li>

@@ -19,6 +19,7 @@ from flask_babel import gettext as _
 
 # Local application imports
 from models import (
+    PDFTemplate,
     Physician,
     db,
 )
@@ -53,11 +54,13 @@ def new():
         email = request.form.get("email", "").strip()
         address = request.form.get("address", "").strip()
         notes = request.form.get("notes", "").strip()
+        pdf_template_id = request.form.get("pdf_template_id", "").strip()
 
         # Validate required fields
         if not name:
             flash(_("Physician name is required."), "error")
-            return render_template("physicians/new.html")
+            pdf_templates = PDFTemplate.query.order_by(PDFTemplate.name).all()
+            return render_template("physicians/new.html", pdf_templates=pdf_templates)
 
         try:
             # Create new physician
@@ -68,6 +71,7 @@ def new():
                 email=email if email else None,
                 address=address if address else None,
                 notes=notes if notes else None,
+                pdf_template_id=int(pdf_template_id) if pdf_template_id else None,
             )
 
             db.session.add(physician)
@@ -82,8 +86,11 @@ def new():
             db.session.rollback()
             flash(_("Error creating physician: {}").format(str(e)), "error")
             logger.error(f"Error creating physician: {str(e)}")
+            pdf_templates = PDFTemplate.query.order_by(PDFTemplate.name).all()
+            return render_template("physicians/new.html", pdf_templates=pdf_templates)
 
-    return render_template("physicians/new.html")
+    pdf_templates = PDFTemplate.query.order_by(PDFTemplate.name).all()
+    return render_template("physicians/new.html", pdf_templates=pdf_templates)
 
 
 @physician_bp.route("/<int:physician_id>")
@@ -111,11 +118,13 @@ def edit(physician_id):
         email = request.form.get("email", "").strip()
         address = request.form.get("address", "").strip()
         notes = request.form.get("notes", "").strip()
+        pdf_template_id = request.form.get("pdf_template_id", "").strip()
 
         # Validate required fields
         if not name:
             flash(_("Physician name is required."), "error")
-            return render_template("physicians/edit.html", physician=physician)
+            pdf_templates = PDFTemplate.query.order_by(PDFTemplate.name).all()
+            return render_template("physicians/edit.html", physician=physician, pdf_templates=pdf_templates)
 
         try:
             # Update physician
@@ -125,6 +134,7 @@ def edit(physician_id):
             physician.email = email if email else None
             physician.address = address if address else None
             physician.notes = notes if notes else None
+            physician.pdf_template_id = int(pdf_template_id) if pdf_template_id else None
 
             db.session.commit()
 
@@ -137,8 +147,11 @@ def edit(physician_id):
             db.session.rollback()
             flash(_("Error updating physician: {}").format(str(e)), "error")
             logger.error(f"Error updating physician: {str(e)}")
+            pdf_templates = PDFTemplate.query.order_by(PDFTemplate.name).all()
+            return render_template("physicians/edit.html", physician=physician, pdf_templates=pdf_templates)
 
-    return render_template("physicians/edit.html", physician=physician)
+    pdf_templates = PDFTemplate.query.order_by(PDFTemplate.name).all()
+    return render_template("physicians/edit.html", physician=physician, pdf_templates=pdf_templates)
 
 
 @physician_bp.route("/<int:physician_id>/delete", methods=["POST"])

@@ -1,0 +1,203 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Edit Schedule') }} - {{ ingredient.full_name }} - {{ _('Medication Tracker') }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-calendar-edit me-2"></i>{{ _('Edit Schedule for') }} {{ ingredient.full_name }}
+    </h1>
+    <a href="{{ url_for('schedules.index_ingredient', ingredient_id=ingredient.id) }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Schedules') }}
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ _('Schedule Information') }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="scheduleForm">
+                    <!-- Schedule Type -->
+                    <div class="mb-4">
+                        <label class="form-label">{{ _('Schedule Type') }} <span class="text-danger">*</span></label>
+                        <div class="btn-group d-flex" role="group">
+                            <input type="radio" class="btn-check" name="schedule_type" id="daily" value="daily" 
+                                   {% if schedule.schedule_type.value == 'daily' %}checked{% endif %}>
+                            <label class="btn btn-outline-primary" for="daily">
+                                <i class="fas fa-calendar-day me-1"></i>{{ _('Daily') }}
+                            </label>
+
+                            <input type="radio" class="btn-check" name="schedule_type" id="interval" value="interval"
+                                   {% if schedule.schedule_type.value == 'interval' %}checked{% endif %}>
+                            <label class="btn btn-outline-primary" for="interval">
+                                <i class="fas fa-calendar-week me-1"></i>{{ _('Interval') }}
+                            </label>
+
+                            <input type="radio" class="btn-check" name="schedule_type" id="weekdays" value="weekdays"
+                                   {% if schedule.schedule_type.value == 'weekdays' %}checked{% endif %}>
+                            <label class="btn btn-outline-primary" for="weekdays">
+                                <i class="fas fa-calendar-alt me-1"></i>{{ _('Specific Weekdays') }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Interval Days (hidden by default) -->
+                    <div class="mb-4" id="intervalDaysSection" style="{% if schedule.schedule_type.value != 'interval' %}display: none;{% endif %}">
+                        <label for="interval_days" class="form-label">{{ _('Interval (days)') }} <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="interval_days" name="interval_days" 
+                               min="1" value="{{ schedule.interval_days }}">
+                        <small class="form-text text-muted">{{ _('Take medication every X days') }}</small>
+                    </div>
+
+                    <!-- Weekdays Selection (hidden by default) -->
+                    <div class="mb-4" id="weekdaysSection" style="{% if schedule.schedule_type.value != 'weekdays' %}display: none;{% endif %}">
+                        <label class="form-label">{{ _('Select Days') }} <span class="text-danger">*</span></label>
+                        <div class="btn-group d-flex flex-wrap" role="group">
+                            {% set days = [
+                                (_('Monday'), 0),
+                                (_('Tuesday'), 1),
+                                (_('Wednesday'), 2),
+                                (_('Thursday'), 3),
+                                (_('Friday'), 4),
+                                (_('Saturday'), 5),
+                                (_('Sunday'), 6)
+                            ] %}
+                            {% for day_name, day_value in days %}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="weekdays[]" 
+                                       id="day_{{ day_value }}" value="{{ day_value }}"
+                                       {% if day_value in schedule.formatted_weekdays %}checked{% endif %}>
+                                <label class="form-check-label" for="day_{{ day_value }}">{{ day_name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Units per Dose -->
+                    <div class="mb-4">
+                        <label for="units_per_dose" class="form-label">{{ _('Units per Dose') }} <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="units_per_dose" name="units_per_dose" 
+                               min="0.5" step="0.5" value="{{ schedule.units_per_dose }}" required>
+                        <small class="form-text text-muted">{{ _('Number of units (pills, tablets, etc.) to take per dose') }}</small>
+                    </div>
+
+                    <!-- Times of Day -->
+                    <div class="mb-4">
+                        <label class="form-label">{{ _('Times of Day') }} <span class="text-danger">*</span></label>
+                        <div id="timesContainer">
+                            <!-- Times will be added here dynamically -->
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-success mt-2" id="addTimeBtn">
+                            <i class="fas fa-plus me-1"></i>{{ _('Add Time') }}
+                        </button>
+                        <small class="form-text text-muted d-block mt-2">
+                            {{ _('Add at least one time when the medication should be taken') }}
+                        </small>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('schedules.index_ingredient', ingredient_id=ingredient.id) }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>{{ _('Update Schedule') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Help Card -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>{{ _('Schedule Types') }}</h6>
+            </div>
+            <div class="card-body">
+                <h6>{{ _('Daily') }}</h6>
+                <p class="small">{{ _('Take medication every day at specified times') }}</p>
+                
+                <h6>{{ _('Interval') }}</h6>
+                <p class="small">{{ _('Take medication every X days (e.g., every 2 days, every 3 days)') }}</p>
+                
+                <h6>{{ _('Specific Weekdays') }}</h6>
+                <p class="small">{{ _('Take medication only on selected days of the week') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Schedule type change handler
+document.querySelectorAll('input[name="schedule_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.getElementById('intervalDaysSection').style.display = 'none';
+        document.getElementById('weekdaysSection').style.display = 'none';
+        
+        if (this.value === 'interval') {
+            document.getElementById('intervalDaysSection').style.display = 'block';
+        } else if (this.value === 'weekdays') {
+            document.getElementById('weekdaysSection').style.display = 'block';
+        }
+    });
+});
+
+// Times management
+let timeCount = 0;
+
+function addTimeField(value = '') {
+    timeCount++;
+    const container = document.getElementById('timesContainer');
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    div.innerHTML = `
+        <input type="time" class="form-control" name="times_of_day[]" value="${value}" required>
+        <button type="button" class="btn btn-outline-danger" onclick="removeTimeField(this)">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+function removeTimeField(button) {
+    button.parentElement.remove();
+}
+
+document.getElementById('addTimeBtn').addEventListener('click', () => addTimeField());
+
+// Load existing times
+{% for time in schedule.formatted_times %}
+    addTimeField('{{ time }}');
+{% endfor %}
+
+// If no times exist, add one default field
+if (document.querySelectorAll('input[name="times_of_day[]"]').length === 0) {
+    addTimeField('08:00');
+}
+
+// Form validation
+document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+    const times = document.querySelectorAll('input[name="times_of_day[]"]');
+    if (times.length === 0) {
+        e.preventDefault();
+        alert('{{ _("Please add at least one time for the medication") }}');
+        return false;
+    }
+    
+    const scheduleType = document.querySelector('input[name="schedule_type"]:checked').value;
+    if (scheduleType === 'weekdays') {
+        const selectedDays = document.querySelectorAll('input[name="weekdays[]"]:checked');
+        if (selectedDays.length === 0) {
+            e.preventDefault();
+            alert('{{ _("Please select at least one weekday") }}');
+            return false;
+        }
+    }
+});
+</script>
+{% endblock %}

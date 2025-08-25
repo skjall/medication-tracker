@@ -17,7 +17,6 @@ from .inventory import Inventory, InventoryLog
 from .visit import PhysicianVisit, Order, OrderItem
 from .schedule import ScheduleType, MedicationSchedule
 from .settings import Settings
-from .prescription import PrescriptionTemplate
 from .scanner import MedicationPackage, ScannedItem, PackageInventory
 from .pdf_template import PDFTemplate
 
@@ -46,7 +45,6 @@ __all__ = [
     "ScheduleType",
     "MedicationSchedule",
     "Settings",
-    "PrescriptionTemplate",
     "MedicationPackage",
     "ScannedItem",
     "PackageInventory",

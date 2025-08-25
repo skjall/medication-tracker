@@ -101,9 +101,15 @@
                                 <i class="fas fa-pen-to-square me-1"></i>{{ _('Edit') }}
                             </a>
                         {% endif %}
-                        <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                            <i class="fas fa-print me-1"></i>{{ _('Print') }}
-                        </a>
+                        {% if visit.physician and visit.physician.pdf_template %}
+                            <a href="{{ url_for('orders.prescription', id=order.id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-file-pdf me-1"></i>{{ _('Print PDF') }}
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-print me-1"></i>{{ _('Print') }}
+                            </a>
+                        {% endif %}
                         {% if order.status != 'fulfilled' %}
                             <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#fulfillModal">
                                 <i class="fas fa-check me-1"></i>{{ _('Fulfill') }}
@@ -582,7 +588,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <span>
                                             <i class="fas fa-box me-2"></i>${pkg.serial_number}
                                             <span class="badge bg-${pkg.status === 'sealed' ? 'success' : 'warning'} ms-2">${pkg.status}</span>
-                                            <span class="badge bg-secondary ms-1">${pkg.units} {{ _("units") }}</span>
+                                            <span class="badge bg-secondary ms-1">{{ _("%(count)s units")|replace('%(count)s', '${pkg.units}') }}</span>
                                             <small class="text-muted ms-2">{{ _("Scanned") }}: ${pkg.scanned_date}</small>
                                         </span>
                                         <form method="POST" action="/orders/item/${itemId}/link_package/${pkg.id}" class="d-inline">

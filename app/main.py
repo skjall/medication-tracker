@@ -27,7 +27,6 @@ from models import (  # noqa: E402
     Physician,  # noqa: F401 - needed for db.create_all()
     OrderItem,  # noqa: F401 - needed for db.create_all()
     ScheduleType,  # noqa: F401 - needed for db.create_all()
-    PrescriptionTemplate,  # noqa: F401 - needed for db.create_all()
     MedicationPackage,  # noqa: F401 - needed for db.create_all()
     ScannedItem,  # noqa: F401 - needed for db.create_all()
     PackageInventory  # noqa: F401 - needed for db.create_all()
@@ -109,6 +108,10 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
     # Setup Jinja configuration
     setup_jinja(app)
+    
+    # Register timezone template filters
+    from template_filters import register_filters
+    register_filters(app)
 
     # Home route
     @app.route("/test_translation")

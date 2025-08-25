@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import List, Optional, TYPE_CHECKING
 
 # Third-party imports
-from sqlalchemy import String, Text, Integer, DateTime
+from sqlalchemy import String, Text, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # Local application imports
@@ -16,6 +16,7 @@ from .base import db, utcnow
 if TYPE_CHECKING:
     from .medication import Medication
     from .visit import PhysicianVisit
+    from .pdf_template import PDFTemplate
 
 
 class Physician(db.Model):
@@ -36,6 +37,14 @@ class Physician(db.Model):
 
     # Additional notes
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    
+    # PDF Template for prescriptions
+    pdf_template_id: Mapped[Optional[int]] = mapped_column(
+        Integer, 
+        ForeignKey("pdf_templates.id", ondelete="SET NULL"),
+        nullable=True,
+        comment="PDF template to use for this physician's prescriptions"
+    )
 
     # Relationships
     medications: Mapped[List["Medication"]] = relationship(
@@ -43,6 +52,9 @@ class Physician(db.Model):
     )
     visits: Mapped[List["PhysicianVisit"]] = relationship(
         "PhysicianVisit", back_populates="physician", cascade="save-update"
+    )
+    pdf_template: Mapped[Optional["PDFTemplate"]] = relationship(
+        "PDFTemplate", foreign_keys=[pdf_template_id]
     )
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

@@ -13,7 +13,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # Local application imports
 from .base import db, utcnow
-from utils import ensure_timezone_utc
 
 if TYPE_CHECKING:
     from .inventory import Inventory
@@ -34,6 +33,16 @@ class Medication(db.Model):
     """
 
     __tablename__ = "medications"
+    
+    def __init__(self, **kwargs):
+        """Initialize medication and set auto_deduction_enabled_at if needed."""
+        super().__init__(**kwargs)
+        
+        # If auto_deduction is enabled on creation, set the enabled_at timestamp
+        # This prevents retroactive deductions for periods before the medication was added
+        if self.auto_deduction_enabled and self.auto_deduction_enabled_at is None:
+            from .base import utcnow
+            self.auto_deduction_enabled_at = utcnow()
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
@@ -84,6 +93,13 @@ class Medication(db.Model):
 
     # Auto deduction enabled flag
     auto_deduction_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    # Track when auto deduction was enabled to prevent retroactive deductions before that date
+    auto_deduction_enabled_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, 
+        nullable=True,
+        comment="UTC timestamp when auto-deduction was last enabled"
+    )
     
     # Inventory mode for hybrid system
     inventory_mode: Mapped[Optional[str]] = mapped_column(
@@ -357,6 +373,7 @@ class Medication(db.Model):
             Tuple of (deduction_made, amount_deducted)
         """
         # Ensure current_time is timezone-aware
+        from utils import ensure_timezone_utc
         current_time = ensure_timezone_utc(current_time)
 
         if not self.auto_deduction_enabled:
@@ -405,6 +422,7 @@ class Medication(db.Model):
         """
         # Ensure visit_date is timezone-aware
         from models import Settings
+        from utils import ensure_timezone_utc
 
         visit_date = ensure_timezone_utc(visit_date)
         now = datetime.now(timezone.utc)
@@ -476,6 +494,7 @@ class Medication(db.Model):
             The number of units needed
         """
         # Ensure dates are timezone-aware
+        from utils import ensure_timezone_utc
         start_date = ensure_timezone_utc(start_date)
         end_date = ensure_timezone_utc(end_date)
         # Calculate days in period

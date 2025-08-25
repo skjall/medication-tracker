@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Schedules for') }} {{ ingredient.full_name }} - {{ _('Medication Tracker') }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-calendar-alt me-2"></i>{{ _('Medication Schedules') }}: {{ ingredient.full_name }}
+    </h1>
+    <div>
+        <a href="{{ url_for('schedules.new_ingredient', ingredient_id=ingredient.id) }}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i>{{ _('Add Schedule') }}
+        </a>
+        <a href="{{ url_for('ingredients.show', id=ingredient.id) }}" class="btn btn-outline-secondary ms-2">
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Ingredient') }}
+        </a>
+    </div>
+</div>
+
+<!-- Auto-Deduction Status -->
+<div class="alert {% if ingredient.auto_deduction_enabled %}alert-success{% else %}alert-warning{% endif %} mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <i class="fas {% if ingredient.auto_deduction_enabled %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %} me-2"></i>
+            <strong>{{ _('Automatic Deduction') }}:</strong>
+            {% if ingredient.auto_deduction_enabled %}
+                {{ _('Enabled') }}
+                {% if ingredient.auto_deduction_enabled_at %}
+                    <small class="text-muted">({{ _('since') }} {{ format_datetime(ingredient.auto_deduction_enabled_at) }})</small>
+                {% endif %}
+            {% else %}
+                {{ _('Disabled') }}
+            {% endif %}
+        </div>
+        <form method="POST" action="{{ url_for('schedules.toggle_auto_deduction_ingredient', ingredient_id=ingredient.id) }}">
+            <button type="submit" class="btn btn-sm {% if ingredient.auto_deduction_enabled %}btn-outline-danger{% else %}btn-success{% endif %}">
+                {% if ingredient.auto_deduction_enabled %}
+                    <i class="fas fa-stop me-1"></i>{{ _('Disable') }}
+                {% else %}
+                    <i class="fas fa-play me-1"></i>{{ _('Enable') }}
+                {% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Daily Usage Summary -->
+{% if schedules %}
+<div class="card border-primary mb-4">
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h3 class="text-primary mb-0">{{ schedules|length }}</h3>
+                <p class="text-muted">{{ _('Active Schedules') }}</p>
+            </div>
+            <div class="col-md-4">
+                <h3 class="text-info mb-0">{{ ingredient.daily_usage }}</h3>
+                <p class="text-muted">{{ _('Units per Day') }}</p>
+            </div>
+            <div class="col-md-4">
+                <h3 class="text-success mb-0">
+                    {% if ingredient.days_remaining %}
+                        {{ ingredient.days_remaining|round(0)|int }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </h3>
+                <p class="text-muted">{{ _('Days Remaining') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Schedules List -->
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">{{ _('Medication Schedules') }}</h5>
+    </div>
+    {% if schedules %}
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>{{ _('Schedule Type') }}</th>
+                    <th>{{ _('Times') }}</th>
+                    <th>{{ _('Units per Dose') }}</th>
+                    <th>{{ _('Daily Usage') }}</th>
+                    <th>{{ _('Last Deduction') }}</th>
+                    <th>{{ _('Actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for schedule in schedules %}
+                <tr>
+                    <td>
+                        {% if schedule.schedule_type.value == 'daily' %}
+                            <span class="badge bg-success">{{ _('Daily') }}</span>
+                        {% elif schedule.schedule_type.value == 'interval' %}
+                            <span class="badge bg-info">{{ _('Every') }} {{ schedule.interval_days }} {{ _('days') }}</span>
+                        {% elif schedule.schedule_type.value == 'weekdays' %}
+                            <span class="badge bg-warning">{{ _('Weekdays') }}</span>
+                            <br>
+                            <small>
+                                {% set day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] %}
+                                {% for day in schedule.formatted_weekdays %}
+                                    {{ _(day_names[day]) }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% for time in schedule.formatted_times %}
+                            <span class="badge bg-secondary">{{ time }}</span>
+                        {% endfor %}
+                    </td>
+                    <td>{{ schedule.units_per_dose }}</td>
+                    <td>
+                        <strong>{{ schedule.calculate_daily_usage() }}</strong> {{ _('units/day') }}
+                    </td>
+                    <td>
+                        {% if schedule.last_deduction %}
+                            {{ format_datetime(schedule.last_deduction) }}
+                        {% else %}
+                            <span class="text-muted">{{ _('Never') }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{{ url_for('schedules.edit', id=schedule.id) }}" 
+                               class="btn btn-outline-primary" title="{{ _('Edit') }}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" title="{{ _('Delete') }}"
+                                    onclick="if(confirm('{{ _('Are you sure you want to delete this schedule?') }}')) { document.getElementById('delete-form-{{ schedule.id }}').submit(); }">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <form method="POST" action="{{ url_for('schedules.delete', id=schedule.id) }}" 
+                              id="delete-form-{{ schedule.id }}" class="d-none">
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card-body">
+        <p class="text-muted mb-3">{{ _('No schedules defined yet. Add a schedule to enable automatic deduction.') }}</p>
+        <a href="{{ url_for('schedules.new_ingredient', ingredient_id=ingredient.id) }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>{{ _('Add First Schedule') }}
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

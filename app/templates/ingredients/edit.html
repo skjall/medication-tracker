@@ -15,44 +15,47 @@
                 <form method="POST">
                     <div class="mb-3">
                         <label for="name" class="form-label">{{ _('Name') }} <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="name" name="name" 
+                        <input type="text" class="form-control" id="name" name="name"
                                value="{{ ingredient.name }}" required>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="strength" class="form-label">{{ _('Strength') }}</label>
-                            <input type="text" class="form-control" id="strength" name="strength" 
+                            <input type="text" class="form-control" id="strength" name="strength"
                                    value="{{ ingredient.strength or '' }}"
+                                   pattern="^[0-9]+([\.\,][0-9]+)?$"
+                                   title="{{ _('Please enter a valid number (e.g., 500 or 1.25)') }}"
                                    placeholder="{{ _('e.g., 500') }}">
+                            <div class="invalid-feedback">{{ _('Please enter a valid number') }}</div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="strength_unit" class="form-label">{{ _('Strength Unit') }}</label>
-                            <input type="text" class="form-control" id="strength_unit" name="strength_unit" 
+                            <input type="text" class="form-control" id="strength_unit" name="strength_unit"
                                    value="{{ ingredient.strength_unit or '' }}"
                                    placeholder="{{ _('e.g., mg') }}">
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="form" class="form-label">{{ _('Form') }}</label>
-                        <input type="text" class="form-control" id="form" name="form" 
+                        <input type="text" class="form-control" id="form" name="form"
                                value="{{ ingredient.form or '' }}"
                                placeholder="{{ _('e.g., Tablet, Capsule, Syrup') }}">
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="atc_code" class="form-label">{{ _('ATC Code') }}</label>
-                        <input type="text" class="form-control" id="atc_code" name="atc_code" 
+                        <input type="text" class="form-control" id="atc_code" name="atc_code"
                                value="{{ ingredient.atc_code or '' }}"
                                placeholder="{{ _('e.g., N02BE01') }}">
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="notes" class="form-label">{{ _('Notes') }}</label>
                         <textarea class="form-control" id="notes" name="notes" rows="3">{{ ingredient.notes or '' }}</textarea>
                     </div>
-                    
+
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('ingredients.show', id=ingredient.id) }}" class="btn btn-outline-secondary">
                             <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
@@ -66,4 +69,45 @@
         </div>
     </div>
 </div>
+
+<script>
+// Add real-time validation for strength field
+document.addEventListener('DOMContentLoaded', function() {
+    const strengthInput = document.getElementById('strength');
+
+    if (strengthInput) {
+        strengthInput.addEventListener('input', function() {
+            const value = this.value.trim();
+
+            if (value === '') {
+                // Empty is valid (optional field)
+                this.classList.remove('is-invalid');
+                this.classList.remove('is-valid');
+                return;
+            }
+
+            // Allow numbers with dot or comma as decimal separator
+            const pattern = /^[0-9]+([\.,][0-9]+)?$/;
+
+            if (pattern.test(value)) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            }
+        });
+
+        // Replace comma with dot before submitting
+        const form = strengthInput.closest('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (strengthInput.value) {
+                    strengthInput.value = strengthInput.value.replace(',', '.');
+                }
+            });
+        }
+    }
+});
+</script>
 {% endblock %}

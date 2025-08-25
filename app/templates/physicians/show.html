@@ -89,6 +89,19 @@
                     </div>
                 </div>
                 {% endif %}
+
+                <div class="row mb-2">
+                    <div class="col-sm-4"><strong>{{ _('PDF Template') }}:</strong></div>
+                    <div class="col-sm-8">
+                        {% if physician.pdf_template %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-file-pdf me-1"></i>{{ physician.pdf_template.name }}
+                            </span>
+                        {% else %}
+                            <em class="text-muted">{{ _('No template assigned') }}</em>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>

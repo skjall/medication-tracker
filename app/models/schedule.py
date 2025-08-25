@@ -19,6 +19,7 @@ from utils import ensure_timezone_utc
 
 if TYPE_CHECKING:
     from .medication import Medication
+    from .active_ingredient import ActiveIngredient
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -41,7 +42,16 @@ class MedicationSchedule(db.Model):
     __tablename__ = "medication_schedules"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    medication_id: Mapped[int] = mapped_column(Integer, ForeignKey("medications.id"))
+    
+    # Legacy medication link (will be phased out)
+    medication_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("medications.id"), nullable=True
+    )
+    
+    # New active ingredient link (preferred)
+    active_ingredient_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("active_ingredients.id"), nullable=True
+    )
 
     # Schedule type
     schedule_type: Mapped[ScheduleType] = mapped_column(
@@ -64,9 +74,13 @@ class MedicationSchedule(db.Model):
     # Last automatic deduction date/time
     last_deduction: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
-    # Relationship
-    medication: Mapped["Medication"] = relationship(
+    # Relationships
+    medication: Mapped[Optional["Medication"]] = relationship(
         "Medication", back_populates="schedules"
+    )
+    
+    active_ingredient: Mapped[Optional["ActiveIngredient"]] = relationship(
+        "ActiveIngredient", back_populates="schedules"
     )
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

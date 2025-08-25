@@ -167,6 +167,42 @@ label.form-label {
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
+/* Fix for select option readability */
+.form-select option:checked,
+.form-select option:hover,
+.form-select option:focus,
+.form-select option:active {
+  color: white !important;
+  background-color: #2979a9 !important;
+}
+
+/* Ensure dropdown options are readable */
+.form-select option {
+  color: #212529;
+  background-color: white;
+}
+
+/* Custom button group styling for schedule type selector */
+.btn-group .btn-check:checked + .btn-outline-primary,
+.btn-group .btn-outline-primary.active {
+  color: white !important;
+  background-color: #2979a9 !important;
+  border-color: #2979a9 !important;
+}
+
+.btn-group .btn-outline-primary:hover {
+  color: white !important;
+  background-color: #3a8fc5 !important;
+  border-color: #3a8fc5 !important;
+}
+
+/* Remove Bootstrap's default blue for active state */
+.btn-outline-primary {
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #2979a9;
+  --bs-btn-active-border-color: #2979a9;
+}
+
 /* Show text-overflow as ellipsis for longer notes in tables */
 .notes-ellipsis {
   max-width: 200px;

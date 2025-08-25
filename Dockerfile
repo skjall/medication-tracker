@@ -40,7 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   openjdk-21-jre-headless \
   && rm -rf /var/lib/apt/lists/* \
   && pip install --no-cache-dir babel flask-babel \
-  && curl -L https://github.com/crowdin/crowdin-cli/releases/download/4.9.1/crowdin-cli.zip -o /tmp/crowdin-cli.zip \
+  && curl -L https://github.com/crowdin/crowdin-cli/releases/download/4.10.0/crowdin-cli.zip -o /tmp/crowdin-cli.zip \
   && unzip /tmp/crowdin-cli.zip -d /opt/ \
   && rm /tmp/crowdin-cli.zip \
   && CROWDIN_DIR=$(ls -d /opt/*/ | head -n1) \

@@ -61,7 +61,7 @@
                                 <i class="fas fa-eye"></i>
                             </a>
                             <a href="{{ url_for('ingredients.edit', id=stat.ingredient.id) }}" 
-                               class="btn btn-sm btn-outline-secondary" title="{{ _('Edit') }}">
+                               class="btn btn-sm btn-outline-primary" title="{{ _('Edit') }}">
                                 <i class="fas fa-edit"></i>
                             </a>
                             {% if stat.product_count == 0 %}
@@ -129,7 +129,7 @@
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                     <a href="{{ url_for('ingredients.edit_product', id=product.id) }}" 
-                                                       class="btn btn-outline-secondary" title="{{ _('Edit') }}">
+                                                       class="btn btn-outline-primary" title="{{ _('Edit') }}">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                     {% if not product.total_inventory_count or product.total_inventory_count == 0 %}

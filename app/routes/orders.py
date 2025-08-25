@@ -738,19 +738,7 @@ def prescription(id: int):
     """Generate a prescription PDF for the order."""
     order = Order.query.get_or_404(id)
 
-    # Check if there's an active prescription template
-    from models import PrescriptionTemplate
-
-    active_template = PrescriptionTemplate.get_active_template()
-
-    if not active_template:
-        flash(
-            _("No active prescription template found. Please configure a template first."),
-            "warning",
-        )
-        return redirect(url_for("prescriptions.index"))
-
-    # Generate the PDF
+    # Generate the PDF (will use physician's PDF template or fallback to legacy template)
     pdf_path = generate_prescription_pdf(order.id)
 
     if pdf_path:
@@ -760,7 +748,10 @@ def prescription(id: int):
         # Return the file for download
         return send_file(pdf_path, download_name=filename, as_attachment=True)
     else:
-        flash(_("Error generating prescription PDF"), "error")
+        if order.physician_visit and order.physician_visit.physician and order.physician_visit.physician.pdf_template:
+            flash(_("The PDF template file is missing. Please re-upload the template in PDF Forms."), "error")
+        else:
+            flash(_("No PDF template assigned to physician. Please assign a template in physician settings."), "error")
         return redirect(url_for("orders.show", id=id))
 
 
