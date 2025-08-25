@@ -193,13 +193,13 @@
                                 <td>
                                     {% if data.additional_needed > 0 %}
                                         <small>
-                                            {% if data.packages.N1 > 0 %}
+                                            {% if data.packages and data.packages.get('N1', 0) > 0 %}
                                                 N1: {{ data.packages.N1 }}<br>
                                             {% endif %}
-                                            {% if data.packages.N2 > 0 %}
+                                            {% if data.packages and data.packages.get('N2', 0) > 0 %}
                                                 N2: {{ data.packages.N2 }}<br>
                                             {% endif %}
-                                            {% if data.packages.N3 > 0 %}
+                                            {% if data.packages and data.packages.get('N3', 0) > 0 %}
                                                 N3: {{ data.packages.N3 }}
                                             {% endif %}
                                         </small>
