@@ -443,10 +443,12 @@ def scan():
             label = type_labels.get(
                 parsed["national_number_type"], parsed["national_number_type"]
             )
-            error_msg = (
-                f"{label} {parsed['national_number']} not found in database"
+            error_msg = _(
+                "%(label)s %(number)s not found",
+                label=label,
+                number=parsed["national_number"],
             )
-            hint = _("Please add this medication first, then scan again")
+            hint = _("Please add this package.")
         else:
             # Unknown barcode format
             error_msg = _("Unrecognized barcode format")
@@ -592,7 +594,9 @@ def scan():
                             pending_order_item.units_received
                             - pending_order_item.quantity_needed
                         )
-                        fulfillment_message = f"Order fulfilled with {overage} extra units"
+                        fulfillment_message = (
+                            f"Order fulfilled with {overage} extra units"
+                        )
                         pending_order_item.fulfillment_notes = f"Order fulfilled. Received {quantity} units in {package.package_size}. {overage} extra units."
                     else:
                         fulfillment_message = "Order fulfilled exactly"

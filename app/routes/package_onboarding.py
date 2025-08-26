@@ -11,8 +11,9 @@ from models import (
     ActiveIngredient, 
     MedicationProduct, 
     ProductPackage,
-    Medication,
-    Physician
+    Physician,
+    ScannedItem,
+    PackageInventory
 )
 
 bp = Blueprint('package_onboarding', __name__, url_prefix='/onboarding')
@@ -165,36 +166,39 @@ def onboard_package():
                 is_active=True
             )
             db.session.add(package)
+            db.session.flush()  # Need package ID for inventory
         
-        # Step 4: Link to Legacy Medication (for inventory)
-        link_medication = request.form.get('link_medication') == 'on'
-        if link_medication:
-            medication_id = request.form.get('medication_id')
-            if medication_id:
-                medication = Medication.query.get(medication_id)
-                if medication and not product.legacy_medication_id:
-                    product.legacy_medication_id = medication.id
-                    # Also set the medication's default product
-                    if not medication.default_product_id:
-                        medication.default_product_id = product.id
-            else:
-                # Create new legacy medication for inventory tracking
-                medication = Medication(
-                    name=product.display_name,
-                    active_ingredient=ingredient.name,
-                    dosage=ingredient.strength,
-                    unit=ingredient.unit or 'units',
-                    physician_id=product.physician_id,
-                    is_otc=product.is_otc,
-                    default_product_id=product.id,
-                    # Copy package sizes for backwards compatibility
-                    package_size_n1=quantity if package_size == 'N1' else None,
-                    package_size_n2=quantity if package_size == 'N2' else None,
-                    package_size_n3=quantity if package_size == 'N3' else None
+        # Step 4: Add to inventory
+        add_to_inventory = request.form.get('add_to_inventory') == 'on'
+        if add_to_inventory:
+            # Create or update ScannedItem for this package
+            scanned_item = ScannedItem.query.filter_by(
+                serial_number=scanned_data.get('serial', f"{scanned_data['gtin']}_{scanned_data['batch']}_{datetime.now().timestamp()}")
+            ).first()
+            
+            if not scanned_item:
+                scanned_item = ScannedItem(
+                    serial_number=scanned_data.get('serial') or f"{scanned_data['gtin']}_{scanned_data['batch']}_{datetime.now().timestamp()}",
+                    gtin=scanned_data['gtin'],
+                    batch_number=scanned_data['batch'],
+                    expiry_date=datetime.fromisoformat(scanned_data['expiry']) if scanned_data.get('expiry') else None,
+                    national_number=scanned_data['national_number'],
+                    national_number_type=scanned_data['national_number_type'],
+                    product_package_id=package.id,
+                    scanned_at=datetime.utcnow(),
+                    status='active'
                 )
-                db.session.add(medication)
+                db.session.add(scanned_item)
                 db.session.flush()
-                product.legacy_medication_id = medication.id
+            
+            # Create PackageInventory entry for the new package
+            inventory_item = PackageInventory(
+                scanned_item_id=scanned_item.id,
+                current_units=package.quantity,
+                original_units=package.quantity,
+                status='sealed'
+            )
+            db.session.add(inventory_item)
         
         db.session.commit()
         
@@ -215,9 +219,6 @@ def onboard_package():
     # Get all physicians for order settings
     physicians = Physician.query.order_by(Physician.name).all()
     
-    # Get all medications for linking (optional)
-    medications = Medication.query.order_by(Medication.name).all()
-    
     # If we have an ingredient selected in session, get its products
     products = []
     selected_ingredient_id = session.get('onboarding_ingredient_id')
@@ -232,7 +233,6 @@ def onboard_package():
         ingredients=ingredients,
         products=products,
         physicians=physicians,
-        medications=medications,
         selected_ingredient_id=selected_ingredient_id
     )
 
