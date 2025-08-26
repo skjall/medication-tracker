@@ -2,7 +2,7 @@
 Scanner routes for barcode/QR code medication package tracking.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import (
     Blueprint,
     render_template,
@@ -134,7 +134,7 @@ def scan():
             if expiry_date:
                 existing_scanned.expiry_date = expiry_date.date()
         existing_scanned.status = "active"
-        existing_scanned.scanned_at = datetime.utcnow()
+        existing_scanned.scanned_at = datetime.now(timezone.utc)
         db.session.flush()
 
     # Find package - check both new ProductPackage and old MedicationPackage tables
@@ -249,7 +249,7 @@ def scan():
                     >= pending_order_item.quantity_needed
                 ):
                     pending_order_item.fulfillment_status = "fulfilled"
-                    pending_order_item.fulfilled_at = datetime.utcnow()
+                    pending_order_item.fulfilled_at = datetime.now(timezone.utc)
                     if (
                         pending_order_item.units_received
                         > pending_order_item.quantity_needed
@@ -585,7 +585,7 @@ def scan():
                     >= pending_order_item.quantity_needed
                 ):
                     pending_order_item.fulfillment_status = "fulfilled"
-                    pending_order_item.fulfilled_at = datetime.utcnow()
+                    pending_order_item.fulfilled_at = datetime.now(timezone.utc)
                     if (
                         pending_order_item.units_received
                         > pending_order_item.quantity_needed

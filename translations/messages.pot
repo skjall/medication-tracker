@@ -1058,7 +1058,8 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: /app/templates/index.html:36 /app/templates/physicians/index.html:64
-#: /app/templates/visits/index.html:86 /app/templates/visits/index.html:166
+#: /app/templates/scanner/scan.html:778 /app/templates/visits/index.html:86
+#: /app/templates/visits/index.html:166
 msgid "View Details"
 msgstr ""
 
@@ -1293,8 +1294,8 @@ msgstr ""
 #: /app/templates/inventory/show.html:422 /app/templates/orders/show.html:188
 #: /app/templates/orders/show.html:204 /app/templates/orders/show.html:210
 #: /app/templates/orders/show.html:379 /app/templates/physicians/show.html:165
-#: /app/templates/scanner/scan.html:793 /app/templates/schedules/edit.html:40
-#: /app/templates/schedules/new.html:40 /app/templates/visits/show.html:178
+#: /app/templates/schedules/edit.html:40 /app/templates/schedules/new.html:40
+#: /app/templates/visits/show.html:178
 msgid "units"
 msgstr ""
 
@@ -1710,6 +1711,7 @@ msgstr ""
 #: /app/templates/ingredients/new_package.html:102
 #: /app/templates/ingredients/show_product.html:135
 #: /app/templates/medication_packages/new.html:3
+#: /app/templates/scanner/scan.html:758
 msgid "Add Package"
 msgstr ""
 
@@ -2010,7 +2012,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:806 /app/templates/scanner/scan.html:818
+#: /app/templates/scanner/scan.html:748
 msgid "Batch"
 msgstr ""
 
@@ -2019,7 +2021,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:809 /app/templates/scanner/scan.html:821
+#: /app/templates/scanner/scan.html:751
 msgid "Expiry"
 msgstr ""
 
@@ -2738,7 +2740,7 @@ msgstr ""
 
 #: /app/templates/layout.html:55 /app/templates/scanner/index.html:3
 #: /app/templates/scanner/index.html:9 /app/templates/scanner/scan.html:3
-#: /app/templates/scanner/scan.html:295
+#: /app/templates/scanner/scan.html:468
 msgid "Scanner"
 msgstr ""
 
@@ -4489,48 +4491,56 @@ msgstr ""
 msgid "Raw Data"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:300
+#: /app/templates/scanner/scan.html:473 /app/templates/scanner/scan.html:530
 msgid "DataMatrix codes"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:304
+#: /app/templates/scanner/scan.html:477 /app/templates/scanner/scan.html:534
 msgid "Linear barcodes (EAN, PZN)"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:308
+#: /app/templates/scanner/scan.html:481 /app/templates/scanner/scan.html:538
 msgid "Initializing..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:344
+#: /app/templates/scanner/scan.html:515 /app/templates/scanner/scan.html:834
 msgid "Retry"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:368
-msgid "Scanner error"
+#: /app/templates/scanner/scan.html:665
+msgid "Ready to scan"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:487
-msgid "Starting camera..."
-msgstr ""
-
-#: /app/templates/scanner/scan.html:501
-msgid "No camera found"
-msgstr ""
-
-#: /app/templates/scanner/scan.html:570
-msgid "Scanning..."
-msgstr ""
-
-#: /app/templates/scanner/scan.html:628
+#: /app/templates/scanner/scan.html:675
 msgid "Camera error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:798
-msgid "Scanned successfully"
+#: /app/templates/scanner/scan.html:708
+msgid "Scan failed"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:843
-msgid "Add this package"
+#: /app/templates/scanner/scan.html:713
+msgid "Processing..."
+msgstr ""
+
+#: /app/templates/scanner/scan.html:765
+msgid "Package not found"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:771
+msgid "Package Scanned"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:785
+msgid "Scan successful"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:793 /app/templates/scanner/scan.html:797
+msgid "Error"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:831
+msgid "Camera Access Required"
 msgstr ""
 
 #: /app/templates/schedules/edit.html:4 /app/templates/schedules/edit.html:20

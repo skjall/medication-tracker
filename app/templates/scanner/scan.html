@@ -6,26 +6,131 @@
 <!-- ZXing library for barcode scanning (DataMatrix, EAN, PZN/Code39, etc.) -->
 <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
 <style>
-    #scanner-video {
-        width: 100%;
-        max-width: 600px;
-        height: auto;
-        min-height: 450px; /* Typical 4:3 aspect ratio for 600px width */
-        background: #000;
-        border-radius: 8px;
-        object-fit: cover; /* Ensure video fills the container */
+    /* Mobile-first full-screen scanner design */
+    @media (max-width: 768px) {
+        /* Remove container padding on mobile */
+        .scanner-wrapper {
+            position: fixed;
+            top: 56px; /* Height of navbar */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            z-index: 1040;
+        }
+        
+        /* Full viewport video */
+        #scanner-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .scanner-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        /* No cards or borders on mobile */
+        .scanner-mobile {
+            height: 100%;
+        }
+        
+        /* Controls overlay at top */
+        .scanner-controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+            z-index: 20;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Result overlay at bottom */
+        .result-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 25;
+            max-height: 60vh;
+            overflow-y: auto;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+        
+        .result-overlay.show {
+            transform: translateY(0);
+        }
+        
+        .result-overlay .close-overlay {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        /* Hide desktop elements */
+        .desktop-only {
+            display: none !important;
+        }
     }
-    .scanner-container {
-        position: relative;
-        display: inline-block;
-        width: 100%;
-        max-width: 600px;
-        min-height: 450px; /* Prevent container resize on camera load */
-        overflow: hidden;
-        border-radius: 8px;
-        background: #000; /* Black background while loading */
+
+    /* Desktop styles (unchanged) */
+    @media (min-width: 769px) {
+        #scanner-video {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            min-height: 450px;
+            background: #000;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        .scanner-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            max-width: 600px;
+            min-height: 450px;
+            overflow: hidden;
+            border-radius: 8px;
+            background: #000;
+        }
+        
+        .scanner-wrapper {
+            /* Normal flow on desktop */
+        }
+        
+        .mobile-only {
+            display: none !important;
+        }
     }
-    /* Loading spinner for camera initialization */
+    
+    /* Shared styles */
     .camera-loading {
         position: absolute;
         top: 50%;
@@ -36,161 +141,131 @@
         z-index: 5;
         animation: spin 1s linear infinite;
     }
+    
     @keyframes spin {
         from { transform: translate(-50%, -50%) rotate(0deg); }
         to { transform: translate(-50%, -50%) rotate(360deg); }
     }
+    
     .scanner-container.camera-ready .camera-loading {
         display: none !important;
     }
-    /* Top blur overlay */
+    
+    /* Blur overlays for scanning area */
     .blur-top {
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        height: calc(50% - 60px); /* Linear: half of 120px */
+        height: calc(50% - 100px); /* Increased focus area to 200px height */
         background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
         pointer-events: none;
         z-index: 10;
-        opacity: 0; /* Hidden initially */
+        opacity: 0;
         transition: height 0.3s ease, opacity 0.5s ease;
     }
-
-    /* Bottom blur overlay */
+    
     .blur-bottom {
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
-        height: calc(50% - 60px); /* Linear: half of 120px */
+        height: calc(50% - 100px); /* Increased focus area to 200px height */
         background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
         pointer-events: none;
         z-index: 10;
-        opacity: 0; /* Hidden initially */
+        opacity: 0;
         transition: height 0.3s ease, opacity 0.5s ease;
     }
-
-    /* Left blur overlay */
+    
     .blur-left {
         position: absolute;
-        top: calc(50% - 60px);
+        top: 50%;
+        transform: translateY(-50%);
         left: 0;
-        width: 10%; /* Linear: (100% - 80%) / 2 */
-        height: 120px;
+        width: calc(50% - 100px); /* Increased focus area to 200px width */
+        height: 200px;
         background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
         pointer-events: none;
         z-index: 10;
-        opacity: 0; /* Hidden initially */
-        transition: all 0.3s ease, opacity 0.5s ease;
-    }
-
-    /* Right blur overlay */
-    .blur-right {
-        position: absolute;
-        top: calc(50% - 60px);
-        right: 0;
-        width: 10%; /* Linear: (100% - 80%) / 2 */
-        height: 120px;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        pointer-events: none;
-        z-index: 10;
-        opacity: 0; /* Hidden initially */
-        transition: all 0.3s ease, opacity 0.5s ease;
+        opacity: 0;
+        transition: width 0.3s ease, opacity 0.5s ease;
     }
     
-    /* Show blur overlays when camera is ready */
-    .scanner-container.camera-ready .blur-top,
-    .scanner-container.camera-ready .blur-bottom,
-    .scanner-container.camera-ready .blur-left,
-    .scanner-container.camera-ready .blur-right {
-        opacity: 1 !important;
-        display: block !important;
+    .blur-right {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 0;
+        width: calc(50% - 100px); /* Increased focus area to 200px width */
+        height: 200px;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        pointer-events: none;
+        z-index: 10;
+        opacity: 0;
+        transition: width 0.3s ease, opacity 0.5s ease;
     }
-
-    /* DataMatrix mode adjustments */
-    .scanner-container.datamatrix-active .blur-top {
-        height: calc(50% - 125px); /* Half of 250px */
+    
+    /* Focus area border - visible frame around scanning area */
+    .scanner-container.scanning::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 200px;
+        border: 2px solid rgba(0, 255, 0, 0.5);
+        border-radius: 8px;
+        pointer-events: none;
+        z-index: 11;
+        box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.3); /* Additional darkening outside focus */
     }
-    .scanner-container.datamatrix-active .blur-bottom {
-        height: calc(50% - 125px); /* Half of 250px */
+    
+    .scanner-container.scanning .blur-top,
+    .scanner-container.scanning .blur-bottom,
+    .scanner-container.scanning .blur-left,
+    .scanner-container.scanning .blur-right {
+        opacity: 1;
     }
-    .scanner-container.datamatrix-active .blur-left {
-        top: calc(50% - 125px);
-        width: calc(50% - 125px);
-        height: 250px;
-    }
-    .scanner-container.datamatrix-active .blur-right {
-        top: calc(50% - 125px);
-        width: calc(50% - 125px);
-        height: 250px;
-    }
-    /* Linear mode: 80% width (max 400px), 120px height */
+    
+    /* Scan indicator animation */
     .scan-indicator {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 80%;
-        height: 120px;
+        width: 200px;  /* Match focus area size */
+        height: 200px; /* Match focus area size */
         pointer-events: none;
         z-index: 11;
-        transition: all 0.3s ease;
+        display: none;
     }
-    /* Square frame for DataMatrix mode */
-    .scan-indicator.datamatrix-mode {
-        width: 250px;
-        height: 250px;
+    
+    .scanner-container.scanning .scan-indicator {
+        display: block;
     }
-    /* Barcode scanner frame */
-    .scan-indicator::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border: 2px solid rgba(255, 255, 255, 0.8);
-        border-radius: 4px;
-        box-shadow:
-            inset 0 0 0 4px rgba(0, 0, 0, 0.3),
-            0 0 20px rgba(0, 0, 0, 0.5);
-    }
-    /* Red scanning line */
+    
     .scan-line {
         position: absolute;
-        top: 50%;
-        left: 5%;
-        right: 5%;
+        width: 100%;
         height: 2px;
-        background: linear-gradient(90deg,
-            transparent 0%,
-            rgba(255, 0, 0, 0.5) 20%,
-            rgba(255, 0, 0, 1) 50%,
-            rgba(255, 0, 0, 0.5) 80%,
-            transparent 100%
-        );
-        box-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
-        transform: translateY(-50%);
-        opacity: 0; /* Hidden by default */
-        animation: none; /* No animation initially */
+        background: linear-gradient(90deg, transparent, #00ff00, transparent);
+        top: 0;
+        animation: scan-line 2s linear infinite;
     }
-    /* Show and animate the scan line when camera is ready */
-    .scanner-container.camera-ready .scan-line {
-        opacity: 1;
-        animation: scan 2s linear infinite;
-    }
-    @keyframes scan {
+    
+    @keyframes scan-line {
         0% {
-            top: 10%;
+            top: 0;
             opacity: 0;
         }
         10% {
@@ -204,708 +279,607 @@
             opacity: 0;
         }
     }
+    
+    /* Mode toggle */
     .mode-toggle {
         display: inline-flex;
         border-radius: 6px;
         overflow: hidden;
-        border: 1px solid #dee2e6;
-        background: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.1);
     }
+    
+    @media (max-width: 768px) {
+        .mode-toggle {
+            backdrop-filter: blur(10px);
+        }
+    }
+    
     .mode-toggle input[type="radio"] {
         display: none;
     }
+    
     .mode-toggle label {
         padding: 6px 12px;
         cursor: pointer;
         background: transparent;
-        color: #6c757d;
+        color: rgba(255,255,255,0.8);
         transition: all 0.2s;
         display: flex;
         align-items: center;
         font-size: 0.9rem;
     }
-    .mode-toggle label:hover {
-        background: #f8f9fa;
+    
+    @media (min-width: 769px) {
+        .mode-toggle {
+            border-color: #dee2e6;
+            background: white;
+        }
+        
+        .mode-toggle label {
+            color: #6c757d;
+        }
+        
+        .mode-toggle label:hover {
+            background: #f8f9fa;
+        }
     }
+    
     .mode-toggle input[type="radio"]:checked + label {
         background: #007bff;
         color: white;
     }
+    
+    /* Desktop scan result */
     .scan-result {
         margin-top: 20px;
         padding: 15px;
         border-radius: 8px;
         display: none;
     }
+    
     .scan-result.success {
         background: #d4edda;
         border: 1px solid #c3e6cb;
         color: #155724;
     }
+    
     .scan-result.error {
         background: #f8d7da;
         border: 1px solid #f5c6cb;
         color: #721c24;
     }
+    
     .scan-result.warning {
         background: #fff3cd;
         border: 1px solid #ffeaa7;
         color: #856404;
     }
-    .scan-result.warning .btn {
-        margin-top: 0.5rem;
+    
+    /* Camera control buttons - different styles for desktop/mobile */
+    @media (min-width: 769px) {
+        /* Desktop: Classic buttons above the overlay */
+        #switch-camera-btn-desktop, #toggle-torch-btn-desktop {
+            position: absolute;
+            bottom: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: white;
+            font-size: 18px;
+            z-index: 15; /* Above overlays */
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        #switch-camera-btn-desktop {
+            right: 20px;
+        }
+        
+        #toggle-torch-btn-desktop {
+            left: 20px;
+        }
+        
+        #switch-camera-btn-desktop:hover, #toggle-torch-btn-desktop:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        #switch-camera-btn-desktop:active, #toggle-torch-btn-desktop:active {
+            transform: scale(0.95);
+        }
     }
-    /* Camera control buttons */
-    #switch-camera-btn, #toggle-torch-btn {
-        position: absolute;
-        bottom: 20px;
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: rgba(0, 0, 0, 0.6);
+    
+    @media (max-width: 768px) {
+        /* Mobile: Glassmorphism buttons */
+        #switch-camera-btn, #toggle-torch-btn {
+            position: absolute;
+            bottom: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            font-size: 20px;
+            z-index: 12;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        #switch-camera-btn {
+            right: 20px;
+        }
+        
+        #toggle-torch-btn {
+            left: 20px;
+        }
+        
+        #switch-camera-btn:hover, #toggle-torch-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        
+        #switch-camera-btn:active, #toggle-torch-btn:active {
+            transform: scale(0.95);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .scan-status-badge {
+            background: rgba(255,255,255,0.2) !important;
+            backdrop-filter: blur(10px);
+            color: white !important;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+    }
+    
+    /* Onboarding button in overlay */
+    .onboard-btn {
+        display: inline-block;
+        background: #28a745;
         color: white;
-        border: none;
-        font-size: 20px;
-        display: none;
-        z-index: 12;
-        cursor: pointer;
-        transition: background 0.2s;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        margin-top: 15px;
+        font-weight: 500;
     }
-    #switch-camera-btn {
-        right: 20px;
-    }
-    #toggle-torch-btn {
-        left: 20px;
-    }
-    #switch-camera-btn:hover, #toggle-torch-btn:hover {
-        background: rgba(0, 0, 0, 0.8);
-    }
-    #switch-camera-btn:active, #toggle-torch-btn:active {
-        transform: scale(0.95);
+    
+    .onboard-btn:hover {
+        background: #218838;
+        color: white;
+        text-decoration: none;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">{{ _('Scanner') }}</h5>
-                    <div class="d-flex align-items-center gap-3">
-                        <!-- Mode selection -->
-                        <div class="mode-toggle">
-                            <input type="radio" id="mode-datamatrix" name="scan-mode" value="datamatrix" checked>
-                            <label for="mode-datamatrix" title="{{ _('DataMatrix codes') }}">
-                                <i class="fas fa-qrcode"></i>
-                            </label>
-                            <input type="radio" id="mode-linear" name="scan-mode" value="linear">
-                            <label for="mode-linear" title="{{ _('Linear barcodes (EAN, PZN)') }}">
-                                <i class="fas fa-barcode"></i>
-                            </label>
+<!-- Mobile full-screen wrapper -->
+<div class="scanner-wrapper">
+    <!-- Desktop card container -->
+    <div class="container desktop-only">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ _('Scanner') }}</h5>
+                        <div class="d-flex align-items-center gap-3">
+                            <!-- Mode selection -->
+                            <div class="mode-toggle">
+                                <input type="radio" id="mode-datamatrix-desktop" name="scan-mode" value="datamatrix" checked>
+                                <label for="mode-datamatrix-desktop" title="{{ _('DataMatrix codes') }}">
+                                    <i class="fas fa-qrcode"></i>
+                                </label>
+                                <input type="radio" id="mode-linear-desktop" name="scan-mode" value="linear">
+                                <label for="mode-linear-desktop" title="{{ _('Linear barcodes (EAN, PZN)') }}">
+                                    <i class="fas fa-barcode"></i>
+                                </label>
+                            </div>
+                            <span id="scan-status-desktop" class="badge bg-secondary">{{ _('Initializing...') }}</span>
                         </div>
-                        <span id="scan-status" class="badge bg-secondary">{{ _('Initializing...') }}</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <!-- Camera view with overlay -->
+                        <div class="scanner-container" id="scanner-container-desktop">
+                            <div class="camera-loading">
+                                <i class="fas fa-spinner"></i>
+                            </div>
+                            <video id="scanner-video-desktop" autoplay muted playsinline></video>
+                            <!-- Blur overlays -->
+                            <div class="blur-top"></div>
+                            <div class="blur-bottom"></div>
+                            <div class="blur-left"></div>
+                            <div class="blur-right"></div>
+                            <!-- Scanning indicator -->
+                            <div class="scan-indicator">
+                                <div class="scan-line"></div>
+                            </div>
+                            <!-- Camera controls -->
+                            <button id="toggle-torch-btn-desktop" aria-label="Toggle Light">
+                                <i class="fas fa-lightbulb"></i>
+                            </button>
+                            <button id="switch-camera-btn-desktop" onclick="switchCamera()" aria-label="Switch Camera">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Scan result display -->
+                        <div id="scan-result-desktop" class="scan-result"></div>
+                        
+                        <!-- Controls -->
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-primary d-none" id="retry-camera-btn-desktop">
+                                <i class="fas fa-camera"></i> {{ _('Retry') }}
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="card-body text-center">
-                    <!-- Camera view with overlay -->
-                    <div class="scanner-container" id="scanner-container">
-                        <!-- Loading spinner -->
-                        <div class="camera-loading">
-                            <i class="fas fa-spinner"></i>
-                        </div>
-                        <video id="scanner-video" autoplay muted playsinline></video>
-                        <!-- Blur overlays for areas outside scanning area -->
-                        <div class="blur-top"></div>
-                        <div class="blur-bottom"></div>
-                        <div class="blur-left"></div>
-                        <div class="blur-right"></div>
-                        <!-- Scanning indicator -->
-                        <div class="scan-indicator" id="scan-indicator">
-                            <div class="scan-line"></div>
-                        </div>
-                        <!-- Torch/Light button (left) -->
-                        <button id="toggle-torch-btn" aria-label="Toggle Light">
-                            <i class="fas fa-lightbulb"></i>
-                        </button>
-                        <!-- Camera switch button (right) -->
-                        <button id="switch-camera-btn" onclick="switchCamera()" aria-label="Switch Camera">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
-
-                    <!-- Scan result display -->
-                    <div id="scan-result" class="scan-result"></div>
-
-                    <!-- Controls -->
-                    <div class="mt-3">
-                        <button class="btn btn-sm btn-primary d-none" id="retry-camera-btn">
-                            <i class="fas fa-camera"></i> {{ _('Retry') }}
-                        </button>
-                    </div>
-                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile full-screen scanner -->
+    <div class="scanner-mobile mobile-only">
+        <!-- Top controls overlay -->
+        <div class="scanner-controls">
+            <div class="mode-toggle">
+                <input type="radio" id="mode-datamatrix-mobile" name="scan-mode-mobile" value="datamatrix" checked>
+                <label for="mode-datamatrix-mobile" title="{{ _('DataMatrix codes') }}">
+                    <i class="fas fa-qrcode"></i>
+                </label>
+                <input type="radio" id="mode-linear-mobile" name="scan-mode-mobile" value="linear">
+                <label for="mode-linear-mobile" title="{{ _('Linear barcodes (EAN, PZN)') }}">
+                    <i class="fas fa-barcode"></i>
+                </label>
+            </div>
+            <span id="scan-status-mobile" class="badge scan-status-badge">{{ _('Initializing...') }}</span>
+        </div>
+        
+        <!-- Camera container -->
+        <div class="scanner-container" id="scanner-container-mobile">
+            <div class="camera-loading">
+                <i class="fas fa-spinner"></i>
+            </div>
+            <video id="scanner-video" autoplay muted playsinline></video>
+            <!-- Blur overlays -->
+            <div class="blur-top"></div>
+            <div class="blur-bottom"></div>
+            <div class="blur-left"></div>
+            <div class="blur-right"></div>
+            <!-- Scanning indicator -->
+            <div class="scan-indicator">
+                <div class="scan-line"></div>
+            </div>
+            <!-- Camera controls -->
+            <button id="toggle-torch-btn" aria-label="Toggle Light">
+                <i class="fas fa-lightbulb"></i>
+            </button>
+            <button id="switch-camera-btn" onclick="switchCamera()" aria-label="Switch Camera">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+        
+        <!-- Result overlay (slides up from bottom) -->
+        <div class="result-overlay" id="result-overlay">
+            <button class="close-overlay" onclick="closeResultOverlay()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="overlay-content">
+                <!-- Dynamic content will be inserted here -->
             </div>
         </div>
     </div>
 </div>
 
 <script>
-let codeReader = null;
-let videoStream = null;
-let selectedDeviceId = null;
-let isScanning = false;
-let lastScannedCode = null;
-let lastScannedTime = 0;
-let currentMode = 'datamatrix';
-let torchSupported = false;
-let isInitializing = false; // Prevent concurrent initializations
-
-// Initialize and start immediately
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof ZXing === 'undefined') {
-        console.error('ZXing library not loaded');
-        showStatus('{{ _("Scanner error") }}', 'danger');
-        return;
-    }
-
-    // Initialize with datamatrix mode as default
-    document.getElementById('scan-indicator').classList.add('datamatrix-mode');
-    document.querySelector('.scanner-container').classList.add('datamatrix-active');
-    initializeScanner('datamatrix');
-    startScanning();
-
-    // Mode switching
-    document.querySelectorAll('input[name="scan-mode"]').forEach(radio => {
-        radio.addEventListener('change', async (e) => {
-            if (isInitializing) {
-                console.log('Already initializing, ignoring mode change');
-                return;
-            }
-            
-            currentMode = e.target.value;
-            console.log('Switching to mode:', currentMode);
-
-            // Update UI for mode
-            const scanIndicator = document.getElementById('scan-indicator');
-            const container = document.querySelector('.scanner-container');
-            
-            // Remove camera-ready class to hide scan line while reinitializing
-            container.classList.remove('camera-ready');
-
-            if (currentMode === 'datamatrix') {
-                scanIndicator.classList.add('datamatrix-mode');
-                container.classList.add('datamatrix-active');
-            } else {
-                scanIndicator.classList.remove('datamatrix-mode');
-                container.classList.remove('datamatrix-active');
-            }
-
-            // Store the current camera selection before stopping
-            const preservedDeviceId = selectedDeviceId;
-            console.log('Preserving camera device ID:', preservedDeviceId);
-            
-            // Stop current scanning and video stream completely
-            isInitializing = true;
-            await stopScanning();
-            
-            // Reinitialize with new mode
-            initializeScanner(currentMode);
-
-            // Restore the camera selection
-            selectedDeviceId = preservedDeviceId;
-            console.log('Restored camera device ID:', selectedDeviceId);
-            
-            // Show loading spinner again while reinitializing
-            const loadingSpinner = container.querySelector('.camera-loading');
-            if (loadingSpinner) {
-                loadingSpinner.style.display = 'block';
-            }
-            
-            // Restart scanning with preserved camera
-            // Add delay to ensure iOS properly releases camera
-            setTimeout(async () => {
-                try {
-                    await startScanning();
-                } catch (e) {
-                    console.error('Failed to restart scanning:', e);
-                    // Hide spinner on error
-                    if (loadingSpinner) {
-                        loadingSpinner.style.display = 'none';
-                    }
-                    container.classList.add('camera-ready');
-                }
-                isInitializing = false;
-            }, 300);
+    let codeReader = null;
+    let currentCamera = 'environment'; // Default to back camera
+    let availableCameras = [];
+    let scanMode = 'datamatrix'; // Default mode
+    let selectedDeviceId = null;
+    let lastScannedCode = null;
+    let lastScanTime = 0;
+    const SCAN_COOLDOWN = 2000; // 2 seconds between scans of the same code
+    
+    // Check if mobile
+    const isMobile = window.innerWidth <= 768;
+    
+    // Get appropriate elements based on device
+    const videoEl = document.getElementById(isMobile ? 'scanner-video' : 'scanner-video-desktop');
+    const containerEl = document.getElementById(isMobile ? 'scanner-container-mobile' : 'scanner-container-desktop');
+    const statusEl = document.getElementById(isMobile ? 'scan-status-mobile' : 'scan-status-desktop');
+    const resultEl = isMobile ? document.getElementById('overlay-content') : document.getElementById('scan-result-desktop');
+    const overlayEl = document.getElementById('result-overlay');
+    
+    // Mode selection
+    const modeInputs = document.querySelectorAll(isMobile ? 'input[name="scan-mode-mobile"]' : 'input[name="scan-mode"]');
+    modeInputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+            scanMode = e.target.value;
+            console.log('Switching to mode:', scanMode);
+            restartScanner();
         });
     });
-});
-
-function initializeScanner(mode) {
-    // Stop and clean up existing reader completely before creating new one
-    if (codeReader) {
+    
+    // Close result overlay (mobile)
+    function closeResultOverlay() {
+        if (overlayEl) {
+            overlayEl.classList.remove('show');
+            // Resume scanning after closing
+            setTimeout(() => {
+                lastScannedCode = null;
+                lastScanTime = 0;
+            }, 500);
+        }
+    }
+    
+    // Show result
+    function showResult(html, type = 'info') {
+        if (isMobile && overlayEl) {
+            // Mobile: show overlay
+            resultEl.innerHTML = html;
+            overlayEl.classList.add('show');
+        } else {
+            // Desktop: show inline result
+            resultEl.innerHTML = html;
+            resultEl.className = `scan-result ${type}`;
+            resultEl.style.display = 'block';
+        }
+    }
+    
+    async function initScanner() {
         try {
-            codeReader.reset();
-            // Small delay to ensure cleanup on iOS
-            codeReader = null;
-        } catch (e) {
-            console.log('Error resetting reader:', e);
-        }
-    }
-    
-    const hints = new Map();
-
-    if (mode === 'datamatrix') {
-        // Optimize for DataMatrix/2D codes
-        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-            ZXing.BarcodeFormat.DATA_MATRIX
-            // ZXing.BarcodeFormat.QR_CODE,
-            // ZXing.BarcodeFormat.AZTEC
-        ]);
-        codeReader = new ZXing.BrowserMultiFormatReader(hints);
-        console.log('Scanner optimized for DataMatrix/2D codes');
-    } else {
-        // Optimize for linear barcodes (PZN, EAN, etc.)
-        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-            ZXing.BarcodeFormat.CODE_39,      // PZN
-            // ZXing.BarcodeFormat.CODE_128,
-            ZXing.BarcodeFormat.EAN_13       // Standard retail
-            // ZXing.BarcodeFormat.EAN_8,
-            // ZXing.BarcodeFormat.UPC_A,
-            // ZXing.BarcodeFormat.UPC_E
-        ]);
-        codeReader = new ZXing.BrowserMultiFormatReader(hints);
-        console.log('Scanner optimized for linear barcodes');
-    }
-}
-
-async function startScanning() {
-    if (isScanning) return;
-
-    try {
-        showStatus('{{ _("Starting camera...") }}', 'warning');
-
-        // Detect iOS Chrome
-        const isIOSChrome = /CriOS/.test(navigator.userAgent) || 
-                           (/iPhone|iPad|iPod/.test(navigator.userAgent) && /Chrome/.test(navigator.userAgent));
-        
-        if (isIOSChrome) {
-            console.log('iOS Chrome detected, using special handling');
-        }
-
-        // Get available video devices
-        const videoInputDevices = await codeReader.listVideoInputDevices();
-
-        if (videoInputDevices.length === 0) {
-            showStatus('{{ _("No camera found") }}', 'danger');
-            document.getElementById('retry-camera-btn').classList.remove('d-none');
-            return;
-        }
-
-        // Store available devices globally for camera switching
-        window.videoDevices = videoInputDevices;
-        
-        // Show camera switch button if multiple cameras
-        if (videoInputDevices.length > 1) {
-            document.getElementById('switch-camera-btn').style.display = 'block';
-        }
-
-        // Debug: Log all available cameras
-        console.log('Available cameras:', videoInputDevices.map(d => ({
-            id: d.deviceId,
-            label: d.label
-        })));
-        
-        // Use previously selected device if available, otherwise select rear camera
-        if (!selectedDeviceId) {
-            console.log('No previous camera selected, finding back camera...');
-            
-            // Check localStorage for saved preference
-            const savedDeviceId = localStorage.getItem('preferredCameraId');
-            if (savedDeviceId && videoInputDevices.some(d => d.deviceId === savedDeviceId)) {
-                selectedDeviceId = savedDeviceId;
-                console.log('Using saved camera preference:', selectedDeviceId);
+            // Initialize the appropriate code reader based on mode
+            if (scanMode === 'datamatrix') {
+                codeReader = new ZXing.BrowserMultiFormatReader();
             } else {
-                // On first load, try to find back camera
-                selectedDeviceId = videoInputDevices[0].deviceId;
+                // For linear codes (EAN, Code39/PZN, etc.)
+                const hints = new Map();
+                hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+                    ZXing.BarcodeFormat.CODE_39,
+                    ZXing.BarcodeFormat.EAN_13,
+                    ZXing.BarcodeFormat.EAN_8,
+                    ZXing.BarcodeFormat.CODE_128
+                ]);
+                codeReader = new ZXing.BrowserMultiFormatReader(hints);
+            }
+            
+            // Get available cameras
+            availableCameras = await codeReader.listVideoInputDevices();
+            console.log('Available cameras:', availableCameras);
+            
+            // Select camera
+            if (availableCameras.length > 0) {
+                // Try to find back camera
+                let backCamera = availableCameras.find(camera => 
+                    camera.label.toLowerCase().includes('back') || 
+                    camera.label.toLowerCase().includes('environment')
+                );
                 
-                // Try to identify back camera by label
-                for (const device of videoInputDevices) {
-                    const label = device.label.toLowerCase();
-                    if (label.includes('back') ||
-                        label.includes('environment') ||
-                        label.includes('rear') ||
-                        label.includes('posteriore') || // Italian
-                        label.includes('arrière') || // French
-                        label.includes('trasera') || // Spanish
-                        label.includes('hinten') || // German
-                        label.includes('后置')) { // Chinese
-                        selectedDeviceId = device.deviceId;
-                        console.log('Selected back camera by label:', device.label);
-                        break;
+                selectedDeviceId = backCamera ? backCamera.deviceId : availableCameras[0].deviceId;
+                
+                // Update UI
+                updateStatus('{{ _("Ready to scan") }}', 'success');
+                containerEl.classList.add('camera-ready', 'scanning');
+                
+                // Start scanning
+                await startScanning();
+            } else {
+                throw new Error('No cameras found');
+            }
+        } catch (error) {
+            console.error('Scanner initialization failed:', error);
+            updateStatus('{{ _("Camera error") }}', 'danger');
+            showCameraError(error.message);
+        }
+    }
+    
+    async function startScanning() {
+        try {
+            await codeReader.decodeFromVideoDevice(selectedDeviceId, videoEl, (result, err) => {
+                if (result) {
+                    const now = Date.now();
+                    const code = result.getText();
+                    
+                    // Prevent duplicate scans
+                    if (code === lastScannedCode && (now - lastScanTime) < SCAN_COOLDOWN) {
+                        return;
                     }
+                    
+                    lastScannedCode = code;
+                    lastScanTime = now;
+                    
+                    console.log('Scanned:', code);
+                    console.log('Format:', result.getBarcodeFormat());
+                    
+                    // Send to backend
+                    handleScan(code);
                 }
                 
-                // If we have multiple cameras and couldn't identify back camera,
-                // assume the last one is the back camera (common pattern on iOS)
-                if (videoInputDevices.length > 1 && 
-                    selectedDeviceId === videoInputDevices[0].deviceId &&
-                    !videoInputDevices[0].label.toLowerCase().includes('back')) {
-                    selectedDeviceId = videoInputDevices[videoInputDevices.length - 1].deviceId;
-                    console.log('Selected last camera as likely back camera');
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error('Scan error:', err);
                 }
-                
-                // Save the selection
-                localStorage.setItem('preferredCameraId', selectedDeviceId);
-            }
-        } else {
-            console.log('Using previously selected camera:', selectedDeviceId);
-            // Update saved preference
-            localStorage.setItem('preferredCameraId', selectedDeviceId);
-        }
-
-        console.log('Starting continuous scanning with device:', selectedDeviceId);
-        isScanning = true;
-        showStatus('{{ _("Scanning...") }}', 'success');
-        
-        // isIOSChrome already declared above
-        let decodingStream;
-        
-        if (isIOSChrome && videoInputDevices.length > 1) {
-            // Try to use constraints instead of device ID for iOS Chrome
-            try {
-                console.log('Using constraints-based approach for iOS Chrome');
-                
-                // Determine if we want front or back camera based on device selection
-                const currentDeviceIndex = videoInputDevices.findIndex(d => d.deviceId === selectedDeviceId);
-                const wantsFrontCamera = currentDeviceIndex === 0 && videoInputDevices.length > 1;
-                
-                const constraints = {
-                    video: {
-                        facingMode: wantsFrontCamera ? 'user' : { ideal: 'environment' }
-                    }
-                };
-                
-                console.log('Requesting camera with constraints:', constraints);
-                
-                // Get stream manually first
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                const videoElement = document.getElementById('scanner-video');
-                videoElement.srcObject = stream;
-                videoStream = stream;
-                
-                // Then use ZXing with the element
-                await codeReader.decodeFromVideoElement(videoElement, (result, err) => {
-                    handleScanResult(result, err);
-                });
-                
-                // Ensure container is marked as ready for iOS Chrome
-                setTimeout(() => {
-                    const container = document.getElementById('scanner-container');
-                    if (!container.classList.contains('camera-ready')) {
-                        container.classList.add('camera-ready');
-                        const spinner = container.querySelector('.camera-loading');
-                        if (spinner) spinner.style.display = 'none';
-                    }
-                }, 500);
-                
-            } catch (e) {
-                console.log('Constraints-based approach failed, falling back to device ID:', e);
-                // Fall back to regular approach
-                decodingStream = await codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
-                    handleScanResult(result, err);
-                });
-            }
-        } else {
-            // Regular approach for non-iOS Chrome
-            decodingStream = await codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
-                handleScanResult(result, err);
             });
-        }
-
-    } catch (err) {
-        showStatus('{{ _("Camera error") }}', 'danger');
-        document.getElementById('retry-camera-btn').classList.remove('d-none');
-        console.error(err);
-        isScanning = false;
-    }
-}
-
-function handleScanResult(result, err) {
-    // Mark container as ready on first frame (removes loading spinner and shows blur)
-    const scannerContainer = document.getElementById('scanner-container');
-    if (!scannerContainer.classList.contains('camera-ready')) {
-        scannerContainer.classList.add('camera-ready');
-        // Explicitly hide spinner for iOS Chrome
-        const loadingSpinner = scannerContainer.querySelector('.camera-loading');
-        if (loadingSpinner) {
-            loadingSpinner.style.display = 'none';
+        } catch (error) {
+            console.error('Failed to start scanning:', error);
+            updateStatus('{{ _("Scan failed") }}', 'danger');
         }
     }
-    if (result) {
-        const now = Date.now();
-        // Debounce: Don't scan same code within 2 seconds
-        if (result.text !== lastScannedCode || now - lastScannedTime > 2000) {
-            console.log('Barcode detected:', result.text);
-            lastScannedCode = result.text;
-            lastScannedTime = now;
-
-            // Use requestAnimationFrame for smoother UI updates
-            requestAnimationFrame(() => {
-                flashScanIndicator();
-                processScan(result.text);
-            });
-        }
-    }
-
-    // Silently ignore NotFoundException - it's normal when no code is visible
-    if (err && !(err instanceof ZXing.NotFoundException)) {
-        console.debug('Scan error:', err.message);
-    }
     
-    // Get the video stream for torch control if not already set
-    if (!videoStream) {
-        const videoElement = document.getElementById('scanner-video');
-        if (videoElement.srcObject) {
-            videoStream = videoElement.srcObject;
-            const track = videoStream.getVideoTracks()[0];
-            const capabilities = track.getCapabilities ? track.getCapabilities() : {};
-            if (capabilities.torch) {
-                torchSupported = true;
-                document.getElementById('toggle-torch-btn').style.display = 'block';
-            }
-        }
-    }
-}
-
-
-function flashScanIndicator() {
-    const scanLine = document.querySelector('.scan-line');
-    const scanIndicator = document.querySelector('.scan-indicator');
-
-    // Flash the scan line to green
-    scanLine.style.background = 'linear-gradient(90deg, transparent 0%, rgba(0, 255, 0, 0.5) 20%, rgba(0, 255, 0, 1) 50%, rgba(0, 255, 0, 0.5) 80%, transparent 100%)';
-    scanLine.style.boxShadow = '0 0 20px rgba(0, 255, 0, 1)';
-    scanLine.style.height = '4px';
-
-    // Flash the frame border
-    scanIndicator.style.borderColor = 'rgba(0, 255, 0, 0.8)';
-    scanIndicator.style.boxShadow = '0 0 30px rgba(0, 255, 0, 0.6)';
-
-    // Reset after animation
-    setTimeout(() => {
-        scanLine.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255, 0, 0, 0.5) 20%, rgba(255, 0, 0, 1) 50%, rgba(255, 0, 0, 0.5) 80%, transparent 100%)';
-        scanLine.style.boxShadow = '0 0 8px rgba(255, 0, 0, 0.8)';
-        scanLine.style.height = '2px';
-
-        scanIndicator.style.borderColor = '';
-        scanIndicator.style.boxShadow = '';
-    }, 300);
-}
-
-// Switch camera function
-function switchCamera() {
-    if (!window.videoDevices || window.videoDevices.length < 2) return;
-    
-    // Find current device index
-    let currentIndex = window.videoDevices.findIndex(device => device.deviceId === selectedDeviceId);
-    
-    // Switch to next camera
-    currentIndex = (currentIndex + 1) % window.videoDevices.length;
-    selectedDeviceId = window.videoDevices[currentIndex].deviceId;
-    
-    console.log('Switching to camera:', window.videoDevices[currentIndex].label || 'Camera ' + currentIndex);
-    
-    // Save the new selection
-    localStorage.setItem('preferredCameraId', selectedDeviceId);
-    
-    // Stop current scanning
-    if (codeReader) {
-        codeReader.reset();
-    }
-    
-    // Remove camera-ready class to show loading state
-    document.getElementById('scanner-container').classList.remove('camera-ready');
-    
-    // Restart with new camera
-    isScanning = false;
-    setTimeout(() => startScanning(), 100);
-}
-
-// Toggle torch/flashlight
-document.getElementById('toggle-torch-btn').addEventListener('click', async () => {
-    if (!videoStream || !torchSupported) return;
-
-    const track = videoStream.getVideoTracks()[0];
-    const constraints = track.getConstraints();
-
-    try {
-        await track.applyConstraints({
-            torch: !constraints.torch
-        });
-    } catch (err) {
-        console.error('Failed to toggle torch:', err);
-    }
-});
-
-document.getElementById('retry-camera-btn').addEventListener('click', () => {
-    document.getElementById('retry-camera-btn').classList.add('d-none');
-    stopScanning();
-    startScanning();
-});
-
-async function processScan(barcodeData) {
-    // Ignore very short codes (likely misreads)
-    if (barcodeData.length < 4) {
-        console.log('Ignoring short code:', barcodeData);
-        return;
-    }
-
-    // Ignore single characters or obvious misreads
-    if (barcodeData.length === 1 || (barcodeData.length < 6 && !barcodeData.match(/^\d+$/))) {
-        console.log('Ignoring likely misread:', barcodeData);
-        return;
-    }
-
-    try {
-        const response = await fetch('{{ url_for("scanner.scan") }}', {
+    function handleScan(barcode) {
+        updateStatus('{{ _("Processing...") }}', 'info');
+        
+        fetch("{{ url_for('scanner.scan') }}", {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                barcode: barcodeData
-            })
-        });
-
-        const result = await response.json();
-        const resultDiv = document.getElementById('scan-result');
-
-        if (response.ok) {
-            // Show success message
-            let message = '';
-            
-            // Check if it's a new product package or old medication package
-            if (result.product_package && result.package_info) {
-                // New ProductPackage found
-                message = '<strong>' + result.package_info.product_name + '</strong>';
-                message += '<br><small>' + result.package_info.package_size + ' (' + result.package_info.quantity + ' {{ _("units") }})' + '</small>';
-            } else if (result.medication) {
-                // Old MedicationPackage found
-                message = '<strong>' + result.medication.name + '</strong>';
-            } else {
-                message = '<strong>{{ _("Scanned successfully") }}</strong>';
-            }
-            
-            if (result.parsed_data) {
-                if (result.parsed_data.national_number) {
-                    message += '<br><small>NDC: ' + result.parsed_data.national_number + '</small>';
-                }
-                if (result.parsed_data.batch) {
-                    message += '<br><small>{{ _("Batch") }}: ' + result.parsed_data.batch + '</small>';
-                }
-                if (result.parsed_data.expiry) {
-                    message += '<br><small>{{ _("Expiry") }}: ' + new Date(result.parsed_data.expiry).toLocaleDateString() + '</small>';
-                }
-            }
-            
-            // Use custom message if provided
-            if (result.message) {
-                message = '<strong>' + result.message + '</strong>';
-                if (result.parsed_data && (result.parsed_data.batch || result.parsed_data.expiry)) {
-                    if (result.parsed_data.batch) {
-                        message += '<br><small>{{ _("Batch") }}: ' + result.parsed_data.batch + '</small>';
-                    }
-                    if (result.parsed_data.expiry) {
-                        message += '<br><small>{{ _("Expiry") }}: ' + new Date(result.parsed_data.expiry).toLocaleDateString() + '</small>';
-                    }
-                }
-            }
-
-            resultDiv.innerHTML = message;
-            resultDiv.className = 'scan-result success';
-            resultDiv.style.display = 'block';
-
-            // Hide after 5 seconds
-            setTimeout(() => {
-                resultDiv.style.display = 'none';
-            }, 5000);
-        } else {
-            // Check if this is an unknown package that needs onboarding
-            if (result.action_required === 'onboard_package' && result.onboarding_url) {
-                // Show onboarding message with button
-                let errorMessage = '<strong>' + result.error + '</strong>';
-                if (result.hint) {
-                    errorMessage += '<br><small>' + result.hint + '</small>';
-                }
-                errorMessage += '<br><a href="' + result.onboarding_url + '" class="btn btn-sm btn-primary mt-2">';
-                errorMessage += '<i class="fas fa-plus-circle me-1"></i>{{ _("Add this package") }}</a>';
+            body: JSON.stringify({ barcode: barcode })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                // Package not found - show onboarding option
+                let html = `
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-circle fa-3x mb-3" style="color: #ffc107;"></i>
+                        <h5>${data.error}</h5>
+                        <p class="text-muted">${data.hint || ''}</p>
+                `;
                 
-                resultDiv.innerHTML = errorMessage;
-                resultDiv.className = 'scan-result warning';
-                resultDiv.style.display = 'block';
-                
-                // Don't auto-hide for onboarding messages
-            } else {
-                // Show regular error message
-                let errorMessage = '<strong>' + result.error + '</strong>';
-                if (result.hint) {
-                    errorMessage += '<br><small>' + result.hint + '</small>';
+                if (data.details) {
+                    html += '<div class="mt-3 text-start">';
+                    if (data.details.national_number) {
+                        const typeLabel = {
+                            'DE_PZN': 'PZN',
+                            'FR_CIP13': 'CIP13',
+                            'FR_CIP7': 'CIP7',
+                            'BE_CNK': 'CNK'
+                        }[data.details.national_number_type] || data.details.national_number_type;
+                        html += `<p><strong>${typeLabel}:</strong> ${data.details.national_number}</p>`;
+                    }
+                    if (data.details.gtin) {
+                        html += `<p><strong>GTIN:</strong> ${data.details.gtin}</p>`;
+                    }
+                    if (data.details.batch) {
+                        html += `<p><strong>{{ _('Batch') }}:</strong> ${data.details.batch}</p>`;
+                    }
+                    if (data.details.expiry) {
+                        html += `<p><strong>{{ _('Expiry') }}:</strong> ${new Date(data.details.expiry).toLocaleDateString()}</p>`;
+                    }
+                    html += '</div>';
                 }
-
-                resultDiv.innerHTML = errorMessage;
-                resultDiv.className = 'scan-result error';
-                resultDiv.style.display = 'block';
-
-                // Hide after 3 seconds
-                setTimeout(() => {
-                    resultDiv.style.display = 'none';
-                }, 3000);
+                
+                if (data.onboarding_url) {
+                    html += `<a href="${data.onboarding_url}" class="onboard-btn">
+                        <i class="fas fa-plus-circle me-2"></i>{{ _('Add Package') }}
+                    </a>`;
+                }
+                
+                html += '</div>';
+                
+                showResult(html, 'warning');
+                updateStatus('{{ _("Package not found") }}', 'warning');
+            } else if (data.success) {
+                // Success - show package info
+                let html = `
+                    <div class="text-center">
+                        <i class="fas fa-check-circle fa-3x mb-3" style="color: #28a745;"></i>
+                        <h5>{{ _('Package Scanned') }}</h5>
+                        <p><strong>${data.product_name}</strong></p>
+                        <p class="text-muted">${data.message || ''}</p>
+                `;
+                
+                if (data.package_url) {
+                    html += `<a href="${data.package_url}" class="btn btn-primary mt-2">
+                        <i class="fas fa-box me-2"></i>{{ _('View Details') }}
+                    </a>`;
+                }
+                
+                html += '</div>';
+                
+                showResult(html, 'success');
+                updateStatus('{{ _("Scan successful") }}', 'success');
             }
-        }
-    } catch (err) {
-        console.log('Scan processing failed:', barcodeData);
-    }
-}
-
-
-function showStatus(message, type) {
-    const statusBadge = document.getElementById('scan-status');
-    statusBadge.textContent = message;
-    statusBadge.className = 'badge bg-' + type;
-}
-
-async function stopScanning() {
-    isScanning = false;
-
-    // Stop video stream
-    if (videoStream) {
-        console.log('Stopping video stream...');
-        videoStream.getTracks().forEach(track => {
-            track.stop();
-            console.log('Stopped track:', track.kind, track.label);
+        })
+        .catch(error => {
+            console.error('Scan processing error:', error);
+            showResult(`
+                <div class="text-center">
+                    <i class="fas fa-times-circle fa-3x mb-3" style="color: #dc3545;"></i>
+                    <h5>{{ _('Error') }}</h5>
+                    <p>${error.message}</p>
+                </div>
+            `, 'error');
+            updateStatus('{{ _("Error") }}', 'danger');
         });
-        videoStream = null;
-    }
-
-    // Reset code reader
-    if (codeReader) {
-        try {
-            console.log('Resetting code reader...');
-            codeReader.reset();
-        } catch (e) {
-            console.log('Error resetting reader:', e);
-        }
     }
     
-    // Small delay to ensure iOS releases camera
-    await new Promise(resolve => setTimeout(resolve, 100));
-}
-
-// Cleanup on page unload
-window.addEventListener('beforeunload', () => {
-    stopScanning();
-});
+    function updateStatus(message, type = 'secondary') {
+        statusEl.textContent = message;
+        statusEl.className = isMobile ? 'badge scan-status-badge' : `badge bg-${type}`;
+    }
+    
+    async function switchCamera() {
+        if (availableCameras.length <= 1) return;
+        
+        // Find next camera
+        const currentIndex = availableCameras.findIndex(cam => cam.deviceId === selectedDeviceId);
+        const nextIndex = (currentIndex + 1) % availableCameras.length;
+        selectedDeviceId = availableCameras[nextIndex].deviceId;
+        
+        console.log('Switching to camera:', availableCameras[nextIndex].label);
+        
+        // Restart scanner with new camera
+        await restartScanner();
+    }
+    
+    async function restartScanner() {
+        if (codeReader) {
+            codeReader.reset();
+        }
+        await initScanner();
+    }
+    
+    function showCameraError(message) {
+        const errorHtml = `
+            <div class="text-center">
+                <i class="fas fa-camera-slash fa-3x mb-3" style="color: #dc3545;"></i>
+                <h5>{{ _('Camera Access Required') }}</h5>
+                <p>${message}</p>
+                <button class="btn btn-primary mt-2" onclick="location.reload()">
+                    <i class="fas fa-redo me-2"></i>{{ _('Retry') }}
+                </button>
+            </div>
+        `;
+        showResult(errorHtml, 'error');
+    }
+    
+    // Torch/flashlight control
+    const torchBtn = document.getElementById(isMobile ? 'toggle-torch-btn' : 'toggle-torch-btn-desktop');
+    let torchEnabled = false;
+    
+    if (torchBtn) {
+        torchBtn.addEventListener('click', async () => {
+            try {
+                const stream = videoEl.srcObject;
+                if (!stream) return;
+                
+                const track = stream.getVideoTracks()[0];
+                const capabilities = track.getCapabilities();
+                
+                if (!capabilities.torch) {
+                    console.log('Torch not available');
+                    return;
+                }
+                
+                torchEnabled = !torchEnabled;
+                await track.applyConstraints({
+                    advanced: [{ torch: torchEnabled }]
+                });
+                
+                torchBtn.innerHTML = torchEnabled ? 
+                    '<i class="fas fa-lightbulb" style="color: #ffc107;"></i>' : 
+                    '<i class="fas fa-lightbulb"></i>';
+            } catch (error) {
+                console.error('Torch control error:', error);
+            }
+        });
+    }
+    
+    // Initialize scanner on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        initScanner();
+    });
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (codeReader) {
+            codeReader.reset();
+        }
+    });
 </script>
 {% endblock %}

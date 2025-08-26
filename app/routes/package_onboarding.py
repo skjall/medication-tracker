@@ -2,7 +2,7 @@
 Package onboarding routes for unknown scanned packages.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, session
 from flask_babel import gettext as _
 
@@ -185,7 +185,7 @@ def onboard_package():
                     national_number=scanned_data['national_number'],
                     national_number_type=scanned_data['national_number_type'],
                     product_package_id=package.id,
-                    scanned_at=datetime.utcnow(),
+                    scanned_at=datetime.now(timezone.utc),
                     status='active'
                 )
                 db.session.add(scanned_item)
