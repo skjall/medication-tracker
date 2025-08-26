@@ -173,18 +173,18 @@ def onboard_package():
         if add_to_inventory:
             # Create or update ScannedItem for this package
             scanned_item = ScannedItem.query.filter_by(
-                serial_number=scanned_data.get('serial', f"{scanned_data['gtin']}_{scanned_data['batch']}_{datetime.now().timestamp()}")
+                serial_number=scanned_data.get('serial', f"{scanned_data['gtin']}_{scanned_data['batch']}_{datetime.now(timezone.utc).timestamp()}")
             ).first()
             
             if not scanned_item:
                 scanned_item = ScannedItem(
-                    serial_number=scanned_data.get('serial') or f"{scanned_data['gtin']}_{scanned_data['batch']}_{datetime.now().timestamp()}",
+                    serial_number=scanned_data.get('serial') or f"{scanned_data['gtin']}_{scanned_data['batch']}_{datetime.now(timezone.utc).timestamp()}",
                     gtin=scanned_data['gtin'],
                     batch_number=scanned_data['batch'],
                     expiry_date=datetime.fromisoformat(scanned_data['expiry']) if scanned_data.get('expiry') else None,
                     national_number=scanned_data['national_number'],
                     national_number_type=scanned_data['national_number_type'],
-                    product_package_id=package.id,
+                    # Note: medication_package_id is for old system, leaving null for new ProductPackage
                     scanned_at=datetime.now(timezone.utc),
                     status='active'
                 )

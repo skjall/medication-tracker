@@ -203,7 +203,11 @@
                 {% if scanned_data.expiry %}
                 <div class="col-md-3">
                     <small class="text-muted">{{ _('Expiry') }}</small>
-                    <div class="fw-bold">{{ scanned_data.expiry }}</div>
+                    <div class="fw-bold">
+                        {% if scanned_data.expiry %}
+                            {{ scanned_data.expiry[:10] }}  {# Extract just the date part YYYY-MM-DD #}
+                        {% endif %}
+                    </div>
                 </div>
                 {% endif %}
             </div>
