@@ -14,7 +14,7 @@ import logging
 import os
 import sys
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add app directory to Python path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
@@ -87,8 +87,8 @@ class BaseTestCase(unittest.TestCase):
         """Set up test fixtures for each test."""
         self.db.session.begin_nested()  # Create a savepoint
 
-        # Set current date to now
-        self.now = datetime.now()
+        # Set current date to now (UTC for consistency in tests)
+        self.now = datetime.now(timezone.utc)
 
         # Import models after app context is created
         from app.models import (

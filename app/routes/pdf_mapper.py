@@ -3,9 +3,8 @@ PDF Form Mapper routes for creating and managing PDF templates with field mappin
 """
 
 import os
-import json
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from flask import (
     Blueprint,
@@ -21,26 +20,16 @@ from flask import (
 from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 from pypdf import PdfReader, PdfWriter
-from pypdf.generic import (
-    NameObject,
-    TextStringObject,
-    ArrayObject,
-    DictionaryObject,
-    BooleanObject,
-)
+from pypdf.generic import NameObject
 
 from models import (
     db,
     PDFTemplate,
     Medication,
-    MedicationProduct,
-    ActiveIngredient,
 )
 from pdf_form_utils import (
     detect_table_in_pdf,
     create_form_fields,
-    apply_field_mappings,
-    generate_filled_pdf,
 )
 
 bp = Blueprint("pdf_mapper", __name__, url_prefix="/pdf-mapper")
@@ -379,9 +368,8 @@ def detect_fields(id):
                         annot = annot_ref.get_object()
                         if annot.get("/T"):  # Field name
                             field_name = annot["/T"]
-                            field_type = annot.get(
-                                "/FT", "/Tx"
-                            )  # Default to text
+                            # field_type could be used for determining field type in future
+                            # field_type = annot.get("/FT", "/Tx")  # Default to text
                             existing_fields.append(
                                 {
                                     "name": str(field_name),
@@ -398,7 +386,7 @@ def detect_fields(id):
             # Store the existing fields configuration
             template.table_config = {
                 "fields": existing_fields_sorted,
-                "detected_at": datetime.utcnow().isoformat(),
+                "detected_at": datetime.now(timezone.utc).isoformat(),
                 "has_form_fields": True,
                 "existing_fields": True,
                 "fields_count": len(existing_fields_sorted),
@@ -495,7 +483,7 @@ def create_grid_fields(id):
                 "rows": template.rows_per_page,
                 "columns": template.columns_count,
                 "fields": fields,
-                "detected_at": datetime.utcnow().isoformat(),
+                "detected_at": datetime.now(timezone.utc).isoformat(),
                 "has_form_fields": True,
                 "grid_created": True,
             }
@@ -729,7 +717,7 @@ def preview_template(id):
 
     try:
         # Generate preview PDF
-        preview_path = generate_preview_pdf(template, sample_medications)
+        generate_preview_pdf(template, sample_medications)
 
         return jsonify(
             {
@@ -910,30 +898,10 @@ def generate_preview_pdf(template, sample_data):
 
         # Apply field mappings to sample data
         if template.field_mappings and template.column_formulas:
-            # Process each row of data
-            for row_idx, med_data in enumerate(sample_data, 1):
-                # Process each column
-                for col_idx in range(1, template.columns_count + 1):
-                    field_name = f"row_{row_idx}_col_{col_idx}"
-
-                    # Get column formula
-                    formula = template.column_formulas.get(str(col_idx), {})
-                    if formula:
-                        # Combine fields according to formula
-                        field_values = []
-                        for field in formula.get("fields", []):
-                            value = med_data.get(field, "")
-                            if value:
-                                field_values.append(str(value))
-
-                        field_value = formula.get("separator", " ").join(
-                            field_values
-                        )
-                    else:
-                        field_value = ""
-
-                    # In a real implementation, you would set the form field value
-                    # For now, we'll just add the page as-is
+            # TODO: Process each row of data and set form field values
+            # Currently, we just add the page as-is without filling the fields
+            # This would be implemented when actual PDF field filling is needed
+            pass
 
         pdf_writer.add_page(page)
 
