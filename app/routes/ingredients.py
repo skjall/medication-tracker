@@ -177,6 +177,9 @@ def show_product(id: int):
 def edit(id: int):
     """Edit an active ingredient."""
     ingredient = ActiveIngredient.query.get_or_404(id)
+    
+    # Get return URL from query params or form
+    return_url = request.args.get('return_url') or request.form.get('return_url')
 
     if request.method == "POST":
         ingredient.name = request.form.get("name", "").strip()
@@ -194,6 +197,7 @@ def edit(id: int):
             return render_template(
                 "ingredients/edit.html",
                 ingredient=ingredient,
+                return_url=return_url,
                 local_time=to_local_timezone(datetime.now(timezone.utc)),
             )
         ingredient.strength = validated_strength
@@ -207,11 +211,16 @@ def edit(id: int):
 
         db.session.commit()
         flash(_("Active ingredient updated successfully"), "success")
+        
+        # Redirect to return_url if provided, otherwise to ingredient show page
+        if return_url:
+            return redirect(return_url)
         return redirect(url_for("ingredients.show", id=ingredient.id))
 
     return render_template(
         "ingredients/edit.html",
         ingredient=ingredient,
+        return_url=return_url,
         local_time=to_local_timezone(datetime.now(timezone.utc)),
     )
 

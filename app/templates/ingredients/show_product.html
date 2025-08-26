@@ -43,6 +43,10 @@
                                 <a href="{{ url_for('ingredients.show', id=product.active_ingredient.id) }}">
                                     {{ product.active_ingredient.full_name }}
                                 </a>
+                                <a href="{{ url_for('ingredients.edit', id=product.active_ingredient.id, return_url=request.url) }}" 
+                                   class="text-primary ms-2" title="{{ _('Edit ingredient') }}">
+                                    <i class="fas fa-edit"></i>
+                                </a>
                             </dd>
                             
                             <dt>{{ _('Brand Name') }}</dt>
