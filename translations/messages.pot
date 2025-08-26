@@ -1058,7 +1058,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: /app/templates/index.html:36 /app/templates/physicians/index.html:64
-#: /app/templates/scanner/scan.html:778 /app/templates/visits/index.html:86
+#: /app/templates/scanner/scan.html:806 /app/templates/visits/index.html:86
 #: /app/templates/visits/index.html:166
 msgid "View Details"
 msgstr ""
@@ -1711,7 +1711,7 @@ msgstr ""
 #: /app/templates/ingredients/new_package.html:102
 #: /app/templates/ingredients/show_product.html:135
 #: /app/templates/medication_packages/new.html:3
-#: /app/templates/scanner/scan.html:758
+#: /app/templates/scanner/scan.html:786
 msgid "Add Package"
 msgstr ""
 
@@ -2012,7 +2012,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:748
+#: /app/templates/scanner/scan.html:776
 msgid "Batch"
 msgstr ""
 
@@ -2021,7 +2021,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:751
+#: /app/templates/scanner/scan.html:779
 msgid "Expiry"
 msgstr ""
 
@@ -4503,43 +4503,43 @@ msgstr ""
 msgid "Initializing..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:515 /app/templates/scanner/scan.html:834
+#: /app/templates/scanner/scan.html:515 /app/templates/scanner/scan.html:862
 msgid "Retry"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:665
+#: /app/templates/scanner/scan.html:693
 msgid "Ready to scan"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:675
+#: /app/templates/scanner/scan.html:703
 msgid "Camera error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:708
+#: /app/templates/scanner/scan.html:736
 msgid "Scan failed"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:713
+#: /app/templates/scanner/scan.html:741
 msgid "Processing..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:765
+#: /app/templates/scanner/scan.html:793
 msgid "Package not found"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:771
+#: /app/templates/scanner/scan.html:799
 msgid "Package Scanned"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:785
+#: /app/templates/scanner/scan.html:813
 msgid "Scan successful"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:793 /app/templates/scanner/scan.html:797
+#: /app/templates/scanner/scan.html:821 /app/templates/scanner/scan.html:825
 msgid "Error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:831
+#: /app/templates/scanner/scan.html:859
 msgid "Camera Access Required"
 msgstr ""
 

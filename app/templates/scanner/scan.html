@@ -600,7 +600,8 @@
         input.addEventListener('change', (e) => {
             scanMode = e.target.value;
             console.log('Switching to mode:', scanMode);
-            restartScanner();
+            // Don't restart scanner, just change the decoder
+            switchScanMode();
         });
     });
     
@@ -630,6 +631,31 @@
         }
     }
     
+    async function switchScanMode() {
+        // Stop current scanner but keep camera selection
+        if (codeReader) {
+            codeReader.reset();
+        }
+        
+        // Initialize new code reader with current mode
+        if (scanMode === 'datamatrix') {
+            codeReader = new ZXing.BrowserMultiFormatReader();
+        } else {
+            // For linear codes (EAN, Code39/PZN, etc.)
+            const hints = new Map();
+            hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+                ZXing.BarcodeFormat.CODE_39,
+                ZXing.BarcodeFormat.EAN_13,
+                ZXing.BarcodeFormat.EAN_8,
+                ZXing.BarcodeFormat.CODE_128
+            ]);
+            codeReader = new ZXing.BrowserMultiFormatReader(hints);
+        }
+        
+        // Start scanning with the same camera
+        await startScanning();
+    }
+    
     async function initScanner() {
         try {
             // Initialize the appropriate code reader based on mode
@@ -651,15 +677,17 @@
             availableCameras = await codeReader.listVideoInputDevices();
             console.log('Available cameras:', availableCameras);
             
-            // Select camera
+            // Select camera - only if not already selected
             if (availableCameras.length > 0) {
-                // Try to find back camera
-                let backCamera = availableCameras.find(camera => 
-                    camera.label.toLowerCase().includes('back') || 
-                    camera.label.toLowerCase().includes('environment')
-                );
-                
-                selectedDeviceId = backCamera ? backCamera.deviceId : availableCameras[0].deviceId;
+                if (!selectedDeviceId) {
+                    // Try to find back camera only on first init
+                    let backCamera = availableCameras.find(camera => 
+                        camera.label.toLowerCase().includes('back') || 
+                        camera.label.toLowerCase().includes('environment')
+                    );
+                    
+                    selectedDeviceId = backCamera ? backCamera.deviceId : availableCameras[0].deviceId;
+                }
                 
                 // Update UI
                 updateStatus('{{ _("Ready to scan") }}', 'success');
