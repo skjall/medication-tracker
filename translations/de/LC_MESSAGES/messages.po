@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-26 18:03\n"
+"PO-Revision-Date: 2025-08-26 20:33\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -75,7 +75,7 @@ msgstr "Produkt erfolgreich erstellt"
 msgid "Package added successfully"
 msgstr "Packung erfolgreich hinzugefügt"
 
-#: /app/routes/ingredients.py:583 /app/routes/inventory.py:433
+#: /app/routes/ingredients.py:583 /app/routes/inventory.py:574
 #: /app/routes/medication_packages.py:217
 msgid "Package updated successfully"
 msgstr "Packung erfolgreich aktualisiert"
@@ -104,72 +104,72 @@ msgstr "Dieses Medikament wurde schon verschoben"
 msgid "Medication migrated successfully"
 msgstr "Medikament '{}' erfolgreich hinzugefügt"
 
-#: /app/routes/inventory.py:124
+#: /app/routes/inventory.py:209
 msgid "No inventory record found for this medication"
 msgstr "Kein Bestand für dieses Medikament gefunden"
 
-#: /app/routes/inventory.py:138
+#: /app/routes/inventory.py:223
 msgid "Please enter a valid amount to deduct"
 msgstr "Gib bitte einen gültigen Betrag ein, der abgezogen werden soll"
 
-#: /app/routes/inventory.py:144
+#: /app/routes/inventory.py:229
 #, python-format
 msgid "Not enough inventory. Available: %(available)s units, Requested: %(requested)s units"
 msgstr "Nicht genug auf Lager. Verfügbar: %(available)s Einheiten, Angefordert: %(requested)s Einheiten"
 
-#: /app/routes/inventory.py:160
+#: /app/routes/inventory.py:245
 #, python-format
 msgid "Successfully deducted %(amount)s units"
 msgstr "%(amount)s Einheiten erfolgreich abgezogen"
 
-#: /app/routes/inventory.py:163
+#: /app/routes/inventory.py:248
 msgid "from legacy"
 msgstr "aus Altsystem"
 
-#: /app/routes/inventory.py:167 /app/templates/inventory/edit_package.html:163
+#: /app/routes/inventory.py:252 /app/templates/inventory/edit_package.html:174
 msgid "used"
 msgstr "benutzt"
 
-#: /app/routes/inventory.py:167 /app/templates/inventory/edit_package.html:209
+#: /app/routes/inventory.py:252 /app/templates/inventory/edit_package.html:220
 #: /app/templates/inventory/index.html:325
 msgid "packages"
 msgstr "Packungen"
 
-#: /app/routes/inventory.py:167 /app/templates/inventory/index.html:161
+#: /app/routes/inventory.py:252 /app/templates/inventory/index.html:161
 msgid "package"
 msgid_plural "packages"
 msgstr[0] "Packung"
 msgstr[1] "Packungen"
 
-#: /app/routes/inventory.py:172
+#: /app/routes/inventory.py:257
 #, python-format
 msgid "Failed to deduct units: %(reason)s"
 msgstr "Abzug der Einheiten fehlgeschlagen: %(reason)s"
 
-#: /app/routes/inventory.py:213
+#: /app/routes/inventory.py:298
 #, python-brace-format
 msgid "Inventory for {} adjusted by {}"
 msgstr "Bestand für {} angepasst von {}"
 
-#: /app/routes/inventory.py:283
+#: /app/routes/inventory.py:368
 #, python-brace-format
 msgid "Inventory updated for {}"
 msgstr "Bestand aktualisiert für {}"
 
-#: /app/routes/inventory.py:345
+#: /app/routes/inventory.py:430
 msgid "Serial number already exists for another package"
 msgstr "Seriennummer existiert bereits für eine andere Packung"
 
-#: /app/routes/inventory.py:361
+#: /app/routes/inventory.py:446
 msgid "Invalid expiry date format"
 msgstr "Das Format des Ablaufdatums ist nicht richtig"
 
-#: /app/routes/inventory.py:426
+#: /app/routes/inventory.py:567
 #, python-format
 msgid "Units must be between 0 and %(max)s"
 msgstr "Einheiten müssen zwischen 0 und %(max)s liegen"
 
-#: /app/routes/inventory.py:429
+#: /app/routes/inventory.py:570
 msgid "Invalid units value"
 msgstr "Ungültiger Wert für Einheiten"
 
@@ -192,7 +192,8 @@ msgstr "Diese Packungsgröße existiert bereits für dieses Medikament"
 
 #: /app/routes/medication_packages.py:129
 #: /app/routes/medication_packages.py:146
-#: /app/routes/medication_packages.py:227 /app/routes/orders.py:811
+#: /app/routes/medication_packages.py:227 /app/routes/orders.py:859
+#: /app/routes/orders.py:880
 msgid "Package does not belong to this medication"
 msgstr "Packung gehört nicht zu diesem Medikament"
 
@@ -308,15 +309,19 @@ msgstr "Die PDF-Vorlagendatei fehlt. Bitte lade die Vorlage in PDF-Formulare ern
 msgid "No PDF template assigned to physician. Please assign a template in physician settings."
 msgstr "Diesem Arzt ist keine PDF-Vorlage zugewiesen. Bitte weise in den Arzt-Einstellungen eine Vorlage zu."
 
-#: /app/routes/orders.py:855
+#: /app/routes/orders.py:883 /app/routes/orders.py:886
+msgid "Cannot verify package medication"
+msgstr "Kann Medikamentenpackung nicht verifizieren"
+
+#: /app/routes/orders.py:930
 msgid "Package linked successfully"
 msgstr "Packung erfolgreich hinzugefügt"
 
-#: /app/routes/orders.py:869
+#: /app/routes/orders.py:944
 msgid "Package is not linked to this order item"
 msgstr "Die Packung ist nicht mit diesem Bestellartikel verknüpft"
 
-#: /app/routes/orders.py:907
+#: /app/routes/orders.py:982
 msgid "Package unlinked successfully"
 msgstr "Packung erfolgreich hinzugefügt"
 
@@ -356,7 +361,12 @@ msgstr "Bitte gib die Packungsgröße und die Menge ein."
 msgid "Package configuration updated"
 msgstr "Packungskonfiguration aktualisiert"
 
-#: /app/routes/package_onboarding.py:213
+#: /app/routes/package_onboarding.py:219
+#, python-format
+msgid "Package added via scanner onboarding: %(size)s (%(units)s units), Batch: %(batch)s, Expiry: %(expiry)s"
+msgstr "Packung über Scanner-Onboarding hinzugefügt: %(size)s (%(units)s Einheiten), Charge: %(batch)s, Ablauf: %(expiry)s"
+
+#: /app/routes/package_onboarding.py:238
 msgid "Package successfully onboarded!"
 msgstr "Packung erfolgreich eingebunden!"
 
@@ -446,7 +456,7 @@ msgstr "Tägliche Dosis (Stärke × Einheiten)"
 #: /app/templates/ingredients/edit_package.html:28
 #: /app/templates/ingredients/new_package.html:28
 #: /app/templates/ingredients/show_product.html:143
-#: /app/templates/inventory/edit_package.html:39
+#: /app/templates/inventory/edit_package.html:45
 #: /app/templates/medication_packages/edit.html:23
 #: /app/templates/medication_packages/new.html:23
 #: /app/templates/package_onboarding/onboard.html:337
@@ -621,67 +631,82 @@ msgstr "Packung bereits im Inventar"
 msgid "Package configuration updated with scanned data"
 msgstr "Packungsinformationen mit gescannten Daten aktualisiert"
 
-#: /app/routes/scanner.py:262
+#: /app/routes/scanner.py:269 /app/routes/scanner.py:625
 #, python-format
 msgid "Order fulfilled with %(overage)d extra units"
 msgstr "Bestellung erledigt mit %(overage)d zusätzliche Einheiten"
 
-#: /app/routes/scanner.py:267
+#: /app/routes/scanner.py:273 /app/routes/scanner.py:629
+#, python-format
+msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s. %(overage)d extra units."
+msgstr "Bestellung erledigt. %(quantity)d Einheiten in %(package_size)s enthalten. %(overage)d zusätzliche Einheiten."
+
+#: /app/routes/scanner.py:279 /app/routes/scanner.py:635
 msgid "Order fulfilled exactly"
 msgstr "Bestellung erledigt"
 
-#: /app/routes/scanner.py:275
+#: /app/routes/scanner.py:281 /app/routes/scanner.py:637
+#, python-format
+msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s."
+msgstr "Bestellung erledigt. %(quantity)d Einheiten in %(package_size)s erhalten."
+
+#: /app/routes/scanner.py:292 /app/routes/scanner.py:648
 #, python-format
 msgid "Partial fulfillment: %(remaining)d units still needed"
 msgstr "Teilweise erfüllt: %(remaining)d Einheiten noch erforderlich"
 
-#: /app/routes/scanner.py:368
+#: /app/routes/scanner.py:296 /app/routes/scanner.py:652
+#, python-format
+msgid "Partially fulfilled. Received %(quantity)d units in %(package_size)s. Still need %(remaining)d units."
+msgstr "Teilweise erledigt. %(quantity)d Einheiten in %(package_size)s erhalten. Noch %(remaining)d Einheiten benötigt."
+
+#: /app/routes/scanner.py:393
 msgid "Product found but not linked to inventory system"
 msgstr "Produkt gefunden, aber nicht mit dem Inventarsystem verknüpft"
 
-#: /app/routes/scanner.py:371
+#: /app/routes/scanner.py:396
 msgid "This product needs to be linked to a medication record for inventory tracking"
 msgstr "Dieses Produkt muss mit einem Medikament verknüpft werden, damit man den Bestand im Auge behalten kann"
 
-#: /app/routes/scanner.py:425
+#: /app/routes/scanner.py:450
 msgid "Package information updated with scanned data"
 msgstr "Packungsinformationen mit gescannten Daten aktualisiert"
 
-#: /app/routes/scanner.py:447
+#: /app/routes/scanner.py:472
 #, python-format
 msgid "%(label)s %(number)s not found"
 msgstr "%(label)s %(number)s nicht gefunden"
 
-#: /app/routes/scanner.py:451
+#: /app/routes/scanner.py:476
 msgid "Please add this package."
 msgstr "Bitte füge diese Packung hinzu."
 
-#: /app/routes/scanner.py:454
+#: /app/routes/scanner.py:479
 msgid "Unrecognized barcode format"
 msgstr "Unbekanntes Strichcode-Format"
 
-#: /app/routes/scanner.py:455
+#: /app/routes/scanner.py:480
 msgid "This barcode type is not supported"
 msgstr "Dieser Strichcode-Typ wird nicht unterstützt"
 
-#: /app/routes/scanner.py:714
+#: /app/routes/scanner.py:758
 msgid "Package not in inventory"
 msgstr "Packung nicht im Inventar"
 
-#: /app/routes/scanner.py:719
+#: /app/routes/scanner.py:763
 msgid "Invalid number of units"
 msgstr "Ungültige Anzahl an Einheiten"
 
-#: /app/routes/scanner.py:723
+#: /app/routes/scanner.py:767
 msgid "Not enough units in package"
 msgstr "Nicht genug Einheiten in der Packung"
 
-#: /app/routes/scanner.py:740
+#: /app/routes/scanner.py:784
 #, python-format
 msgid "%(units)d units consumed"
 msgstr "%(units)d Einheiten verbraucht"
 
-#: /app/routes/scanner.py:756
+#: /app/routes/scanner.py:800
 msgid "Package marked as expired"
 msgstr "Packung als abgelaufen markiert"
 
@@ -1035,7 +1060,7 @@ msgstr[0] "%(count)d Tag entfernt"
 msgstr[1] "%(count)d Tage entfernt"
 
 #: /app/templates/index.html:36 /app/templates/physicians/index.html:64
-#: /app/templates/scanner/scan.html:806 /app/templates/visits/index.html:86
+#: /app/templates/scanner/scan.html:841 /app/templates/visits/index.html:86
 #: /app/templates/visits/index.html:166
 msgid "View Details"
 msgstr "Details anzeigen"
@@ -1253,7 +1278,7 @@ msgstr "Aktionen"
 #: /app/templates/ingredients/show_product.html:314
 #: /app/templates/inventory/depletion.html:99
 #: /app/templates/inventory/depletion.html:100
-#: /app/templates/inventory/edit_package.html:50
+#: /app/templates/inventory/edit_package.html:61
 #: /app/templates/inventory/index.html:154
 #: /app/templates/inventory/index.html:158
 #: /app/templates/inventory/index.html:314
@@ -1292,6 +1317,8 @@ msgstr[1] "%(count)d Tage"
 
 #: /app/templates/index.html:228 /app/templates/index.html:235
 #: /app/templates/index.html:317 /app/templates/index.html:324
+#: /app/templates/inventory/edit_package.html:42
+#: /app/templates/inventory/edit_package.html:55
 #: /app/templates/inventory/index.html:172
 #: /app/templates/inventory/index.html:181
 #: /app/templates/inventory/index.html:336
@@ -1428,7 +1455,8 @@ msgstr "z. B. N02BE01"
 #: /app/templates/ingredients/new_package.html:99
 #: /app/templates/ingredients/new_product.html:17
 #: /app/templates/ingredients/new_product.html:144
-#: /app/templates/inventory/edit_package.html:239
+#: /app/templates/inventory/edit_package.html:251
+#: /app/templates/inventory/edit_package.html:255
 #: /app/templates/medication_packages/edit.html:10
 #: /app/templates/medication_packages/edit.html:67
 #: /app/templates/medication_packages/new.html:10
@@ -1457,7 +1485,7 @@ msgstr "Abbrechen"
 #: /app/templates/ingredients/edit.html:64
 #: /app/templates/ingredients/edit_package.html:98
 #: /app/templates/ingredients/edit_product.html:99
-#: /app/templates/inventory/edit_package.html:236
+#: /app/templates/inventory/edit_package.html:247
 #: /app/templates/medication_packages/edit.html:64
 msgid "Save Changes"
 msgstr "Änderungen speichern"
@@ -1598,7 +1626,7 @@ msgstr "Gesamtbestand"
 #: /app/templates/ingredients/index.html:47
 #: /app/templates/ingredients/index.html:107
 #: /app/templates/ingredients/show.html:118
-#: /app/templates/inventory/edit_package.html:262
+#: /app/templates/inventory/edit_package.html:279
 #: /app/templates/inventory/show.html:468
 #: /app/templates/pdf_mapper/content.html:564
 #: /app/templates/pdf_mapper/content.html:1083
@@ -1688,7 +1716,7 @@ msgstr "Noch keine Medikamente gespeichert. Leg einfach ein neues Produkt an."
 #: /app/templates/ingredients/new_package.html:102
 #: /app/templates/ingredients/show_product.html:135
 #: /app/templates/medication_packages/new.html:3
-#: /app/templates/scanner/scan.html:786
+#: /app/templates/scanner/scan.html:818
 msgid "Add Package"
 msgstr "Packung hinzufügen"
 
@@ -1982,12 +2010,12 @@ msgid "Serial"
 msgstr "Seriennummer"
 
 #: /app/templates/ingredients/show_product.html:245
-#: /app/templates/inventory/edit_package.html:59
+#: /app/templates/inventory/edit_package.html:70
 #: /app/templates/inventory/show.html:438
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:776
+#: /app/templates/scanner/scan.html:808
 msgid "Batch"
 msgstr "Charge"
 
@@ -1996,7 +2024,7 @@ msgstr "Charge"
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:779
+#: /app/templates/scanner/scan.html:811
 msgid "Expiry"
 msgstr "Verwendbar bis"
 
@@ -2007,14 +2035,14 @@ msgid "Units"
 msgstr "Einheiten"
 
 #: /app/templates/ingredients/show_product.html:266
-#: /app/templates/inventory/edit_package.html:256
+#: /app/templates/inventory/edit_package.html:273
 #: /app/templates/inventory/show.html:464 /app/templates/scanner/index.html:102
 #: /app/templates/scanner/package_details.html:103
 msgid "Sealed"
 msgstr "Verschlossen"
 
 #: /app/templates/ingredients/show_product.html:268
-#: /app/templates/inventory/edit_package.html:259
+#: /app/templates/inventory/edit_package.html:276
 #: /app/templates/inventory/show.html:466 /app/templates/orders/edit.html:54
 #: /app/templates/orders/index.html:49 /app/templates/orders/show.html:70
 #: /app/templates/scanner/index.html:104
@@ -2074,7 +2102,7 @@ msgid "Sorted by Depletion Date"
 msgstr "Nach Verbrauchsdatum sortiert"
 
 #: /app/templates/inventory/depletion.html:83
-#: /app/templates/inventory/edit_package.html:35
+#: /app/templates/inventory/edit_package.html:41
 #: /app/templates/orders/edit.html:68 /app/templates/orders/new.html:89
 #: /app/templates/orders/show.html:159 /app/templates/scanner/index.html:54
 #: /app/templates/scanner/index.html:140
@@ -2133,197 +2161,198 @@ msgstr "leer"
 msgid "no daily usage set"
 msgstr "keine tägliche Nutzung festgelegt"
 
-#: /app/templates/inventory/edit_package.html:12
+#: /app/templates/inventory/edit_package.html:13
+#: /app/templates/inventory/edit_package.html:17
 msgid "Back to Inventory"
 msgstr "Zurück zur Bestandsliste"
 
-#: /app/templates/inventory/edit_package.html:22
-#: /app/templates/inventory/edit_package.html:92
+#: /app/templates/inventory/edit_package.html:28
+#: /app/templates/inventory/edit_package.html:103
 #: /app/templates/scanner/package_details.html:3
 #: /app/templates/scanner/package_details.html:9
 msgid "Package Details"
 msgstr "Packungsdetails"
 
-#: /app/templates/inventory/edit_package.html:31
+#: /app/templates/inventory/edit_package.html:37
 #: /app/templates/scanner/package_details.html:19
 msgid "Package Information"
 msgstr "Packungsinformationen"
 
-#: /app/templates/inventory/edit_package.html:49
+#: /app/templates/inventory/edit_package.html:60
 msgid "Original Units"
 msgstr "Original-Einheiten"
 
-#: /app/templates/inventory/edit_package.html:55
-#: /app/templates/inventory/edit_package.html:96
+#: /app/templates/inventory/edit_package.html:66
+#: /app/templates/inventory/edit_package.html:107
 msgid "Serial Number"
 msgstr "Seriennummer"
 
-#: /app/templates/inventory/edit_package.html:63
-#: /app/templates/inventory/edit_package.html:79
+#: /app/templates/inventory/edit_package.html:74
+#: /app/templates/inventory/edit_package.html:90
 msgid "from GS1"
 msgstr "aus GS1"
 
-#: /app/templates/inventory/edit_package.html:66
-#: /app/templates/inventory/edit_package.html:82
+#: /app/templates/inventory/edit_package.html:77
+#: /app/templates/inventory/edit_package.html:93
 #: /app/templates/physicians/index.html:49
 #: /app/templates/physicians/show.html:44
 msgid "Not specified"
 msgstr "Nicht angegeben"
 
-#: /app/templates/inventory/edit_package.html:70
-#: /app/templates/inventory/edit_package.html:114
+#: /app/templates/inventory/edit_package.html:81
+#: /app/templates/inventory/edit_package.html:125
 msgid "Expiry Date"
 msgstr "Ablaufdatum"
 
-#: /app/templates/inventory/edit_package.html:92
+#: /app/templates/inventory/edit_package.html:103
 msgid "Not from GS1 scan - can be edited"
 msgstr "Nicht aus GS1-Scan – kann bearbeitet werden"
 
-#: /app/templates/inventory/edit_package.html:99
+#: /app/templates/inventory/edit_package.html:110
 msgid "e.g. SN123456789"
 msgstr "z. B. SN123456789"
 
-#: /app/templates/inventory/edit_package.html:100
+#: /app/templates/inventory/edit_package.html:111
 msgid "Unique identifier for this package"
 msgstr "Eindeutige Kennung für diese Packung"
 
-#: /app/templates/inventory/edit_package.html:105
+#: /app/templates/inventory/edit_package.html:116
 msgid "Batch Number"
 msgstr "Chargennummer"
 
-#: /app/templates/inventory/edit_package.html:108
+#: /app/templates/inventory/edit_package.html:119
 msgid "e.g. LOT123456"
 msgstr "z. B. LOT123456"
 
-#: /app/templates/inventory/edit_package.html:109
+#: /app/templates/inventory/edit_package.html:120
 msgid "Enter the batch/lot number from the package"
 msgstr "Gib die Chargen-/Losnummer von der Verpackung ein"
 
-#: /app/templates/inventory/edit_package.html:117
+#: /app/templates/inventory/edit_package.html:128
 msgid "Select the expiry date from the package"
 msgstr "Wähle das Ablaufdatum der Packung aus"
 
-#: /app/templates/inventory/edit_package.html:125
+#: /app/templates/inventory/edit_package.html:136
 #: /app/templates/scanner/package_details.html:100
 msgid "Package Status"
 msgstr "Packungs-Status"
 
-#: /app/templates/inventory/edit_package.html:128
+#: /app/templates/inventory/edit_package.html:139
 msgid "Sealed - Not opened yet"
 msgstr "Versiegelt - Noch nicht geöffnet"
 
-#: /app/templates/inventory/edit_package.html:131
+#: /app/templates/inventory/edit_package.html:142
 msgid "Open - In use"
 msgstr "Öffnen – In Verwendung"
 
-#: /app/templates/inventory/edit_package.html:134
+#: /app/templates/inventory/edit_package.html:145
 msgid "Empty - All units consumed"
 msgstr "Leer – Alle Einheiten verbraucht"
 
-#: /app/templates/inventory/edit_package.html:137
+#: /app/templates/inventory/edit_package.html:148
 msgid "Discarded - Removed from inventory"
 msgstr "Entsorgt – Aus dem Inventar entfernt"
 
-#: /app/templates/inventory/edit_package.html:141
+#: /app/templates/inventory/edit_package.html:152
 msgid "Update the status to reflect the current state of the package"
 msgstr "Aktualisiere den Status, damit er den aktuellen Zustand der Packung zeigt"
 
-#: /app/templates/inventory/edit_package.html:146
+#: /app/templates/inventory/edit_package.html:157
 msgid "Current Units Remaining"
 msgstr "Aktuell noch verfügbar"
 
-#: /app/templates/inventory/edit_package.html:167
+#: /app/templates/inventory/edit_package.html:178
 msgid "Adjust if you have taken medication from this package without updating the system"
 msgstr "Passe das an, wenn du Medikamente aus dieser Packung genommen hast, ohne das System zu aktualisieren"
 
-#: /app/templates/inventory/edit_package.html:173
+#: /app/templates/inventory/edit_package.html:184
 msgid "Quick Adjustments"
 msgstr "Schnelle Anpassung"
 
-#: /app/templates/inventory/edit_package.html:190
+#: /app/templates/inventory/edit_package.html:201
 msgid "Mark Empty"
 msgstr "Als Leer markieren"
 
-#: /app/templates/inventory/edit_package.html:193
+#: /app/templates/inventory/edit_package.html:204
 msgid "Reset to Full"
 msgstr "Auf Voll zurücksetzen"
 
-#: /app/templates/inventory/edit_package.html:200
+#: /app/templates/inventory/edit_package.html:211
 msgid "Associated Order"
 msgstr "Zugeordnete Bestellung"
 
-#: /app/templates/inventory/edit_package.html:202
+#: /app/templates/inventory/edit_package.html:213
 msgid "No order association"
 msgstr "Keine Bestellzuordnung"
 
-#: /app/templates/inventory/edit_package.html:204
+#: /app/templates/inventory/edit_package.html:215
 #: /app/templates/orders/index.html:13
 msgid "Pending Orders"
 msgstr "Ausstehende Bestellungen"
 
-#: /app/templates/inventory/edit_package.html:207
 #: /app/templates/inventory/edit_package.html:218
+#: /app/templates/inventory/edit_package.html:229
 #: /app/templates/orders/show.html:3 /app/templates/orders/show.html:8
 #, python-format
 msgid "Order #%(order_id)s"
 msgstr "Bestellung #%(order_id)s"
 
-#: /app/templates/inventory/edit_package.html:215
+#: /app/templates/inventory/edit_package.html:226
 #: /app/templates/orders/index.html:141
 msgid "Fulfilled Orders"
 msgstr "Erfüllte Bestellungen"
 
-#: /app/templates/inventory/edit_package.html:225
+#: /app/templates/inventory/edit_package.html:236
 msgid "Link this package to a medication order"
 msgstr "Diese Packung mit einer Medikamentenbestellung verknüpfen"
 
-#: /app/templates/inventory/edit_package.html:229
+#: /app/templates/inventory/edit_package.html:240
 #: /app/templates/inventory/show.html:268
 #: /app/templates/inventory/show.html:353
 msgid "Notes (Optional)"
 msgstr "Notizen (optional)"
 
-#: /app/templates/inventory/edit_package.html:231
+#: /app/templates/inventory/edit_package.html:242
 msgid "Add any notes about this adjustment"
 msgstr "Füge Notizen zu dieser Anpassung hinzu"
 
-#: /app/templates/inventory/edit_package.html:251
+#: /app/templates/inventory/edit_package.html:268
 msgid "Status Information"
 msgstr "Statusinformation"
 
-#: /app/templates/inventory/edit_package.html:254
+#: /app/templates/inventory/edit_package.html:271
 msgid "Current Status"
 msgstr "Aktueller Status"
 
-#: /app/templates/inventory/edit_package.html:257
+#: /app/templates/inventory/edit_package.html:274
 msgid "This package has not been opened yet"
 msgstr "Diese Packung wurde noch nicht geöffnet"
 
-#: /app/templates/inventory/edit_package.html:260
+#: /app/templates/inventory/edit_package.html:277
 msgid "This package is currently in use"
 msgstr "Diese Packung wird gerade benutzt"
 
-#: /app/templates/inventory/edit_package.html:263
+#: /app/templates/inventory/edit_package.html:280
 msgid "All units have been consumed"
 msgstr "Alle Einheiten wurden verbraucht"
 
-#: /app/templates/inventory/edit_package.html:265
+#: /app/templates/inventory/edit_package.html:282
 msgid "Discarded"
 msgstr "Entsorgt"
 
-#: /app/templates/inventory/edit_package.html:266
+#: /app/templates/inventory/edit_package.html:283
 msgid "This package has been removed from inventory"
 msgstr "Diese Packung wurde aus dem Inventar entfernt"
 
-#: /app/templates/inventory/edit_package.html:274
+#: /app/templates/inventory/edit_package.html:291
 msgid "Usage Information"
 msgstr "Informationen zur Verwendung"
 
-#: /app/templates/inventory/edit_package.html:277
+#: /app/templates/inventory/edit_package.html:294
 msgid "Units Used"
 msgstr "Verwendete Einheiten"
 
-#: /app/templates/inventory/edit_package.html:285
+#: /app/templates/inventory/edit_package.html:302
 #: /app/templates/inventory/show.html:441 /app/templates/orders/show.html:602
 #: /app/templates/scanner/package_details.html:72
 msgid "Scanned"
@@ -2703,7 +2732,7 @@ msgstr "Bestandsübersicht"
 
 #: /app/templates/layout.html:55 /app/templates/scanner/index.html:3
 #: /app/templates/scanner/index.html:9 /app/templates/scanner/scan.html:3
-#: /app/templates/scanner/scan.html:468
+#: /app/templates/scanner/scan.html:490
 msgid "Scanner"
 msgstr "Scanner"
 
@@ -4416,55 +4445,55 @@ msgstr "Als abgelaufen markieren"
 msgid "Raw Data"
 msgstr "Rohdaten"
 
-#: /app/templates/scanner/scan.html:473 /app/templates/scanner/scan.html:530
+#: /app/templates/scanner/scan.html:495 /app/templates/scanner/scan.html:552
 msgid "DataMatrix codes"
 msgstr "DataMatrix-Codes"
 
-#: /app/templates/scanner/scan.html:477 /app/templates/scanner/scan.html:534
+#: /app/templates/scanner/scan.html:499 /app/templates/scanner/scan.html:556
 msgid "Linear barcodes (EAN, PZN)"
 msgstr "Lineare Barcodes (EAN, PZN)"
 
-#: /app/templates/scanner/scan.html:481 /app/templates/scanner/scan.html:538
+#: /app/templates/scanner/scan.html:503 /app/templates/scanner/scan.html:560
 msgid "Initializing..."
 msgstr "Initialisierung..."
 
-#: /app/templates/scanner/scan.html:515 /app/templates/scanner/scan.html:862
+#: /app/templates/scanner/scan.html:537 /app/templates/scanner/scan.html:897
 msgid "Retry"
 msgstr "Erneut versuchen"
 
-#: /app/templates/scanner/scan.html:693
+#: /app/templates/scanner/scan.html:725
 msgid "Ready to scan"
 msgstr "Bereit zum Scannen"
 
-#: /app/templates/scanner/scan.html:703
+#: /app/templates/scanner/scan.html:735
 msgid "Camera error"
 msgstr "Kamerafehler"
 
-#: /app/templates/scanner/scan.html:736
+#: /app/templates/scanner/scan.html:768
 msgid "Scan failed"
 msgstr "Scan fehlgeschlagen"
 
-#: /app/templates/scanner/scan.html:741
+#: /app/templates/scanner/scan.html:773
 msgid "Processing..."
 msgstr "Verarbeite..."
 
-#: /app/templates/scanner/scan.html:793
+#: /app/templates/scanner/scan.html:825
 msgid "Package not found"
 msgstr "Packung nicht gefunden"
 
-#: /app/templates/scanner/scan.html:799
+#: /app/templates/scanner/scan.html:834
 msgid "Package Scanned"
 msgstr "Packung gescannt"
 
-#: /app/templates/scanner/scan.html:813
+#: /app/templates/scanner/scan.html:848
 msgid "Scan successful"
 msgstr "Scan erfolgreich"
 
-#: /app/templates/scanner/scan.html:821 /app/templates/scanner/scan.html:825
+#: /app/templates/scanner/scan.html:856 /app/templates/scanner/scan.html:860
 msgid "Error"
 msgstr "Fehler"
 
-#: /app/templates/scanner/scan.html:859
+#: /app/templates/scanner/scan.html:894
 msgid "Camera Access Required"
 msgstr "Kamerazugriff erforderlich"
 

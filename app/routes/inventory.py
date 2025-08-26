@@ -108,23 +108,55 @@ def show(id: int):
             # Get all packages for these products
             packages = ProductPackage.query.filter(ProductPackage.product_id.in_(product_ids)).all()
             package_gtins = [p.gtin for p in packages if p.gtin]
+            package_numbers = [(p.national_number, p.national_number_type) 
+                             for p in packages if p.national_number]
             
-            if package_gtins:
-                # Get inventory for packages with matching GTINs and no medication_id
-                new_package_inventory_raw = (
+            if package_gtins or package_numbers:
+                # Build query for inventory packages
+                from sqlalchemy import or_
+                
+                # Get inventory for packages with matching GTINs or national numbers and no medication_id
+                query = (
                     db.session.query(PackageInventory, ScannedItem)
                     .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
                     .filter(PackageInventory.medication_id == None)  # Only new system packages
-                    .filter(ScannedItem.gtin.in_(package_gtins))
                     .filter(PackageInventory.status.in_(['sealed', 'open', 'empty']))
-                    .order_by(ScannedItem.expiry_date.asc())
-                    .all()
                 )
+                
+                # Build OR conditions for GTIN and national numbers
+                conditions = []
+                if package_gtins:
+                    conditions.append(ScannedItem.gtin.in_(package_gtins))
+                if package_numbers:
+                    for nat_num, nat_type in package_numbers:
+                        if nat_type:
+                            conditions.append((ScannedItem.national_number == nat_num) & 
+                                            (ScannedItem.national_number_type == nat_type))
+                        else:
+                            conditions.append(ScannedItem.national_number == nat_num)
+                
+                if conditions:
+                    query = query.filter(or_(*conditions))
+                    new_package_inventory_raw = query.order_by(ScannedItem.expiry_date.asc()).all()
+                else:
+                    new_package_inventory_raw = []
                 
                 # For each new package, create a mock MedicationPackage or fetch the ProductPackage info
                 for pkg_inv, scanned in new_package_inventory_raw:
-                    # Find the matching ProductPackage
-                    matching_package = ProductPackage.query.filter_by(gtin=scanned.gtin).first()
+                    # Find the matching ProductPackage by GTIN or national number
+                    matching_package = None
+                    if scanned.gtin:
+                        matching_package = ProductPackage.query.filter_by(gtin=scanned.gtin).first()
+                    if not matching_package and scanned.national_number:
+                        if scanned.national_number_type:
+                            matching_package = ProductPackage.query.filter_by(
+                                national_number=scanned.national_number,
+                                national_number_type=scanned.national_number_type
+                            ).first()
+                        if not matching_package:
+                            matching_package = ProductPackage.query.filter_by(
+                                national_number=scanned.national_number
+                            ).first()
                     
                     # Create a mock MedicationPackage object with package_size for display
                     if matching_package:
@@ -423,10 +455,53 @@ def edit_package(package_id: int):
         
         # Update order association
         order_item_id = request.form.get("order_item_id")
+        old_order_item_id = package.order_item_id
         if order_item_id:
             package.order_item_id = int(order_item_id) if order_item_id else None
         else:
             package.order_item_id = None
+        
+        # Update order status if order association changed
+        if package.order_item_id != old_order_item_id:
+            from models import Order, OrderItem
+            
+            # Update old order if there was one
+            if old_order_item_id:
+                old_order_item = OrderItem.query.get(old_order_item_id)
+                if old_order_item:
+                    # Update fulfillment status based on linked packages
+                    total_needed = old_order_item.packages_n1 + old_order_item.packages_n2 + old_order_item.packages_n3
+                    linked_count = old_order_item.linked_packages_count
+                    
+                    if linked_count == 0:
+                        old_order_item.fulfillment_status = "pending"
+                    elif linked_count < total_needed:
+                        old_order_item.fulfillment_status = "partial"
+                    else:
+                        old_order_item.fulfillment_status = "fulfilled"
+                        old_order_item.fulfilled_at = datetime.now(timezone.utc)
+                    
+                    if old_order_item.order:
+                        old_order_item.order.update_status_from_items()
+            
+            # Update new order if there is one
+            if package.order_item_id:
+                new_order_item = OrderItem.query.get(package.order_item_id)
+                if new_order_item:
+                    # Update fulfillment status based on linked packages
+                    total_needed = new_order_item.packages_n1 + new_order_item.packages_n2 + new_order_item.packages_n3
+                    linked_count = new_order_item.linked_packages_count
+                    
+                    if linked_count == 0:
+                        new_order_item.fulfillment_status = "pending"
+                    elif linked_count < total_needed:
+                        new_order_item.fulfillment_status = "partial"
+                    else:
+                        new_order_item.fulfillment_status = "fulfilled"
+                        new_order_item.fulfilled_at = datetime.now(timezone.utc)
+                    
+                    if new_order_item.order:
+                        new_order_item.order.update_status_from_items()
         
         # Update current units and track the change
         current_units = request.form.get("current_units")
@@ -448,7 +523,20 @@ def edit_package(package_id: int):
                     # Create inventory log if units changed
                     adjustment = new_units - old_units
                     if adjustment != 0:
-                        inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
+                        # Find inventory - either from medication_id (old system) or by matching ingredient
+                        inventory = None
+                        if package.medication_id:
+                            inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
+                        else:
+                            # For new system, try to find by ingredient name matching
+                            from models import ProductPackage, MedicationProduct, Medication
+                            if scanned_item and scanned_item.gtin:
+                                product_pkg = ProductPackage.query.filter_by(gtin=scanned_item.gtin).first()
+                                if product_pkg and product_pkg.product and product_pkg.product.active_ingredient:
+                                    med = Medication.query.filter_by(name=product_pkg.product.active_ingredient.name).first()
+                                    if med:
+                                        inventory = Inventory.query.filter_by(medication_id=med.id).first()
+                        
                         if inventory:
                             # Get notes from form or create default message
                             notes = request.form.get("notes", "").strip()
@@ -486,39 +574,161 @@ def edit_package(package_id: int):
         flash(_("Package updated successfully"), "success")
         
         # Return to inventory show page
-        inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
+        # For new package-based system, find the inventory by active ingredient
+        inventory = None
+        if package.medication_id:
+            # Old system - find by medication_id
+            inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
+        else:
+            # New system - find by active ingredient
+            from models import ProductPackage, MedicationProduct, ActiveIngredient, Medication
+            product_pkg = None
+            
+            if scanned_item:
+                # Try to find ProductPackage by GTIN or national number
+                if scanned_item.gtin:
+                    product_pkg = ProductPackage.query.filter_by(gtin=scanned_item.gtin).first()
+                elif scanned_item.national_number and scanned_item.national_number_type:
+                    product_pkg = ProductPackage.query.filter_by(
+                        national_number=scanned_item.national_number,
+                        national_number_type=scanned_item.national_number_type
+                    ).first()
+                
+                if product_pkg and product_pkg.product and product_pkg.product.active_ingredient:
+                    # Find medication with matching active ingredient name
+                    med = Medication.query.filter_by(name=product_pkg.product.active_ingredient.name).first()
+                    if med:
+                        inventory = Inventory.query.filter_by(medication_id=med.id).first()
+        
         if inventory:
             return redirect(url_for("inventory.show", id=inventory.id))
         else:
             return redirect(url_for("inventory.index"))
     
     # GET request - show edit form
-    inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
+    inventory = None
+    medication = None
+    product_package = None
+    pending_order_items = []
+    fulfilled_order_items = []
     
-    # Get order items for this medication
-    from models import Order, OrderItem
-    
-    pending_order_items = (
-        OrderItem.query.join(Order)
-        .filter(
-            OrderItem.medication_id == package.medication_id,
-            OrderItem.fulfillment_status == 'pending',
-            Order.status.in_(['planned', 'printed'])
-        )
-        .order_by(Order.created_date.desc())
-        .all()
-    )
-    
-    fulfilled_order_items = (
-        OrderItem.query.join(Order)
-        .filter(
-            OrderItem.medication_id == package.medication_id,
-            OrderItem.fulfillment_status.in_(['fulfilled', 'partial'])
-        )
-        .order_by(Order.created_date.desc())
-        .limit(10)
-        .all()
-    )
+    # For old system packages with medication_id
+    if package.medication_id:
+        inventory = Inventory.query.filter_by(medication_id=package.medication_id).first()
+        medication = package.medication
+        
+        # Get order items - match by active ingredient name for flexibility
+        from models import Order, OrderItem, ActiveIngredient
+        
+        # Find the active ingredient that matches this medication name
+        active_ingredient = ActiveIngredient.query.filter_by(name=medication.name).first()
+        
+        if active_ingredient:
+            # Match orders by finding medications with the same active ingredient name
+            # Since OrderItem still uses medication_id, we need to find all medications
+            # that match this active ingredient
+            matching_meds = Medication.query.filter_by(name=active_ingredient.name).all()
+            matching_med_ids = [m.id for m in matching_meds]
+            
+            if matching_med_ids:
+                pending_order_items = (
+                    OrderItem.query.join(Order)
+                    .filter(
+                        OrderItem.medication_id.in_(matching_med_ids),
+                        OrderItem.fulfillment_status.in_(['pending', 'partial']),
+                        Order.status.in_(['planned', 'printed', 'partial'])
+                    )
+                    .order_by(Order.created_date.desc())
+                    .all()
+                )
+                
+                fulfilled_order_items = (
+                    OrderItem.query.join(Order)
+                    .filter(
+                        OrderItem.medication_id.in_(matching_med_ids),
+                        OrderItem.fulfillment_status.in_(['fulfilled', 'partial'])
+                    )
+                    .order_by(Order.created_date.desc())
+                    .limit(10)
+                    .all()
+                )
+        else:
+            # Fallback to old medication_id matching if no ingredient found
+            pending_order_items = (
+                OrderItem.query.join(Order)
+                .filter(
+                    OrderItem.medication_id == package.medication_id,
+                    OrderItem.fulfillment_status.in_(['pending', 'partial']),
+                    Order.status.in_(['planned', 'printed', 'partial'])
+                )
+                .order_by(Order.created_date.desc())
+                .all()
+            )
+            
+            fulfilled_order_items = (
+                OrderItem.query.join(Order)
+                .filter(
+                    OrderItem.medication_id == package.medication_id,
+                    OrderItem.fulfillment_status.in_(['fulfilled', 'partial'])
+                )
+                .order_by(Order.created_date.desc())
+                .limit(10)
+                .all()
+            )
+    else:
+        # For new package-based system without medication_id
+        # Try to find the medication by matching active ingredient name
+        from models import ProductPackage, MedicationProduct, ActiveIngredient, Medication
+        
+        if scanned_item:
+            # Find the ProductPackage by GTIN or national number
+            if scanned_item.gtin:
+                product_package = ProductPackage.query.filter_by(gtin=scanned_item.gtin).first()
+            elif scanned_item.national_number and scanned_item.national_number_type:
+                # Also try to find by national number
+                product_package = ProductPackage.query.filter_by(
+                    national_number=scanned_item.national_number,
+                    national_number_type=scanned_item.national_number_type
+                ).first()
+            
+            if product_package and product_package.product:
+                product = product_package.product
+                if product.active_ingredient:
+                    # Find orders by matching active ingredient name through medications
+                    from models import Order, OrderItem
+                    
+                    # Find all medications that match this active ingredient name
+                    matching_meds = Medication.query.filter_by(name=product.active_ingredient.name).all()
+                    matching_med_ids = [m.id for m in matching_meds]
+                    
+                    if matching_med_ids:
+                        # Get pending order items for medications with this active ingredient
+                        pending_order_items = (
+                            OrderItem.query.join(Order)
+                            .filter(
+                                OrderItem.medication_id.in_(matching_med_ids),
+                                OrderItem.fulfillment_status.in_(['pending', 'partial']),
+                                Order.status.in_(['planned', 'printed', 'partial'])
+                            )
+                            .order_by(Order.created_date.desc())
+                            .all()
+                        )
+                        
+                        fulfilled_order_items = (
+                            OrderItem.query.join(Order)
+                            .filter(
+                                OrderItem.medication_id.in_(matching_med_ids),
+                                OrderItem.fulfillment_status.in_(['fulfilled', 'partial'])
+                            )
+                            .order_by(Order.created_date.desc())
+                            .limit(10)
+                            .all()
+                        )
+                    
+                    # Still try to find a medication for legacy inventory purposes
+                    medication = Medication.query.filter_by(name=product.active_ingredient.name).first()
+                    if medication:
+                        inventory = Inventory.query.filter_by(medication_id=medication.id).first()
     
     from datetime import date
     
@@ -527,8 +737,9 @@ def edit_package(package_id: int):
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         package=package,
         scanned_item=scanned_item,
-        medication=package.medication,
+        medication=medication,
         inventory=inventory,
+        product_package=product_package,
         pending_order_items=pending_order_items,
         fulfilled_order_items=fulfilled_order_items,
         today=date.today()

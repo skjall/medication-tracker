@@ -42,9 +42,9 @@ order_bp = Blueprint("orders", __name__, url_prefix="/orders")
 @order_bp.route("/")
 def index():
     """Display list of all medication orders."""
-    # Get planned/pending orders
+    # Get planned/pending orders (including printed orders that are not yet fulfilled)
     pending_orders = (
-        Order.query.filter(Order.status.in_(["planned", "partial"]))
+        Order.query.filter(Order.status.in_(["planned", "partial", "printed"]))
         .order_by(Order.created_date.desc())
         .all()
     )
@@ -770,18 +770,65 @@ def search_packages(item_id: int):
     order_date = order_item.order.created_date
     
     # Search for packages by serial number that:
-    # 1. Belong to the same medication
+    # 1. Belong to the same medication OR have matching active ingredient
     # 2. Are not yet linked to any order
     # 3. Were scanned after the order was created
     # 4. Match the search term
-    from models import ScannedItem
+    from models import ScannedItem, ProductPackage, Medication, ActiveIngredient
+    from sqlalchemy import or_
     
-    available = PackageInventory.query.join(PackageInventory.scanned_item).filter(
-        PackageInventory.medication_id == order_item.medication_id,
+    # Build filter conditions for both old and new systems
+    conditions = [
         PackageInventory.order_item_id.is_(None),
         PackageInventory.status.in_(["sealed", "open"]),
         ScannedItem.scanned_at >= order_date,
         ScannedItem.serial_number.ilike(f"%{search_term}%")
+    ]
+    
+    # For old system: direct medication_id match
+    if order_item.medication_id:
+        medication_conditions = [PackageInventory.medication_id == order_item.medication_id]
+        
+        # For new system: match by active ingredient
+        # Get the medication and find its active ingredient
+        medication = Medication.query.get(order_item.medication_id)
+        if medication:
+            # Find active ingredient with same name
+            active_ingredient = ActiveIngredient.query.filter_by(name=medication.name).first()
+            if active_ingredient:
+                # Find all product packages with this ingredient
+                product_packages = ProductPackage.query.join(
+                    ProductPackage.product
+                ).filter(
+                    ProductPackage.product.has(active_ingredient_id=active_ingredient.id)
+                ).all()
+                
+                # Get GTINs and national numbers for matching
+                gtins = [p.gtin for p in product_packages if p.gtin]
+                national_numbers = [(p.national_number, p.national_number_type) 
+                                  for p in product_packages 
+                                  if p.national_number and p.national_number_type]
+                
+                # Add conditions for new packages without medication_id
+                if gtins or national_numbers:
+                    new_system_conditions = [PackageInventory.medication_id.is_(None)]
+                    
+                    if gtins:
+                        new_system_conditions.append(ScannedItem.gtin.in_(gtins))
+                    
+                    for nat_num, nat_type in national_numbers:
+                        new_system_conditions.append(
+                            (ScannedItem.national_number == nat_num) & 
+                            (ScannedItem.national_number_type == nat_type)
+                        )
+                    
+                    if len(new_system_conditions) > 1:
+                        medication_conditions.append(or_(*new_system_conditions[1:]))
+        
+        conditions.append(or_(*medication_conditions))
+    
+    available = PackageInventory.query.join(PackageInventory.scanned_item).filter(
+        *conditions
     ).limit(10).all()
     
     # Format for JSON response
@@ -807,9 +854,37 @@ def link_package(item_id: int, package_id: int):
     package = PackageInventory.query.get_or_404(package_id)
     
     # Verify the package belongs to the same medication
-    if package.medication_id != order_item.medication_id:
+    # For old system with medication_id
+    if package.medication_id and package.medication_id != order_item.medication_id:
         flash(_("Package does not belong to this medication"), "error")
         return redirect(url_for("orders.show", id=order_item.order_id))
+    # For new system without medication_id, check via ingredient matching
+    elif not package.medication_id:
+        from models import ProductPackage, MedicationProduct, Medication
+        scanned_item = package.scanned_item
+        product_pkg = None
+        
+        if scanned_item:
+            # Try to find by GTIN or national number
+            if scanned_item.gtin:
+                product_pkg = ProductPackage.query.filter_by(gtin=scanned_item.gtin).first()
+            elif scanned_item.national_number and scanned_item.national_number_type:
+                product_pkg = ProductPackage.query.filter_by(
+                    national_number=scanned_item.national_number,
+                    national_number_type=scanned_item.national_number_type
+                ).first()
+            
+            if product_pkg and product_pkg.product and product_pkg.product.active_ingredient:
+                med = Medication.query.filter_by(name=product_pkg.product.active_ingredient.name).first()
+                if not med or med.id != order_item.medication_id:
+                    flash(_("Package does not belong to this medication"), "error")
+                    return redirect(url_for("orders.show", id=order_item.order_id))
+            else:
+                flash(_("Cannot verify package medication"), "error")
+                return redirect(url_for("orders.show", id=order_item.order_id))
+        else:
+            flash(_("Cannot verify package medication"), "error")
+            return redirect(url_for("orders.show", id=order_item.order_id))
     
     # Link the package to the order item
     package.order_item_id = order_item.id

@@ -1,16 +1,22 @@
 {% extends "layout.html" %}
 
-{% block title %}{{ _('Edit Package') }} - {{ medication.name }}{% endblock %}
+{% block title %}{{ _('Edit Package') }}{% if medication %} - {{ medication.name }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-box-open me-2"></i>{{ _('Edit Package') }}: {{ medication.name }}
+        <i class="fas fa-box-open me-2"></i>{{ _('Edit Package') }}{% if medication %}: {{ medication.name }}{% endif %}
     </h1>
     <div>
-        <a href="{{ url_for('inventory.show', id=inventory.id) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Inventory') }}
-        </a>
+        {% if inventory %}
+            <a href="{{ url_for('inventory.show', id=inventory.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Inventory') }}
+            </a>
+        {% else %}
+            <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Inventory') }}
+            </a>
+        {% endif %}
     </div>
 </div>
 
@@ -33,15 +39,20 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <small class="text-muted d-block">{{ _('Medication') }}</small>
-                                    <strong>{{ medication.name }}</strong>
+                                    <strong>{% if medication %}{{ medication.name }}{% elif scanned_item.product_package %}{{ scanned_item.product_package.product.name }}{% else %}{{ _('N/A') }}{% endif %}</strong>
                                 </div>
                                 <div class="mb-3">
                                     <small class="text-muted d-block">{{ _('Package Size') }}</small>
                                     <strong>
                                         {% if scanned_item.package and scanned_item.package.package_size %}
                                             {{ scanned_item.package.package_size }}
+                                        {% elif scanned_item.product_package and scanned_item.product_package.package_size %}
+                                            {{ scanned_item.product_package.package_size }}
+                                        {% elif product_package and product_package.package_size %}
+                                            {{ product_package.package_size }}
                                         {% else %}
-                                            N{{ (package.original_units // 10) if package.original_units >= 100 else (1 if package.original_units <= 30 else (2 if package.original_units <= 60 else 3)) }}
+                                            {# Package size not available #}
+                                            {{ _('N/A') }}
                                         {% endif %}
                                     </strong>
                                 </div>
@@ -235,9 +246,15 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-1"></i>{{ _('Save Changes') }}
                         </button>
-                        <a href="{{ url_for('inventory.show', id=inventory.id) }}" class="btn btn-secondary">
-                            <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
-                        </a>
+                        {% if inventory %}
+                            <a href="{{ url_for('inventory.show', id=inventory.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('inventory.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+                            </a>
+                        {% endif %}
                     </div>
                 </form>
             </div>

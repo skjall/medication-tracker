@@ -78,7 +78,7 @@ msgstr ""
 msgid "Package added successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:583 /app/routes/inventory.py:486
+#: /app/routes/ingredients.py:583 /app/routes/inventory.py:574
 #: /app/routes/medication_packages.py:217
 msgid "Package updated successfully"
 msgstr ""
@@ -107,74 +107,74 @@ msgstr ""
 msgid "Medication migrated successfully"
 msgstr ""
 
-#: /app/routes/inventory.py:177
+#: /app/routes/inventory.py:209
 msgid "No inventory record found for this medication"
 msgstr ""
 
-#: /app/routes/inventory.py:191
+#: /app/routes/inventory.py:223
 msgid "Please enter a valid amount to deduct"
 msgstr ""
 
-#: /app/routes/inventory.py:197
+#: /app/routes/inventory.py:229
 #, python-format
 msgid ""
 "Not enough inventory. Available: %(available)s units, Requested: "
 "%(requested)s units"
 msgstr ""
 
-#: /app/routes/inventory.py:213
+#: /app/routes/inventory.py:245
 #, python-format
 msgid "Successfully deducted %(amount)s units"
 msgstr ""
 
-#: /app/routes/inventory.py:216
+#: /app/routes/inventory.py:248
 msgid "from legacy"
 msgstr ""
 
-#: /app/routes/inventory.py:220 /app/templates/inventory/edit_package.html:163
+#: /app/routes/inventory.py:252 /app/templates/inventory/edit_package.html:174
 msgid "used"
 msgstr ""
 
-#: /app/routes/inventory.py:220 /app/templates/inventory/edit_package.html:209
+#: /app/routes/inventory.py:252 /app/templates/inventory/edit_package.html:220
 #: /app/templates/inventory/index.html:325
 msgid "packages"
 msgstr ""
 
-#: /app/routes/inventory.py:220 /app/templates/inventory/index.html:161
+#: /app/routes/inventory.py:252 /app/templates/inventory/index.html:161
 msgid "package"
 msgid_plural "packages"
 msgstr[0] ""
 msgstr[1] ""
 
-#: /app/routes/inventory.py:225
+#: /app/routes/inventory.py:257
 #, python-format
 msgid "Failed to deduct units: %(reason)s"
 msgstr ""
 
-#: /app/routes/inventory.py:266
+#: /app/routes/inventory.py:298
 #, python-brace-format
 msgid "Inventory for {} adjusted by {}"
 msgstr ""
 
-#: /app/routes/inventory.py:336
+#: /app/routes/inventory.py:368
 #, python-brace-format
 msgid "Inventory updated for {}"
 msgstr ""
 
-#: /app/routes/inventory.py:398
+#: /app/routes/inventory.py:430
 msgid "Serial number already exists for another package"
 msgstr ""
 
-#: /app/routes/inventory.py:414
+#: /app/routes/inventory.py:446
 msgid "Invalid expiry date format"
 msgstr ""
 
-#: /app/routes/inventory.py:479
+#: /app/routes/inventory.py:567
 #, python-format
 msgid "Units must be between 0 and %(max)s"
 msgstr ""
 
-#: /app/routes/inventory.py:482
+#: /app/routes/inventory.py:570
 msgid "Invalid units value"
 msgstr ""
 
@@ -197,7 +197,8 @@ msgstr ""
 
 #: /app/routes/medication_packages.py:129
 #: /app/routes/medication_packages.py:146
-#: /app/routes/medication_packages.py:227 /app/routes/orders.py:811
+#: /app/routes/medication_packages.py:227 /app/routes/orders.py:859
+#: /app/routes/orders.py:880
 msgid "Package does not belong to this medication"
 msgstr ""
 
@@ -317,15 +318,19 @@ msgid ""
 "physician settings."
 msgstr ""
 
-#: /app/routes/orders.py:855
+#: /app/routes/orders.py:883 /app/routes/orders.py:886
+msgid "Cannot verify package medication"
+msgstr ""
+
+#: /app/routes/orders.py:930
 msgid "Package linked successfully"
 msgstr ""
 
-#: /app/routes/orders.py:869
+#: /app/routes/orders.py:944
 msgid "Package is not linked to this order item"
 msgstr ""
 
-#: /app/routes/orders.py:907
+#: /app/routes/orders.py:982
 msgid "Package unlinked successfully"
 msgstr ""
 
@@ -464,7 +469,7 @@ msgstr ""
 #: /app/templates/ingredients/edit_package.html:28
 #: /app/templates/ingredients/new_package.html:28
 #: /app/templates/ingredients/show_product.html:143
-#: /app/templates/inventory/edit_package.html:39
+#: /app/templates/inventory/edit_package.html:45
 #: /app/templates/medication_packages/edit.html:23
 #: /app/templates/medication_packages/new.html:23
 #: /app/templates/package_onboarding/onboard.html:337
@@ -641,69 +646,105 @@ msgstr ""
 msgid "Package configuration updated with scanned data"
 msgstr ""
 
-#: /app/routes/scanner.py:262
+#: /app/routes/scanner.py:269 /app/routes/scanner.py:643
 #, python-format
 msgid "Order fulfilled with %(overage)d extra units"
 msgstr ""
 
-#: /app/routes/scanner.py:267
+#: /app/routes/scanner.py:273 /app/routes/scanner.py:647
+#, python-format
+msgid ""
+"Order fulfilled. Received %(quantity)d units in %(package_size)s. "
+"%(overage)d extra units."
+msgstr ""
+
+#: /app/routes/scanner.py:279 /app/routes/scanner.py:653
 msgid "Order fulfilled exactly"
 msgstr ""
 
-#: /app/routes/scanner.py:275
+#: /app/routes/scanner.py:281 /app/routes/scanner.py:655
+#, python-format
+msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s."
+msgstr ""
+
+#: /app/routes/scanner.py:292 /app/routes/scanner.py:666
 #, python-format
 msgid "Partial fulfillment: %(remaining)d units still needed"
 msgstr ""
 
-#: /app/routes/scanner.py:368
+#: /app/routes/scanner.py:296 /app/routes/scanner.py:670
+#, python-format
+msgid ""
+"Partially fulfilled. Received %(quantity)d units in %(package_size)s. "
+"Still need %(remaining)d units."
+msgstr ""
+
+#: /app/routes/scanner.py:342 /app/routes/scanner.py:709
+#, python-format
+msgid "Package scanned: %(package_size)s (%(quantity)d units) - Batch: %(batch)s"
+msgstr ""
+
+#: /app/routes/scanner.py:355
+#, python-format
+msgid ""
+"Added to inventory: %(product_name)s %(package_size)s (%(quantity)d "
+"units). %(fulfillment)s"
+msgstr ""
+
+#: /app/routes/scanner.py:363
+#, python-format
+msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)"
+msgstr ""
+
+#: /app/routes/scanner.py:410
 msgid "Product found but not linked to inventory system"
 msgstr ""
 
-#: /app/routes/scanner.py:371
+#: /app/routes/scanner.py:413
 msgid ""
 "This product needs to be linked to a medication record for inventory "
 "tracking"
 msgstr ""
 
-#: /app/routes/scanner.py:425
+#: /app/routes/scanner.py:467
 msgid "Package information updated with scanned data"
 msgstr ""
 
-#: /app/routes/scanner.py:447
+#: /app/routes/scanner.py:489
 #, python-format
 msgid "%(label)s %(number)s not found"
 msgstr ""
 
-#: /app/routes/scanner.py:451
+#: /app/routes/scanner.py:493
 msgid "Please add this package."
 msgstr ""
 
-#: /app/routes/scanner.py:454
+#: /app/routes/scanner.py:496
 msgid "Unrecognized barcode format"
 msgstr ""
 
-#: /app/routes/scanner.py:455
+#: /app/routes/scanner.py:497
 msgid "This barcode type is not supported"
 msgstr ""
 
-#: /app/routes/scanner.py:714
+#: /app/routes/scanner.py:781
 msgid "Package not in inventory"
 msgstr ""
 
-#: /app/routes/scanner.py:719
+#: /app/routes/scanner.py:786
 msgid "Invalid number of units"
 msgstr ""
 
-#: /app/routes/scanner.py:723
+#: /app/routes/scanner.py:790
 msgid "Not enough units in package"
 msgstr ""
 
-#: /app/routes/scanner.py:740
+#: /app/routes/scanner.py:807
 #, python-format
 msgid "%(units)d units consumed"
 msgstr ""
 
-#: /app/routes/scanner.py:756
+#: /app/routes/scanner.py:823
 msgid "Package marked as expired"
 msgstr ""
 
@@ -1065,7 +1106,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: /app/templates/index.html:36 /app/templates/physicians/index.html:64
-#: /app/templates/scanner/scan.html:806 /app/templates/visits/index.html:86
+#: /app/templates/scanner/scan.html:841 /app/templates/visits/index.html:86
 #: /app/templates/visits/index.html:166
 msgid "View Details"
 msgstr ""
@@ -1283,7 +1324,7 @@ msgstr ""
 #: /app/templates/ingredients/show_product.html:314
 #: /app/templates/inventory/depletion.html:99
 #: /app/templates/inventory/depletion.html:100
-#: /app/templates/inventory/edit_package.html:50
+#: /app/templates/inventory/edit_package.html:61
 #: /app/templates/inventory/index.html:154
 #: /app/templates/inventory/index.html:158
 #: /app/templates/inventory/index.html:314
@@ -1322,6 +1363,8 @@ msgstr[1] ""
 
 #: /app/templates/index.html:228 /app/templates/index.html:235
 #: /app/templates/index.html:317 /app/templates/index.html:324
+#: /app/templates/inventory/edit_package.html:42
+#: /app/templates/inventory/edit_package.html:55
 #: /app/templates/inventory/index.html:172
 #: /app/templates/inventory/index.html:181
 #: /app/templates/inventory/index.html:336
@@ -1458,7 +1501,8 @@ msgstr ""
 #: /app/templates/ingredients/new_package.html:99
 #: /app/templates/ingredients/new_product.html:17
 #: /app/templates/ingredients/new_product.html:144
-#: /app/templates/inventory/edit_package.html:239
+#: /app/templates/inventory/edit_package.html:251
+#: /app/templates/inventory/edit_package.html:255
 #: /app/templates/medication_packages/edit.html:10
 #: /app/templates/medication_packages/edit.html:67
 #: /app/templates/medication_packages/new.html:10
@@ -1487,7 +1531,7 @@ msgstr ""
 #: /app/templates/ingredients/edit.html:64
 #: /app/templates/ingredients/edit_package.html:98
 #: /app/templates/ingredients/edit_product.html:99
-#: /app/templates/inventory/edit_package.html:236
+#: /app/templates/inventory/edit_package.html:247
 #: /app/templates/medication_packages/edit.html:64
 msgid "Save Changes"
 msgstr ""
@@ -1628,7 +1672,7 @@ msgstr ""
 #: /app/templates/ingredients/index.html:47
 #: /app/templates/ingredients/index.html:107
 #: /app/templates/ingredients/show.html:118
-#: /app/templates/inventory/edit_package.html:262
+#: /app/templates/inventory/edit_package.html:279
 #: /app/templates/inventory/show.html:468
 #: /app/templates/pdf_mapper/content.html:564
 #: /app/templates/pdf_mapper/content.html:1083
@@ -1718,7 +1762,7 @@ msgstr ""
 #: /app/templates/ingredients/new_package.html:102
 #: /app/templates/ingredients/show_product.html:135
 #: /app/templates/medication_packages/new.html:3
-#: /app/templates/scanner/scan.html:786
+#: /app/templates/scanner/scan.html:818
 msgid "Add Package"
 msgstr ""
 
@@ -2014,12 +2058,12 @@ msgid "Serial"
 msgstr ""
 
 #: /app/templates/ingredients/show_product.html:245
-#: /app/templates/inventory/edit_package.html:59
+#: /app/templates/inventory/edit_package.html:70
 #: /app/templates/inventory/show.html:438
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:776
+#: /app/templates/scanner/scan.html:808
 msgid "Batch"
 msgstr ""
 
@@ -2028,7 +2072,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:779
+#: /app/templates/scanner/scan.html:811
 msgid "Expiry"
 msgstr ""
 
@@ -2039,14 +2083,14 @@ msgid "Units"
 msgstr ""
 
 #: /app/templates/ingredients/show_product.html:266
-#: /app/templates/inventory/edit_package.html:256
+#: /app/templates/inventory/edit_package.html:273
 #: /app/templates/inventory/show.html:464 /app/templates/scanner/index.html:102
 #: /app/templates/scanner/package_details.html:103
 msgid "Sealed"
 msgstr ""
 
 #: /app/templates/ingredients/show_product.html:268
-#: /app/templates/inventory/edit_package.html:259
+#: /app/templates/inventory/edit_package.html:276
 #: /app/templates/inventory/show.html:466 /app/templates/orders/edit.html:54
 #: /app/templates/orders/index.html:49 /app/templates/orders/show.html:70
 #: /app/templates/scanner/index.html:104
@@ -2106,7 +2150,7 @@ msgid "Sorted by Depletion Date"
 msgstr ""
 
 #: /app/templates/inventory/depletion.html:83
-#: /app/templates/inventory/edit_package.html:35
+#: /app/templates/inventory/edit_package.html:41
 #: /app/templates/orders/edit.html:68 /app/templates/orders/new.html:89
 #: /app/templates/orders/show.html:159 /app/templates/scanner/index.html:54
 #: /app/templates/scanner/index.html:140
@@ -2165,199 +2209,200 @@ msgstr ""
 msgid "no daily usage set"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:12
+#: /app/templates/inventory/edit_package.html:13
+#: /app/templates/inventory/edit_package.html:17
 msgid "Back to Inventory"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:22
-#: /app/templates/inventory/edit_package.html:92
+#: /app/templates/inventory/edit_package.html:28
+#: /app/templates/inventory/edit_package.html:103
 #: /app/templates/scanner/package_details.html:3
 #: /app/templates/scanner/package_details.html:9
 msgid "Package Details"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:31
+#: /app/templates/inventory/edit_package.html:37
 #: /app/templates/scanner/package_details.html:19
 msgid "Package Information"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:49
+#: /app/templates/inventory/edit_package.html:60
 msgid "Original Units"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:55
-#: /app/templates/inventory/edit_package.html:96
+#: /app/templates/inventory/edit_package.html:66
+#: /app/templates/inventory/edit_package.html:107
 msgid "Serial Number"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:63
-#: /app/templates/inventory/edit_package.html:79
+#: /app/templates/inventory/edit_package.html:74
+#: /app/templates/inventory/edit_package.html:90
 msgid "from GS1"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:66
-#: /app/templates/inventory/edit_package.html:82
+#: /app/templates/inventory/edit_package.html:77
+#: /app/templates/inventory/edit_package.html:93
 #: /app/templates/physicians/index.html:49
 #: /app/templates/physicians/show.html:44
 msgid "Not specified"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:70
-#: /app/templates/inventory/edit_package.html:114
+#: /app/templates/inventory/edit_package.html:81
+#: /app/templates/inventory/edit_package.html:125
 msgid "Expiry Date"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:92
+#: /app/templates/inventory/edit_package.html:103
 msgid "Not from GS1 scan - can be edited"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:99
+#: /app/templates/inventory/edit_package.html:110
 msgid "e.g. SN123456789"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:100
+#: /app/templates/inventory/edit_package.html:111
 msgid "Unique identifier for this package"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:105
+#: /app/templates/inventory/edit_package.html:116
 msgid "Batch Number"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:108
+#: /app/templates/inventory/edit_package.html:119
 msgid "e.g. LOT123456"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:109
+#: /app/templates/inventory/edit_package.html:120
 msgid "Enter the batch/lot number from the package"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:117
+#: /app/templates/inventory/edit_package.html:128
 msgid "Select the expiry date from the package"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:125
+#: /app/templates/inventory/edit_package.html:136
 #: /app/templates/scanner/package_details.html:100
 msgid "Package Status"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:128
+#: /app/templates/inventory/edit_package.html:139
 msgid "Sealed - Not opened yet"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:131
+#: /app/templates/inventory/edit_package.html:142
 msgid "Open - In use"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:134
+#: /app/templates/inventory/edit_package.html:145
 msgid "Empty - All units consumed"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:137
+#: /app/templates/inventory/edit_package.html:148
 msgid "Discarded - Removed from inventory"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:141
+#: /app/templates/inventory/edit_package.html:152
 msgid "Update the status to reflect the current state of the package"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:146
+#: /app/templates/inventory/edit_package.html:157
 msgid "Current Units Remaining"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:167
+#: /app/templates/inventory/edit_package.html:178
 msgid ""
 "Adjust if you have taken medication from this package without updating "
 "the system"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:173
+#: /app/templates/inventory/edit_package.html:184
 msgid "Quick Adjustments"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:190
+#: /app/templates/inventory/edit_package.html:201
 msgid "Mark Empty"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:193
+#: /app/templates/inventory/edit_package.html:204
 msgid "Reset to Full"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:200
+#: /app/templates/inventory/edit_package.html:211
 msgid "Associated Order"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:202
+#: /app/templates/inventory/edit_package.html:213
 msgid "No order association"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:204
+#: /app/templates/inventory/edit_package.html:215
 #: /app/templates/orders/index.html:13
 msgid "Pending Orders"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:207
 #: /app/templates/inventory/edit_package.html:218
+#: /app/templates/inventory/edit_package.html:229
 #: /app/templates/orders/show.html:3 /app/templates/orders/show.html:8
 #, python-format
 msgid "Order #%(order_id)s"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:215
+#: /app/templates/inventory/edit_package.html:226
 #: /app/templates/orders/index.html:141
 msgid "Fulfilled Orders"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:225
+#: /app/templates/inventory/edit_package.html:236
 msgid "Link this package to a medication order"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:229
+#: /app/templates/inventory/edit_package.html:240
 #: /app/templates/inventory/show.html:268
 #: /app/templates/inventory/show.html:353
 msgid "Notes (Optional)"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:231
+#: /app/templates/inventory/edit_package.html:242
 msgid "Add any notes about this adjustment"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:251
+#: /app/templates/inventory/edit_package.html:268
 msgid "Status Information"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:254
+#: /app/templates/inventory/edit_package.html:271
 msgid "Current Status"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:257
+#: /app/templates/inventory/edit_package.html:274
 msgid "This package has not been opened yet"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:260
+#: /app/templates/inventory/edit_package.html:277
 msgid "This package is currently in use"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:263
+#: /app/templates/inventory/edit_package.html:280
 msgid "All units have been consumed"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:265
+#: /app/templates/inventory/edit_package.html:282
 msgid "Discarded"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:266
+#: /app/templates/inventory/edit_package.html:283
 msgid "This package has been removed from inventory"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:274
+#: /app/templates/inventory/edit_package.html:291
 msgid "Usage Information"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:277
+#: /app/templates/inventory/edit_package.html:294
 msgid "Units Used"
 msgstr ""
 
-#: /app/templates/inventory/edit_package.html:285
+#: /app/templates/inventory/edit_package.html:302
 #: /app/templates/inventory/show.html:441 /app/templates/orders/show.html:602
 #: /app/templates/scanner/package_details.html:72
 msgid "Scanned"
@@ -2747,7 +2792,7 @@ msgstr ""
 
 #: /app/templates/layout.html:55 /app/templates/scanner/index.html:3
 #: /app/templates/scanner/index.html:9 /app/templates/scanner/scan.html:3
-#: /app/templates/scanner/scan.html:468
+#: /app/templates/scanner/scan.html:490
 msgid "Scanner"
 msgstr ""
 
@@ -4499,55 +4544,55 @@ msgstr ""
 msgid "Raw Data"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:473 /app/templates/scanner/scan.html:530
+#: /app/templates/scanner/scan.html:495 /app/templates/scanner/scan.html:552
 msgid "DataMatrix codes"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:477 /app/templates/scanner/scan.html:534
+#: /app/templates/scanner/scan.html:499 /app/templates/scanner/scan.html:556
 msgid "Linear barcodes (EAN, PZN)"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:481 /app/templates/scanner/scan.html:538
+#: /app/templates/scanner/scan.html:503 /app/templates/scanner/scan.html:560
 msgid "Initializing..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:515 /app/templates/scanner/scan.html:862
+#: /app/templates/scanner/scan.html:537 /app/templates/scanner/scan.html:897
 msgid "Retry"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:693
+#: /app/templates/scanner/scan.html:725
 msgid "Ready to scan"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:703
+#: /app/templates/scanner/scan.html:735
 msgid "Camera error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:736
+#: /app/templates/scanner/scan.html:768
 msgid "Scan failed"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:741
+#: /app/templates/scanner/scan.html:773
 msgid "Processing..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:793
+#: /app/templates/scanner/scan.html:825
 msgid "Package not found"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:799
+#: /app/templates/scanner/scan.html:834
 msgid "Package Scanned"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:813
+#: /app/templates/scanner/scan.html:848
 msgid "Scan successful"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:821 /app/templates/scanner/scan.html:825
+#: /app/templates/scanner/scan.html:856 /app/templates/scanner/scan.html:860
 msgid "Error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:859
+#: /app/templates/scanner/scan.html:894
 msgid "Camera Access Required"
 msgstr ""
 

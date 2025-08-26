@@ -114,6 +114,28 @@ class ScannedItem(db.Model):
     )
     
     @property
+    def product_package(self):
+        """Get the ProductPackage for this scanned item."""
+        from models import ProductPackage
+        
+        # Try to find by GTIN first
+        if self.gtin:
+            pkg = ProductPackage.query.filter_by(gtin=self.gtin).first()
+            if pkg:
+                return pkg
+        
+        # Try to find by national number
+        if self.national_number and self.national_number_type:
+            pkg = ProductPackage.query.filter_by(
+                national_number=self.national_number,
+                national_number_type=self.national_number_type
+            ).first()
+            if pkg:
+                return pkg
+        
+        return None
+    
+    @property
     def is_expired(self) -> bool:
         """Check if the package is expired."""
         if not self.expiry_date:

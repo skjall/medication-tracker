@@ -167,6 +167,11 @@
         transition: height 0.3s ease, opacity 0.5s ease;
     }
     
+    /* Wider focus area for barcode mode */
+    .scanner-container.barcode-mode .blur-top {
+        height: calc(50% - 60px); /* Wider focus area: 120px height */
+    }
+    
     .blur-bottom {
         position: absolute;
         bottom: 0;
@@ -180,6 +185,11 @@
         z-index: 10;
         opacity: 0;
         transition: height 0.3s ease, opacity 0.5s ease;
+    }
+    
+    /* Wider focus area for barcode mode */
+    .scanner-container.barcode-mode .blur-bottom {
+        height: calc(50% - 60px); /* Wider focus area: 120px height */
     }
     
     .blur-left {
@@ -198,6 +208,12 @@
         transition: width 0.3s ease, opacity 0.5s ease;
     }
     
+    /* Much wider focus area for barcode mode */
+    .scanner-container.barcode-mode .blur-left {
+        width: calc(50% - 200px); /* Much wider focus area: 400px width */
+        height: 120px; /* Shorter height for barcode */
+    }
+    
     .blur-right {
         position: absolute;
         top: 50%;
@@ -212,6 +228,12 @@
         z-index: 10;
         opacity: 0;
         transition: width 0.3s ease, opacity 0.5s ease;
+    }
+    
+    /* Much wider focus area for barcode mode */
+    .scanner-container.barcode-mode .blur-right {
+        width: calc(50% - 200px); /* Much wider focus area: 400px width */
+        height: 120px; /* Shorter height for barcode */
     }
     
     /* Focus area border - visible frame around scanning area */
@@ -637,6 +659,16 @@
             codeReader.reset();
         }
         
+        // Update ALL scanner container classes for visual feedback
+        const scannerContainers = document.querySelectorAll('.scanner-container');
+        scannerContainers.forEach(container => {
+            if (scanMode === 'barcode') {
+                container.classList.add('barcode-mode');
+            } else {
+                container.classList.remove('barcode-mode');
+            }
+        });
+        
         // Initialize new code reader with current mode
         if (scanMode === 'datamatrix') {
             codeReader = new ZXing.BrowserMultiFormatReader();
@@ -793,11 +825,14 @@
                 updateStatus('{{ _("Package not found") }}', 'warning');
             } else if (data.success) {
                 // Success - show package info
+                // Get product name from package_info if available
+                const productName = data.package_info?.product_name || data.product_name || '';
+                
                 let html = `
                     <div class="text-center">
                         <i class="fas fa-check-circle fa-3x mb-3" style="color: #28a745;"></i>
                         <h5>{{ _('Package Scanned') }}</h5>
-                        <p><strong>${data.product_name}</strong></p>
+                        <p><strong>${productName}</strong></p>
                         <p class="text-muted">${data.message || ''}</p>
                 `;
                 
@@ -900,6 +935,14 @@
     
     // Initialize scanner on page load
     document.addEventListener('DOMContentLoaded', () => {
+        // Set initial scanner mode class for ALL containers
+        const scannerContainers = document.querySelectorAll('.scanner-container');
+        scannerContainers.forEach(container => {
+            if (scanMode === 'barcode') {
+                container.classList.add('barcode-mode');
+            }
+        });
+        
         initScanner();
     });
     

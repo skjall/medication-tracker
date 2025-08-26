@@ -184,118 +184,143 @@ def scan():
             db.session.flush()
             flash(_("Package configuration updated with scanned data"), "info")
 
-        # Check if this product is linked to a legacy medication for inventory
-        # If the product has a legacy_medication_id, we can add it to inventory
-        if product_package.product.legacy_medication_id:
-            # Use existing scanned item or create new one
-            if existing_scanned:
-                scanned_item = existing_scanned
-            else:
-                # Create new scanned item
-                expiry_date = None
-                if parsed.get("expiry"):
-                    expiry_date = parse_expiry_date(parsed["expiry"])
-                    if expiry_date:
-                        expiry_date = expiry_date.date()
+        # Create package inventory for new package-based system
+        # Use existing scanned item or create new one
+        if existing_scanned:
+            scanned_item = existing_scanned
+        else:
+            # Create new scanned item
+            expiry_date = None
+            if parsed.get("expiry"):
+                expiry_date = parse_expiry_date(parsed["expiry"])
+                if expiry_date:
+                    expiry_date = expiry_date.date()
 
-                is_gs1 = bool(parsed.get("batch") or parsed.get("expiry"))
+            is_gs1 = bool(parsed.get("batch") or parsed.get("expiry"))
 
-                scanned_item = ScannedItem(
-                    medication_package_id=None,  # Not linked to old MedicationPackage
-                    gtin=parsed.get("gtin"),
-                    national_number=parsed.get("national_number"),
-                    national_number_type=parsed.get("national_number_type"),
-                    serial_number=parsed["serial"],
-                    batch_number=parsed.get("batch"),
-                    expiry_date=expiry_date,
-                    is_gs1=is_gs1,
-                    raw_data=barcode_data,
-                    status="active",
-                )
-                db.session.add(scanned_item)
-                db.session.flush()
-
-            # Find pending order item for this medication
-            from models import Order, OrderItem
-
-            pending_order_item = None
-            fulfillment_message = None
-
-            # Look for the oldest pending or partial order with this medication that still needs units
-            pending_order_item = (
-                OrderItem.query.join(Order)
-                .filter(
-                    OrderItem.medication_id
-                    == product_package.product.legacy_medication_id,
-                    OrderItem.fulfillment_status.in_(["pending", "partial"]),
-                    OrderItem.units_received < OrderItem.quantity_needed,
-                    Order.status.in_(["planned", "printed"]),
-                )
-                .order_by(Order.created_date.asc())
-                .first()
+            scanned_item = ScannedItem(
+                medication_package_id=None,  # Not linked to old MedicationPackage
+                gtin=parsed.get("gtin")
+                or product_package.gtin,  # Use package GTIN if not in barcode
+                national_number=parsed.get("national_number"),
+                national_number_type=parsed.get("national_number_type"),
+                serial_number=parsed["serial"],
+                batch_number=parsed.get("batch"),
+                expiry_date=expiry_date,
+                is_gs1=is_gs1,
+                raw_data=barcode_data,
+                status="active",
             )
+            db.session.add(scanned_item)
+            db.session.flush()
 
-            # Update order fulfillment if order found
-            if pending_order_item:
-                units_still_needed = (
+        # Find pending order item by matching active ingredient
+        from models import Order, OrderItem, Medication
+
+        pending_order_item = None
+        fulfillment_message = None
+
+        # Find medications that match this active ingredient
+        active_ingredient = product_package.product.active_ingredient
+        if active_ingredient:
+            matching_meds = Medication.query.filter_by(name=active_ingredient.name).all()
+            matching_med_ids = [m.id for m in matching_meds]
+            
+            if matching_med_ids:
+                # Look for the oldest pending or partial order with matching medication
+                pending_order_item = (
+                    OrderItem.query.join(Order)
+                    .filter(
+                        OrderItem.medication_id.in_(matching_med_ids),
+                        OrderItem.fulfillment_status.in_(["pending", "partial"]),
+                        OrderItem.units_received < OrderItem.quantity_needed,
+                        Order.status.in_(["planned", "printed"]),
+                    )
+                    .order_by(Order.created_date.asc())
+                    .first()
+                )
+
+        # Update order fulfillment if order found
+        if pending_order_item:
+            units_still_needed = (
+                pending_order_item.quantity_needed
+                - pending_order_item.units_received
+            )
+            pending_order_item.units_received += product_package.quantity
+
+            # Check if this fulfills or overfills the order
+            if (
+                pending_order_item.units_received
+                >= pending_order_item.quantity_needed
+            ):
+                pending_order_item.fulfillment_status = "fulfilled"
+                pending_order_item.fulfilled_at = datetime.now(
+                    timezone.utc
+                )
+                if (
+                    pending_order_item.units_received
+                    > pending_order_item.quantity_needed
+                ):
+                    overage = (
+                        pending_order_item.units_received
+                        - pending_order_item.quantity_needed
+                    )
+                    fulfillment_message = _(
+                        "Order fulfilled with %(overage)d extra units",
+                        overage=overage,
+                    )
+                    pending_order_item.fulfillment_notes = _(
+                        "Order fulfilled. Received %(quantity)d units in %(package_size)s. %(overage)d extra units.",
+                        quantity=product_package.quantity,
+                        package_size=product_package.package_size,
+                        overage=overage
+                    )
+                else:
+                    fulfillment_message = _("Order fulfilled exactly")
+                    pending_order_item.fulfillment_notes = _(
+                        "Order fulfilled. Received %(quantity)d units in %(package_size)s.",
+                        quantity=product_package.quantity,
+                        package_size=product_package.package_size
+                    )
+            else:
+                pending_order_item.fulfillment_status = "partial"
+                remaining = (
                     pending_order_item.quantity_needed
                     - pending_order_item.units_received
                 )
-                pending_order_item.units_received += product_package.quantity
+                fulfillment_message = _(
+                    "Partial fulfillment: %(remaining)d units still needed",
+                    remaining=remaining,
+                )
+                pending_order_item.fulfillment_notes = _(
+                    "Partially fulfilled. Received %(quantity)d units in %(package_size)s. Still need %(remaining)d units.",
+                    quantity=product_package.quantity,
+                    package_size=product_package.package_size,
+                    remaining=remaining
+                )
 
-                # Check if this fulfills or overfills the order
-                if (
-                    pending_order_item.units_received
-                    >= pending_order_item.quantity_needed
-                ):
-                    pending_order_item.fulfillment_status = "fulfilled"
-                    pending_order_item.fulfilled_at = datetime.now(timezone.utc)
-                    if (
-                        pending_order_item.units_received
-                        > pending_order_item.quantity_needed
-                    ):
-                        overage = (
-                            pending_order_item.units_received
-                            - pending_order_item.quantity_needed
-                        )
-                        fulfillment_message = _(
-                            "Order fulfilled with %(overage)d extra units",
-                            overage=overage,
-                        )
-                        pending_order_item.fulfillment_notes = f"Order fulfilled. Received {product_package.quantity} units in {product_package.package_size}. {overage} extra units."
-                    else:
-                        fulfillment_message = _("Order fulfilled exactly")
-                else:
-                    pending_order_item.fulfillment_status = "partial"
-                    remaining = (
-                        pending_order_item.quantity_needed
-                        - pending_order_item.units_received
-                    )
-                    fulfillment_message = _(
-                        "Partial fulfillment: %(remaining)d units still needed",
-                        remaining=remaining,
-                    )
-                    pending_order_item.fulfillment_notes = f"Partially fulfilled. Received {product_package.quantity} units in {product_package.package_size}. Still need {remaining} units."
+            # Update the order status
+            pending_order_item.order.update_status_from_items()
 
-                # Update the order status
-                pending_order_item.order.update_status_from_items()
+        # Create PackageInventory entry WITHOUT medication_id (pure package-based)
+        inventory_item = PackageInventory(
+            medication_id=None,  # NO medication_id for new system
+            scanned_item_id=scanned_item.id,
+            current_units=product_package.quantity,
+            original_units=product_package.quantity,
+            status="sealed",
+            order_item_id=(
+                pending_order_item.id if pending_order_item else None
+            ),
+        )
+        db.session.add(inventory_item)
 
-            # Create PackageInventory entry linked to the legacy medication
-            inventory_item = PackageInventory(
-                medication_id=product_package.product.legacy_medication_id,
-                scanned_item_id=scanned_item.id,
-                current_units=product_package.quantity,
-                original_units=product_package.quantity,
-                status="sealed",
-                order_item_id=(
-                    pending_order_item.id if pending_order_item else None
-                ),
-            )
-            db.session.add(inventory_item)
+        # Create inventory log for tracking
+        from models import Inventory, InventoryLog
 
-            # Update inventory log
-            from models import Inventory, InventoryLog
-
+        # Try to find legacy inventory for logging purposes only
+        inventory = None
+        if product_package.product.legacy_medication_id:
             inventory = Inventory.query.filter_by(
                 medication_id=product_package.product.legacy_medication_id
             ).first()
@@ -313,16 +338,33 @@ def scan():
                     previous_count=old_total,
                     adjustment=product_package.quantity,
                     new_count=medication.total_inventory_count,
-                    notes=f"Package scanned: {product_package.package_size} ({product_package.quantity} units) - Batch: {parsed.get('batch', 'N/A')}",
+                    notes=_(
+                        "Package scanned: %(package_size)s (%(quantity)d units) - Batch: %(batch)s",
+                        package_size=product_package.package_size,
+                        quantity=product_package.quantity,
+                        batch=parsed.get('batch', _('N/A'))
+                    ),
                 )
                 db.session.add(log_entry)
 
             db.session.commit()
 
             # Build response message
-            message = f"Added to inventory: {product_package.product.display_name} {product_package.package_size} ({product_package.quantity} units)"
             if fulfillment_message:
-                message += f". {fulfillment_message}"
+                message = _(
+                    "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units). %(fulfillment)s",
+                    product_name=product_package.product.display_name,
+                    package_size=product_package.package_size,
+                    quantity=product_package.quantity,
+                    fulfillment=fulfillment_message
+                )
+            else:
+                message = _(
+                    "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)",
+                    product_name=product_package.product.display_name,
+                    package_size=product_package.package_size,
+                    quantity=product_package.quantity
+                )
 
             # Return success with inventory added
             response_data = {
@@ -551,12 +593,13 @@ def scan():
             elif package.package_size == "N3":
                 quantity = med.package_size_n3
 
+        # Initialize variables outside the block
+        pending_order_item = None
+        fulfillment_message = None
+        
         if quantity:
             # Find pending order item for this medication
             from models import Order, OrderItem
-
-            pending_order_item = None
-            fulfillment_message = None
 
             # Look for the oldest pending or partial order with this medication that still needs units
             pending_order_item = (
@@ -585,7 +628,9 @@ def scan():
                     >= pending_order_item.quantity_needed
                 ):
                     pending_order_item.fulfillment_status = "fulfilled"
-                    pending_order_item.fulfilled_at = datetime.now(timezone.utc)
+                    pending_order_item.fulfilled_at = datetime.now(
+                        timezone.utc
+                    )
                     if (
                         pending_order_item.units_received
                         > pending_order_item.quantity_needed
@@ -594,22 +639,39 @@ def scan():
                             pending_order_item.units_received
                             - pending_order_item.quantity_needed
                         )
-                        fulfillment_message = (
-                            f"Order fulfilled with {overage} extra units"
+                        fulfillment_message = _(
+                            "Order fulfilled with %(overage)d extra units",
+                            overage=overage
                         )
-                        pending_order_item.fulfillment_notes = f"Order fulfilled. Received {quantity} units in {package.package_size}. {overage} extra units."
+                        pending_order_item.fulfillment_notes = _(
+                            "Order fulfilled. Received %(quantity)d units in %(package_size)s. %(overage)d extra units.",
+                            quantity=quantity,
+                            package_size=package.package_size,
+                            overage=overage
+                        )
                     else:
-                        fulfillment_message = "Order fulfilled exactly"
+                        fulfillment_message = _("Order fulfilled exactly")
+                        pending_order_item.fulfillment_notes = _(
+                            "Order fulfilled. Received %(quantity)d units in %(package_size)s.",
+                            quantity=quantity,
+                            package_size=package.package_size
+                        )
                 else:
                     pending_order_item.fulfillment_status = "partial"
                     remaining = (
                         pending_order_item.quantity_needed
                         - pending_order_item.units_received
                     )
-                    fulfillment_message = (
-                        f"Partial fulfillment: {remaining} units still needed"
+                    fulfillment_message = _(
+                        "Partial fulfillment: %(remaining)d units still needed",
+                        remaining=remaining
                     )
-                    pending_order_item.fulfillment_notes = f"Partially fulfilled. Received {quantity} units in {package.package_size}. Still need {remaining} units."
+                    pending_order_item.fulfillment_notes = _(
+                        "Partially fulfilled. Received %(quantity)d units in %(package_size)s. Still need %(remaining)d units.",
+                        quantity=quantity,
+                        package_size=package.package_size,
+                        remaining=remaining
+                    )
 
                 # Update the order status
                 pending_order_item.order.update_status_from_items()
@@ -643,7 +705,12 @@ def scan():
                     previous_count=old_total - quantity,  # Before this package
                     adjustment=quantity,
                     new_count=old_total,  # After this package (current total)
-                    notes=f"Package scanned: {package.package_size} ({quantity} units) - Batch: {parsed.get('batch', 'N/A')}",
+                    notes=_(
+                        "Package scanned: %(package_size)s (%(quantity)d units) - Batch: %(batch)s",
+                        package_size=package.package_size,
+                        quantity=quantity,
+                        batch=parsed.get('batch', _('N/A'))
+                    ),
                 )
                 db.session.add(log_entry)
 
