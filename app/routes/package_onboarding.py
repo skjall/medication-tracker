@@ -191,7 +191,7 @@ def onboard_package():
                 db.session.flush()
             
             # Create inventory entry for the new package-based system
-            from models import PackageInventory
+            from models import PackageInventory, InventoryLog, Medication
             
             inventory_item = PackageInventory(
                 scanned_item_id=scanned_item.id,
@@ -202,6 +202,31 @@ def onboard_package():
             )
             db.session.add(inventory_item)
             db.session.flush()
+            
+            # Create inventory log entry for tracking
+            # Try to find a medication with the same name as the active ingredient for logging purposes
+            medication = Medication.query.filter_by(name=ingredient.name).first()
+            if medication and medication.inventory:
+                # Log the package addition to the medication's inventory history
+                previous_count = medication.inventory.current_count
+                new_count = previous_count + package.quantity
+                
+                log_entry = InventoryLog(
+                    inventory_id=medication.inventory.id,
+                    previous_count=previous_count,
+                    adjustment=package.quantity,
+                    new_count=new_count,
+                    notes=_('Package added via scanner onboarding: %(size)s (%(units)s units), Batch: %(batch)s, Expiry: %(expiry)s',
+                           size=package.package_size,
+                           units=package.quantity,
+                           batch=scanned_data.get('batch', 'N/A'),
+                           expiry=scanned_data.get('expiry', 'N/A')[:10] if scanned_data.get('expiry') else 'N/A')
+                )
+                db.session.add(log_entry)
+                
+                # Update the inventory count
+                medication.inventory.current_count = new_count
+                medication.inventory.last_updated = datetime.now(timezone.utc)
         
         db.session.commit()
         

@@ -80,9 +80,10 @@ def show(id: int):
     )
     
     # Get package inventory for this medication
-    from models import MedicationPackage
+    from models import MedicationPackage, ActiveIngredient, MedicationProduct, ProductPackage
     
-    package_inventory = (
+    # First get packages with direct medication_id link (old system)
+    old_package_inventory = (
         db.session.query(PackageInventory, ScannedItem, MedicationPackage)
         .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
         .outerjoin(MedicationPackage, ScannedItem.medication_package_id == MedicationPackage.id)
@@ -91,6 +92,58 @@ def show(id: int):
         .order_by(ScannedItem.expiry_date.asc())
         .all()
     )
+    
+    # Now get packages for the same active ingredient (new system)
+    # Find the active ingredient for this medication
+    medication_name = inventory.medication.name
+    active_ingredient = ActiveIngredient.query.filter_by(name=medication_name).first()
+    
+    new_package_inventory = []
+    if active_ingredient:
+        # Get all products for this active ingredient
+        products = MedicationProduct.query.filter_by(active_ingredient_id=active_ingredient.id).all()
+        product_ids = [p.id for p in products]
+        
+        if product_ids:
+            # Get all packages for these products
+            packages = ProductPackage.query.filter(ProductPackage.product_id.in_(product_ids)).all()
+            package_gtins = [p.gtin for p in packages if p.gtin]
+            
+            if package_gtins:
+                # Get inventory for packages with matching GTINs and no medication_id
+                new_package_inventory_raw = (
+                    db.session.query(PackageInventory, ScannedItem)
+                    .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
+                    .filter(PackageInventory.medication_id == None)  # Only new system packages
+                    .filter(ScannedItem.gtin.in_(package_gtins))
+                    .filter(PackageInventory.status.in_(['sealed', 'open', 'empty']))
+                    .order_by(ScannedItem.expiry_date.asc())
+                    .all()
+                )
+                
+                # For each new package, create a mock MedicationPackage or fetch the ProductPackage info
+                for pkg_inv, scanned in new_package_inventory_raw:
+                    # Find the matching ProductPackage
+                    matching_package = ProductPackage.query.filter_by(gtin=scanned.gtin).first()
+                    
+                    # Create a mock MedicationPackage object with package_size for display
+                    if matching_package:
+                        # Create a simple object to hold the package size for display
+                        class PackageInfo:
+                            def __init__(self, package_size, quantity):
+                                self.package_size = package_size
+                                self.quantity = quantity
+                        
+                        package_info = PackageInfo(
+                            package_size=matching_package.package_size or 'N/A',
+                            quantity=matching_package.quantity
+                        )
+                        new_package_inventory.append((pkg_inv, scanned, package_info))
+                    else:
+                        new_package_inventory.append((pkg_inv, scanned, None))
+    
+    # Combine both old and new package inventories
+    package_inventory = old_package_inventory + new_package_inventory
     
     # Calculate total units from packages
     package_units = sum(pkg.current_units for pkg, _, _ in package_inventory)

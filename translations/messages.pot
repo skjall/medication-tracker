@@ -78,7 +78,7 @@ msgstr ""
 msgid "Package added successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:583 /app/routes/inventory.py:433
+#: /app/routes/ingredients.py:583 /app/routes/inventory.py:486
 #: /app/routes/medication_packages.py:217
 msgid "Package updated successfully"
 msgstr ""
@@ -107,74 +107,74 @@ msgstr ""
 msgid "Medication migrated successfully"
 msgstr ""
 
-#: /app/routes/inventory.py:124
+#: /app/routes/inventory.py:177
 msgid "No inventory record found for this medication"
 msgstr ""
 
-#: /app/routes/inventory.py:138
+#: /app/routes/inventory.py:191
 msgid "Please enter a valid amount to deduct"
 msgstr ""
 
-#: /app/routes/inventory.py:144
+#: /app/routes/inventory.py:197
 #, python-format
 msgid ""
 "Not enough inventory. Available: %(available)s units, Requested: "
 "%(requested)s units"
 msgstr ""
 
-#: /app/routes/inventory.py:160
+#: /app/routes/inventory.py:213
 #, python-format
 msgid "Successfully deducted %(amount)s units"
 msgstr ""
 
-#: /app/routes/inventory.py:163
+#: /app/routes/inventory.py:216
 msgid "from legacy"
 msgstr ""
 
-#: /app/routes/inventory.py:167 /app/templates/inventory/edit_package.html:163
+#: /app/routes/inventory.py:220 /app/templates/inventory/edit_package.html:163
 msgid "used"
 msgstr ""
 
-#: /app/routes/inventory.py:167 /app/templates/inventory/edit_package.html:209
+#: /app/routes/inventory.py:220 /app/templates/inventory/edit_package.html:209
 #: /app/templates/inventory/index.html:325
 msgid "packages"
 msgstr ""
 
-#: /app/routes/inventory.py:167 /app/templates/inventory/index.html:161
+#: /app/routes/inventory.py:220 /app/templates/inventory/index.html:161
 msgid "package"
 msgid_plural "packages"
 msgstr[0] ""
 msgstr[1] ""
 
-#: /app/routes/inventory.py:172
+#: /app/routes/inventory.py:225
 #, python-format
 msgid "Failed to deduct units: %(reason)s"
 msgstr ""
 
-#: /app/routes/inventory.py:213
+#: /app/routes/inventory.py:266
 #, python-brace-format
 msgid "Inventory for {} adjusted by {}"
 msgstr ""
 
-#: /app/routes/inventory.py:283
+#: /app/routes/inventory.py:336
 #, python-brace-format
 msgid "Inventory updated for {}"
 msgstr ""
 
-#: /app/routes/inventory.py:345
+#: /app/routes/inventory.py:398
 msgid "Serial number already exists for another package"
 msgstr ""
 
-#: /app/routes/inventory.py:361
+#: /app/routes/inventory.py:414
 msgid "Invalid expiry date format"
 msgstr ""
 
-#: /app/routes/inventory.py:426
+#: /app/routes/inventory.py:479
 #, python-format
 msgid "Units must be between 0 and %(max)s"
 msgstr ""
 
-#: /app/routes/inventory.py:429
+#: /app/routes/inventory.py:482
 msgid "Invalid units value"
 msgstr ""
 
@@ -365,7 +365,14 @@ msgstr ""
 msgid "Package configuration updated"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:213
+#: /app/routes/package_onboarding.py:219
+#, python-format
+msgid ""
+"Package added via scanner onboarding: %(size)s (%(units)s units), Batch: "
+"%(batch)s, Expiry: %(expiry)s"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:238
 msgid "Package successfully onboarded!"
 msgstr ""
 
