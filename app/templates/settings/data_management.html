@@ -179,17 +179,17 @@
                       <td>{{ schedule_count }}</td>
                       <td>
                           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" data-import-type="schedules">
-                              <i class="fas fa-file-import me-1"></i>Import
+                              <i class="fas fa-file-import me-1"></i>{{ _('Import') }}
                           </button>
                       </td>
                       <td>
                           <a href="{{ url_for('settings.export_data', data_type='schedules') }}" class="btn btn-primary btn-sm">
-                              <i class="fas fa-file-export me-1"></i>Export
+                              <i class="fas fa-file-export me-1"></i>{{ _('Export') }}
                           </a>
                       </td>
                       <td>
                           <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#resetModal" data-reset-type="schedules" data-reset-count="{{ schedule_count }}">
-                              <i class="fas fa-trash-alt me-1"></i>Reset
+                              <i class="fas fa-trash-alt me-1"></i>{{ _('Reset') }}
                           </button>
                       </td>
                   </tr>

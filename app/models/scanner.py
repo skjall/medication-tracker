@@ -141,7 +141,7 @@ class PackageInventory(db.Model):
     __tablename__ = "package_inventory"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    medication_id: Mapped[int] = mapped_column(Integer, ForeignKey("medications.id"), nullable=False)
+    medication_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("medications.id"), nullable=True)
     scanned_item_id: Mapped[int] = mapped_column(Integer, ForeignKey("scanned_items.id"), nullable=False)
     
     # Order linking (optional)
@@ -164,7 +164,7 @@ class PackageInventory(db.Model):
     consumed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Relationships
-    medication: Mapped["Medication"] = relationship("Medication", backref="package_inventories")
+    medication: Mapped[Optional["Medication"]] = relationship("Medication", backref="package_inventories")
     scanned_item: Mapped["ScannedItem"] = relationship("ScannedItem", back_populates="package_inventory")
     order_item: Mapped[Optional["OrderItem"]] = relationship("OrderItem", backref="linked_packages")
     

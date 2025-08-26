@@ -66,7 +66,7 @@ msgid "Product deleted successfully"
 msgstr ""
 
 #: /app/routes/ingredients.py:419
-#: /app/templates/package_onboarding/onboard.html:810
+#: /app/templates/package_onboarding/onboard.html:814
 msgid "Please select or enter an active ingredient"
 msgstr ""
 
@@ -329,43 +329,43 @@ msgstr ""
 msgid "Package unlinked successfully"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:52
+#: /app/routes/package_onboarding.py:51
 msgid "Please select an active ingredient"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:59
+#: /app/routes/package_onboarding.py:58
 msgid "Please enter an active ingredient name"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:66
+#: /app/routes/package_onboarding.py:65
 msgid "Active ingredient already exists, using existing one"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:84
+#: /app/routes/package_onboarding.py:83
 msgid "Please complete step 1 first"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:92
+#: /app/routes/package_onboarding.py:91
 msgid "Please select a product"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:99
+#: /app/routes/package_onboarding.py:98
 msgid "Please enter a product name"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:110
+#: /app/routes/package_onboarding.py:109
 msgid "Product already exists, using existing one"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:137
+#: /app/routes/package_onboarding.py:136
 msgid "Please enter package size and quantity"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:154
+#: /app/routes/package_onboarding.py:153
 msgid "Package configuration updated"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:210
+#: /app/routes/package_onboarding.py:213
 msgid "Package successfully onboarded!"
 msgstr ""
 
@@ -419,7 +419,7 @@ msgstr ""
 #: /app/templates/ingredients/new_product.html:35
 #: /app/templates/ingredients/show_product.html:41
 #: /app/templates/package_onboarding/onboard.html:161
-#: /app/templates/package_onboarding/onboard.html:401
+#: /app/templates/package_onboarding/onboard.html:405
 msgid "Active Ingredient"
 msgstr ""
 
@@ -429,7 +429,7 @@ msgid "Strength"
 msgstr ""
 
 #: /app/routes/pdf_mapper.py:284 /app/templates/ingredients/new_product.html:59
-#: /app/templates/package_onboarding/onboard.html:238
+#: /app/templates/package_onboarding/onboard.html:242
 msgid "Unit"
 msgstr ""
 
@@ -460,8 +460,8 @@ msgstr ""
 #: /app/templates/inventory/edit_package.html:39
 #: /app/templates/medication_packages/edit.html:23
 #: /app/templates/medication_packages/new.html:23
-#: /app/templates/package_onboarding/onboard.html:333
-#: /app/templates/package_onboarding/onboard.html:407
+#: /app/templates/package_onboarding/onboard.html:337
+#: /app/templates/package_onboarding/onboard.html:411
 msgid "Package Size"
 msgstr ""
 
@@ -1459,7 +1459,7 @@ msgstr ""
 #: /app/templates/orders/_fulfill_modal.html:41
 #: /app/templates/orders/edit.html:230 /app/templates/orders/new.html:268
 #: /app/templates/orders/show.html:398
-#: /app/templates/package_onboarding/onboard.html:431
+#: /app/templates/package_onboarding/onboard.html:435
 #: /app/templates/pdf_mapper/index.html:129
 #: /app/templates/pdf_mapper/index.html:152
 #: /app/templates/pdf_mapper/new.html:129
@@ -1541,7 +1541,7 @@ msgstr ""
 
 #: /app/templates/ingredients/edit_package.html:78
 #: /app/templates/ingredients/new_package.html:83
-#: /app/templates/package_onboarding/onboard.html:361
+#: /app/templates/package_onboarding/onboard.html:365
 msgid "Package Manufacturer"
 msgstr ""
 
@@ -1553,7 +1553,7 @@ msgstr ""
 #: /app/templates/ingredients/edit_package.html:84
 #: /app/templates/ingredients/new_package.html:88
 #: /app/templates/ingredients/show_product.html:147
-#: /app/templates/package_onboarding/onboard.html:350
+#: /app/templates/package_onboarding/onboard.html:354
 msgid "List Price"
 msgstr ""
 
@@ -1765,7 +1765,7 @@ msgid "Type to search or enter a new ingredient name"
 msgstr ""
 
 #: /app/templates/ingredients/new_product.html:47
-#: /app/templates/package_onboarding/onboard.html:229
+#: /app/templates/package_onboarding/onboard.html:233
 msgid "Creating new ingredient:"
 msgstr ""
 
@@ -1774,7 +1774,7 @@ msgid "Ingredient name (e.g., Ibuprofen)"
 msgstr ""
 
 #: /app/templates/ingredients/new_product.html:55
-#: /app/templates/package_onboarding/onboard.html:234
+#: /app/templates/package_onboarding/onboard.html:238
 msgid "Strength (e.g., 400)"
 msgstr ""
 
@@ -1804,8 +1804,8 @@ msgstr ""
 
 #: /app/templates/ingredients/new_product.html:174
 #: /app/templates/ingredients/new_product.html:202
-#: /app/templates/package_onboarding/onboard.html:614
-#: /app/templates/package_onboarding/onboard.html:718
+#: /app/templates/package_onboarding/onboard.html:618
+#: /app/templates/package_onboarding/onboard.html:722
 msgid "Create new"
 msgstr ""
 
@@ -2888,22 +2888,22 @@ msgid "-- Select --"
 msgstr ""
 
 #: /app/templates/medication_packages/new.html:26
-#: /app/templates/package_onboarding/onboard.html:335
+#: /app/templates/package_onboarding/onboard.html:339
 msgid "Small Package"
 msgstr ""
 
 #: /app/templates/medication_packages/new.html:27
-#: /app/templates/package_onboarding/onboard.html:336
+#: /app/templates/package_onboarding/onboard.html:340
 msgid "Medium Package"
 msgstr ""
 
 #: /app/templates/medication_packages/new.html:28
-#: /app/templates/package_onboarding/onboard.html:337
+#: /app/templates/package_onboarding/onboard.html:341
 msgid "Large Package"
 msgstr ""
 
 #: /app/templates/medication_packages/new.html:29
-#: /app/templates/package_onboarding/onboard.html:338
+#: /app/templates/package_onboarding/onboard.html:342
 msgid "Custom Size"
 msgstr ""
 
@@ -2940,7 +2940,7 @@ msgid "Different package sizes (N1, N2, N3) have different national numbers."
 msgstr ""
 
 #: /app/templates/medication_packages/new.html:73
-#: /app/templates/package_onboarding/onboard.html:442
+#: /app/templates/package_onboarding/onboard.html:446
 msgid "Save Package"
 msgstr ""
 
@@ -3061,7 +3061,7 @@ msgstr ""
 
 #: /app/templates/orders/edit.html:126 /app/templates/orders/new.html:175
 #: /app/templates/package_onboarding/onboard.html:165
-#: /app/templates/package_onboarding/onboard.html:404
+#: /app/templates/package_onboarding/onboard.html:408
 msgid "Product"
 msgstr ""
 
@@ -3592,143 +3592,143 @@ msgstr ""
 msgid "Scanned Package Information"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:218
+#: /app/templates/package_onboarding/onboard.html:222
 msgid "Step 1: Select or Create Active Ingredient"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:222
+#: /app/templates/package_onboarding/onboard.html:226
 msgid "Type to search or enter a new ingredient name..."
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:249
+#: /app/templates/package_onboarding/onboard.html:253
 msgid "Form (e.g., tablet)"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:256
+#: /app/templates/package_onboarding/onboard.html:260
 msgid "Popular ingredients:"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:270
+#: /app/templates/package_onboarding/onboard.html:274
 msgid "Step 2: Select or Create Product"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:275
+#: /app/templates/package_onboarding/onboard.html:279
 msgid "Type to search or enter a new product name..."
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:282
+#: /app/templates/package_onboarding/onboard.html:286
 msgid "Creating new product:"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:286
+#: /app/templates/package_onboarding/onboard.html:290
 msgid "Manufacturer (e.g., 1A Pharma)"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:290
+#: /app/templates/package_onboarding/onboard.html:294
 msgid "PZN/NDC (optional)"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:297
+#: /app/templates/package_onboarding/onboard.html:301
 msgid "Product Settings"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:303
+#: /app/templates/package_onboarding/onboard.html:307
 msgid "Over-the-counter (OTC) - No order required"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:311
+#: /app/templates/package_onboarding/onboard.html:315
 msgid "Allow generic substitution (Aut idem)"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:320
+#: /app/templates/package_onboarding/onboard.html:324
 msgid "Available products:"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:329
+#: /app/templates/package_onboarding/onboard.html:333
 msgid "Step 3: Package Configuration"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:341
+#: /app/templates/package_onboarding/onboard.html:345
 msgid "Enter custom size..."
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:345
+#: /app/templates/package_onboarding/onboard.html:349
 msgid "Units per Package"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:347
+#: /app/templates/package_onboarding/onboard.html:351
 msgid "e.g., 100"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:354
+#: /app/templates/package_onboarding/onboard.html:358
 msgid "0.00"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:363
+#: /app/templates/package_onboarding/onboard.html:367
 msgid "If different from product"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:371
+#: /app/templates/package_onboarding/onboard.html:375
 msgid "Step 4: Review and Save"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:376
+#: /app/templates/package_onboarding/onboard.html:380
 msgid "Package Action"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:383
+#: /app/templates/package_onboarding/onboard.html:387
 msgid "Add this package to inventory"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:384
+#: /app/templates/package_onboarding/onboard.html:388
 msgid ""
 "Track this package in your inventory for stock levels and depletion "
 "monitoring"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:389
+#: /app/templates/package_onboarding/onboard.html:393
 msgid ""
 "Uncheck if you only want to register the product information without "
 "adding this specific package to your stock"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:397
+#: /app/templates/package_onboarding/onboard.html:401
 msgid "Review Information"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:410
+#: /app/templates/package_onboarding/onboard.html:414
 msgid "Order Required"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:413
+#: /app/templates/package_onboarding/onboard.html:417
 msgid "Barcode Data"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:434
+#: /app/templates/package_onboarding/onboard.html:438
 msgid "Previous"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:439
+#: /app/templates/package_onboarding/onboard.html:443
 msgid "Next"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:837
+#: /app/templates/package_onboarding/onboard.html:841
 msgid "Please select or enter a product"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:868
+#: /app/templates/package_onboarding/onboard.html:872
 msgid "Please enter a custom package size"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:874
+#: /app/templates/package_onboarding/onboard.html:878
 msgid "Please enter the number of units per package"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:898
+#: /app/templates/package_onboarding/onboard.html:902
 msgid "No (OTC)"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:898
+#: /app/templates/package_onboarding/onboard.html:902
 msgid "Yes"
 msgstr ""
 
@@ -3977,6 +3977,7 @@ msgstr ""
 #: /app/templates/settings/data_management.html:125
 #: /app/templates/settings/data_management.html:138
 #: /app/templates/settings/data_management.html:160
+#: /app/templates/settings/data_management.html:182
 #: /app/templates/settings/data_management.html:204
 #: /app/templates/settings/data_management.html:226
 #: /app/templates/settings/data_management.html:248
@@ -4967,6 +4968,7 @@ msgstr ""
 #: /app/templates/settings/data_management.html:127
 #: /app/templates/settings/data_management.html:148
 #: /app/templates/settings/data_management.html:170
+#: /app/templates/settings/data_management.html:192
 #: /app/templates/settings/data_management.html:214
 #: /app/templates/settings/data_management.html:236
 #: /app/templates/settings/data_management.html:258
@@ -5086,6 +5088,7 @@ msgstr ""
 #: /app/templates/settings/data_management.html:126
 #: /app/templates/settings/data_management.html:143
 #: /app/templates/settings/data_management.html:165
+#: /app/templates/settings/data_management.html:187
 #: /app/templates/settings/data_management.html:209
 #: /app/templates/settings/data_management.html:231
 #: /app/templates/settings/data_management.html:253

@@ -12,8 +12,7 @@ from models import (
     MedicationProduct, 
     ProductPackage,
     Physician,
-    ScannedItem,
-    PackageInventory
+    ScannedItem
 )
 
 bp = Blueprint('package_onboarding', __name__, url_prefix='/onboarding')
@@ -191,14 +190,18 @@ def onboard_package():
                 db.session.add(scanned_item)
                 db.session.flush()
             
-            # Create PackageInventory entry for the new package
+            # Create inventory entry for the new package-based system
+            from models import PackageInventory
+            
             inventory_item = PackageInventory(
                 scanned_item_id=scanned_item.id,
                 current_units=package.quantity,
                 original_units=package.quantity,
                 status='sealed'
+                # medication_id is now optional and left as NULL for pure package-based inventory
             )
             db.session.add(inventory_item)
+            db.session.flush()
         
         db.session.commit()
         
