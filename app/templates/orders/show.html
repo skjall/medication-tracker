@@ -2,6 +2,7 @@
 
 {% block title %}{{ _('Order #%(order_id)s', order_id=order.id) }} - {{ _('Medication Tracker') }}{% endblock %}
 
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
@@ -111,15 +112,14 @@
                             </a>
                         {% endif %}
                         {% if order.status != 'fulfilled' %}
-                            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#fulfillModal">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#fulfillModal">
                                 <i class="fas fa-check me-1"></i>{{ _('Fulfill') }}
                             </button>
                         {% else %}
-                            <form method="POST" action="{{ url_for('orders.toggle_fulfillment', id=order.id) }}" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-warning">
-                                    <i class="fas fa-undo me-1"></i>{{ _('Unfulfill') }}
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                    onclick="var form = document.createElement('form'); form.method = 'POST'; form.action = '{{ url_for('orders.toggle_fulfillment', id=order.id) }}'; document.body.appendChild(form); form.submit(); return false;">
+                                <i class="fas fa-undo me-1"></i>{{ _('Unfulfill') }}
+                            </button>
                         {% endif %}
                     </div>
                     
@@ -156,7 +156,7 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="width: 30%">{{ _('Medication') }}</th>
+                                    <th style="width: 30%">{{ _('Ingredient') }}</th>
                                     <th style="width: 15%">{{ _('Required') }}</th>
                                     <th style="width: 20%">{{ _('Order Details') }}</th>
                                     <th style="width: 15%">{{ _('Fulfillment') }}</th>
@@ -168,16 +168,21 @@
                                 {% for item in order_items %}
                                     <tr class="{% if item.fulfillment_status == 'cancelled' %}table-danger{% elif item.fulfillment_status == 'fulfilled' %}table-success{% endif %}">
                                         <td>
-                                            {% set product = item.medication.default_product or (item.medication.migrated_product[0] if item.medication.migrated_product and item.medication.migrated_product|length > 0 else None) %}
-                                            {% if product %}
-                                                <div class="fw-bold">{{ product.active_ingredient.name }}</div>
-                                                <div class="text-muted small">→ {{ product.display_name }}</div>
+                                            {% if item.active_ingredient %}
+                                                <div class="fw-bold">{{ item.active_ingredient.name }}</div>
+                                                {% if item.product %}
+                                                    <div class="text-muted small">→ {{ item.product.display_name }}</div>
+                                                {% elif item.active_ingredient.default_product %}
+                                                    <div class="text-muted small">→ {{ item.active_ingredient.default_product.display_name }}</div>
+                                                {% endif %}
                                             {% else %}
-                                                <div class="fw-bold">{{ item.medication.name }}</div>
+                                                <div class="fw-bold">{{ _('Unknown') }}</div>
                                             {% endif %}
-                                            <small class="text-muted">
-                                                <i class="fas fa-chart-line me-1"></i>{{ item.medication.daily_usage|round(1) }} {{ _('units/day') }}
-                                            </small>
+                                            {% if item.active_ingredient %}
+                                                <small class="text-muted">
+                                                    <i class="fas fa-chart-line me-1"></i>{{ item.active_ingredient.daily_usage|round(1) }} {{ _('units/day') }}
+                                                </small>
+                                            {% endif %}
                                             {% if item.fulfillment_notes %}
                                                 <div class="small mt-1">
                                                     <i class="fas fa-info-circle me-1"></i>{{ item.fulfillment_notes }}
@@ -245,63 +250,57 @@
                                             {% endif %}
                                         </td>
                                         <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li>
-                                                        <a class="dropdown-item" href="{{ url_for('medications.show', id=item.medication.id) }}">
-                                                            <i class="fas fa-pills me-2"></i>{{ _('View Medication') }}
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item" href="{{ url_for('inventory.show', id=item.medication.inventory.id) }}">
-                                                            <i class="fas fa-boxes me-2"></i>{{ _('View Inventory') }}
-                                                        </a>
-                                                    </li>
-                                                    {% if order.status != 'fulfilled' %}
-                                                        <li>
-                                                            <button type="button" class="dropdown-item"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#linkPackageModal"
-                                                                    data-item-id="{{ item.id }}"
-                                                                    data-item-name="{{ item.medication.name }}">
-                                                                <i class="fas fa-link me-2"></i>{{ _('Manage Package Links') }}
-                                                            </button>
-                                                        </li>
-                                                    {% endif %}
-                                                    {% if item.fulfillment_status == 'pending' %}
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li>
-                                                            <button type="button" class="dropdown-item text-success"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#fulfillItemModal"
-                                                                    data-item-id="{{ item.id }}"
-                                                                    data-item-name="{{ item.medication.name }}"
-                                                                    data-item-quantity="{{ item.total_units_ordered }}">
-                                                                <i class="fas fa-check me-2"></i>{{ _('Mark Fulfilled') }}
-                                                            </button>
-                                                        </li>
-                                                        <li>
-                                                            <form action="{{ url_for('orders.cancel_item', order_id=order.id, item_id=item.id) }}" method="post" 
-                                                                  onsubmit="return confirm('{{ _('Are you sure you want to cancel this item?') }}');">
-                                                                <button type="submit" class="dropdown-item text-danger">
-                                                                    <i class="fas fa-times me-2"></i>{{ _('Cancel Item') }}
-                                                                </button>
-                                                            </form>
-                                                        </li>
-                                                    {% elif item.fulfillment_status == 'cancelled' %}
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li>
-                                                            <form action="{{ url_for('orders.undo_cancel_item', order_id=order.id, item_id=item.id) }}" method="post">
-                                                                <button type="submit" class="dropdown-item text-success">
-                                                                    <i class="fas fa-undo me-2"></i>{{ _('Undo Cancel') }}
-                                                                </button>
-                                                            </form>
-                                                        </li>
-                                                    {% endif %}
-                                                </ul>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('ingredients.show', id=item.active_ingredient.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary" 
+                                                   title="{{ _('View Ingredient') }}">
+                                                    <i class="fas fa-pills"></i>
+                                                </a>
+                                                <a href="{{ url_for('inventory.index') }}#ingredient-{{ item.active_ingredient.id }}" 
+                                                   class="btn btn-sm btn-outline-primary" 
+                                                   title="{{ _('View Inventory') }}">
+                                                    <i class="fas fa-boxes"></i>
+                                                </a>
+                                                {% if order.status != 'fulfilled' %}
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#linkPackageModal"
+                                                            data-item-id="{{ item.id }}"
+                                                            data-item-name="{{ item.active_ingredient.name }}"
+                                                            title="{{ _('Manage Package Links') }}">
+                                                        <i class="fas fa-link"></i>
+                                                    </button>
+                                                {% endif %}
+                                                {% if item.fulfillment_status == 'pending' %}
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#fulfillItemModal"
+                                                            data-item-id="{{ item.id }}"
+                                                            data-item-name="{{ item.active_ingredient.name }}"
+                                                            data-item-quantity="{{ item.total_units_ordered }}"
+                                                            title="{{ _('Mark Fulfilled') }}">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                            title="{{ _('Cancel Item') }}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#cancelItemModal"
+                                                            data-item-id="{{ item.id }}"
+                                                            data-item-name="{{ item.active_ingredient.name }}"
+                                                            data-order-id="{{ order.id }}">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                {% elif item.fulfillment_status == 'cancelled' %}
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                            title="{{ _('Undo Cancel') }}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#undoCancelModal"
+                                                            data-item-id="{{ item.id }}"
+                                                            data-item-name="{{ item.active_ingredient.name }}"
+                                                            data-order-id="{{ order.id }}">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
+                                                {% endif %}
                                             </div>
                                         </td>
                                     </tr>
@@ -398,6 +397,62 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-check me-1"></i>{{ _('Update Status') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Item Modal -->
+<div class="modal fade" id="cancelItemModal" tabindex="-1" aria-labelledby="cancelItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelItemModalLabel">{{ _('Cancel Item') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
+            </div>
+            <form id="cancelItemForm" method="POST">
+                <div class="modal-body">
+                    <p>{{ _('Are you sure you want to cancel this item?') }}</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong id="cancelItemName"></strong>
+                    </div>
+                    <p>{{ _('This action will mark the item as cancelled in the order.') }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Close') }}</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i>{{ _('Cancel Item') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Undo Cancel Modal -->
+<div class="modal fade" id="undoCancelModal" tabindex="-1" aria-labelledby="undoCancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="undoCancelModalLabel">{{ _('Undo Cancel') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
+            </div>
+            <form id="undoCancelForm" method="POST">
+                <div class="modal-body">
+                    <p>{{ _('Do you want to restore this cancelled item?') }}</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong id="undoCancelItemName"></strong>
+                    </div>
+                    <p>{{ _('This will restore the item to pending status.') }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Close') }}</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-undo me-1"></i>{{ _('Restore Item') }}
                     </button>
                 </div>
             </form>
@@ -515,7 +570,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 {% for item in order_items %}
                 {
                     id: {{ item.id }},
-                    medication_name: "{{ item.medication.name }}",
+                    medication_name: "{{ item.active_ingredient.name }}",
                     linked_packages: [
                         {% if item.linked_packages %}
                             {% for pkg in item.linked_packages %}
@@ -602,7 +657,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <small class="text-muted ms-2">{{ _("Scanned") }}: ${pkg.scanned_date}</small>
                                         </span>
                                         <form method="POST" action="/orders/item/${itemId}/link_package/${pkg.id}" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-link"></i> {{ _("Link") }}
                                             </button>
                                         </form>
@@ -649,5 +704,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Handle Cancel Item Modal
+const cancelItemModal = document.getElementById('cancelItemModal');
+if (cancelItemModal) {
+    cancelItemModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const itemId = button.getAttribute('data-item-id');
+        const itemName = button.getAttribute('data-item-name');
+        const orderId = button.getAttribute('data-order-id');
+        
+        // Update modal content
+        document.getElementById('cancelItemName').textContent = itemName;
+        
+        // Set form action
+        const form = document.getElementById('cancelItemForm');
+        form.action = `/orders/${orderId}/item/${itemId}/cancel`;
+    });
+}
+
+// Handle Undo Cancel Modal
+const undoCancelModal = document.getElementById('undoCancelModal');
+if (undoCancelModal) {
+    undoCancelModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const itemId = button.getAttribute('data-item-id');
+        const itemName = button.getAttribute('data-item-name');
+        const orderId = button.getAttribute('data-order-id');
+        
+        // Update modal content
+        document.getElementById('undoCancelItemName').textContent = itemName;
+        
+        // Set form action
+        const form = document.getElementById('undoCancelForm');
+        form.action = `/orders/${orderId}/item/${itemId}/undo_cancel`;
+    });
+}
 </script>
 {% endblock %}

@@ -212,7 +212,6 @@
         </div>
         
         <!-- Current Inventory -->
-        {% if product.legacy_medication %}
         <div class="card">
             <div class="card-header bg-secondary text-white">
                 <h5 class="mb-0">{{ _('Current Inventory') }}</h5>
@@ -253,7 +252,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for pkg, item, _ in package_inventory %}
+                            {% for pkg, item, package_config in package_inventory %}
                             <tr>
                                 <td><code>{{ item.serial_number }}</code></td>
                                 <td>{{ item.batch_number or '-' }}</td>
@@ -267,9 +266,9 @@
                                 <td>{{ pkg.current_units }} / {{ pkg.original_units }}</td>
                                 <td>
                                     {% if pkg.status == 'sealed' %}
-                                        <span class="badge bg-success">{{ _('Sealed') if _ else 'Sealed' }}</span>
+                                        <span class="badge bg-success">{{ _('Sealed') }}</span>
                                     {% elif pkg.status == 'open' %}
-                                        <span class="badge bg-warning">{{ _('Open') if _ else 'Open' }}</span>
+                                        <span class="badge bg-warning">{{ _('Open') }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -277,17 +276,11 @@
                         </tbody>
                     </table>
                 </div>
+                {% else %}
+                <p class="text-muted">{{ _('No packages in stock') }}</p>
                 {% endif %}
-                
-                <div class="mt-3">
-                    <a href="{{ url_for('inventory.show', id=product.legacy_medication.inventory.id) }}" 
-                       class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-warehouse me-1"></i>{{ _('View Full Inventory') }}
-                    </a>
-                </div>
             </div>
         </div>
-        {% endif %}
     </div>
     
     <div class="col-lg-4">

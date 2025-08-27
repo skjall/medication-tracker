@@ -69,8 +69,25 @@ def generate_order_pdf(
         # Generate PDF using PDFTemplate's function
         from routes.pdf_mapper import generate_filled_pdf_from_template
         
-        # Get medications from order items
-        order_medications = [item.medication for item in order.order_items]
+        # Get active ingredients from order items
+        order_ingredients = [item.active_ingredient for item in order.order_items]
+        
+        # Convert ingredients to a format the PDF generator can understand
+        # For now, try to find legacy medications that match the ingredients
+        from models import Medication
+        medications_for_pdf = []
+        for ingredient in order_ingredients:
+            # Try to find a medication with the same name as the ingredient
+            med = Medication.query.filter_by(name=ingredient.name).first()
+            if med:
+                medications_for_pdf.append(med)
+            else:
+                # If no matching medication, we'll need to update the PDF generator
+                logger.warning(f"No matching medication found for ingredient: {ingredient.name}")
+        
+        if not medications_for_pdf:
+            logger.error("No medications found for PDF generation")
+            return None
         
         # Create the output directory if it doesn't exist
         from utils import get_data_directory
@@ -84,7 +101,7 @@ def generate_order_pdf(
         
         try:
             # Generate the PDF and save to our desired location
-            temp_path = generate_filled_pdf_from_template(pdf_template, order_medications)
+            temp_path = generate_filled_pdf_from_template(pdf_template, medications_for_pdf)
             
             # Move the temp file to our desired location
             import shutil

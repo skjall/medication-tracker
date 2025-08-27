@@ -127,9 +127,7 @@ class Medication(db.Model):
         uselist=False,
         cascade="all, delete-orphan",
     )
-    order_items: Mapped[List["OrderItem"]] = relationship(
-        "OrderItem", back_populates="medication", cascade="save-update"
-    )
+    # Removed order_items relationship - orders now use ActiveIngredient
 
     # New relationship for medication schedules
     schedules: Mapped[List["MedicationSchedule"]] = relationship(
@@ -175,7 +173,7 @@ class Medication(db.Model):
         if self.inventory:
             total += self.inventory.current_count
         
-        # Add package inventory
+        # Add package inventory linked directly to this medication
         from models import PackageInventory
         package_units = PackageInventory.query.filter(
             PackageInventory.medication_id == self.id,
@@ -184,6 +182,47 @@ class Medication(db.Model):
         
         if package_units:
             total += package_units
+        
+        # Also add inventory from packages linked through the new product system
+        if self.default_product:
+            # Use the product's total inventory count (which includes new packages)
+            # But subtract what we've already counted above to avoid double counting
+            product_total = self.default_product.total_inventory_count
+            # The product count includes legacy packages we already counted, so we need the difference
+            # This gets us only the NEW packages not linked to medication_id
+            from models import ScannedItem, ProductPackage
+            from sqlalchemy import or_
+            
+            # Get packages linked through product but without medication_id
+            packages = ProductPackage.query.filter_by(product_id=self.default_product_id).all()
+            package_gtins = [p.gtin for p in packages if p.gtin]
+            package_numbers = [(p.national_number, p.national_number_type) 
+                              for p in packages if p.national_number]
+            
+            if package_gtins or package_numbers:
+                query = (
+                    db.session.query(db.func.sum(PackageInventory.current_units))
+                    .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
+                    .filter(
+                        PackageInventory.status.in_(['sealed', 'open']),
+                        PackageInventory.medication_id.is_(None)  # Only new packages
+                    )
+                )
+                
+                conditions = []
+                if package_gtins:
+                    conditions.append(ScannedItem.gtin.in_(package_gtins))
+                for nat_num, nat_type in package_numbers:
+                    conditions.append(
+                        (ScannedItem.national_number == nat_num) & 
+                        (ScannedItem.national_number_type == nat_type)
+                    )
+                
+                if conditions:
+                    query = query.filter(or_(*conditions))
+                    new_package_units = query.scalar()
+                    if new_package_units:
+                        total += new_package_units
             
         return total
 

@@ -14,6 +14,7 @@ from .base import db, utcnow
 if TYPE_CHECKING:
     from .medication_product import MedicationProduct
     from .schedule import MedicationSchedule
+    from .visit import OrderItem
 
 
 class ActiveIngredient(db.Model):
@@ -138,6 +139,11 @@ class ActiveIngredient(db.Model):
         foreign_keys="MedicationProduct.active_ingredient_id"
     )
     
+    order_items: Mapped[list["OrderItem"]] = relationship(
+        "OrderItem",
+        back_populates="active_ingredient"
+    )
+    
     # Default product relationship
     default_product: Mapped[Optional["MedicationProduct"]] = relationship(
         "MedicationProduct",
@@ -232,3 +238,113 @@ class ActiveIngredient(db.Model):
         if self.days_remaining is None:
             return None
         return utcnow() + timedelta(days=self.days_remaining)
+    
+    @property
+    def is_low(self) -> bool:
+        """Check if inventory is below minimum threshold."""
+        return self.total_inventory_count < self.min_threshold
+    
+    @property
+    def package_inventories(self):
+        """Get all package inventories for this ingredient across all products."""
+        from models import PackageInventory, ScannedItem, ProductPackage
+        from sqlalchemy import or_
+        
+        all_packages = []
+        
+        # Collect package inventory for all products
+        for product in self.products:
+            # Get packages for this product
+            packages = ProductPackage.query.filter_by(product_id=product.id).all()
+            package_gtins = [p.gtin for p in packages if p.gtin]
+            package_numbers = [(p.national_number, p.national_number_type) 
+                              for p in packages if p.national_number]
+            
+            if package_gtins or package_numbers:
+                # Build query for package inventory
+                query = (
+                    PackageInventory.query
+                    .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
+                    .filter(
+                        PackageInventory.status.in_(['sealed', 'open']),
+                        PackageInventory.medication_id.is_(None)  # Only new packages
+                    )
+                )
+                
+                # Build OR conditions
+                conditions = []
+                if package_gtins:
+                    conditions.append(ScannedItem.gtin.in_(package_gtins))
+                for nat_num, nat_type in package_numbers:
+                    conditions.append(
+                        (ScannedItem.national_number == nat_num) & 
+                        (ScannedItem.national_number_type == nat_type)
+                    )
+                
+                if conditions:
+                    query = query.filter(or_(*conditions))
+                    all_packages.extend(query.all())
+        
+        return all_packages
+    
+    def get_next_package_for_deduction(self):
+        """Get the next package that would be used for deduction."""
+        packages = self.package_inventories
+        if not packages:
+            return None
+        
+        # Sort by expiry date and return the one expiring soonest
+        packages_with_expiry = []
+        for pkg in packages:
+            if pkg.current_units > 0:
+                if pkg.scanned_item and pkg.scanned_item.expiry_date:
+                    packages_with_expiry.append((pkg.scanned_item.expiry_date, pkg))
+                else:
+                    # No expiry date, add with far future date
+                    from datetime import date
+                    packages_with_expiry.append((date(9999, 12, 31), pkg))
+        
+        if packages_with_expiry:
+            packages_with_expiry.sort(key=lambda x: x[0])
+            return packages_with_expiry[0][1]
+        
+        return None
+    
+    @property
+    def uses_package_system(self) -> bool:
+        """Check if this ingredient uses the package-based inventory system."""
+        return len(self.package_inventories) > 0
+    
+    @property
+    def active_package_count(self) -> int:
+        """Get count of active (non-empty) packages."""
+        return len([p for p in self.package_inventories if p.current_units > 0])
+    
+    @property
+    def is_otc(self) -> bool:
+        """Check if this ingredient has any OTC products."""
+        return any(product.is_otc for product in self.products)
+    
+    @property
+    def aut_idem(self) -> bool:
+        """Check if substitution is allowed for products with this ingredient."""
+        # If any product forbids substitution, the ingredient should not allow it
+        return all(product.aut_idem for product in self.products)
+    
+    @property
+    def has_legacy_inventory(self) -> bool:
+        """Check if this ingredient has any legacy inventory (non-package based)."""
+        for product in self.products:
+            if product.legacy_medication and product.legacy_medication.inventory:
+                if product.legacy_medication.inventory.current_count > 0:
+                    return True
+        return False
+    
+    @property
+    def legacy_inventory_count(self) -> int:
+        """Get total legacy inventory count across all products."""
+        total = 0
+        for product in self.products:
+            if product.legacy_medication and product.legacy_medication.inventory:
+                total += product.legacy_medication.inventory.current_count
+        return total

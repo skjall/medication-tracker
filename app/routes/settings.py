@@ -554,13 +554,18 @@ def data_management():
                     logger.error(f"Auto-migration failed: {migration_error}")
             return 0
 
-    med_count = safe_count(Medication, "medications")
-    inventory_count = safe_count(Inventory, "inventory")
+    # Count new data models
+    from models import ActiveIngredient, MedicationProduct, PackageInventory
+    
+    ingredient_count = safe_count(ActiveIngredient, "active_ingredients")
+    product_count = safe_count(MedicationProduct, "medication_products")
+    package_count = safe_count(PackageInventory, "package_inventories")
+    
+    # Count existing models
     visit_count = safe_count(PhysicianVisit, "visits")
     physician_count = safe_count(Physician, "physicians")
     order_count = safe_count(Order, "orders")
     order_item_count = safe_count(OrderItem, "order_items")
-    schedule_count = safe_count(MedicationSchedule, "schedules")
     inventory_logs_count = safe_count(InventoryLog, "inventory_logs")
 
     # Get database path for display
@@ -588,13 +593,13 @@ def data_management():
     return render_template(
         "settings/data_management.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
-        med_count=med_count,
-        inventory_count=inventory_count,
+        ingredient_count=ingredient_count,
+        product_count=product_count,
+        package_count=package_count,
         visit_count=visit_count,
         physician_count=physician_count,
         order_count=order_count,
         order_item_count=order_item_count,
-        schedule_count=schedule_count,
         inventory_logs_count=inventory_logs_count,
         db_path=db_path,
         db_size=db_size,

@@ -9,9 +9,9 @@
     </h1>
     <div>
         {% set ns = namespace(low_stock_count=0) %}
-        {% for physician, meds in medications_by_physician.items() %}
-            {% for med in meds %}
-                {% if med.inventory and med.inventory.is_low %}
+        {% for physician, ingredients_list in ingredients_by_physician.items() %}
+            {% for ingredient in ingredients_list %}
+                {% if ingredient.total_inventory_count < ingredient.min_threshold %}
                     {% set ns.low_stock_count = ns.low_stock_count + 1 %}
                 {% endif %}
             {% endfor %}
@@ -31,18 +31,18 @@
     <div class="card-header bg-primary text-white">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">{{ _('Inventory Overview') }}</h5>
-            {% if medications_by_physician %}
-                <input type="text" id="inventorySearch" class="form-control form-control-sm w-auto" placeholder="{{ _('Search medications...') }}">
+            {% if ingredients_by_physician %}
+                <input type="text" id="inventorySearch" class="form-control form-control-sm w-auto" placeholder="{{ _('Search ingredients...') }}">
             {% endif %}
         </div>
     </div>
     <div class="card-body">
-        {% if medications_by_physician %}
-            {# Check if any medication has packages #}
+        {% if ingredients_by_physician %}
+            {# Check if any ingredient has inventory #}
             {% set has_packages = namespace(value=false) %}
-            {% for physician in medications_by_physician %}
-                {% for med in medications_by_physician[physician] %}
-                    {% if med.package_inventories and med.package_inventories|length > 0 %}
+            {% for physician in ingredients_by_physician %}
+                {% for ingredient in ingredients_by_physician[physician] %}
+                    {% if ingredient.total_inventory_count > 0 %}
                         {% set has_packages.value = true %}
                     {% endif %}
                 {% endfor %}
@@ -57,13 +57,13 @@
                             {% if physician %}
                                 {{ physician.display_name }}
                             {% else %}
-                                {{ _('Unassigned Medications') }}
+                                {{ _('Unassigned Ingredients') }}
                             {% endif %}
                         </h5>
-                        <span class="badge bg-secondary ms-2">{{ medications_by_physician[physician]|length }}</span>
+                        <span class="badge bg-secondary ms-2">{{ ingredients_by_physician[physician]|length }}</span>
                     </div>
 
-                    <!-- Medications Table for this Physician -->
+                    <!-- Ingredients Table for this Physician -->
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -83,40 +83,68 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for med in medications_by_physician[physician] %}
-                                    {% set color_class = 'text-danger' if med.inventory and med.inventory.is_low else ('text-warning' if med.days_remaining and med.days_remaining < 30 else 'text-success') %}
-                                    <tr class="medication-row">
+                                {% for ingredient in ingredients_by_physician[physician] %}
+                                    {% set color_class = 'text-danger' if ingredient.total_inventory_count < ingredient.min_threshold else ('text-warning' if ingredient.days_remaining and ingredient.days_remaining < 30 else 'text-success') %}
+                                    {% set has_products_with_stock = ingredient.products|selectattr('total_inventory_count', '>', 0)|list|length > 0 %}
+                                    <tr class="ingredient-row">
                                         <td>
-                                            <strong>{{ med.name }}</strong>
-                                            {% if med.is_otc %}
+                                            {% if has_products_with_stock %}
+                                                <button class="btn btn-sm btn-link p-0 me-1" type="button" 
+                                                        data-bs-toggle="collapse" 
+                                                        data-bs-target="#products-{{ physician.id if physician else 0 }}-{{ ingredient.id }}"
+                                                        aria-expanded="false">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                            {% endif %}
+                                            <strong>{{ ingredient.name }}</strong>
+                                            {% if ingredient.is_otc %}
                                                 <span class="badge bg-primary text-white ms-2">{{ _('OTC') }}</span>
                                             {% endif %}
-                                            {% if not med.aut_idem %}
+                                            {% if not ingredient.aut_idem %}
                                                 <i class="fas fa-fingerprint text-info ms-2" title="{{ _('No generic substitution') }}"></i>
                                             {% endif %}
                                         </td>
                                         {% if has_packages.value %}
                                             <td>
-                                                {% set current_package = med.get_next_package_for_deduction() %}
-                                                {% if current_package %}
-                                                    <small>
-                                                        {% if current_package.scanned_item %}
-                                                            S/N: ...{{ current_package.scanned_item.serial_number[-6:] }}
-                                                        {% else %}
-                                                            #{{ current_package.id }}
-                                                        {% endif %}
-                                                        <span class="text-muted">({{ current_package.current_units }})</span>
-                                                    </small>
-                                                {% elif med.inventory and med.inventory.current_count > 0 %}
-                                                    <small class="text-muted">{{ _('Legacy') }}</small>
+                                                {% if ingredient.has_legacy_inventory %}
+                                                    {# Currently using legacy inventory #}
+                                                    <small class="text-muted">{{ _('Legacy') }} ({{ ingredient.legacy_inventory_count }})</small>
                                                 {% else %}
-                                                    <small class="text-muted">-</small>
+                                                    {# Using package inventory #}
+                                                    {% set current_package = ingredient.get_next_package_for_deduction() %}
+                                                    {% if current_package %}
+                                                        <small>
+                                                            {% if current_package.scanned_item %}
+                                                                S/N: ...{{ current_package.scanned_item.serial_number[-6:] }}
+                                                            {% else %}
+                                                                #{{ current_package.id }}
+                                                            {% endif %}
+                                                            <span class="text-muted">({{ current_package.current_units }})</span>
+                                                        </small>
+                                                    {% else %}
+                                                        <small class="text-muted">-</small>
+                                                    {% endif %}
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                {% if current_package %}
-                                                    {# Get the next package after the current one #}
-                                                    {% set all_packages = med.package_inventories|selectattr('status', 'in', ['open', 'sealed'])|selectattr('current_units', '>', 0)|list %}
+                                                {% if ingredient.has_legacy_inventory %}
+                                                    {# Still on legacy, show the first package as next #}
+                                                    {% set first_package = ingredient.get_next_package_for_deduction() %}
+                                                    {% if first_package %}
+                                                        <small>
+                                                            {% if first_package.scanned_item %}
+                                                                S/N: ...{{ first_package.scanned_item.serial_number[-6:] }}
+                                                            {% else %}
+                                                                #{{ first_package.id }}
+                                                            {% endif %}
+                                                            <span class="text-muted">({{ first_package.current_units }})</span>
+                                                        </small>
+                                                    {% else %}
+                                                        <small class="text-muted">-</small>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {# Using packages, show the next package after current one #}
+                                                    {% set all_packages = ingredient.package_inventories|selectattr('status', 'in', ['open', 'sealed'])|selectattr('current_units', '>', 0)|list %}
                                                     {% if all_packages|length > 1 %}
                                                         {% for pkg in all_packages[1:2] %}
                                                             <small>
@@ -131,34 +159,17 @@
                                                     {% else %}
                                                         <small class="text-muted">-</small>
                                                     {% endif %}
-                                                {% elif med.inventory and med.inventory.current_count > 0 %}
-                                                    {# Still on legacy, but check if there's a package waiting #}
-                                                    {% set first_package = med.get_next_package_for_deduction() %}
-                                                    {% if first_package %}
-                                                        <small>
-                                                            {% if first_package.scanned_item %}
-                                                                S/N: ...{{ first_package.scanned_item.serial_number[-6:] }}
-                                                            {% else %}
-                                                                #{{ first_package.id }}
-                                                            {% endif %}
-                                                            <span class="text-muted">({{ first_package.current_units }})</span>
-                                                        </small>
-                                                    {% else %}
-                                                        <small class="text-muted">-</small>
-                                                    {% endif %}
-                                                {% else %}
-                                                    <small class="text-muted">-</small>
                                                 {% endif %}
                                             </td>
                                         {% else %}
-                                            <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
+                                            <td>{{ ingredient.daily_usage|round(1) }} {{ _('units') }}</td>
                                         {% endif %}
                                         <td class="{{ color_class }}">
-                                            {% if med.inventory %}
-                                                <strong>{{ med.total_inventory_count }}</strong> {{ _('units') }}
-                                                {% if med.package_inventories and med.package_inventories|length > 0 %}
+                                            {% if ingredient %}
+                                                <strong>{{ ingredient.total_inventory_count }}</strong> {{ _('units') }}
+                                                {% if ingredient.package_inventories and ingredient.package_inventories|length > 0 %}
                                                     <br><small class="text-muted">
-                                                        <i class="fas fa-box"></i> {{ med.package_inventories|length }} {{ ngettext('package', 'packages', med.package_inventories|length) }}
+                                                        <i class="fas fa-box"></i> {{ ingredient.package_inventories|length }} {{ ngettext('package', 'packages', ingredient.package_inventories|length) }}
                                                     </small>
                                                 {% endif %}
                                             {% else %}
@@ -166,37 +177,37 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if med.days_remaining %}
-                                                <span class="{{ color_class }}">{{ med.days_remaining|round(1) }} {{ _('days') }}</span>
+                                            {% if ingredient.days_remaining %}
+                                                <span class="{{ color_class }}">{{ ingredient.days_remaining|round(1) }} {{ _('days') }}</span>
                                             {% else %}
                                                 <span class="text-muted">{{ _('N/A') }}</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if med.depletion_date %}
+                                            {% if ingredient.depletion_date %}
                                                 <span class="{{ color_class }}">
-                                                    {{ format_date(med.depletion_date) }}
+                                                    {{ format_date(ingredient.depletion_date) }}
                                                 </span>
                                             {% else %}
                                                 <span class="text-muted">{{ _('N/A') }}</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if not med.inventory %}
+                                            {% if not ingredient %}
                                                 <span class="badge bg-secondary">{{ _('No Data') }}</span>
-                                            {% elif med.total_inventory_count == 0 %}
+                                            {% elif ingredient.total_inventory_count == 0 %}
                                                 <span class="badge bg-danger">{{ _('Critical') }}</span>
-                                            {% elif med.inventory.is_low %}
+                                            {% elif ingredient.is_low %}
                                                 <span class="badge bg-danger">{{ _('Low Stock') }}</span>
-                                            {% elif med.days_remaining and med.days_remaining < 30 %}
+                                            {% elif ingredient.days_remaining and ingredient.days_remaining < 30 %}
                                                 <span class="badge bg-warning text-white">{{ _('Running Low') }}</span>
                                             {% else %}
                                                 <span class="badge bg-success">{{ _('OK') }}</span>
                                             {% endif %}
                                         </td>
                                         <td class="text-end">
-                                            {% if med.inventory %}
-                                                <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-sm btn-outline-primary" title="{{ _('View') }}">
+                                            {% if ingredient %}
+                                                <a href="{{ url_for('ingredients.show', id=ingredient.id) }}" class="btn btn-sm btn-outline-primary" title="{{ _('View') }}">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                             {% else %}
@@ -206,6 +217,50 @@
                                             {% endif %}
                                         </td>
                                     </tr>
+                                    <!-- Collapsible product rows -->
+                                    {% if has_products_with_stock %}
+                                        <tr class="collapse" id="products-{{ physician.id if physician else 0 }}-{{ ingredient.id }}">
+                                            <td colspan="8" class="p-0">
+                                                <div class="ps-5">
+                                                    <table class="table table-sm mb-0">
+                                                        <tbody>
+                                                            {% for product in ingredient.products if product.total_inventory_count > 0 %}
+                                                                <tr class="table-light">
+                                                                    <td style="width: 30%">
+                                                                        <i class="fas fa-box-open text-muted me-1"></i>
+                                                                        {{ product.brand_name }}
+                                                                        {% if product.manufacturer and product.manufacturer != 'Unknown' %}
+                                                                            <span class="text-muted">({{ product.manufacturer }})</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td style="width: 15%">{{ product.strength }} {{ product.unit }}</td>
+                                                                    <td style="width: 20%">
+                                                                        {% if product.has_package_inventory %}
+                                                                            {% set pkg_count = product.package_inventory_count %}
+                                                                            {{ _n('%(count)d package', '%(count)d packages', pkg_count, count=pkg_count) }}
+                                                                        {% elif product.has_legacy_inventory %}
+                                                                            <span class="text-muted">{{ _('Legacy') }} ({{ product.legacy_inventory_count }})</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td style="width: 15%">{{ _n('%(count)d unit', '%(count)d units', product.total_inventory_count, count=product.total_inventory_count) }}</td>
+                                                                    <td style="width: 10%">
+                                                                        {% if product.is_favorite %}
+                                                                            <span class="badge bg-primary">{{ _('Favorite') }}</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td class="text-end" style="width: 10%">
+                                                                        <a href="{{ url_for('ingredients.show_product', id=product.id) }}" class="btn btn-sm btn-outline-primary">
+                                                                            <i class="fas fa-eye"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -214,7 +269,7 @@
             {% endfor %}
 
             <!-- OTC Medications Section -->
-            {% if otc_medications %}
+            {% if otc_ingredients %}
                 <div class="physician-section mb-4">
                     <!-- OTC Header -->
                     <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
@@ -222,7 +277,7 @@
                         <h5 class="mb-0 text-primary">
                             {{ _('Over-the-Counter (OTC) Medications') }}
                         </h5>
-                        <span class="badge bg-secondary ms-2">{{ otc_medications|length }}</span>
+                        <span class="badge bg-secondary ms-2">{{ otc_ingredients|length }}</span>
                     </div>
 
                     <!-- OTC Medications Table -->
@@ -245,38 +300,66 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for med in otc_medications %}
-                                    {% set color_class = 'text-danger' if med.inventory and med.inventory.is_low else ('text-warning' if med.days_remaining and med.days_remaining < 30 else 'text-success') %}
-                                    <tr class="medication-row">
+                                {% for ingredient in otc_ingredients %}
+                                    {% set color_class = 'text-danger' if ingredient and ingredient.is_low else ('text-warning' if ingredient.days_remaining and ingredient.days_remaining < 30 else 'text-success') %}
+                                    {% set has_products_with_stock = ingredient.products|selectattr('total_inventory_count', '>', 0)|list|length > 0 %}
+                                    <tr class="ingredient-row">
                                         <td>
-                                            <strong>{{ med.name }}</strong>
+                                            {% if has_products_with_stock %}
+                                                <button class="btn btn-sm btn-link p-0 me-1" type="button" 
+                                                        data-bs-toggle="collapse" 
+                                                        data-bs-target="#products-otc-{{ ingredient.id }}"
+                                                        aria-expanded="false">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                            {% endif %}
+                                            <strong>{{ ingredient.name }}</strong>
                                             <span class="badge bg-primary text-white ms-2">{{ _('OTC') }}</span>
-                                            {% if not med.aut_idem %}
+                                            {% if not ingredient.aut_idem %}
                                                 <i class="fas fa-fingerprint text-info ms-2" title="{{ _('No generic substitution') }}"></i>
                                             {% endif %}
                                         </td>
                                         {% if has_packages.value %}
                                             <td>
-                                                {% set current_package = med.get_next_package_for_deduction() %}
-                                                {% if current_package %}
-                                                    <small>
-                                                        {% if current_package.scanned_item %}
-                                                            S/N: ...{{ current_package.scanned_item.serial_number[-6:] }}
-                                                        {% else %}
-                                                            #{{ current_package.id }}
-                                                        {% endif %}
-                                                        <span class="text-muted">({{ current_package.current_units }})</span>
-                                                    </small>
-                                                {% elif med.inventory and med.inventory.current_count > 0 %}
-                                                    <small class="text-muted">{{ _('Legacy') }}</small>
+                                                {% if ingredient.has_legacy_inventory %}
+                                                    {# Currently using legacy inventory #}
+                                                    <small class="text-muted">{{ _('Legacy') }} ({{ ingredient.legacy_inventory_count }})</small>
                                                 {% else %}
-                                                    <small class="text-muted">-</small>
+                                                    {# Using package inventory #}
+                                                    {% set current_package = ingredient.get_next_package_for_deduction() %}
+                                                    {% if current_package %}
+                                                        <small>
+                                                            {% if current_package.scanned_item %}
+                                                                S/N: ...{{ current_package.scanned_item.serial_number[-6:] }}
+                                                            {% else %}
+                                                                #{{ current_package.id }}
+                                                            {% endif %}
+                                                            <span class="text-muted">({{ current_package.current_units }})</span>
+                                                        </small>
+                                                    {% else %}
+                                                        <small class="text-muted">-</small>
+                                                    {% endif %}
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                {% if current_package %}
-                                                    {# Get the next package after the current one #}
-                                                    {% set all_packages = med.package_inventories|selectattr('status', 'in', ['open', 'sealed'])|selectattr('current_units', '>', 0)|list %}
+                                                {% if ingredient.has_legacy_inventory %}
+                                                    {# Still on legacy, show the first package as next #}
+                                                    {% set first_package = ingredient.get_next_package_for_deduction() %}
+                                                    {% if first_package %}
+                                                        <small>
+                                                            {% if first_package.scanned_item %}
+                                                                S/N: ...{{ first_package.scanned_item.serial_number[-6:] }}
+                                                            {% else %}
+                                                                #{{ first_package.id }}
+                                                            {% endif %}
+                                                            <span class="text-muted">({{ first_package.current_units }})</span>
+                                                        </small>
+                                                    {% else %}
+                                                        <small class="text-muted">-</small>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {# Using packages, show the next package after current one #}
+                                                    {% set all_packages = ingredient.package_inventories|selectattr('status', 'in', ['open', 'sealed'])|selectattr('current_units', '>', 0)|list %}
                                                     {% if all_packages|length > 1 %}
                                                         {% for pkg in all_packages[1:2] %}
                                                             <small>
@@ -291,38 +374,17 @@
                                                     {% else %}
                                                         <small class="text-muted">-</small>
                                                     {% endif %}
-                                                {% elif med.inventory and med.inventory.current_count > 0 %}
-                                                    {# Still on legacy, but check if there's a package waiting #}
-                                                    {% set first_package = med.get_next_package_for_deduction() %}
-                                                    {% if first_package %}
-                                                        <small>
-                                                            {% if first_package.scanned_item %}
-                                                                S/N: ...{{ first_package.scanned_item.serial_number[-6:] }}
-                                                            {% else %}
-                                                                #{{ first_package.id }}
-                                                            {% endif %}
-                                                            <span class="text-muted">({{ first_package.current_units }})</span>
-                                                        </small>
-                                                    {% else %}
-                                                        <small class="text-muted">-</small>
-                                                    {% endif %}
-                                                {% else %}
-                                                    <small class="text-muted">-</small>
                                                 {% endif %}
                                             </td>
                                         {% else %}
-                                            <td>{{ med.daily_usage|round(1) }} {{ _('units') }}</td>
+                                            <td>{{ ingredient.daily_usage|round(1) }} {{ _('units') }}</td>
                                         {% endif %}
                                         <td class="{{ color_class }}">
-                                            {% if med.inventory %}
-                                                <strong>{{ med.total_inventory_count }}</strong> {{ _('units') }}
-                                                {% if med.uses_package_system %}
-                                                    <br><small class="text-success">
-                                                        <i class="fas fa-box"></i> {{ _('Package-based') }}
-                                                    </small>
-                                                {% elif med.active_package_count > 0 %}
+                                            {% if ingredient %}
+                                                <strong>{{ ingredient.total_inventory_count }}</strong> {{ _('units') }}
+                                                {% if ingredient.package_inventories and ingredient.package_inventories|length > 0 %}
                                                     <br><small class="text-muted">
-                                                        <i class="fas fa-qrcode"></i> {{ med.active_package_count }} {{ _('packages') }}
+                                                        <i class="fas fa-box"></i> {{ ingredient.package_inventories|length }} {{ ngettext('package', 'packages', ingredient.package_inventories|length) }}
                                                     </small>
                                                 {% endif %}
                                             {% else %}
@@ -330,37 +392,37 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if med.days_remaining %}
-                                                <span class="{{ color_class }}">{{ med.days_remaining|round(1) }} {{ _('days') }}</span>
+                                            {% if ingredient.days_remaining %}
+                                                <span class="{{ color_class }}">{{ ingredient.days_remaining|round(1) }} {{ _('days') }}</span>
                                             {% else %}
                                                 <span class="text-muted">{{ _('N/A') }}</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if med.depletion_date %}
+                                            {% if ingredient.depletion_date %}
                                                 <span class="{{ color_class }}">
-                                                    {{ format_date(med.depletion_date) }}
+                                                    {{ format_date(ingredient.depletion_date) }}
                                                 </span>
                                             {% else %}
                                                 <span class="text-muted">{{ _('N/A') }}</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if not med.inventory %}
+                                            {% if not ingredient %}
                                                 <span class="badge bg-secondary">{{ _('No Data') }}</span>
-                                            {% elif med.total_inventory_count == 0 %}
+                                            {% elif ingredient.total_inventory_count == 0 %}
                                                 <span class="badge bg-danger">{{ _('Critical') }}</span>
-                                            {% elif med.inventory.is_low %}
+                                            {% elif ingredient.is_low %}
                                                 <span class="badge bg-danger">{{ _('Low Stock') }}</span>
-                                            {% elif med.days_remaining and med.days_remaining < 30 %}
+                                            {% elif ingredient.days_remaining and ingredient.days_remaining < 30 %}
                                                 <span class="badge bg-warning text-white">{{ _('Running Low') }}</span>
                                             {% else %}
                                                 <span class="badge bg-success">{{ _('OK') }}</span>
                                             {% endif %}
                                         </td>
                                         <td class="text-end">
-                                            {% if med.inventory %}
-                                                <a href="{{ url_for('inventory.show', id=med.inventory.id) }}" class="btn btn-sm btn-outline-primary" title="{{ _('View') }}">
+                                            {% if ingredient %}
+                                                <a href="{{ url_for('ingredients.show', id=ingredient.id) }}" class="btn btn-sm btn-outline-primary" title="{{ _('View') }}">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                             {% else %}
@@ -370,6 +432,50 @@
                                             {% endif %}
                                         </td>
                                     </tr>
+                                    <!-- Collapsible product rows for OTC -->
+                                    {% if has_products_with_stock %}
+                                        <tr class="collapse" id="products-otc-{{ ingredient.id }}">
+                                            <td colspan="8" class="p-0">
+                                                <div class="ps-5">
+                                                    <table class="table table-sm mb-0">
+                                                        <tbody>
+                                                            {% for product in ingredient.products if product.total_inventory_count > 0 %}
+                                                                <tr class="table-light">
+                                                                    <td style="width: 30%">
+                                                                        <i class="fas fa-box-open text-muted me-1"></i>
+                                                                        {{ product.brand_name }}
+                                                                        {% if product.manufacturer and product.manufacturer != 'Unknown' %}
+                                                                            <span class="text-muted">({{ product.manufacturer }})</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td style="width: 15%">{{ product.strength }} {{ product.unit }}</td>
+                                                                    <td style="width: 20%">
+                                                                        {% if product.has_package_inventory %}
+                                                                            {% set pkg_count = product.package_inventory_count %}
+                                                                            {{ _n('%(count)d package', '%(count)d packages', pkg_count, count=pkg_count) }}
+                                                                        {% elif product.has_legacy_inventory %}
+                                                                            <span class="text-muted">{{ _('Legacy') }} ({{ product.legacy_inventory_count }})</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td style="width: 15%">{{ _n('%(count)d unit', '%(count)d units', product.total_inventory_count, count=product.total_inventory_count) }}</td>
+                                                                    <td style="width: 10%">
+                                                                        {% if product.is_favorite %}
+                                                                            <span class="badge bg-primary">{{ _('Favorite') }}</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td class="text-end" style="width: 10%">
+                                                                        <a href="{{ url_for('ingredients.show_product', id=product.id) }}" class="btn btn-sm btn-outline-primary">
+                                                                            <i class="fas fa-eye"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -379,7 +485,7 @@
         {% else %}
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>{{ _('No medications registered yet.') }}
-                <a href="{{ url_for('medications.new') }}" class="alert-link">{{ _('Add your first medication') }}</a>
+                <a href="{{ url_for('ingredients.new') }}" class="alert-link">{{ _('Add your first ingredient') }}</a>
             </div>
         {% endif %}
     </div>
@@ -393,25 +499,25 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput) {
         searchInput.addEventListener('keyup', function() {
             const searchTerm = this.value.toLowerCase();
-            const rows = document.querySelectorAll('.medication-row');
+            const rows = document.querySelectorAll('.ingredient-row');
             const sections = document.querySelectorAll('.physician-section');
 
             sections.forEach(section => {
-                let hasVisibleMeds = false;
-                const sectionRows = section.querySelectorAll('.medication-row');
+                let hasVisibleIngredients = false;
+                const sectionRows = section.querySelectorAll('.ingredient-row');
 
                 sectionRows.forEach(row => {
-                    const medName = row.querySelector('strong').textContent.toLowerCase();
-                    if (medName.includes(searchTerm)) {
+                    const ingredientName = row.querySelector('strong').textContent.toLowerCase();
+                    if (ingredientName.includes(searchTerm)) {
                         row.style.display = '';
-                        hasVisibleMeds = true;
+                        hasVisibleIngredients = true;
                     } else {
                         row.style.display = 'none';
                     }
                 });
 
-                // Hide/show entire section based on whether it has visible medications
-                section.style.display = hasVisibleMeds || searchTerm === '' ? '' : 'none';
+                // Hide/show entire section based on whether it has visible ingredients
+                section.style.display = hasVisibleIngredients || searchTerm === '' ? '' : 'none';
             });
         });
     }

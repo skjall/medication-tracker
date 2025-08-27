@@ -29,11 +29,11 @@ def identify_barcode_format(barcode: str) -> Optional[Tuple[str, str]]:
             if validate_de_pzn(pzn):
                 return (pzn, "DE_PZN")
 
-        # Check if it's a valid EAN-13
-        if validate_ean13(barcode):
-            return (barcode, "EAN13")
-
-        # Check if it's French CIP13
+        # Don't return generic EAN-13 as pharmaceutical code
+        # EAN-13 should be handled as GTIN, not as a national number
+        # Only return specific pharmaceutical EAN-13 formats like French CIP13
+        
+        # Check if it's French CIP13 (specific pharmaceutical format)
         if validate_fr_cip13(barcode):
             return (barcode, "FR_CIP13")
 

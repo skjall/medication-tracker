@@ -35,34 +35,42 @@ inventory_bp = Blueprint("inventory", __name__, url_prefix="/inventory")
 
 @inventory_bp.route("/")
 def index():
-    """Display inventory overview for all medications grouped by physician."""
-    medications = Medication.query.order_by(Medication.name).all()
+    """Display inventory overview for all ingredients grouped by physician."""
+    from models import ActiveIngredient
     
-    # Group medications by physician or OTC status
-    medications_by_physician = {}
-    otc_medications = []
+    ingredients = ActiveIngredient.query.order_by(ActiveIngredient.name).all()
     
-    for med in medications:
-        if med.is_otc:
-            otc_medications.append(med)
-        else:
-            physician_key = med.physician if med.physician else None
-            if physician_key not in medications_by_physician:
-                medications_by_physician[physician_key] = []
-            medications_by_physician[physician_key].append(med)
+    # Group ingredients by physician or OTC status
+    ingredients_by_physician = {}
+    otc_ingredients = []
+    
+    for ingredient in ingredients:
+        # Check if ingredient has any OTC products
+        has_otc = any(product.is_otc for product in ingredient.products)
+        if has_otc:
+            otc_ingredients.append(ingredient)
+        
+        # Group by physician for prescription products
+        for product in ingredient.products:
+            if not product.is_otc:
+                physician_key = product.physician if product.physician else None
+                if physician_key not in ingredients_by_physician:
+                    ingredients_by_physician[physician_key] = []
+                if ingredient not in ingredients_by_physician[physician_key]:
+                    ingredients_by_physician[physician_key].append(ingredient)
     
     # Sort physicians by name, with unassigned at the end
     sorted_physicians = sorted(
-        medications_by_physician.keys(),
+        ingredients_by_physician.keys(),
         key=lambda p: (p is None, p.name if p else "")
     )
     
     return render_template(
         "inventory/index.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
-        medications_by_physician=medications_by_physician,
+        ingredients_by_physician=ingredients_by_physician,
         sorted_physicians=sorted_physicians,
-        otc_medications=otc_medications,
+        otc_ingredients=otc_ingredients,
     )
 
 
@@ -95,8 +103,27 @@ def show(id: int):
     
     # Now get packages for the same active ingredient (new system)
     # Find the active ingredient for this medication
-    medication_name = inventory.medication.name
-    active_ingredient = ActiveIngredient.query.filter_by(name=medication_name).first()
+    active_ingredient = None
+    
+    # First try using the active_ingredient field if set
+    if inventory.medication.active_ingredient:
+        active_ingredient = ActiveIngredient.query.filter_by(name=inventory.medication.active_ingredient).first()
+    
+    # If not found, try to match by medication name
+    if not active_ingredient:
+        medication_name = inventory.medication.name
+        # Try exact match first
+        active_ingredient = ActiveIngredient.query.filter_by(name=medication_name).first()
+        
+        # If still not found, try to find an ingredient that's contained in the medication name
+        # or where the medication name contains the ingredient
+        if not active_ingredient:
+            all_ingredients = ActiveIngredient.query.all()
+            for ingredient in all_ingredients:
+                # Check if ingredient name is in medication name (case-insensitive)
+                if ingredient.name.lower() in medication_name.lower():
+                    active_ingredient = ingredient
+                    break
     
     new_package_inventory = []
     if active_ingredient:

@@ -11,12 +11,12 @@ from flask import (
     flash,
     redirect,
     url_for,
+    current_app as app,
 )
 from flask_babel import gettext as _
 
 from models import (
     db,
-    MedicationPackage,
     ProductPackage,
     ScannedItem,
     PackageInventory,
@@ -61,6 +61,7 @@ def scan():
     if barcode_info:
         # This is a recognized standalone pharmaceutical barcode
         national_number, number_type = barcode_info
+        app.logger.info(f"Identified as pharmaceutical code: {number_type} - {national_number}")
         parsed = {
             "gtin": None,
             "serial": f"{number_type}_{national_number}_{datetime.now().timestamp()}",  # Generate unique serial
@@ -72,17 +73,82 @@ def scan():
     else:
         # Parse as DataMatrix or other GS1 format
         parsed = parse_datamatrix(barcode_data)
+        if parsed and parsed.get("serial"):
+            app.logger.info(f"Identified as DataMatrix/GS1 code with GTIN: {parsed.get('gtin', 'N/A')}, Serial: {parsed.get('serial', 'N/A')[:20]}...")
 
-        # If DataMatrix parsing also failed, create minimal structure for unknown barcode
-        if not parsed.get("serial"):
-            parsed = {
-                "gtin": None,
-                "serial": f"UNKNOWN_{barcode_data[:20]}_{datetime.now().timestamp()}",
-                "expiry": None,
-                "batch": None,
-                "national_number": None,
-                "national_number_type": None,
-            }
+        # If DataMatrix parsing also failed, check if it's a simple product barcode
+        if not parsed or not parsed.get("serial"):
+            # Check if it's a valid EAN-13, EAN-8, or UPC-A barcode
+            import re
+            barcode_clean = barcode_data.strip()
+            
+            # Log the barcode type being processed
+            app.logger.info(f"Processing unknown barcode: {barcode_clean[:20]}... (length: {len(barcode_clean)})")
+            
+            # EAN-13 (13 digits), EAN-8 (8 digits), UPC-A (12 digits), ASIN (10 alphanumeric)
+            if re.match(r'^[0-9]{13}$', barcode_clean):
+                app.logger.info(f"Identified as EAN-13 barcode: {barcode_clean}")
+                parsed = {
+                    "gtin": barcode_clean,
+                    "serial": f"EAN13_{barcode_clean}_{datetime.now().timestamp()}",
+                    "expiry": None,
+                    "batch": None,
+                    "national_number": None,
+                    "national_number_type": None,
+                }
+            elif re.match(r'^[0-9]{8}$', barcode_clean):
+                app.logger.info(f"Identified as EAN-8 barcode: {barcode_clean}")
+                parsed = {
+                    "gtin": barcode_clean,
+                    "serial": f"EAN8_{barcode_clean}_{datetime.now().timestamp()}",
+                    "expiry": None,
+                    "batch": None,
+                    "national_number": None,
+                    "national_number_type": None,
+                }
+            elif re.match(r'^[0-9]{12}$', barcode_clean):
+                app.logger.info(f"Identified as UPC-A barcode: {barcode_clean}")
+                parsed = {
+                    "gtin": barcode_clean,
+                    "serial": f"UPCA_{barcode_clean}_{datetime.now().timestamp()}",
+                    "expiry": None,
+                    "batch": None,
+                    "national_number": None,
+                    "national_number_type": None,
+                }
+            elif re.match(r'^[A-Z0-9]{10}$', barcode_clean, re.IGNORECASE):
+                # Amazon ASIN - store as national number, not GTIN
+                app.logger.info(f"Identified as Amazon ASIN: {barcode_clean}")
+                parsed = {
+                    "gtin": None,
+                    "serial": f"ASIN_{barcode_clean}_{datetime.now().timestamp()}",
+                    "expiry": None,
+                    "batch": None,
+                    "national_number": barcode_clean,
+                    "national_number_type": "ASIN",
+                }
+            elif re.match(r'^[A-Z0-9]{8,14}$', barcode_clean, re.IGNORECASE):
+                # Other alphanumeric product codes - store as vendor-specific national number
+                app.logger.info(f"Identified as vendor-specific product code: {barcode_clean}")
+                parsed = {
+                    "gtin": None,
+                    "serial": f"VENDOR_{barcode_clean}_{datetime.now().timestamp()}",
+                    "expiry": None,
+                    "batch": None,
+                    "national_number": barcode_clean,
+                    "national_number_type": "VENDOR_CODE",
+                }
+            else:
+                # Truly unknown format - don't offer onboarding
+                app.logger.warning(f"Unknown barcode format: {barcode_clean[:50]}... (not EAN/UPC/ASIN/pharmaceutical)")
+                return (
+                    jsonify({
+                        "error": _("Unsupported barcode format"),
+                        "hint": _("This barcode type is not supported. Only pharmaceutical codes, DataMatrix, and standard product codes (EAN-13, EAN-8, UPC-A, ASIN) are supported."),
+                        "barcode_data": barcode_clean[:50] if len(barcode_clean) > 50 else barcode_clean
+                    }),
+                    400,
+                )
 
     if not parsed.get("serial"):
         return (
@@ -137,16 +203,20 @@ def scan():
         existing_scanned.scanned_at = datetime.now(timezone.utc)
         db.session.flush()
 
-    # Find package - check both new ProductPackage and old MedicationPackage tables
+    # Find package in ProductPackage table
     # Try GTIN first, then national number
-    package = None
     product_package = None
 
     # First check new ProductPackage table
     if parsed.get("gtin"):
+        app.logger.info(f"Searching for ProductPackage with GTIN: {parsed['gtin']}")
         product_package = ProductPackage.query.filter_by(
             gtin=parsed["gtin"]
         ).first()
+        if product_package:
+            app.logger.info(f"Found ProductPackage: {product_package.id} - {product_package.product.display_name}")
+        else:
+            app.logger.info(f"No ProductPackage found with GTIN: {parsed['gtin']}")
 
     if not product_package and parsed.get("national_number"):
         # Try with exact type if we know it
@@ -315,7 +385,7 @@ def scan():
         )
         db.session.add(inventory_item)
 
-        # Create inventory log for tracking
+        # Create inventory log for tracking (only if legacy system is linked)
         from models import Inventory, InventoryLog
 
         # Try to find legacy inventory for logging purposes only
@@ -347,132 +417,69 @@ def scan():
                 )
                 db.session.add(log_entry)
 
-            db.session.commit()
+        # Commit the database changes
+        db.session.commit()
 
-            # Build response message
-            if fulfillment_message:
-                message = _(
-                    "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units). %(fulfillment)s",
-                    product_name=product_package.product.display_name,
-                    package_size=product_package.package_size,
-                    quantity=product_package.quantity,
-                    fulfillment=fulfillment_message
-                )
-            else:
-                message = _(
-                    "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)",
-                    product_name=product_package.product.display_name,
-                    package_size=product_package.package_size,
-                    quantity=product_package.quantity
-                )
+        # Build response message (for both legacy and new package-based products)
+        if fulfillment_message:
+            message = _(
+                "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units). %(fulfillment)s",
+                product_name=product_package.product.display_name,
+                package_size=product_package.package_size,
+                quantity=product_package.quantity,
+                fulfillment=fulfillment_message
+            )
+        else:
+            message = _(
+                "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)",
+                product_name=product_package.product.display_name,
+                package_size=product_package.package_size,
+                quantity=product_package.quantity
+            )
 
-            # Return success with inventory added
-            response_data = {
-                "success": True,
-                "product_package": True,
-                "inventory_added": True,
-                "package_info": {
-                    "id": product_package.id,
-                    "product_name": product_package.product.display_name,
-                    "package_size": product_package.package_size,
-                    "quantity": product_package.quantity,
-                    "manufacturer": product_package.manufacturer
-                    or product_package.product.manufacturer,
-                },
-                "parsed_data": {
-                    "serial": parsed["serial"],
-                    "batch": parsed.get("batch"),
-                    "expiry": expiry_date.isoformat() if expiry_date else None,
-                    "national_number": parsed.get("national_number"),
-                    "national_number_type": parsed.get("national_number_type"),
-                    "gtin": parsed.get("gtin"),
-                },
-                "message": message,
+        # Return success with inventory added (for both legacy and new package-based products)
+        response_data = {
+            "success": True,
+            "product_package": True,
+            "inventory_added": True,
+            "package_info": {
+                "id": product_package.id,
+                "product_name": product_package.product.display_name,
+                "package_size": product_package.package_size,
+                "quantity": product_package.quantity,
+                "manufacturer": product_package.manufacturer
+                or product_package.product.manufacturer,
+            },
+            "parsed_data": {
+                "serial": parsed["serial"],
+                "batch": parsed.get("batch"),
+                "expiry": expiry_date.isoformat() if expiry_date else None,
+                "national_number": parsed.get("national_number"),
+                "national_number_type": parsed.get("national_number_type"),
+                "gtin": parsed.get("gtin"),
+            },
+            "message": message,
+        }
+
+        # Add order fulfillment info if applicable
+        if pending_order_item:
+            response_data["order_fulfillment"] = {
+                "order_id": pending_order_item.order_id,
+                "units_received": pending_order_item.units_received,
+                "units_needed": pending_order_item.quantity_needed,
+                "status": pending_order_item.fulfillment_status,
+                "progress": pending_order_item.fulfillment_progress,
             }
 
-            # Add order fulfillment info if applicable
-            if pending_order_item:
-                response_data["order_fulfillment"] = {
-                    "order_id": pending_order_item.order_id,
-                    "units_received": pending_order_item.units_received,
-                    "units_needed": pending_order_item.quantity_needed,
-                    "status": pending_order_item.fulfillment_status,
-                    "progress": pending_order_item.fulfillment_progress,
-                }
+        return jsonify(response_data)
 
-            return jsonify(response_data)
-        else:
-            # Product not linked to legacy system - can't add to inventory yet
-            return (
-                jsonify(
-                    {
-                        "error": _(
-                            "Product found but not linked to inventory system"
-                        ),
-                        "hint": _(
-                            "This product needs to be linked to a medication record for inventory tracking"
-                        ),
-                        "product_info": {
-                            "name": product_package.product.display_name,
-                            "package_size": product_package.package_size,
-                            "quantity": product_package.quantity,
-                        },
-                    }
-                ),
-                400,
-            )
-
-    # Continue with old MedicationPackage handling if not found in new system
-
-    # If not found in new system, check old MedicationPackage table
-    if not product_package and not package:
-        if parsed.get("gtin"):
-            package = MedicationPackage.query.filter_by(
-                gtin=parsed["gtin"]
-            ).first()
-
-        if not package and parsed.get("national_number"):
-            if parsed.get("national_number_type"):
-                package = MedicationPackage.query.filter_by(
-                    national_number=parsed["national_number"],
-                    national_number_type=parsed["national_number_type"],
-                ).first()
-
-            if not package:
-                package = MedicationPackage.query.filter_by(
-                    national_number=parsed["national_number"]
-                ).first()
-
-    # If package found, update missing information
-    if package:
-        updated = False
-        # If package has no GTIN but we scanned one, add it
-        if not package.gtin and parsed.get("gtin"):
-            package.gtin = parsed["gtin"]
-            updated = True
-
-        # If package has no national number but we extracted one, add it
-        if not package.national_number and parsed.get("national_number"):
-            package.national_number = parsed["national_number"]
-            package.national_number_type = parsed["national_number_type"]
-            package.country_code = (
-                parsed.get("national_number_type", "").split("_")[0]
-                if parsed.get("national_number_type")
-                else None
-            )
-            updated = True
-
-        if updated:
-            db.session.flush()
-            flash(_("Package information updated with scanned data"), "info")
-
-    # If no package found (but maybe found ProductPackage), return appropriate message
-    if not package and not product_package:
+    # If not found in new system, return not found response
+    if not product_package:
         # Create user-friendly error message based on what we recognized
         if parsed.get("national_number") and parsed.get(
             "national_number_type"
         ):
-            # We have a recognized pharmaceutical code
+            # We have a recognized code (pharmaceutical or vendor-specific)
             type_labels = {
                 "DE_PZN": "PZN",
                 "FR_CIP13": "CIP13",
@@ -481,6 +488,8 @@ def scan():
                 "NL_ZINDEX": "Z-Index",
                 "ES_CN": "CN",
                 "IT_AIC": "AIC",
+                "ASIN": "Amazon ASIN",
+                "VENDOR_CODE": _("Product Code"),
             }
             label = type_labels.get(
                 parsed["national_number_type"], parsed["national_number_type"]
@@ -491,8 +500,34 @@ def scan():
                 number=parsed["national_number"],
             )
             hint = _("Please add this package.")
+        elif parsed.get("gtin"):
+            # We have a recognized GTIN (EAN-13, EAN-8, UPC-A)
+            if parsed.get("serial", "").startswith("EAN13"):
+                error_msg = _(
+                    "EAN-13 barcode %(code)s not found",
+                    code=parsed["gtin"]
+                )
+                hint = _("Please add this package.")
+            elif parsed.get("serial", "").startswith("EAN8"):
+                error_msg = _(
+                    "EAN-8 barcode %(code)s not found",
+                    code=parsed["gtin"]
+                )
+                hint = _("Please add this package.")
+            elif parsed.get("serial", "").startswith("UPCA"):
+                error_msg = _(
+                    "UPC barcode %(code)s not found",
+                    code=parsed["gtin"]
+                )
+                hint = _("Please add this package.")
+            else:
+                error_msg = _(
+                    "Product barcode %(code)s not found",
+                    code=parsed["gtin"]
+                )
+                hint = _("Please add this package.")
         else:
-            # Unknown barcode format
+            # This should never happen now since we reject truly unknown formats earlier
             error_msg = _("Unrecognized barcode format")
             hint = _("This barcode type is not supported")
 
@@ -546,215 +581,6 @@ def scan():
             ),
             404,
         )
-
-    # Use existing scanned item or create new one
-    if existing_scanned:
-        scanned_item = existing_scanned
-        # Update package link if found
-        if package:
-            scanned_item.medication_package_id = package.id
-    else:
-        # Create new scanned item only if package is known
-        expiry_date = None
-        if parsed.get("expiry"):
-            expiry_date = parse_expiry_date(parsed["expiry"])
-            if expiry_date:
-                expiry_date = expiry_date.date()
-
-        # Determine if this is a GS1 scan (has batch or expiry data)
-        is_gs1 = bool(parsed.get("batch") or parsed.get("expiry"))
-
-        scanned_item = ScannedItem(
-            medication_package_id=package.id if package else None,
-            gtin=parsed.get("gtin"),
-            national_number=parsed.get("national_number"),
-            national_number_type=parsed.get("national_number_type"),
-            serial_number=parsed["serial"],
-            batch_number=parsed.get("batch"),
-            expiry_date=expiry_date,
-            is_gs1=is_gs1,
-            raw_data=barcode_data,
-            status="active",
-        )
-        db.session.add(scanned_item)
-        db.session.flush()
-
-    # Add to inventory if package is identified
-    if package and package.medication:
-        # Determine package size
-        quantity = package.quantity
-        if not quantity:
-            # Try to determine from package size
-            med = package.medication
-            if package.package_size == "N1":
-                quantity = med.package_size_n1
-            elif package.package_size == "N2":
-                quantity = med.package_size_n2
-            elif package.package_size == "N3":
-                quantity = med.package_size_n3
-
-        # Initialize variables outside the block
-        pending_order_item = None
-        fulfillment_message = None
-        
-        if quantity:
-            # Find pending order item for this medication
-            from models import Order, OrderItem
-
-            # Look for the oldest pending or partial order with this medication that still needs units
-            pending_order_item = (
-                OrderItem.query.join(Order)
-                .filter(
-                    OrderItem.medication_id == package.medication_id,
-                    OrderItem.fulfillment_status.in_(["pending", "partial"]),
-                    OrderItem.units_received < OrderItem.quantity_needed,
-                    Order.status.in_(["planned", "printed"]),
-                )
-                .order_by(Order.created_date.asc())
-                .first()
-            )
-
-            # Update order fulfillment if order found
-            if pending_order_item:
-                units_still_needed = (
-                    pending_order_item.quantity_needed
-                    - pending_order_item.units_received
-                )
-                pending_order_item.units_received += quantity
-
-                # Check if this fulfills or overfills the order
-                if (
-                    pending_order_item.units_received
-                    >= pending_order_item.quantity_needed
-                ):
-                    pending_order_item.fulfillment_status = "fulfilled"
-                    pending_order_item.fulfilled_at = datetime.now(
-                        timezone.utc
-                    )
-                    if (
-                        pending_order_item.units_received
-                        > pending_order_item.quantity_needed
-                    ):
-                        overage = (
-                            pending_order_item.units_received
-                            - pending_order_item.quantity_needed
-                        )
-                        fulfillment_message = _(
-                            "Order fulfilled with %(overage)d extra units",
-                            overage=overage
-                        )
-                        pending_order_item.fulfillment_notes = _(
-                            "Order fulfilled. Received %(quantity)d units in %(package_size)s. %(overage)d extra units.",
-                            quantity=quantity,
-                            package_size=package.package_size,
-                            overage=overage
-                        )
-                    else:
-                        fulfillment_message = _("Order fulfilled exactly")
-                        pending_order_item.fulfillment_notes = _(
-                            "Order fulfilled. Received %(quantity)d units in %(package_size)s.",
-                            quantity=quantity,
-                            package_size=package.package_size
-                        )
-                else:
-                    pending_order_item.fulfillment_status = "partial"
-                    remaining = (
-                        pending_order_item.quantity_needed
-                        - pending_order_item.units_received
-                    )
-                    fulfillment_message = _(
-                        "Partial fulfillment: %(remaining)d units still needed",
-                        remaining=remaining
-                    )
-                    pending_order_item.fulfillment_notes = _(
-                        "Partially fulfilled. Received %(quantity)d units in %(package_size)s. Still need %(remaining)d units.",
-                        quantity=quantity,
-                        package_size=package.package_size,
-                        remaining=remaining
-                    )
-
-                # Update the order status
-                pending_order_item.order.update_status_from_items()
-
-            inventory_item = PackageInventory(
-                medication_id=package.medication_id,
-                scanned_item_id=scanned_item.id,
-                current_units=quantity,
-                original_units=quantity,
-                status="sealed",
-                order_item_id=(
-                    pending_order_item.id if pending_order_item else None
-                ),
-            )
-            db.session.add(inventory_item)
-
-            # Create inventory log entry for the package addition
-            from models import Inventory, InventoryLog
-
-            inventory = Inventory.query.filter_by(
-                medication_id=package.medication_id
-            ).first()
-            if inventory:
-                # Calculate new total (legacy + all packages)
-                old_total = package.medication.total_inventory_count
-                new_total = old_total + quantity
-
-                # Create log entry showing the package addition
-                log_entry = InventoryLog(
-                    inventory_id=inventory.id,
-                    previous_count=old_total - quantity,  # Before this package
-                    adjustment=quantity,
-                    new_count=old_total,  # After this package (current total)
-                    notes=_(
-                        "Package scanned: %(package_size)s (%(quantity)d units) - Batch: %(batch)s",
-                        package_size=package.package_size,
-                        quantity=quantity,
-                        batch=parsed.get('batch', _('N/A'))
-                    ),
-                )
-                db.session.add(log_entry)
-
-    db.session.commit()
-
-    # Prepare response
-    response = {
-        "success": True,
-        "scanned_item_id": scanned_item.id,
-        "parsed_data": {
-            "gtin": parsed.get("gtin"),
-            "serial": parsed.get("serial"),
-            "batch": parsed.get("batch"),
-            "expiry": expiry_date.isoformat() if expiry_date else None,
-            "national_number": (
-                format_national_number_display(
-                    parsed["national_number"], parsed["national_number_type"]
-                )
-                if parsed.get("national_number")
-                else None
-            ),
-        },
-    }
-
-    if package and package.medication:
-        response["medication"] = {
-            "id": package.medication.id,
-            "name": package.medication.name,
-            "package_size": package.package_size,
-            "quantity": quantity,
-        }
-
-        # Add order fulfillment info if applicable
-        if pending_order_item:
-            response["order_fulfillment"] = {
-                "order_id": pending_order_item.order_id,
-                "units_received": pending_order_item.units_received,
-                "units_needed": pending_order_item.quantity_needed,
-                "status": pending_order_item.fulfillment_status,
-                "progress": pending_order_item.fulfillment_progress,
-                "message": fulfillment_message,
-            }
-
-    return jsonify(response)
 
 
 @bp.route("/package/<int:id>")

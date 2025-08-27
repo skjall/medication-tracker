@@ -142,27 +142,46 @@ def show_product(id: int):
     # Get substitutes
     substitutes = product.find_substitutes() if product.can_substitute else []
 
-    # Get package inventory if linked to legacy medication
+    # Get package inventory for this product
+    from models import PackageInventory, ScannedItem, ProductPackage
+    from sqlalchemy import or_
+    
+    # Get all packages for this product
+    packages = ProductPackage.query.filter_by(product_id=product.id).all()
+    package_gtins = [p.gtin for p in packages if p.gtin]
+    package_numbers = [(p.national_number, p.national_number_type) 
+                      for p in packages if p.national_number]
+    
     package_inventory = []
-    if product.legacy_medication:
-        from models import PackageInventory, ScannedItem, MedicationPackage
-
-        package_inventory = (
-            db.session.query(PackageInventory, ScannedItem, MedicationPackage)
-            .join(
-                ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id
-            )
-            .outerjoin(
-                MedicationPackage,
-                ScannedItem.medication_package_id == MedicationPackage.id,
-            )
-            .filter(
-                PackageInventory.medication_id == product.legacy_medication_id
-            )
+    if package_gtins or package_numbers:
+        # Build query for inventory packages
+        query = (
+            db.session.query(PackageInventory, ScannedItem, ProductPackage)
+            .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
+            .outerjoin(ProductPackage, 
+                      or_(
+                          (ProductPackage.gtin == ScannedItem.gtin),
+                          ((ProductPackage.national_number == ScannedItem.national_number) & 
+                           (ProductPackage.national_number_type == ScannedItem.national_number_type))
+                      ))
             .filter(PackageInventory.status.in_(["sealed", "open"]))
-            .order_by(ScannedItem.expiry_date.asc())
-            .all()
         )
+        
+        # Build OR conditions for GTIN and national numbers
+        conditions = []
+        if package_gtins:
+            conditions.append(ScannedItem.gtin.in_(package_gtins))
+        if package_numbers:
+            for nat_num, nat_type in package_numbers:
+                if nat_type:
+                    conditions.append((ScannedItem.national_number == nat_num) & 
+                                    (ScannedItem.national_number_type == nat_type))
+                else:
+                    conditions.append(ScannedItem.national_number == nat_num)
+        
+        if conditions:
+            query = query.filter(or_(*conditions))
+            package_inventory = query.order_by(ScannedItem.expiry_date.asc()).all()
 
     return render_template(
         "ingredients/show_product.html",
@@ -712,3 +731,59 @@ def migrate_medication(medication_id: int):
 
     flash(_("Medication migrated successfully"), "success")
     return redirect(url_for("ingredients.show_product", id=product.id))
+
+
+@ingredients_bp.route("/<int:id>/calculate", methods=["POST"])
+def calculate(id: int):
+    """Calculate package quantities needed for an ingredient."""
+    ingredient = ActiveIngredient.query.get_or_404(id)
+    
+    # Get the units needed from the request
+    units_needed = request.form.get("units", type=int)
+    calculation_type = request.form.get("calculation", "additional")  # 'additional' or 'total'
+    
+    if not units_needed:
+        return {"error": "No units specified"}, 400
+    
+    # Get default product to determine package sizes
+    product = ingredient.default_product or (ingredient.products[0] if ingredient.products else None)
+    
+    if not product:
+        # Return default N1/N2/N3 calculation
+        return {
+            "packages": {
+                "N1": 1 if units_needed > 0 else 0,
+                "N2": 0,
+                "N3": 0
+            }
+        }
+    
+    # Calculate packages based on product package sizes
+    packages = {}
+    
+    if product.packages:
+        # Use actual package definitions
+        remaining = units_needed
+        for package in sorted(product.packages, key=lambda p: p.quantity or 0, reverse=True):
+            if package.quantity and package.quantity > 0:
+                count = remaining // package.quantity
+                if count > 0:
+                    packages[package.package_size] = count
+                    remaining -= count * package.quantity
+        
+        # Add one more of the smallest package if there's remainder
+        if remaining > 0:
+            smallest = min(product.packages, key=lambda p: p.quantity or float('inf'))
+            if smallest.package_size in packages:
+                packages[smallest.package_size] += 1
+            else:
+                packages[smallest.package_size] = 1
+    else:
+        # Fall back to N1/N2/N3 if no packages defined
+        packages = {
+            "N1": 1 if units_needed > 0 else 0,
+            "N2": 0,
+            "N3": 0
+        }
+    
+    return {"packages": packages}

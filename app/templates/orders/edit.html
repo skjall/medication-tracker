@@ -57,88 +57,88 @@
                 </select>
             </div>
 
-            <!-- Medication Selection -->
+            <!-- Ingredient Selection -->
             <div class="mt-4">
-                <h5>{{ _('Select Medications') }}</h5>
+                <h5>{{ _('Select Ingredients') }}</h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th style="width: 3%"></th>
-                                <th>{{ _('Medication') }}</th>
+                                <th>{{ _('Ingredient') }}</th>
                                 <th>{{ _('Current Stock') }}</th>
                                 <th class="text-end">{{ _('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for med in medications %}
+                            {% for ingredient in ingredients %}
                                 <tr>
                                     <td>
                                         <div class="form-check">
-                                            <input class="form-check-input medication-checkbox" type="checkbox"
-                                                   id="include_{{ med.id }}" name="include_{{ med.id }}"
-                                                   data-medication-id="{{ med.id }}"
-                                                   {% if med.id in order_items_map %}checked{% endif %}>
+                                            <input class="form-check-input ingredient-checkbox" type="checkbox"
+                                                   id="include_{{ ingredient.id }}" name="include_{{ ingredient.id }}"
+                                                   data-ingredient-id="{{ ingredient.id }}"
+                                                   {% if ingredient.id in order_items_map %}checked{% endif %}>
                                         </div>
                                     </td>
                                     <td>
-                                        <label for="include_{{ med.id }}" class="form-check-label">
-                                            {% set product = med.default_product or (med.migrated_product[0] if med.migrated_product and med.migrated_product|length > 0 else None) %}
-                                            {% if product %}
-                                                <strong>{{ product.active_ingredient.name }}</strong>
-                                                <div class="small text-muted">→ {{ product.display_name }}</div>
-                                            {% else %}
-                                                <strong>{{ med.name }}</strong>
+                                        <label for="include_{{ ingredient.id }}" class="form-check-label">
+                                            <strong>{{ ingredient.name }}</strong>
+                                            {% if ingredient.default_product %}
+                                                <div class="small text-muted">→ {{ ingredient.default_product.display_name }}</div>
                                             {% endif %}
                                         </label>
                                     </td>
                                     <td>
-                                        {% if med.inventory %}
-                                            {{ _('%(units)s units', units=med.total_inventory_count) }}
+                                        {% if ingredient.total_inventory_count > 0 %}
+                                            {{ _('%(units)s units', units=ingredient.total_inventory_count) }}
                                         {% else %}
                                             <span class="text-muted">{{ _('No inventory') }}</span>
                                         {% endif %}
                                     </td>
                                     <td class="text-end">
-                                        <button type="button" class="btn btn-sm btn-outline-primary calculate-packages-btn" data-medication-id="{{ med.id }}">
+                                        <button type="button" class="btn btn-sm btn-outline-primary calculate-packages-btn" data-ingredient-id="{{ ingredient.id }}">
                                             <i class="fas fa-calculator me-1"></i>{{ _('Calculate Needs') }}
                                         </button>
                                     </td>
                                 </tr>
 
-                                <!-- Per-medication details (hidden by default) -->
-                                <tr id="medication_details_{{ med.id }}" class="{% if med.id not in order_items_map %}d-none{% endif %} bg-light">
+                                <!-- Per-ingredient details (hidden by default) -->
+                                <tr id="ingredient_details_{{ ingredient.id }}" class="{% if ingredient.id not in order_items_map %}d-none{% endif %} bg-light">
                                     <td colspan="4">
                                         <div class="row mx-2 my-3">
                                             <div class="col-md-4">
                                                 <div class="mb-3">
-                                                    <label for="quantity_{{ med.id }}" class="form-label">{{ _('Quantity Needed') }}</label>
-                                                    <input type="number" class="form-control" id="quantity_{{ med.id }}" name="quantity_{{ med.id }}" min="0"
-                                                           value="{{ order_items_map[med.id].quantity_needed if med.id in order_items_map else 0 }}">
+                                                    <label for="quantity_{{ ingredient.id }}" class="form-label">{{ _('Quantity Needed') }}</label>
+                                                    <input type="number" class="form-control" id="quantity_{{ ingredient.id }}" name="quantity_{{ ingredient.id }}" min="0"
+                                                           value="{{ order_items_map[ingredient.id].quantity_needed if ingredient.id in order_items_map else 0 }}">
                                                 </div>
                                                 
                                                 {# Product selection - show all products for the ingredient #}
-                                                {% set product = med.default_product or (med.migrated_product[0] if med.migrated_product and med.migrated_product|length > 0 else None) %}
-                                                {% if product %}
-                                                    {% set all_products = product.active_ingredient.products %}
-                                                    {% if all_products|length > 1 %}
+                                                {% if ingredient.products %}
+                                                    {% if ingredient.products|length > 1 %}
                                                     <div class="mb-3">
-                                                        <label for="product_{{ med.id }}" class="form-label">{{ _('Product') }}</label>
-                                                        <select class="form-select product-selector" id="product_{{ med.id }}" name="product_{{ med.id }}" data-medication-id="{{ med.id }}">
-                                                            {% for prod in all_products %}
+                                                        <label for="product_{{ ingredient.id }}" class="form-label">{{ _('Product') }}</label>
+                                                        <select class="form-select product-selector" id="product_{{ ingredient.id }}" name="product_{{ ingredient.id }}" data-ingredient-id="{{ ingredient.id }}">
+                                                            {% set existing_item = order_items_map.get(ingredient.id) %}
+                                                            {% for prod in ingredient.products %}
                                                                 <option value="{{ prod.id }}" 
-                                                                        {% if med.default_product_id == prod.id or (not med.default_product_id and prod == product) %}selected{% endif %}
+                                                                        {% if existing_item and existing_item.product_id == prod.id %}
+                                                                            selected
+                                                                        {% elif not existing_item and ingredient.default_product_id == prod.id %}
+                                                                            selected
+                                                                        {% endif %}
                                                                         data-packages='{{ prod.packages_as_dict | tojson }}'>
                                                                     {{ prod.display_name }}
-                                                                    {% if prod.id == product.active_ingredient.default_product_id %}
+                                                                    {% if prod.id == ingredient.default_product_id %}
                                                                         ⭐
                                                                     {% endif %}
                                                                 </option>
                                                             {% endfor %}
                                                         </select>
                                                     </div>
-                                                    {% else %}
-                                                        <input type="hidden" name="product_{{ med.id }}" value="{{ product.id }}">
+                                                    {% elif ingredient.products|length == 1 %}
+                                                        <input type="hidden" name="product_{{ ingredient.id }}" value="{{ ingredient.products[0].id }}">
                                                     {% endif %}
                                                 {% endif %}
                                             </div>
@@ -147,22 +147,23 @@
                                                 <div class="mb-3">
                                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                                         <label class="form-label">{{ _('Package Quantities') }}</label>
-                                                        <button type="button" class="btn btn-sm btn-outline-primary calculate-packages-btn" data-medication-id="{{ med.id }}">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary calculate-packages-btn" data-ingredient-id="{{ ingredient.id }}">
                                                             <i class="fas fa-calculator me-1"></i>{{ _('Calculate') }}
                                                         </button>
                                                     </div>
 
                                                     <div class="row">
-                                                        {% if med.migrated_product and med.migrated_product|length > 0 and med.migrated_product[0].packages %}
-                                                            {# Use new ProductPackage configurations #}
-                                                            {% for package in med.migrated_product[0].packages %}
+                                                        {% set product = ingredient.default_product or (ingredient.products[0] if ingredient.products else None) %}
+                                                        {% if product and product.packages %}
+                                                            {# Use ProductPackage configurations #}
+                                                            {% for package in product.packages %}
                                                                 {% if package.quantity > 0 %}
                                                                     <div class="col-md-4">
                                                                         <div class="input-group mb-2">
                                                                             <span class="input-group-text">{{ package.package_size }}</span>
                                                                             <input type="number" class="form-control" 
-                                                                                   id="packages_{{ package.package_size }}_{{ med.id }}" 
-                                                                                   name="packages_{{ package.package_size }}_{{ med.id }}" 
+                                                                                   id="packages_{{ package.package_size }}_{{ ingredient.id }}" 
+                                                                                   name="packages_{{ package.package_size }}_{{ ingredient.id }}" 
                                                                                    min="0"
                                                                                    data-package-id="{{ package.id }}"
                                                                                    data-package-size="{{ package.package_size }}"
@@ -179,39 +180,31 @@
                                                                 {% endif %}
                                                             {% endfor %}
                                                         {% else %}
-                                                            {# Fall back to legacy N1/N2/N3 system #}
-                                                            {% if med.package_size_n1 %}
-                                                                <div class="col-md-4">
-                                                                    <div class="input-group mb-2">
-                                                                        <span class="input-group-text">N1</span>
-                                                                        <input type="number" class="form-control" id="packages_n1_{{ med.id }}" name="packages_n1_{{ med.id }}" min="0"
-                                                                               value="{{ order_items_map[med.id].packages_n1 if med.id in order_items_map else 0 }}">
-                                                                    </div>
-                                                                    <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n1) }}</small>
+                                                            {# Default N1/N2/N3 system #}
+                                                            <div class="col-md-4">
+                                                                <div class="input-group mb-2">
+                                                                    <span class="input-group-text">N1</span>
+                                                                    <input type="number" class="form-control" id="packages_n1_{{ ingredient.id }}" name="packages_n1_{{ ingredient.id }}" min="0"
+                                                                           value="{{ order_items_map[ingredient.id].packages_n1 if ingredient.id in order_items_map else 0 }}">
                                                                 </div>
-                                                            {% endif %}
-
-                                                            {% if med.package_size_n2 %}
-                                                                <div class="col-md-4">
-                                                                    <div class="input-group mb-2">
-                                                                        <span class="input-group-text">N2</span>
-                                                                        <input type="number" class="form-control" id="packages_n2_{{ med.id }}" name="packages_n2_{{ med.id }}" min="0"
-                                                                               value="{{ order_items_map[med.id].packages_n2 if med.id in order_items_map else 0 }}">
-                                                                    </div>
-                                                                    <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n2) }}</small>
+                                                                <small class="text-muted">{{ _('Small package') }}</small>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="input-group mb-2">
+                                                                    <span class="input-group-text">N2</span>
+                                                                    <input type="number" class="form-control" id="packages_n2_{{ ingredient.id }}" name="packages_n2_{{ ingredient.id }}" min="0"
+                                                                           value="{{ order_items_map[ingredient.id].packages_n2 if ingredient.id in order_items_map else 0 }}">
                                                                 </div>
-                                                            {% endif %}
-
-                                                            {% if med.package_size_n3 %}
-                                                                <div class="col-md-4">
-                                                                    <div class="input-group mb-2">
-                                                                        <span class="input-group-text">N3</span>
-                                                                        <input type="number" class="form-control" id="packages_n3_{{ med.id }}" name="packages_n3_{{ med.id }}" min="0"
-                                                                               value="{{ order_items_map[med.id].packages_n3 if med.id in order_items_map else 0 }}">
-                                                                    </div>
-                                                                    <small class="text-muted">{{ _('%(units)s units each', units=med.package_size_n3) }}</small>
+                                                                <small class="text-muted">{{ _('Medium package') }}</small>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="input-group mb-2">
+                                                                    <span class="input-group-text">N3</span>
+                                                                    <input type="number" class="form-control" id="packages_n3_{{ ingredient.id }}" name="packages_n3_{{ ingredient.id }}" min="0"
+                                                                           value="{{ order_items_map[ingredient.id].packages_n3 if ingredient.id in order_items_map else 0 }}">
                                                                 </div>
-                                                            {% endif %}
+                                                                <small class="text-muted">{{ _('Large package') }}</small>
+                                                            </div>
                                                         {% endif %}
                                                     </div>
                                                 </div>

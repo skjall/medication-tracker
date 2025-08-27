@@ -81,9 +81,9 @@ function setupPackageCalculation() {
 
   calculateButtons.forEach((btn) => {
     btn.addEventListener('click', function () {
-      const medicationId = this.dataset.medicationId;
+      const ingredientId = this.dataset.ingredientId;
       const unitsInput = document.getElementById(
-        `quantity_${medicationId}`
+        `quantity_${ingredientId}`
       );
 
       if (!unitsInput || !unitsInput.value) {
@@ -94,7 +94,7 @@ function setupPackageCalculation() {
       const unitsNeeded = parseInt(unitsInput.value);
 
       // Make AJAX request to calculate packages
-      fetch(`/medications/${medicationId}/calculate`, {
+      fetch(`/ingredients/${ingredientId}/calculate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -109,13 +109,13 @@ function setupPackageCalculation() {
             Object.keys(data.packages).forEach(packageName => {
               // Try new package naming convention first
               let input = document.getElementById(
-                `packages_${packageName}_${medicationId}`
+                `packages_${packageName}_${ingredientId}`
               );
               
               // Fall back to legacy naming if not found
               if (!input && packageName.startsWith('N')) {
                 input = document.getElementById(
-                  `packages_${packageName.toLowerCase()}_${medicationId}`
+                  `packages_${packageName.toLowerCase()}_${ingredientId}`
                 );
               }
               
@@ -126,7 +126,7 @@ function setupPackageCalculation() {
             
             // Also clear any package inputs not in the response
             const allPackageInputs = document.querySelectorAll(
-              `input[id^="packages_"][id$="_${medicationId}"]`
+              `input[id^="packages_"][id$="_${ingredientId}"]`
             );
             allPackageInputs.forEach(input => {
               const packageNameMatch = input.id.match(/packages_(.+)_\d+/);
@@ -150,18 +150,18 @@ function setupPackageCalculation() {
 }
 
 /**
- * Setup checkboxes for selecting medications in order creation.
+ * Setup checkboxes for selecting ingredients in order creation.
  */
 function setupOrderItemSelection() {
-  const medicationCheckboxes = document.querySelectorAll(
-    '.medication-checkbox'
+  const ingredientCheckboxes = document.querySelectorAll(
+    '.ingredient-checkbox'
   );
 
-  medicationCheckboxes.forEach((checkbox) => {
+  ingredientCheckboxes.forEach((checkbox) => {
     checkbox.addEventListener('change', function () {
-      const medicationId = this.dataset.medicationId;
+      const ingredientId = this.dataset.ingredientId;
       const detailsSection = document.getElementById(
-        `medication_details_${medicationId}`
+        `ingredient_details_${ingredientId}`
       );
 
       if (detailsSection) {

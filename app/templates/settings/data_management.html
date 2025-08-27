@@ -29,7 +29,7 @@
     <div class="col-md-3">
         <div class="card h-100">
             <div class="card-body text-center">
-                <i class="fas fa-upload fa-3x text-success mb-3"></i>
+                <i class="fas fa-upload fa-3x text-primary mb-3"></i>
                 <h6>{{ _('Restore Database') }}</h6>
                 <p class="small text-muted">{{ _('Restore from backup file') }}</p>
                 <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#restoreModal">
@@ -85,9 +85,9 @@
                 <div class="text-center mb-3">
                     <i class="fas fa-pills fa-2x text-primary mb-2"></i>
                     <h6>{{ _('Medical Data') }}</h6>
-                    <p class="mb-0"><strong>{{ med_count }}</strong> {{ _('Medications') }}</p>
-                    <p class="mb-0"><strong>{{ schedule_count }}</strong> {{ _('Schedules') }}</p>
-                    <p class="mb-0"><strong>{{ inventory_count }}</strong> {{ _('Inventory Items') }}</p>
+                    <p class="mb-0"><strong>{{ ingredient_count|default(0) }}</strong> {{ _('Active Ingredients') }}</p>
+                    <p class="mb-0"><strong>{{ product_count|default(0) }}</strong> {{ _('Products') }}</p>
+                    <p class="mb-0"><strong>{{ package_count|default(0) }}</strong> {{ _('Package Inventories') }}</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -109,222 +109,13 @@
     </div>
 </div>
 
-<!-- Data Import/Export Card -->
-<div class="card">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>{{ _('Import & Export Data') }}</h5>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>{{ _('Data Type') }}</th>
-                        <th>{{ _('Description') }}</th>
-                        <th>{{ _('Count') }}</th>
-                        <th>{{ _('Import') }}</th>
-                        <th>{{ _('Export') }}</th>
-                        <th>{{ _('Reset') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Medications -->
-                    <tr>
-                        <td><strong>{{ _('Medications') }}</strong></td>
-                        <td>{{ _('Basic medication information (names, dosages, package sizes)') }}</td>
-                        <td>{{ med_count }}</td>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" data-import-type="medications">
-                                <i class="fas fa-file-import me-1"></i>{{ _('Import') }}
-                            </button>
-                        </td>
-                        <td>
-                            <a href="{{ url_for('settings.export_data', data_type='medications') }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-file-export me-1"></i>{{ _('Export') }}
-                            </a>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#resetModal" data-reset-type="medications" data-reset-count="{{ med_count }}">
-                                <i class="fas fa-trash-alt me-1"></i>{{ _('Reset') }}
-                            </button>
-                        </td>
-                    </tr>
+<!-- Note: CSV Import/Export removed due to complex data structure -->
+<!-- The new ActiveIngredient → MedicationProduct → ProductPackage architecture -->
+<!-- is too complex for simple CSV import/export. Use database backup/restore instead. -->
 
-                    <!-- Physicians -->
-                    <tr>
-                        <td><strong>{{ _('Physicians') }}</strong></td>
-                        <td>{{ _('Physician/doctor information (names, specialties, contact details)') }}</td>
-                        <td>{{ physician_count }}</td>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" data-import-type="physicians">
-                                <i class="fas fa-file-import me-1"></i>{{ _('Import') }}
-                            </button>
-                        </td>
-                        <td>
-                            <a href="{{ url_for('settings.export_data', data_type='physicians') }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-file-export me-1"></i>{{ _('Export') }}
-                            </a>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#resetModal" data-reset-type="physicians" data-reset-count="{{ physician_count }}">
-                                <i class="fas fa-trash-alt me-1"></i>{{ _('Reset') }}
-                            </button>
-                        </td>
-                    </tr>
+{% endblock %}
 
-                    <!-- Schedules -->
-                    <tr>
-                      <td><strong>{{ _('Schedules') }}</strong></td>
-                      <td>{{ _('Medication timing, frequency, and dosages') }}</td>
-                      <td>{{ schedule_count }}</td>
-                      <td>
-                          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" data-import-type="schedules">
-                              <i class="fas fa-file-import me-1"></i>{{ _('Import') }}
-                          </button>
-                      </td>
-                      <td>
-                          <a href="{{ url_for('settings.export_data', data_type='schedules') }}" class="btn btn-primary btn-sm">
-                              <i class="fas fa-file-export me-1"></i>{{ _('Export') }}
-                          </a>
-                      </td>
-                      <td>
-                          <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#resetModal" data-reset-type="schedules" data-reset-count="{{ schedule_count }}">
-                              <i class="fas fa-trash-alt me-1"></i>{{ _('Reset') }}
-                          </button>
-                      </td>
-                  </tr>
-
-                    <!-- Inventory -->
-                    <tr>
-                        <td><strong>{{ _('Inventory') }}</strong></td>
-                        <td>{{ _('Current inventory levels and package counts') }}</td>
-                        <td>{{ inventory_count }}</td>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" data-import-type="inventory">
-                                <i class="fas fa-file-import me-1"></i>{{ _('Import') }}
-                            </button>
-                        </td>
-                        <td>
-                            <a href="{{ url_for('settings.export_data', data_type='inventory') }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-file-export me-1"></i>{{ _('Export') }}
-                            </a>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#resetModal" data-reset-type="inventory" data-reset-count="{{ inventory_count }}">
-                                <i class="fas fa-trash-alt me-1"></i>{{ _('Reset') }}
-                            </button>
-                        </td>
-                    </tr>
-
-                    <!-- Physician Visits -->
-                    <tr>
-                        <td><strong>{{ _('Physician Visits') }}</strong></td>
-                        <td>{{ _('Scheduled physician visits and appointments') }}</td>
-                        <td>{{ visit_count }}</td>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" data-import-type="visits">
-                                <i class="fas fa-file-import me-1"></i>{{ _('Import') }}
-                            </button>
-                        </td>
-                        <td>
-                            <a href="{{ url_for('settings.export_data', data_type='visits') }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-file-export me-1"></i>{{ _('Export') }}
-                            </a>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#resetModal" data-reset-type="visits" data-reset-count="{{ visit_count }}">
-                                <i class="fas fa-trash-alt me-1"></i>{{ _('Reset') }}
-                            </button>
-                        </td>
-                    </tr>
-
-                    <!-- Orders -->
-                    <tr>
-                        <td><strong>{{ _('Orders') }}</strong></td>
-                        <td>{{ _('Medication orders for physician visits') }}</td>
-                        <td>{{ order_count }}</td>
-                        <td>
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" data-import-type="orders">
-                                <i class="fas fa-file-import me-1"></i>{{ _('Import') }}
-                            </button>
-                        </td>
-                        <td>
-                            <a href="{{ url_for('settings.export_data', data_type='orders') }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-file-export me-1"></i>{{ _('Export') }}
-                            </a>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#resetModal" data-reset-type="orders" data-reset-count="{{ order_count }}">
-                                <i class="fas fa-trash-alt me-1"></i>{{ _('Reset') }}
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="mt-4">
-            <div class="alert alert-warning mb-0">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <strong>{{ _('Important:') }}</strong> {{ _('Always backup your database before importing data or resetting records. Import operations may create duplicates if not used carefully.') }}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Import Modal -->
-<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="importModalLabel">{{ _('Import Data') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
-            </div>
-            <form id="importForm" action="" method="POST" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <span id="importInfoText">{{ _('Select a CSV file to import.') }}</span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="file" class="form-label">{{ _('CSV File') }}</label>
-                        <input class="form-control" type="file" id="file" name="file" accept=".csv" required>
-                    </div>
-
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="override" name="override">
-                        <label class="form-check-label" for="override">
-                            {{ _('Override existing records') }}
-                        </label>
-                        <div class="form-text">
-                            {{ _('If checked, existing records will be updated. Otherwise, only new records will be added.') }}
-                        </div>
-                    </div>
-
-                    <div class="accordion" id="importHelpAccordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="headingOne">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                    {{ _('CSV Format Help') }}
-                                </button>
-                            </h2>
-                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#importHelpAccordion">
-                                <div class="accordion-body">
-                                    <p id="csvFormatHelpText">{{ _('CSV format information will be shown here.') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ _('Import Data') }}</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+{% block modals %}
 
 <!-- Restore Database Modal -->
 <div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
@@ -338,33 +129,27 @@
                 <div class="modal-body">
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>{{ _('Critical Warning:') }}</strong> {{ _('Restoring a database will completely replace your current database with the backup file. All current data will be lost!') }}
+                        <strong>{{ _('Warning:') }}</strong> {{ _('Restoring a database backup will REPLACE ALL CURRENT DATA. This action cannot be undone.') }}
                     </div>
-
+                    
                     <div class="mb-3">
                         <label for="restore_file" class="form-label">{{ _('Database Backup File') }}</label>
-                        <input class="form-control" type="file" id="restore_file" name="restore_file" accept=".db,.sqlite,.sqlite3" required>
-                        <div class="form-text">
-                            {{ _('Select a database backup file (.db, .sqlite, or .sqlite3)') }}
-                        </div>
+                        <input type="file" class="form-control" id="restore_file" name="restore_file" accept=".db,.sqlite,.sqlite3" required>
+                        <div class="form-text">{{ _('Select a database backup file (.db, .sqlite, .sqlite3)') }}</div>
                     </div>
-
-                    <div class="form-check mb-3">
+                    
+                    <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="confirm_restore" name="confirm_restore" required>
-                        <label class="form-check-label text-danger" for="confirm_restore">
-                            {{ _('I understand that this will permanently replace all current data') }}
+                        <label class="form-check-label" for="confirm_restore">
+                            {{ _('I understand that all current data will be replaced') }}
                         </label>
-                    </div>
-
-                    <div class="alert alert-info">
-                        <small>
-                            <strong>{{ _('Recommended:') }}</strong> {{ _('Create a backup of your current database before restoring.') }}
-                        </small>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
-                    <button type="submit" class="btn btn-danger">{{ _('Restore Database') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-upload me-1"></i>{{ _('Restore Database') }}
+                    </button>
                 </div>
             </form>
         </div>
@@ -376,166 +161,40 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="clearLogsModalLabel">{{ _('Clear Old Inventory Logs') }}</h5>
+                <h5 class="modal-title" id="clearLogsModalLabel">{{ _('Clear Old Logs') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
             </div>
-            <form action="{{ url_for('settings.clear_logs') }}" method="POST">
+            <form action="{{ url_for('settings.clear_old_logs') }}" method="POST">
                 <div class="modal-body">
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>{{ _('Warning:') }}</strong> {{ _('This will permanently delete old inventory logs.') }}
-                    </div>
-
+                    <p>{{ _('This will clear inventory log entries older than the selected time period.') }}</p>
+                    
                     <div class="mb-3">
                         <label for="days_to_keep" class="form-label">{{ _('Keep logs from the last:') }}</label>
-                        <div class="input-group">
-                            <input type="number" class="form-control" id="days_to_keep" name="days_to_keep" value="90" min="30" max="365">
-                            <span class="input-group-text">{{ _('days') }}</span>
-                        </div>
-                        <div class="form-text">
-                            {{ _('Logs older than this will be permanently deleted. Minimum: 30 days.') }}
-                        </div>
+                        <select class="form-select" id="days_to_keep" name="days_to_keep" required>
+                            <option value="30">{{ _('30 days') }}</option>
+                            <option value="60">{{ _('60 days') }}</option>
+                            <option value="90" selected>{{ _('90 days') }}</option>
+                            <option value="180">{{ _('180 days') }}</option>
+                            <option value="365">{{ _('1 year') }}</option>
+                        </select>
                     </div>
+                    
+                    {% if inventory_logs_count %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ _('Currently %(count)s log entries in database', count=inventory_logs_count) }}
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
-                    <button type="submit" class="btn btn-danger">{{ _('Clear Old Logs') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-eraser me-1"></i>{{ _('Clear Old Logs') }}
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Reset Confirmation Modal -->
-<div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="resetModalLabel">⚠️ {{ _('Reset Data') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
-            </div>
-            <form id="resetForm" action="" method="POST">
-                <div class="modal-body">
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>{{ _('WARNING:') }}</strong> <span id="resetWarningText">{{ _('This action will delete all data.') }}</span>
-                    </div>
-
-                    <p><strong>{{ _('This will permanently delete:') }}</strong></p>
-                    <ul id="resetDetailsList">
-                        <li>{{ _('All records of this type') }}</li>
-                    </ul>
-
-                    <div class="mb-3">
-                        <label for="verification_text" class="form-label">{{ _('To confirm, type') }} <strong id="resetVerificationInstruction">reset [type]</strong> {{ _('below:') }}</label>
-                        <input type="text" class="form-control" id="verification_text" name="verification_text" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
-                    <button type="submit" class="btn btn-danger">{{ _('Reset Data') }}</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Import Modal Setup
-        const importModal = document.getElementById('importModal');
-        if (importModal) {
-            importModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const importType = button.getAttribute('data-import-type');
-
-                // Update form action
-                const importForm = document.getElementById('importForm');
-                importForm.action = "{{ url_for('settings.import_data_type', data_type='TYPE') }}".replace('TYPE', importType);
-
-                // Update modal title
-                const modalTitle = importModal.querySelector('.modal-title');
-                modalTitle.textContent = `Import ${importType.charAt(0).toUpperCase() + importType.slice(1)} Data`;
-
-                // Update info text based on import type
-                const infoText = document.getElementById('importInfoText');
-                const csvHelpText = document.getElementById('csvFormatHelpText');
-
-                if (importType === 'medications') {
-                    infoText.textContent = 'Import medication data from a CSV file.';
-                    csvHelpText.innerHTML = 'Expected columns:<br>Name, Physician ID (optional), Physician Name (optional), Is OTC (optional), Dosage, Frequency, Package Size N1, Package Size N2, Package Size N3, Min Threshold, Safety Margin Days, Notes';
-                }
-                else if (importType === 'physicians') {
-                    infoText.textContent = 'Import physician data from a CSV file.';
-                    csvHelpText.innerHTML = 'Expected columns:<br>Name, Specialty (optional), Phone (optional), Email (optional), Address (optional), Notes (optional)';
-                }
-                else if (importType === 'inventory') {
-                    infoText.textContent = 'Import inventory data from a CSV file.';
-                    csvHelpText.innerHTML = 'Expected columns:<br>Medication ID or Medication Name, Current Count, Packages N1, Packages N2, Packages N3, Last Updated';
-                }
-                else if (importType === 'visits') {
-                    infoText.textContent = 'Import physician visit data from a CSV file.';
-                    csvHelpText.innerHTML = 'Expected columns:<br>Visit Date, Physician ID (optional), Physician Name (optional), Notes, Order For Next-But-One';
-                }
-                else if (importType === 'orders') {
-                    infoText.textContent = 'Import order data from a CSV file.';
-                    csvHelpText.innerHTML = 'Expected columns:<br>Order ID, Visit Date, Status, Created Date, Medication, Quantity Needed, Packages N1, Packages N2, Packages N3';
-                }
-                else if (importType === 'schedules') {
-                    infoText.textContent = 'Import medication schedule data from a CSV file.';
-                    csvHelpText.innerHTML = 'Expected columns:<br>Medication ID or Medication Name, Schedule Type (daily/interval/weekdays), Interval Days, Weekdays (comma-separated), Times of Day (comma-separated), Units Per Dose';
-                }
-            });
-        }
-
-        // Reset Modal Setup
-        const resetModal = document.getElementById('resetModal');
-        if (resetModal) {
-            resetModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const resetType = button.getAttribute('data-reset-type');
-                const resetCount = button.getAttribute('data-reset-count');
-
-                // Update form action
-                const resetForm = document.getElementById('resetForm');
-                resetForm.action = "{{ url_for('settings.reset_data_type', data_type='TYPE') }}".replace('TYPE', resetType);
-
-                // Update modal title
-                const modalTitle = resetModal.querySelector('.modal-title');
-                modalTitle.textContent = `Reset ${resetType.charAt(0).toUpperCase() + resetType.slice(1)} Data`;
-
-                // Update warning text
-                const warningText = document.getElementById('resetWarningText');
-                warningText.textContent = `This action will delete all ${resetType} data (${resetCount} records).`;
-
-                // Update details list
-                const detailsList = document.getElementById('resetDetailsList');
-                if (resetType === 'medications') {
-                    detailsList.innerHTML = '<li>All medication records</li><li>All related inventory records</li><li>All related order items</li>';
-                }
-                else if (resetType === 'physicians') {
-                    detailsList.innerHTML = '<li>All physician records</li><li>Physician references in medications and visits will be cleared</li>';
-                }
-                else if (resetType === 'inventory') {
-                    detailsList.innerHTML = '<li>All inventory records</li><li>All inventory history logs</li>';
-                }
-                else if (resetType === 'visits') {
-                    detailsList.innerHTML = '<li>All physician visit records</li><li>All associated orders</li>';
-                }
-                else if (resetType === 'orders') {
-                    detailsList.innerHTML = '<li>All order records</li><li>All order items</li>';
-                }
-                else if (resetType === 'schedules') {
-                    detailsList.innerHTML = '<li>All medication schedule records</li>';
-                }
-
-                // Update verification text instruction
-                const verificationInstruction = document.getElementById('resetVerificationInstruction');
-                verificationInstruction.textContent = `reset ${resetType}`;
-            });
-        }
-    });
-</script>
 {% endblock %}

@@ -138,21 +138,25 @@
                         {% for item in order_items %}
                             <tr>
                                 <td>
-                                    {% set product = item.medication.default_product or (item.medication.migrated_product[0] if item.medication.migrated_product and item.medication.migrated_product|length > 0 else None) %}
-                                    {% if product %}
-                                        <strong>{{ product.active_ingredient.name }}</strong><br>
-                                        <small>→ {{ product.display_name }}</small>
+                                    {% if item.active_ingredient %}
+                                        <strong>{{ item.active_ingredient.name }}</strong>
+                                        {% if item.product %}
+                                            <br><small>→ {{ item.product.display_name }}</small>
+                                        {% elif item.active_ingredient.default_product %}
+                                            <br><small>→ {{ item.active_ingredient.default_product.display_name }}</small>
+                                        {% endif %}
                                     {% else %}
-                                        <strong>{{ item.medication.name }}</strong>
+                                        <strong>{{ _('Unknown') }}</strong>
                                     {% endif %}
                                 </td>
                                 <td>{{ item.quantity_needed }} {{ ngettext('unit', 'units', item.quantity_needed) }}</td>
-                                <td>{{ item.medication.daily_usage|round(1) }} {{ ngettext('unit/day', 'units/day', item.medication.daily_usage|round(1)) }}</td>
+                                <td>{{ item.active_ingredient.daily_usage|round(1) if item.active_ingredient else 0 }} {{ ngettext('unit/day', 'units/day', item.active_ingredient.daily_usage|round(1) if item.active_ingredient else 0) }}</td>
                                 <td>
                                     {% set total_units = 0 %}
                                     {% set output_lines = [] %}
 
                                     {# Build package display - prefer ProductPackage data if available #}
+                                    {% set product = item.product if item.product else (item.active_ingredient.default_product if item.active_ingredient else None) %}
                                     {% if product and product.packages and product.packages|length > 0 %}
                                         {# Use new ProductPackage system #}
                                         {% set package_map = {} %}
@@ -163,41 +167,35 @@
                                         {% if item.packages_n1 > 0 and 'N1' in package_map %}
                                             {% set _ = output_lines.append('N1: ' ~ item.packages_n1 ~ ' × ' ~ package_map['N1'] ~ ' ' ~ ngettext('unit', 'units', package_map['N1'])) %}
                                             {% set total_units = total_units + (item.packages_n1 * package_map['N1']) %}
-                                        {% elif item.packages_n1 > 0 and item.medication.package_size_n1 %}
-                                            {% set _ = output_lines.append('N1: ' ~ item.packages_n1 ~ ' × ' ~ item.medication.package_size_n1 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n1)) %}
-                                            {% set total_units = total_units + (item.packages_n1 * item.medication.package_size_n1) %}
+                                        {% elif item.packages_n1 > 0 %}
+                                            {% set _ = output_lines.append('N1: ' ~ item.packages_n1 ~ ' packages') %}
                                         {% endif %}
 
                                         {% if item.packages_n2 > 0 and 'N2' in package_map %}
                                             {% set _ = output_lines.append('N2: ' ~ item.packages_n2 ~ ' × ' ~ package_map['N2'] ~ ' ' ~ ngettext('unit', 'units', package_map['N2'])) %}
                                             {% set total_units = total_units + (item.packages_n2 * package_map['N2']) %}
-                                        {% elif item.packages_n2 > 0 and item.medication.package_size_n2 %}
-                                            {% set _ = output_lines.append('N2: ' ~ item.packages_n2 ~ ' × ' ~ item.medication.package_size_n2 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n2)) %}
-                                            {% set total_units = total_units + (item.packages_n2 * item.medication.package_size_n2) %}
+                                        {% elif item.packages_n2 > 0 %}
+                                            {% set _ = output_lines.append('N2: ' ~ item.packages_n2 ~ ' packages') %}
                                         {% endif %}
 
                                         {% if item.packages_n3 > 0 and 'N3' in package_map %}
                                             {% set _ = output_lines.append('N3: ' ~ item.packages_n3 ~ ' × ' ~ package_map['N3'] ~ ' ' ~ ngettext('unit', 'units', package_map['N3'])) %}
                                             {% set total_units = total_units + (item.packages_n3 * package_map['N3']) %}
-                                        {% elif item.packages_n3 > 0 and item.medication.package_size_n3 %}
-                                            {% set _ = output_lines.append('N3: ' ~ item.packages_n3 ~ ' × ' ~ item.medication.package_size_n3 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n3)) %}
-                                            {% set total_units = total_units + (item.packages_n3 * item.medication.package_size_n3) %}
+                                        {% elif item.packages_n3 > 0 %}
+                                            {% set _ = output_lines.append('N3: ' ~ item.packages_n3 ~ ' packages') %}
                                         {% endif %}
                                     {% else %}
-                                        {# Use legacy system #}
-                                        {% if item.packages_n1 > 0 and item.medication.package_size_n1 %}
-                                            {% set _ = output_lines.append('N1: ' ~ item.packages_n1 ~ ' × ' ~ item.medication.package_size_n1 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n1)) %}
-                                            {% set total_units = total_units + (item.packages_n1 * item.medication.package_size_n1) %}
+                                        {# Default display without package sizes #}
+                                        {% if item.packages_n1 > 0 %}
+                                            {% set _ = output_lines.append('N1: ' ~ item.packages_n1 ~ ' packages') %}
                                         {% endif %}
 
-                                        {% if item.packages_n2 > 0 and item.medication.package_size_n2 %}
-                                            {% set _ = output_lines.append('N2: ' ~ item.packages_n2 ~ ' × ' ~ item.medication.package_size_n2 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n2)) %}
-                                            {% set total_units = total_units + (item.packages_n2 * item.medication.package_size_n2) %}
+                                        {% if item.packages_n2 > 0 %}
+                                            {% set _ = output_lines.append('N2: ' ~ item.packages_n2 ~ ' packages') %}
                                         {% endif %}
 
-                                        {% if item.packages_n3 > 0 and item.medication.package_size_n3 %}
-                                            {% set _ = output_lines.append('N3: ' ~ item.packages_n3 ~ ' × ' ~ item.medication.package_size_n3 ~ ' ' ~ ngettext('unit', 'units', item.medication.package_size_n3)) %}
-                                            {% set total_units = total_units + (item.packages_n3 * item.medication.package_size_n3) %}
+                                        {% if item.packages_n3 > 0 %}
+                                            {% set _ = output_lines.append('N3: ' ~ item.packages_n3 ~ ' packages') %}
                                         {% endif %}
                                     {% endif %}
 

@@ -23,13 +23,14 @@ def onboard_package():
     """Onboard an unknown package by creating ingredient, product, and package."""
     
     # Get scanned data from session or query params
+    # Note: Use None for empty values to avoid storing empty strings in the database
     scanned_data = {
-        'gtin': request.args.get('gtin') or session.get('scanned_gtin'),
-        'national_number': request.args.get('national_number') or session.get('scanned_national_number'),
-        'national_number_type': request.args.get('national_number_type') or session.get('scanned_national_number_type'),
-        'batch': request.args.get('batch') or session.get('scanned_batch'),
-        'expiry': request.args.get('expiry') or session.get('scanned_expiry'),
-        'serial': request.args.get('serial') or session.get('scanned_serial'),
+        'gtin': request.args.get('gtin') if request.args.get('gtin') else (session.get('scanned_gtin') if 'gtin' not in request.args else None),
+        'national_number': request.args.get('national_number') if request.args.get('national_number') else (session.get('scanned_national_number') if 'national_number' not in request.args else None),
+        'national_number_type': request.args.get('national_number_type') if request.args.get('national_number_type') else (session.get('scanned_national_number_type') if 'national_number_type' not in request.args else None),
+        'batch': request.args.get('batch') if request.args.get('batch') else (session.get('scanned_batch') if 'batch' not in request.args else None),
+        'expiry': request.args.get('expiry') if request.args.get('expiry') else (session.get('scanned_expiry') if 'expiry' not in request.args else None),
+        'serial': request.args.get('serial') if request.args.get('serial') else (session.get('scanned_serial') if 'serial' not in request.args else None),
     }
     
     # Store in session for form resubmission
@@ -145,11 +146,11 @@ def onboard_package():
         if existing_package:
             # Update existing package with scanned data
             package = existing_package
-            if scanned_data['gtin'] and not package.gtin:
-                package.gtin = scanned_data['gtin']
-            if scanned_data['national_number'] and not package.national_number:
-                package.national_number = scanned_data['national_number']
-                package.national_number_type = scanned_data['national_number_type']
+            if scanned_data.get('gtin') and not package.gtin:
+                package.gtin = scanned_data.get('gtin')
+            if scanned_data.get('national_number') and not package.national_number:
+                package.national_number = scanned_data.get('national_number')
+                package.national_number_type = scanned_data.get('national_number_type')
             flash(_('Package configuration updated'), 'info')
         else:
             # Create new package
@@ -157,9 +158,9 @@ def onboard_package():
                 product_id=product.id,
                 package_size=package_size,
                 quantity=quantity,
-                gtin=scanned_data['gtin'],
-                national_number=scanned_data['national_number'],
-                national_number_type=scanned_data['national_number_type'],
+                gtin=scanned_data.get('gtin') if scanned_data.get('gtin') else None,
+                national_number=scanned_data.get('national_number') if scanned_data.get('national_number') else None,
+                national_number_type=scanned_data.get('national_number_type') if scanned_data.get('national_number_type') else None,
                 manufacturer=request.form.get('package_manufacturer'),
                 list_price=request.form.get('list_price', type=float),
                 is_active=True
@@ -171,18 +172,32 @@ def onboard_package():
         add_to_inventory = request.form.get('add_to_inventory') == 'on'
         if add_to_inventory:
             # Create or update ScannedItem for this package
-            scanned_item = ScannedItem.query.filter_by(
-                serial_number=scanned_data.get('serial', f"{scanned_data['gtin']}_{scanned_data['batch']}_{datetime.now(timezone.utc).timestamp()}")
-            ).first()
+            # Use the actual serial number if provided, otherwise check by generated pattern
+            if scanned_data.get('serial'):
+                scanned_item = ScannedItem.query.filter_by(
+                    serial_number=scanned_data.get('serial')
+                ).first()
+            else:
+                scanned_item = None  # Will create new one below
             
             if not scanned_item:
+                # Generate serial number based on available identifiers
+                if scanned_data.get('serial'):
+                    serial_num = scanned_data.get('serial')
+                elif scanned_data.get('gtin'):
+                    serial_num = f"{scanned_data.get('gtin')}_{scanned_data.get('batch', 'NO_BATCH')}_{datetime.now(timezone.utc).timestamp()}"
+                elif scanned_data.get('national_number'):
+                    serial_num = f"{scanned_data.get('national_number')}_{scanned_data.get('batch', 'NO_BATCH')}_{datetime.now(timezone.utc).timestamp()}"
+                else:
+                    serial_num = f"PKG_{package.id}_{datetime.now(timezone.utc).timestamp()}"
+                    
                 scanned_item = ScannedItem(
-                    serial_number=scanned_data.get('serial') or f"{scanned_data['gtin']}_{scanned_data['batch']}_{datetime.now(timezone.utc).timestamp()}",
-                    gtin=scanned_data['gtin'],
-                    batch_number=scanned_data['batch'],
+                    serial_number=serial_num,
+                    gtin=scanned_data.get('gtin') if scanned_data.get('gtin') else None,
+                    batch_number=scanned_data.get('batch') if scanned_data.get('batch') else None,
                     expiry_date=datetime.fromisoformat(scanned_data['expiry']) if scanned_data.get('expiry') else None,
-                    national_number=scanned_data['national_number'],
-                    national_number_type=scanned_data['national_number_type'],
+                    national_number=scanned_data.get('national_number') if scanned_data.get('national_number') else None,
+                    national_number_type=scanned_data.get('national_number_type') if scanned_data.get('national_number_type') else None,
                     # Note: medication_package_id is for old system, leaving null for new ProductPackage
                     scanned_at=datetime.now(timezone.utc),
                     status='active'

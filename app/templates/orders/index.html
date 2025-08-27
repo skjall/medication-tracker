@@ -22,7 +22,7 @@
             <th>{{ _('Visit Date') }}</th>
             <th>{{ _('Status') }}</th>
             <th>{{ _('Created Date') }}</th>
-            <th>{{ _('Medications') }}</th>
+            <th>{{ _('Ingredients') }}</th>
             <th>{{ _('Packages') }}</th>
             <th class="text-end">{{ _('Actions') }}</th>
           </tr>
@@ -51,7 +51,7 @@
             </td>
             <td>{{ format_date(order.created_date) }}</td>
             <td>
-              {{ ngettext('%(num)s medication', '%(num)s medications', order.order_items|length, num=order.order_items|length) }}
+              {{ ngettext('%(num)s ingredient', '%(num)s ingredients', order.order_items|length, num=order.order_items|length) }}
             </td>
             <td>
               {% set total_linked = namespace(value=0) %}
@@ -149,7 +149,7 @@
             <th>{{ _('Order #') }}</th>
             <th>{{ _('Visit Date') }}</th>
             <th>{{ _('Created Date') }}</th>
-            <th>{{ _('Medications') }}</th>
+            <th>{{ _('Ingredients') }}</th>
             <th>{{ _('Packages') }}</th>
             <th class="text-end">{{ _('Actions') }}</th>
           </tr>
@@ -171,7 +171,7 @@
             </td>
             <td>{{ format_date(order.created_date) }}</td>
             <td>
-              {{ ngettext('%(num)s medication', '%(num)s medications', order.order_items|length, num=order.order_items|length) }}
+              {{ ngettext('%(num)s ingredient', '%(num)s ingredients', order.order_items|length, num=order.order_items|length) }}
             </td>
             <td>
               {% set total_linked = namespace(value=0) %}

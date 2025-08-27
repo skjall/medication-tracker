@@ -122,6 +122,7 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     def index():
         """Render the dashboard/home page."""
         from flask_babel import get_locale, gettext
+        from models import ActiveIngredient, MedicationProduct
         current_locale = get_locale()
         logger.debug(f"Rendering dashboard page with locale: {current_locale}")
         
@@ -130,24 +131,32 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         test_translation2 = gettext('No upcoming physician visits scheduled.')
         logger.debug(f"Translation test - 'Dashboard': '{test_translation}'")
         logger.debug(f"Translation test - 'No upcoming physician visits scheduled.': '{test_translation2}'")
-        medications = Medication.query.order_by(Medication.name).all()
         
-        # Group medications by physician or OTC status for display
-        medications_by_physician = {}
-        otc_medications = []
+        # Get all active ingredients instead of medications
+        ingredients = ActiveIngredient.query.order_by(ActiveIngredient.name).all()
         
-        for med in medications:
-            if med.is_otc:
-                otc_medications.append(med)
-            else:
-                physician_key = med.physician if med.physician else None
-                if physician_key not in medications_by_physician:
-                    medications_by_physician[physician_key] = []
-                medications_by_physician[physician_key].append(med)
+        # Group ingredients by physician or OTC status for display
+        ingredients_by_physician = {}
+        otc_ingredients = []
+        
+        for ingredient in ingredients:
+            # Check if ingredient has any OTC products
+            has_otc = any(product.is_otc for product in ingredient.products)
+            if has_otc:
+                otc_ingredients.append(ingredient)
+            
+            # Group by physician for prescription products
+            for product in ingredient.products:
+                if not product.is_otc:
+                    physician_key = product.physician if product.physician else None
+                    if physician_key not in ingredients_by_physician:
+                        ingredients_by_physician[physician_key] = []
+                    if ingredient not in ingredients_by_physician[physician_key]:
+                        ingredients_by_physician[physician_key].append(ingredient)
         
         # Sort physicians by name, with unassigned at the end
         sorted_physicians = sorted(
-            medications_by_physician.keys(),
+            ingredients_by_physician.keys(),
             key=lambda p: (p is None, p.name if p else "")
         )
         
@@ -162,39 +171,45 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         upcoming_visit = upcoming_visits[0] if upcoming_visits else None
 
         low_inventory = []
-        gap_coverage_by_visit = []  # List of dicts: {visit: visit_obj, medications: [med1, med2]}
+        gap_coverage_by_visit = []  # List of dicts: {visit: visit_obj, ingredients: [ing1, ing2]}
         
-        for med in medications:
-            if med.inventory and med.inventory.is_low:
-                low_inventory.append(med)
+        # Check for low inventory
+        for ingredient in ingredients:
+            if ingredient.total_inventory_count < ingredient.min_threshold:
+                low_inventory.append(ingredient)
         
         # Check for gap coverage needs for each upcoming visit
         if upcoming_visits:
             for visit in upcoming_visits:
-                visit_gap_medications = []
+                visit_gap_ingredients = []
                 
-                for med in medications:
-                    if (med.inventory and med.depletion_date and 
-                        not med.is_otc and  # Exclude OTC medications
-                        med.physician_id == visit.physician_id):  # Only medications for this specific physician
-                        # Check if medication will run out before this visit
-                        if ensure_timezone_utc(med.depletion_date) < ensure_timezone_utc(visit.visit_date):
-                            visit_gap_medications.append(med)
+                for ingredient in ingredients:
+                    # Check if ingredient has products for this physician
+                    has_physician_product = any(
+                        product.physician_id == visit.physician_id 
+                        for product in ingredient.products 
+                        if not product.is_otc
+                    )
+                    
+                    if has_physician_product and ingredient.depletion_date:
+                        # Check if ingredient will run out before this visit
+                        if ensure_timezone_utc(ingredient.depletion_date) < ensure_timezone_utc(visit.visit_date):
+                            visit_gap_ingredients.append(ingredient)
                 
                 # Only add visits that have gap coverage needs
-                if visit_gap_medications:
+                if visit_gap_ingredients:
                     gap_coverage_by_visit.append({
                         'visit': visit,
-                        'medications': visit_gap_medications
+                        'ingredients': visit_gap_ingredients
                     })
 
         return render_template(
             "index.html",
             local_time=to_local_timezone(datetime.now(timezone.utc)),
-            medications=medications,
-            medications_by_physician=medications_by_physician,
+            ingredients=ingredients,
+            ingredients_by_physician=ingredients_by_physician,
             sorted_physicians=sorted_physicians,
-            otc_medications=otc_medications,
+            otc_ingredients=otc_ingredients,
             upcoming_visit=upcoming_visit,
             low_inventory=low_inventory,
             gap_coverage_by_visit=gap_coverage_by_visit,

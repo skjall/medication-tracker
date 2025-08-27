@@ -223,8 +223,42 @@ class MedicationProduct(db.Model):
             if package_units:
                 total += package_units
         
-        # TODO: When ProductPackage inventory is implemented, add those packages here
-        # Currently all inventory goes through legacy medication system
+        # Add inventory from ProductPackage system
+        from models import PackageInventory, ScannedItem, ProductPackage
+        from sqlalchemy import or_
+        
+        # Get all packages for this product
+        packages = ProductPackage.query.filter_by(product_id=self.id).all()
+        package_gtins = [p.gtin for p in packages if p.gtin]
+        package_numbers = [(p.national_number, p.national_number_type) 
+                          for p in packages if p.national_number]
+        
+        if package_gtins or package_numbers:
+            # Build query for package inventory
+            query = (
+                db.session.query(db.func.sum(PackageInventory.current_units))
+                .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
+                .filter(
+                    PackageInventory.status.in_(['sealed', 'open']),
+                    PackageInventory.medication_id.is_(None)  # Only new packages not linked to medications
+                )
+            )
+            
+            # Build OR conditions for GTIN and national numbers
+            conditions = []
+            if package_gtins:
+                conditions.append(ScannedItem.gtin.in_(package_gtins))
+            for nat_num, nat_type in package_numbers:
+                conditions.append(
+                    (ScannedItem.national_number == nat_num) & 
+                    (ScannedItem.national_number_type == nat_type)
+                )
+            
+            if conditions:
+                query = query.filter(or_(*conditions))
+                package_units = query.scalar()
+                if package_units:
+                    total += package_units
             
         return total
     

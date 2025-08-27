@@ -16,9 +16,10 @@ from .base import db, utcnow
 from utils import calculate_days_until
 
 if TYPE_CHECKING:
-    from .medication import Medication
     from .physician import Physician
+    from .active_ingredient import ActiveIngredient
     from .scanner import PackageInventory
+    from .medication_product import MedicationProduct
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -136,8 +137,12 @@ class OrderItem(db.Model):
     order_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("orders.id"), nullable=False
     )
-    medication_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("medications.id"), nullable=True
+    active_ingredient_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("active_ingredients.id"), nullable=True
+    )
+    product_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("medication_products.id"), nullable=True,
+        comment="Selected product for this order item"
     )
 
     quantity_needed: Mapped[int] = mapped_column(Integer)
@@ -161,24 +166,22 @@ class OrderItem(db.Model):
 
     # Relationships
     order: Mapped["Order"] = relationship("Order", back_populates="order_items")
-    medication: Mapped["Medication"] = relationship(
-        "Medication", back_populates="order_items"
+    active_ingredient: Mapped["ActiveIngredient"] = relationship(
+        "ActiveIngredient", back_populates="order_items"
+    )
+    product: Mapped[Optional["MedicationProduct"]] = relationship(
+        "MedicationProduct", 
+        foreign_keys=[product_id],
+        backref="order_items"
     )
     
     # Note: linked_packages relationship is defined via backref in PackageInventory model
     
     @property
     def total_units_ordered(self) -> int:
-        """Calculate total units from packages."""
-        total = 0
-        if self.medication:
-            if self.medication.package_size_n1:
-                total += self.packages_n1 * self.medication.package_size_n1
-            if self.medication.package_size_n2:
-                total += self.packages_n2 * self.medication.package_size_n2
-            if self.medication.package_size_n3:
-                total += self.packages_n3 * self.medication.package_size_n3
-        return total
+        """Calculate total units from packages - needs product info."""
+        # For now return the quantity_needed since we don't have product package sizes here
+        return self.quantity_needed
     
     @property
     def linked_package_count(self) -> int:
@@ -225,5 +228,5 @@ class OrderItem(db.Model):
             self.fulfillment_status = "pending"
 
     def __repr__(self) -> str:
-        med_name = self.medication.name if self.medication else "Unknown medication"
-        return f"<OrderItem {med_name} for order {self.order_id} - {self.fulfillment_status}>"
+        ingredient_name = self.active_ingredient.name if self.active_ingredient else "Unknown ingredient"
+        return f"<OrderItem {ingredient_name} for order {self.order_id} - {self.fulfillment_status}>"
