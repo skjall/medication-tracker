@@ -485,7 +485,7 @@
         {% else %}
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>{{ _('No medications registered yet.') }}
-                <a href="{{ url_for('ingredients.new') }}" class="alert-link">{{ _('Add your first ingredient') }}</a>
+                <a href="{{ url_for('medications.index') }}" class="alert-link">{{ _('Add your first medication') }}</a>
             </div>
         {% endif %}
     </div>
