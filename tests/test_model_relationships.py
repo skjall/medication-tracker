@@ -165,7 +165,7 @@ class TestModelRelationships(BaseTestCase):
 
     def test_order_orderitem_relationship(self):
         """Test the relationship between Order and OrderItem."""
-        from app.models import Order, OrderItem, Medication, PhysicianVisit
+        from app.models import Order, OrderItem, ActiveIngredient, MedicationProduct, PhysicianVisit
 
         # Create a visit and order
         visit = PhysicianVisit(
@@ -178,20 +178,31 @@ class TestModelRelationships(BaseTestCase):
         self.db.session.add(order)
         self.db.session.flush()
 
-        # Create medications
-        med1 = Medication(name="Med 1", dosage=1.0, frequency=1.0)
-        med2 = Medication(name="Med 2", dosage=2.0, frequency=2.0)
-        self.db.session.add_all([med1, med2])
+        # Create active ingredients and products
+        ingredient1 = ActiveIngredient(name="Ingredient 1")
+        ingredient2 = ActiveIngredient(name="Ingredient 2")
+        self.db.session.add_all([ingredient1, ingredient2])
+        self.db.session.flush()
+        
+        product1 = MedicationProduct(
+            active_ingredient=ingredient1,
+            brand_name="Product 1"
+        )
+        product2 = MedicationProduct(
+            active_ingredient=ingredient2,
+            brand_name="Product 2"
+        )
+        self.db.session.add_all([product1, product2])
         self.db.session.flush()
 
         # Create order items
         item1 = OrderItem(
-            order=order, medication=med1, quantity_needed=30, packages_n1=1
+            order=order, active_ingredient=ingredient1, product=product1, quantity_needed=30, packages_n1=1
         )
         self.db.session.add(item1)
 
         item2 = OrderItem(
-            order=order, medication=med2, quantity_needed=60, packages_n2=1
+            order=order, active_ingredient=ingredient2, product=product2, quantity_needed=60, packages_n2=1
         )
         self.db.session.add(item2)
         self.db.session.commit()
@@ -201,10 +212,10 @@ class TestModelRelationships(BaseTestCase):
         self.assertIn(item1, order.order_items)
         self.assertIn(item2, order.order_items)
 
-        self.assertEqual(len(med1.order_items), 1)
-        self.assertEqual(len(med2.order_items), 1)
-        self.assertEqual(med1.order_items[0], item1)
-        self.assertEqual(med2.order_items[0], item2)
+        self.assertEqual(len(ingredient1.order_items), 1)
+        self.assertEqual(len(ingredient2.order_items), 1)
+        self.assertEqual(ingredient1.order_items[0], item1)
+        self.assertEqual(ingredient2.order_items[0], item2)
 
         logger.debug(
             f"Orders before deletion: {self.db.session.query(OrderItem).all()}"
@@ -228,8 +239,8 @@ class TestModelRelationships(BaseTestCase):
         # Items should be gone
         self.assertEqual(self.db.session.query(OrderItem).count(), 0)
 
-        # Medications should still exist
-        self.assertEqual(self.db.session.query(Medication).count(), 2)
+        # Active ingredients should still exist
+        self.assertEqual(self.db.session.query(ActiveIngredient).count(), 2)
 
     def test_medication_deletion_with_relations(self):
         """Test deleting a medication with various related objects."""
@@ -242,6 +253,8 @@ class TestModelRelationships(BaseTestCase):
             OrderItem,
             ScheduleType,
             PhysicianVisit,
+            ActiveIngredient,
+            MedicationProduct,
         )
 
         # Create a medication with inventory, logs, schedules, and order items
@@ -280,8 +293,20 @@ class TestModelRelationships(BaseTestCase):
         self.db.session.add(order)
         self.db.session.flush()
 
+        # Create active ingredient and product for order item
+        ingredient = ActiveIngredient(name="Test Ingredient")
+        self.db.session.add(ingredient)
+        self.db.session.flush()
+        
+        product = MedicationProduct(
+            active_ingredient=ingredient,
+            brand_name="Test Product"
+        )
+        self.db.session.add(product)
+        self.db.session.flush()
+        
         # Add order item
-        item = OrderItem(order=order, medication=med, quantity_needed=30, packages_n1=1)
+        item = OrderItem(order=order, active_ingredient=ingredient, product=product, quantity_needed=30, packages_n1=1)
         self.db.session.add(item)
         self.db.session.commit()
 
@@ -289,7 +314,8 @@ class TestModelRelationships(BaseTestCase):
         self.assertEqual(med.inventory, inv)
         self.assertEqual(len(inv.inventory_logs), 1)
         self.assertEqual(len(med.schedules), 1)
-        self.assertEqual(len(med.order_items), 1)
+        # Order items are now on active_ingredient, not medication
+        # med doesn't have order_items anymore
 
         # Deleting medication should:
         # - Delete inventory (cascade)
@@ -315,7 +341,7 @@ class TestModelRelationships(BaseTestCase):
             0,
         )
 
-        # Order item should still exist but have NULL medication_id
+        # Order item should still exist (linked to active_ingredient, not medication)
         order_item = self.db.session.get(OrderItem, item.id)
         self.assertIsNotNone(order_item)
-        self.assertIsNone(order_item.medication)
+        self.assertEqual(order_item.active_ingredient_id, ingredient.id)
