@@ -2870,7 +2870,7 @@ msgstr ""
 msgid "Database Updates"
 msgstr ""
 
-#: /app/templates/layout.html:141 /app/templates/layout.html:207
+#: /app/templates/layout.html:144 /app/templates/layout.html:210
 #: /app/templates/orders/_fulfill_modal.html:11
 #: /app/templates/orders/show.html:338 /app/templates/orders/show.html:347
 #: /app/templates/orders/show.html:359 /app/templates/orders/show.html:413
@@ -2881,11 +2881,11 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: /app/templates/layout.html:154
+#: /app/templates/layout.html:157
 msgid "Timezone"
 msgstr ""
 
-#: /app/templates/layout.html:155 /app/templates/settings/system.html:28
+#: /app/templates/layout.html:158 /app/templates/settings/system.html:28
 msgid "Local time"
 msgstr ""
 

@@ -164,7 +164,7 @@
                 <h5 class="modal-title" id="clearLogsModalLabel">{{ _('Clear Old Logs') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
             </div>
-            <form action="{{ url_for('settings.clear_old_logs') }}" method="POST">
+            <form action="{{ url_for('settings.clear_logs') }}" method="POST">
                 <div class="modal-body">
                     <p>{{ _('This will clear inventory log entries older than the selected time period.') }}</p>
                     
@@ -199,36 +199,3 @@
 
 {% endblock %}
 
-{% block scripts %}
-<script>
-    // Ensure Bootstrap modals are properly initialized
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize all modals on the page
-        var modalElements = document.querySelectorAll('.modal');
-        modalElements.forEach(function(modalElement) {
-            // Check if Bootstrap is loaded
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                // Pre-initialize the modal to avoid errors
-                new bootstrap.Modal(modalElement, {
-                    backdrop: true,
-                    keyboard: true,
-                    focus: true
-                });
-            }
-        });
-        
-        // Alternative: Fix for modal trigger buttons
-        var modalTriggers = document.querySelectorAll('[data-bs-toggle="modal"]');
-        modalTriggers.forEach(function(trigger) {
-            trigger.addEventListener('click', function(e) {
-                var targetModal = document.querySelector(trigger.getAttribute('data-bs-target'));
-                if (targetModal && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                    var modal = bootstrap.Modal.getInstance(targetModal) || new bootstrap.Modal(targetModal);
-                    modal.show();
-                    e.preventDefault();
-                }
-            });
-        });
-    });
-</script>
-{% endblock %}
