@@ -1418,7 +1418,7 @@ msgid "No ingredients found in the system."
 msgstr ""
 
 #: /app/templates/index.html:449
-msgid "Add Ingredient"
+msgid "Manage Medications"
 msgstr ""
 
 #: /app/templates/index.html:456
@@ -2446,7 +2446,7 @@ msgid "No medications registered yet."
 msgstr ""
 
 #: /app/templates/inventory/index.html:488
-msgid "Add your first ingredient"
+msgid "Add your first medication"
 msgstr ""
 
 #: /app/templates/inventory/low.html:3 /app/templates/inventory/low.html:8

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-27 09:35\n"
+"PO-Revision-Date: 2025-08-27 14:47\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -1386,8 +1386,8 @@ msgid "No ingredients found in the system."
 msgstr "Keine Wirkstoffe im System gefunden."
 
 #: /app/templates/index.html:449
-msgid "Add Ingredient"
-msgstr "Wirkstoff hinzufügen"
+msgid "Manage Medications"
+msgstr ""
 
 #: /app/templates/index.html:456
 msgid "Manage Ingredients"
@@ -2410,8 +2410,8 @@ msgid "No medications registered yet."
 msgstr "Noch keine Medikamente gespeichert."
 
 #: /app/templates/inventory/index.html:488
-msgid "Add your first ingredient"
-msgstr "Füge deinen ersten Wirkstoff hinzu"
+msgid "Add your first medication"
+msgstr ""
 
 #: /app/templates/inventory/low.html:3 /app/templates/inventory/low.html:8
 msgid "Low Inventory"
