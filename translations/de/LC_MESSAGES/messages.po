@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-28 08:24\n"
+"PO-Revision-Date: 2025-08-28 08:51\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Language: de_DE\n"
 
 #: /app/main.py:130 /app/templates/index.html:3 /app/templates/index.html:9
-#: /app/templates/layout.html:32 /app/templates/settings/system.html:11
+#: /app/templates/layout.html:29 /app/templates/settings/system.html:11
 #: /app/templates/test_translation.html:5
 msgid "Dashboard"
 msgstr "Übersicht"
@@ -1333,7 +1333,7 @@ msgstr "Kritisch"
 #: /app/templates/index.html:246 /app/templates/index.html:381
 #: /app/templates/inventory/index.html:21
 #: /app/templates/inventory/index.html:201
-#: /app/templates/inventory/index.html:416 /app/templates/layout.html:52
+#: /app/templates/inventory/index.html:416 /app/templates/layout.html:49
 #: /app/templates/physicians/show.html:176
 msgid "Low Stock"
 msgstr "Niedriger Bestand"
@@ -2710,121 +2710,121 @@ msgid "No inventory adjustments recorded yet."
 msgstr "Noch keine Bestandsanpassungen gespeichert."
 
 #: /app/templates/ingredients/index.html:3
-#: /app/templates/ingredients/index.html:8 /app/templates/layout.html:38
+#: /app/templates/ingredients/index.html:8 /app/templates/layout.html:35
 #: /app/templates/physicians/index.html:34
 #: /app/templates/physicians/show.html:122
 msgid "Medications"
 msgstr "Medikamente"
 
-#: /app/templates/layout.html:41
+#: /app/templates/layout.html:38
 msgid "All Medications"
 msgstr "Alle Medikamente"
 
 #: /app/templates/inventory/depletion.html:3
 #: /app/templates/inventory/depletion.html:8
-#: /app/templates/inventory/index.html:25 /app/templates/layout.html:43
-#: /app/templates/layout.html:53
+#: /app/templates/inventory/index.html:25 /app/templates/layout.html:40
+#: /app/templates/layout.html:50
 msgid "Depletion Forecast"
 msgstr "Verbrauchsprognose"
 
 #: /app/templates/ingredients/show.html:93
 #: /app/templates/inventory/index.html:3 /app/templates/inventory/index.html:8
 #: /app/templates/inventory/show.html:3 /app/templates/inventory/show.html:8
-#: /app/templates/layout.html:48
+#: /app/templates/layout.html:45
 msgid "Inventory"
 msgstr "Bestand"
 
-#: /app/templates/inventory/index.html:33 /app/templates/layout.html:51
+#: /app/templates/inventory/index.html:33 /app/templates/layout.html:48
 msgid "Inventory Overview"
 msgstr "Bestandsübersicht"
 
-#: /app/templates/layout.html:55 /app/templates/scanner/index.html:3
+#: /app/templates/layout.html:52 /app/templates/scanner/index.html:3
 #: /app/templates/scanner/index.html:9 /app/templates/scanner/scan.html:3
 #: /app/templates/scanner/scan.html:490
 msgid "Scanner"
 msgstr "Scanner"
 
-#: /app/templates/layout.html:61 /app/templates/physicians/index.html:3
+#: /app/templates/layout.html:58 /app/templates/physicians/index.html:3
 #: /app/templates/physicians/index.html:8
 #: /app/templates/settings/data_management.html:97
 msgid "Physicians"
 msgstr "Ärzte"
 
-#: /app/templates/layout.html:64 /app/templates/physicians/edit.html:16
+#: /app/templates/layout.html:61 /app/templates/physicians/edit.html:16
 #: /app/templates/physicians/index.html:18
 msgid "All Physicians"
 msgstr "Alle Ärzte"
 
-#: /app/templates/layout.html:65 /app/templates/physicians/index.html:11
+#: /app/templates/layout.html:62 /app/templates/physicians/index.html:11
 #: /app/templates/physicians/index.html:85 /app/templates/physicians/new.html:3
 msgid "Add Physician"
 msgstr "Arzt hinzufügen"
 
-#: /app/templates/layout.html:70 /app/templates/visits/index.html:3
+#: /app/templates/layout.html:67 /app/templates/visits/index.html:3
 #: /app/templates/visits/index.html:8
 msgid "Physician Visits"
 msgstr "Arzttermine"
 
-#: /app/templates/layout.html:73 /app/templates/visits/edit.html:15
+#: /app/templates/layout.html:70 /app/templates/visits/edit.html:15
 msgid "All Visits"
 msgstr "Alle Termine"
 
-#: /app/templates/layout.html:74 /app/templates/visits/new.html:64
+#: /app/templates/layout.html:71 /app/templates/visits/new.html:64
 msgid "Schedule Visit"
 msgstr "Termin planen"
 
-#: /app/templates/layout.html:75
+#: /app/templates/layout.html:72
 msgid "Next Visit"
 msgstr "Nächster Termin"
 
-#: /app/templates/layout.html:80
+#: /app/templates/layout.html:77
 #: /app/templates/settings/data_management.html:99
 #: /app/templates/visits/index.html:32 /app/templates/visits/index.html:129
 msgid "Orders"
 msgstr "Bestellungen"
 
-#: /app/templates/layout.html:83 /app/templates/orders/edit.html:15
+#: /app/templates/layout.html:80 /app/templates/orders/edit.html:15
 msgid "All Orders"
 msgstr "Alle Bestellungen"
 
-#: /app/templates/layout.html:84
+#: /app/templates/layout.html:81
 msgid "New Order"
 msgstr "Neue Bestellung"
 
-#: /app/templates/layout.html:89
+#: /app/templates/layout.html:86
 msgid "System"
 msgstr "System"
 
-#: /app/templates/layout.html:92 /app/templates/settings/system.html:140
+#: /app/templates/layout.html:89 /app/templates/settings/system.html:140
 #: /app/templates/system/status.html:3 /app/templates/system/status.html:8
 msgid "System Status"
 msgstr "Systemstatus"
 
-#: /app/templates/layout.html:93 /app/templates/settings/system.html:3
+#: /app/templates/layout.html:90 /app/templates/settings/system.html:3
 #: /app/templates/settings/system.html:8
 msgid "System Settings"
 msgstr "Systemeinstellungen"
 
-#: /app/templates/layout.html:95 /app/templates/pdf_mapper/index.html:3
+#: /app/templates/layout.html:92 /app/templates/pdf_mapper/index.html:3
 #: /app/templates/pdf_mapper/index.html:9
 msgid "PDF Form Templates"
 msgstr "PDF-Formularvorlagen"
 
-#: /app/templates/layout.html:96
+#: /app/templates/layout.html:93
 msgid "Visit Planning"
 msgstr "Terminplanung"
 
-#: /app/templates/layout.html:97 /app/templates/settings/data_management.html:3
+#: /app/templates/layout.html:94 /app/templates/settings/data_management.html:3
 #: /app/templates/settings/data_management.html:8
 #: /app/templates/settings/system.html:114
 msgid "Data Management"
 msgstr "Datenmanagement"
 
-#: /app/templates/layout.html:98
+#: /app/templates/layout.html:95
 msgid "Database Updates"
 msgstr "Datenbankmigrationen"
 
-#: /app/templates/layout.html:144 /app/templates/layout.html:210
+#: /app/templates/layout.html:141 /app/templates/layout.html:204
 #: /app/templates/orders/_fulfill_modal.html:11
 #: /app/templates/orders/show.html:338 /app/templates/orders/show.html:347
 #: /app/templates/orders/show.html:359 /app/templates/orders/show.html:413
@@ -2835,11 +2835,11 @@ msgstr "Datenbankmigrationen"
 msgid "Close"
 msgstr "Schließen"
 
-#: /app/templates/layout.html:157
+#: /app/templates/layout.html:154
 msgid "Timezone"
 msgstr "Zeitzone"
 
-#: /app/templates/layout.html:158 /app/templates/settings/system.html:28
+#: /app/templates/layout.html:155 /app/templates/settings/system.html:28
 msgid "Local time"
 msgstr "Lokale Zeit"
 

@@ -29,7 +29,27 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 
 ###############################
-# 2) Translator: Babel + Crowdin
+# 2) Frontend builder: Node.js for webpack bundling
+###############################
+FROM node:20-slim AS frontend-builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json ./
+
+# Install dependencies (using npm install without lock file to avoid auth issues)
+RUN npm install --no-save
+
+# Copy webpack config and source files
+COPY webpack.config.js ./
+COPY app/static/ /app/app/static/
+
+# Build frontend assets
+RUN npm run build
+
+###############################
+# 3) Translator: Babel + Crowdin
 ###############################
 FROM python:3.13-slim@sha256:27f90d79cc85e9b7b2560063ef44fa0e9eaae7a7c3f5a9f74563065c5477cc24 AS translator
 
@@ -98,11 +118,11 @@ RUN ls -R /app/translations && \
   find /app/translations -type f \( -name "*.po" -o -name "*.mo" -o -name "messages.pot" \) | head -n 20
 
 ###############################
-# 3) Runtime: minimal image
+# 4) Runtime: minimal image
 ###############################
 FROM python:3.13-slim@sha256:27f90d79cc85e9b7b2560063ef44fa0e9eaae7a7c3f5a9f74563065c5477cc24 AS runtime
 
-# 3.1: Metadata
+# 4.1: Metadata
 ARG VERSION=0.0.0
 LABEL org.opencontainers.image.authors="Jan Großheim (medication-tracker@skjall.de)"
 LABEL org.opencontainers.image.title="Medication Tracker"
@@ -113,29 +133,33 @@ LABEL org.opencontainers.image.version="${VERSION}"
 
 WORKDIR /app
 
-# 3.2: Copy virtual environment from builder
+# 4.2: Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# 3.3: Minimal runtime dependencies
+# 4.3: Minimal runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
   wget \
   sqlite3 \
   && rm -rf /var/lib/apt/lists/*
 
-# 3.4: Application code and config
+# 4.4: Application code and config
 COPY app/ /app/
 COPY migrations/ /app/migrations/
 COPY alembic.ini /app/alembic.ini
 COPY babel.cfg /app/babel.cfg
 
-# 3.5: Compiled translations from translator stage
+# 4.5: Compiled translations from translator stage
 COPY --from=translator /app/translations/ /app/translations/
 
-# 3.6: Assert we actually have something
-RUN ls -R /app/translations || (echo "translations missing in runtime image" && exit 1)
+# 4.6: Built frontend assets from frontend-builder stage
+COPY --from=frontend-builder /app/app/static/dist/ /app/static/dist/
 
-# 3.7: Runtime environment variables
+# 4.7: Assert we have translations and assets
+RUN ls -R /app/translations || (echo "translations missing in runtime image" && exit 1)
+RUN ls /app/static/dist || (echo "frontend assets missing in runtime image" && exit 1)
+
+# 4.8: Runtime environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
   FLASK_ENV=production \
