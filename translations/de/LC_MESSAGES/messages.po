@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-28 08:51\n"
+"PO-Revision-Date: 2025-08-30 14:50\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -1387,7 +1387,7 @@ msgstr "Keine Wirkstoffe im System gefunden."
 
 #: /app/templates/index.html:449
 msgid "Manage Medications"
-msgstr ""
+msgstr "Medikamente verwalten"
 
 #: /app/templates/index.html:456
 msgid "Manage Ingredients"
@@ -2411,7 +2411,7 @@ msgstr "Noch keine Medikamente gespeichert."
 
 #: /app/templates/inventory/index.html:488
 msgid "Add your first medication"
-msgstr ""
+msgstr "Füge dein erstes Medikament hinzu"
 
 #: /app/templates/inventory/low.html:3 /app/templates/inventory/low.html:8
 msgid "Low Inventory"
@@ -4334,15 +4334,15 @@ msgstr "Arzt löschen"
 
 #: /app/templates/scanner/index.html:11
 msgid "Scan Package"
-msgstr "Packungen scannen"
+msgstr ""
 
 #: /app/templates/scanner/index.html:20
 msgid "Total Scanned"
-msgstr "Insgesamt gescannt"
+msgstr ""
 
 #: /app/templates/scanner/index.html:28
 msgid "Active Packages"
-msgstr "Aktive Packungen"
+msgstr ""
 
 #: /app/templates/scanner/index.html:36 /app/templates/scanner/index.html:83
 #: /app/templates/scanner/index.html:108 /app/templates/scanner/index.html:181
@@ -4361,15 +4361,15 @@ msgstr "Verbraucht"
 
 #: /app/templates/scanner/index.html:123
 msgid "No packages in inventory"
-msgstr "Keine Packungen im Inventar"
+msgstr ""
 
 #: /app/templates/scanner/index.html:131
 msgid "Recent Scans"
-msgstr "Letzte Scans"
+msgstr ""
 
 #: /app/templates/scanner/index.html:139
 msgid "Scanned At"
-msgstr "Gescannt am"
+msgstr ""
 
 #: /app/templates/scanner/index.html:177
 #: /app/templates/scanner/package_details.html:78
@@ -4378,7 +4378,7 @@ msgstr "Aktiv"
 
 #: /app/templates/scanner/index.html:190
 msgid "No recent scans"
-msgstr "Keine kürzlichen Scans"
+msgstr ""
 
 #: /app/templates/scanner/package_details.html:35
 msgid "Number"

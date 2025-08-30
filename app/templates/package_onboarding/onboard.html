@@ -364,14 +364,14 @@
                     <label for="package_pzn" class="form-label">{{ _('PZN/National Code') }}</label>
                     <input type="text" class="form-control" id="package_pzn"
                            name="package_pzn" placeholder="{{ _('e.g., PZN-12345678') }}"
-                           value="{{ national_number if national_number and national_number_type != 'ASIN' and national_number_type != 'VENDOR_CODE' else '' }}">
+                           value="{{ scanned_data.national_number if scanned_data.national_number and scanned_data.national_number_type != 'ASIN' and scanned_data.national_number_type != 'VENDOR_CODE' else '' }}">
                     <small class="text-muted">{{ _('Package-specific pharmaceutical code') }}</small>
                 </div>
                 <div class="col-md-4">
                     <label for="package_gtin" class="form-label">{{ _('GTIN/EAN') }}</label>
                     <input type="text" class="form-control" id="package_gtin"
                            name="package_gtin" placeholder="{{ _('e.g., 4012345678901') }}"
-                           value="{{ gtin or '' }}">
+                           value="{{ scanned_data.gtin or '' }}">
                     <small class="text-muted">{{ _('Global Trade Item Number') }}</small>
                 </div>
             </div>
