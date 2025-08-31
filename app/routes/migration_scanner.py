@@ -138,6 +138,33 @@ def scan_package():
         ).first()
     
     if package:
+        # Get current packages and calculate total
+        session_key = f'migration_{medication_id}_packages'
+        packages = session.get(session_key, [])
+        current_total = sum(p['units'] for p in packages)
+        original_inventory = medication.inventory.current_count
+        remaining_units = max(0, original_inventory - current_total)
+        
+        # Check if this package would exceed the original inventory
+        if current_total >= original_inventory:
+            # Already at or over limit - reject
+            app.logger.info(f"Migration limit reached: {current_total} >= {original_inventory}")
+            return jsonify({
+                'error': _('Migration complete. All %(count)s units have been accounted for.', count=original_inventory),
+                'limit_reached': True,
+                'remaining_units': 0
+            }), 400
+        
+        # Determine if this should be an open package
+        package_units = package.quantity
+        if current_total + package_units > original_inventory:
+            # This package would exceed - make it an open package with only remaining units
+            package_units = remaining_units
+            package_status = 'opened'
+            app.logger.info(f"Auto-adjusting package to open with {package_units} units (remaining)")
+        else:
+            package_status = 'full'
+        
         # Package is known, add to migration
         package_data = {
             'serial': serial,
@@ -146,14 +173,12 @@ def scan_package():
             'expiry': expiry,
             'package_id': package.id,
             'package_size': package.package_size,
-            'units': package.quantity,
+            'units': package_units,
             'product_name': package.product.display_name,
-            'status': 'full'  # Will be updated if open package
+            'status': package_status
         }
         
         # Add to session
-        session_key = f'migration_{medication_id}_packages'
-        packages = session.get(session_key, [])
         packages.append(package_data)
         session[session_key] = packages
         
@@ -174,6 +199,7 @@ def scan_package():
         
         app.logger.info(f"Migration scan: Added package for medication {medication.name}")
         app.logger.info(f"Total migrated: {total_migrated}, Remaining: {remaining}")
+        app.logger.info(f"Package status: {package_status}, units: {package_units}")
         
         return jsonify({
             'success': True,
@@ -208,6 +234,22 @@ def onboard_migration_package():
                    f"national_number_type={data.get('national_number_type')}")
     
     medication = Medication.query.get_or_404(medication_id)
+    
+    # Check current migration status first
+    session_key = f'migration_{medication_id}_packages'
+    packages = session.get(session_key, [])
+    current_total = sum(p['units'] for p in packages)
+    original_inventory = medication.inventory.current_count
+    remaining_units = max(0, original_inventory - current_total)
+    
+    # If already at limit, reject
+    if current_total >= original_inventory:
+        app.logger.info(f"Migration limit reached during onboarding: {current_total} >= {original_inventory}")
+        return jsonify({
+            'error': _('Migration complete. All %(count)s units have been accounted for.', count=original_inventory),
+            'limit_reached': True,
+            'remaining_units': 0
+        }), 400
     
     # Find or create the active ingredient
     ingredient = ActiveIngredient.query.filter_by(
@@ -288,6 +330,21 @@ def onboard_migration_package():
     if not serial:
         serial = f'ONBOARD_{medication_id}_{datetime.now(timezone.utc).timestamp()}'
     
+    # Determine actual units to add
+    requested_units = data.get('actual_units', package.quantity)
+    if data.get('is_open'):
+        # User explicitly marked as open - use their value
+        actual_units = min(requested_units, remaining_units)
+        package_status = 'opened'
+    elif current_total + requested_units > original_inventory:
+        # Would exceed limit - auto-adjust to open package
+        actual_units = remaining_units
+        package_status = 'opened'
+        app.logger.info(f"Auto-adjusting onboarded package to open with {actual_units} units")
+    else:
+        actual_units = requested_units
+        package_status = 'full'
+    
     package_data = {
         'serial': serial,
         'gtin': data.get('gtin'),
@@ -297,14 +354,12 @@ def onboard_migration_package():
         'national_number_type': data.get('national_number_type'),
         'package_id': package.id,
         'package_size': package.package_size,
-        'units': data.get('actual_units', package.quantity),
+        'units': actual_units,
         'product_name': product.display_name,
-        'status': 'opened' if data.get('is_open') else 'full'
+        'status': package_status
     }
     
-    # Add to session
-    session_key = f'migration_{medication_id}_packages'
-    packages = session.get(session_key, [])
+    # Add to session (packages list already retrieved above)
     packages.append(package_data)
     session[session_key] = packages
     
@@ -643,20 +698,40 @@ def undo_package():
             del serials_dict[serial]
             session[serial_key] = serials_dict
     
+    # Recalculate package statuses after removal
+    # If we removed an open package and still have packages left, 
+    # we may need to adjust the last package to be open
+    original_inventory = medication.inventory.current_count
+    total_migrated = sum(p['units'] for p in new_packages)
+    
+    if total_migrated < original_inventory and new_packages:
+        # We have room for more units - check if last package needs adjustment
+        remaining = original_inventory - total_migrated
+        
+        # Find if there's already an open package
+        has_open = any(p.get('status') == 'opened' for p in new_packages)
+        
+        if not has_open:
+            # No open package exists, but we have remaining units
+            # This can happen if we deleted the open package
+            # We should NOT automatically make another package open
+            # as the user explicitly removed that package
+            app.logger.info(f"No open package after removal, remaining: {remaining}")
+    else:
+        remaining = max(0, original_inventory - total_migrated)
+    
     # Force session save
     session.permanent = True
     session.modified = True
     
-    # Calculate remaining using the updated packages list
-    total_migrated = sum(p['units'] for p in new_packages)
-    remaining = max(0, medication.inventory.current_count - total_migrated)
-    
     # Verify the session was updated
     verify_packages = session.get(session_key, [])
     app.logger.info(f"Verification - packages in session after save: {len(verify_packages)}")
+    app.logger.info(f"Total after removal: {total_migrated}, Remaining: {remaining}")
     
     return jsonify({
         'success': True,
         'remaining_units': remaining,
-        'total_scanned': len(new_packages)
+        'total_scanned': len(new_packages),
+        'packages': new_packages  # Return the updated packages list
     })

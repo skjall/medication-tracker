@@ -620,10 +620,9 @@
     let lastScannedCode = null;
     let lastScanTime = 0;
     const SCAN_COOLDOWN = 2000; // 2 seconds between scans of the same code
-    let lastValidScanTime = Date.now(); // Track last valid scan for timeout
-    const SCANNER_TIMEOUT = 5 * 60 * 1000 * 1000; // 5 minutes in milliseconds - Invalidated (*1000) since it was not solving the main issue
-    let timeoutTimer = null;
-    let scannerStopped = false;
+    let scanActivityTracker = [];  // Track scan attempts for phantom detection
+    const PHANTOM_THRESHOLD = 5;  // Number of rapid scans to trigger phantom detection
+    const PHANTOM_TIME_WINDOW = 3000; // Time window in ms to check for rapid scans
 
     // Validation function to filter out false positives
     function isValidBarcode(code, format) {
@@ -824,53 +823,9 @@
         }
     }
 
-    function resetTimeout() {
-        // Clear existing timer
-        if (timeoutTimer) {
-            clearTimeout(timeoutTimer);
-        }
 
-        // Set new timer
-        timeoutTimer = setTimeout(() => {
-            console.log('Scanner timeout - stopping after 5 minutes of inactivity');
-            stopScanner();
-        }, SCANNER_TIMEOUT);
-    }
-
-    function stopScanner() {
-        scannerStopped = true;
-        if (codeReader) {
-            codeReader.reset();
-        }
-
-        // Show timeout message and restart button
-        updateStatus('{{ _("Scanner stopped") }}', 'warning');
-        const restartHtml = `
-            <div class="text-center mt-3">
-                <p>{{ _("Scanner stopped due to inactivity") }}</p>
-                <button class="btn btn-primary" onclick="restartScanner()">
-                    <i class="fas fa-redo me-2"></i>{{ _("Restart Scanner") }}
-                </button>
-            </div>
-        `;
-
-        if (isMobile && overlayEl) {
-            resultEl.innerHTML = restartHtml;
-            overlayEl.classList.add('show');
-        } else {
-            resultEl.innerHTML = restartHtml;
-            resultEl.className = 'scan-result warning';
-            resultEl.style.display = 'block';
-        }
-
-        // Hide scanning indicators
-        containerEl.classList.remove('scanning');
-    }
 
     async function restartScanner() {
-        scannerStopped = false;
-        lastValidScanTime = Date.now();
-
         // Clear any displayed messages
         if (isMobile && overlayEl) {
             overlayEl.classList.remove('show');
@@ -886,19 +841,33 @@
     window.restartScanner = restartScanner;
 
     async function startScanning() {
-        if (scannerStopped) {
-            return; // Don't start if stopped
-        }
 
-        // Start timeout timer
-        resetTimeout();
-
-        try:
+        try {
             await codeReader.decodeFromVideoDevice(selectedDeviceId, videoEl, (result, err) => {
                 if (result) {
                     const now = Date.now();
                     const code = result.getText();
                     const format = result.getBarcodeFormat();
+
+                    // Track scan activity for phantom detection (same code repeated rapidly)
+                    scanActivityTracker.push({time: now, code: code});
+                    // Remove old entries outside the time window
+                    scanActivityTracker = scanActivityTracker.filter(scan => now - scan.time < PHANTOM_TIME_WINDOW);
+                    
+                    // Check for phantom reading pattern (same code scanned many times rapidly)
+                    const sameCodeScans = scanActivityTracker.filter(scan => scan.code === code).length;
+                    if (sameCodeScans >= PHANTOM_THRESHOLD) {
+                        console.warn(`Phantom reading detected: same code '${code}' scanned ${sameCodeScans} times in ${PHANTOM_TIME_WINDOW}ms`);
+                        scanActivityTracker = []; // Clear tracker
+                        
+                        // Auto-restart scanner to clear phantom state
+                        updateStatus('{{ _("Resetting scanner...") }}', 'warning');
+                        setTimeout(() => {
+                            console.log('Auto-restarting scanner due to phantom readings');
+                            restartScanner();
+                        }, 500);
+                        return;
+                    }
 
                     // Log scan details for debugging
                     console.log('Scan detected:', code);
@@ -918,8 +887,6 @@
 
                     lastScannedCode = code;
                     lastScanTime = now;
-                    lastValidScanTime = now; // Reset timeout on valid scan
-                    resetTimeout(); // Reset the timeout timer
 
                     console.log('Valid scan accepted:', code);
 
@@ -1116,9 +1083,6 @@
 
     // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
-        if (timeoutTimer) {
-            clearTimeout(timeoutTimer);
-        }
         if (codeReader) {
             codeReader.reset();
         }

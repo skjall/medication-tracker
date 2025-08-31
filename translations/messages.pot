@@ -198,34 +198,39 @@ msgid "This medication has no inventory to migrate"
 msgstr ""
 
 #: /app/routes/migration_scanner.py:127
-#: /app/templates/migration/scanner.html:598
+#: /app/templates/migration/scanner.html:597
 msgid "Package already scanned"
 msgstr ""
 
-#: /app/routes/migration_scanner.py:415 /app/templates/scanner/scan.html:993
+#: /app/routes/migration_scanner.py:153 /app/routes/migration_scanner.py:249
+#, python-format
+msgid "Migration complete. All %(count)s units have been accounted for."
+msgstr ""
+
+#: /app/routes/migration_scanner.py:470 /app/templates/scanner/scan.html:960
 msgid "Package not found"
 msgstr ""
 
-#: /app/routes/migration_scanner.py:448 /app/routes/migration_scanner.py:519
+#: /app/routes/migration_scanner.py:503 /app/routes/migration_scanner.py:574
 msgid "No packages scanned"
 msgstr ""
 
-#: /app/routes/migration_scanner.py:486
+#: /app/routes/migration_scanner.py:541
 #, python-format
 msgid "Partial migration to package-based inventory: %(count)s packages"
 msgstr ""
 
-#: /app/routes/migration_scanner.py:500
+#: /app/routes/migration_scanner.py:555
 #, python-format
 msgid "Progress saved! %(count)s packages migrated."
 msgstr ""
 
-#: /app/routes/migration_scanner.py:564
+#: /app/routes/migration_scanner.py:619
 #, python-format
 msgid "Migrated to package-based inventory: %(count)s packages"
 msgstr ""
 
-#: /app/routes/migration_scanner.py:578
+#: /app/routes/migration_scanner.py:633
 #, python-format
 msgid "Successfully migrated %(name)s to package-based inventory!"
 msgstr ""
@@ -716,7 +721,7 @@ msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units
 msgstr ""
 
 #: /app/routes/scanner.py:532 /app/templates/migration/scanner.html:142
-#: /app/templates/migration/scanner.html:699
+#: /app/templates/migration/scanner.html:714
 msgid "Product Code"
 msgstr ""
 
@@ -1139,7 +1144,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: /app/templates/index.html:36 /app/templates/physicians/index.html:64
-#: /app/templates/scanner/scan.html:1009 /app/templates/visits/index.html:86
+#: /app/templates/scanner/scan.html:976 /app/templates/visits/index.html:86
 #: /app/templates/visits/index.html:166
 msgid "View Details"
 msgstr ""
@@ -1809,7 +1814,7 @@ msgstr ""
 #: /app/templates/ingredients/new_package.html:102
 #: /app/templates/ingredients/show_product.html:139
 #: /app/templates/migration/scanner.html:173
-#: /app/templates/scanner/scan.html:986
+#: /app/templates/scanner/scan.html:953
 msgid "Add Package"
 msgstr ""
 
@@ -2121,7 +2126,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:976
+#: /app/templates/scanner/scan.html:943
 msgid "Batch"
 msgstr ""
 
@@ -2130,7 +2135,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:979
+#: /app/templates/scanner/scan.html:946
 msgid "Expiry"
 msgstr ""
 
@@ -2976,12 +2981,12 @@ msgid "Save and close"
 msgstr ""
 
 #: /app/templates/migration/scanner.html:77
-#: /app/templates/migration/scanner.html:829
+#: /app/templates/migration/scanner.html:867
 msgid "No packages scanned yet"
 msgstr ""
 
 #: /app/templates/migration/scanner.html:78
-#: /app/templates/migration/scanner.html:830
+#: /app/templates/migration/scanner.html:868
 msgid "Start scanning your medication packages"
 msgstr ""
 
@@ -3087,64 +3092,81 @@ msgstr ""
 msgid "Finalize (Set to 0)"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:401
+#: /app/templates/migration/scanner.html:406
 msgid "Camera access required for scanning"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:500
-#: /app/templates/scanner/scan.html:847
-msgid "Scanner stopped"
+#: /app/templates/migration/scanner.html:516
+#: /app/templates/scanner/scan.html:811
+msgid "Ready to scan"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:507
-#: /app/templates/scanner/scan.html:850
-msgid "Scanner stopped due to inactivity"
+#: /app/templates/migration/scanner.html:536
+#: /app/templates/scanner/scan.html:864
+msgid "Resetting scanner..."
 msgstr ""
 
-#: /app/templates/migration/scanner.html:509
-#: /app/templates/scanner/scan.html:852
-msgid "Restart Scanner"
+#: /app/templates/migration/scanner.html:565
+#: /app/templates/scanner/scan.html:908
+msgid "Processing..."
 msgstr ""
 
-#: /app/templates/migration/scanner.html:613
-#: /app/templates/migration/scanner.html:929
+#: /app/templates/migration/scanner.html:601
+#: /app/templates/migration/scanner.html:625
+msgid "Migration Complete"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:624
+msgid "Final package added as open package with remaining units"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:627
+#: /app/templates/migration/scanner.html:974
 msgid "Package added"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:822
+#: /app/templates/migration/scanner.html:860
 msgid "Package removed"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:931
-#: /app/templates/migration/scanner.html:978
-msgid "Failed to add package"
+#: /app/templates/migration/scanner.html:874
+msgid "Failed to remove package"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:936
-msgid "Error adding package"
+#: /app/templates/migration/scanner.html:879
+msgid "Error removing package"
 msgstr ""
 
 #: /app/templates/migration/scanner.html:976
+#: /app/templates/migration/scanner.html:1023
+msgid "Failed to add package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:981
+msgid "Error adding package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:1021
 msgid "Open package added"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:983
+#: /app/templates/migration/scanner.html:1028
 msgid "Error adding open package"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:1028
+#: /app/templates/migration/scanner.html:1073
 msgid "Error saving progress"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:1136
+#: /app/templates/migration/scanner.html:1181
 msgid "Package updated"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:1138
+#: /app/templates/migration/scanner.html:1183
 msgid "Failed to update package"
 msgstr ""
 
-#: /app/templates/migration/scanner.html:1143
+#: /app/templates/migration/scanner.html:1188
 msgid "Error updating package"
 msgstr ""
 
@@ -4813,39 +4835,31 @@ msgstr ""
 msgid "Initializing..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:552 /app/templates/scanner/scan.html:1065
+#: /app/templates/scanner/scan.html:552 /app/templates/scanner/scan.html:1032
 msgid "Retry"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:812
-msgid "Ready to scan"
-msgstr ""
-
-#: /app/templates/scanner/scan.html:822
+#: /app/templates/scanner/scan.html:821
 msgid "Camera error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:936
+#: /app/templates/scanner/scan.html:903
 msgid "Scan failed"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:941
-msgid "Processing..."
-msgstr ""
-
-#: /app/templates/scanner/scan.html:1002
+#: /app/templates/scanner/scan.html:969
 msgid "Package Scanned"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:1016
+#: /app/templates/scanner/scan.html:983
 msgid "Scan successful"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:1024 /app/templates/scanner/scan.html:1028
+#: /app/templates/scanner/scan.html:991 /app/templates/scanner/scan.html:995
 msgid "Error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:1062
+#: /app/templates/scanner/scan.html:1029
 msgid "Camera Access Required"
 msgstr ""
 
