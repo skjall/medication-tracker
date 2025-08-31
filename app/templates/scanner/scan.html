@@ -475,25 +475,36 @@
         color: white;
         text-decoration: none;
     }
+
+    /* Migration button for mobile */
+    @media (max-width: 768px) {
+        .migration-fab {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #ffc107;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .migration-fab:hover {
+            background: #ffb300;
+            color: white;
+            transform: scale(1.05);
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Migration Notice -->
-{% if has_migration_eligible %}
-<div class="container mt-3">
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        <i class="fas fa-exchange-alt me-2"></i>
-        <strong>{{ _('Migration Available') }}</strong>
-        <p class="mb-2">{{ _('You have medications that can be migrated to the new package-based system.') }}</p>
-        <a href="{{ url_for('migration_scanner.select_medication') }}" class="btn btn-warning btn-sm">
-            <i class="fas fa-rocket me-1"></i>{{ _('Start Migration') }}
-        </a>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-</div>
-{% endif %}
-
 <!-- Mobile full-screen wrapper -->
 <div class="scanner-wrapper">
     <!-- Desktop card container -->
@@ -551,6 +562,11 @@
                             <button class="btn btn-sm btn-primary d-none" id="retry-camera-btn-desktop">
                                 <i class="fas fa-camera"></i> {{ _('Retry') }}
                             </button>
+                            {% if has_migration_eligible %}
+                            <a href="{{ url_for('migration_scanner.select_medication') }}" class="btn btn-sm btn-outline-warning">
+                                <i class="fas fa-exchange-alt me-1"></i>{{ _('Migration Scanner') }}
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -560,6 +576,13 @@
 
     <!-- Mobile full-screen scanner -->
     <div class="scanner-mobile mobile-only">
+        {% if has_migration_eligible %}
+        <!-- Migration Scanner FAB for mobile -->
+        <a href="{{ url_for('migration_scanner.select_medication') }}" class="migration-fab mobile-only" title="{{ _('Migration Scanner') }}">
+            <i class="fas fa-exchange-alt"></i>
+        </a>
+        {% endif %}
+        
         <!-- Top controls overlay -->
         <div class="scanner-controls">
             <div class="mode-toggle">
@@ -607,6 +630,13 @@
             <div id="overlay-content">
                 <!-- Dynamic content will be inserted here -->
             </div>
+            {% if has_migration_eligible %}
+            <div class="text-center mt-3">
+                <a href="{{ url_for('migration_scanner.select_medication') }}" class="btn btn-warning">
+                    <i class="fas fa-exchange-alt me-2"></i>{{ _('Switch to Migration Scanner') }}
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
