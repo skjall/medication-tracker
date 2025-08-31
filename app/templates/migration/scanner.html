@@ -139,7 +139,7 @@
                     <small class="text-muted">{{ _('For') }}: {{ medication.name }}</small>
                 </div>
                 <div class="mb-2">
-                    <small class="text-muted">PZN: <span id="modalPzn"></span></small>
+                    <small class="text-muted">{{ _('National Code') }}: <span id="modalPzn"></span></small>
                 </div>
 
                 <div class="mb-3">
@@ -375,10 +375,17 @@
 const medicationId = {{ medication.id }};
 let codeReader = null;
 let onboardingData = null;
+let isModalOpen = false;
+let lastValidScanTime = Date.now(); // Track last valid scan for timeout
+const SCANNER_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+let timeoutTimer = null;
+let scannerStopped = false;
 
 // Initialize scanner
 function initScanner() {
-    codeReader = new ZXing.BrowserMultiFormatReader();
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, false);  // Reduce phantom detection
+    codeReader = new ZXing.BrowserMultiFormatReader(hints);
 
     codeReader.listVideoInputDevices().then(videoInputDevices => {
         if (videoInputDevices.length > 0) {
@@ -413,11 +420,28 @@ function isValidBarcode(code, format) {
         return hasGS1 || hasReasonableLength;
     }
     
-    // EAN/UPC should be numeric only
+    // EAN/UPC validation - be stricter for pharmaceutical context
     if (format === ZXing.BarcodeFormat.EAN_13 || 
         format === ZXing.BarcodeFormat.EAN_8 ||
         format === ZXing.BarcodeFormat.UPC_A) {
-        return /^\d+$/.test(code);
+        // Must be numeric
+        if (!/^\d+$/.test(code)) {
+            return false;
+        }
+        
+        // For UPC-A, reject common non-pharmaceutical prefixes
+        // Most pharmaceutical UPCs start with 3 (NDC codes)
+        if (format === ZXing.BarcodeFormat.UPC_A) {
+            // Reject UPCs that don't look pharmaceutical
+            // Accept: 3xxxxx (pharmaceutical NDC)
+            // Reject: 0xxxxx (general retail), 6xxxxx, 7xxxxx, etc.
+            if (!code.startsWith('3') && !code.startsWith('00003')) {
+                console.log('Rejecting non-pharmaceutical UPC:', code);
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     // Code 39 (used for PZN) should be alphanumeric
@@ -453,7 +477,64 @@ let lastScanTime = 0;
 let lastScannedCode = null;
 const SCAN_COOLDOWN = 2000; // 2 seconds between same code
 
+function resetTimeout() {
+    // Clear existing timer
+    if (timeoutTimer) {
+        clearTimeout(timeoutTimer);
+    }
+    
+    // Set new timer
+    timeoutTimer = setTimeout(() => {
+        console.log('Scanner timeout - stopping after 5 minutes of inactivity');
+        stopScanner();
+    }, SCANNER_TIMEOUT);
+}
+
+function stopScanner() {
+    scannerStopped = true;
+    if (codeReader) {
+        codeReader.reset();
+    }
+    
+    // Update status
+    updateStatus('{{ _("Scanner stopped") }}', 'warning');
+    
+    // Show restart button in scanner area
+    const scannerContainer = document.getElementById('scanner-container');
+    scannerContainer.innerHTML = `
+        <div class="text-center p-5">
+            <i class="fas fa-camera-slash fa-3x text-muted mb-3"></i>
+            <p>{{ _("Scanner stopped due to inactivity") }}</p>
+            <button class="btn btn-primary" onclick="restartScanner()">
+                <i class="fas fa-redo me-2"></i>{{ _("Restart Scanner") }}
+            </button>
+        </div>
+    `;
+}
+
+function restartScanner() {
+    scannerStopped = false;
+    lastValidScanTime = Date.now();
+    
+    // Recreate video element
+    const scannerContainer = document.getElementById('scanner-container');
+    scannerContainer.innerHTML = '<video id="scanner-video" width="100%" height="400"></video>';
+    
+    // Reinitialize scanner
+    initScanner();
+}
+
+// Make restartScanner globally available
+window.restartScanner = restartScanner;
+
 function startScanning(deviceId) {
+    if (scannerStopped) {
+        return; // Don't start if stopped
+    }
+    
+    // Start timeout timer
+    resetTimeout();
+    
     codeReader.decodeFromVideoDevice(deviceId, 'scanner-container', (result, err) => {
         if (result) {
             const now = Date.now();
@@ -479,6 +560,8 @@ function startScanning(deviceId) {
             
             lastScannedCode = code;
             lastScanTime = now;
+            lastValidScanTime = now; // Reset timeout on valid scan
+            resetTimeout(); // Reset the timeout timer
             
             console.log('Valid scan accepted:', code);
             handleScan(code);
@@ -517,9 +600,13 @@ function handleScan(barcodeText) {
                 showToast(data.error, 'danger');
             }
         } else if (data.unknown_package) {
-            // Show onboarding modal
-            onboardingData = data;
-            showOnboardingModal(data);
+            // Show onboarding modal only if not already open
+            if (!isModalOpen) {
+                onboardingData = data;
+                showOnboardingModal(data);
+            } else {
+                console.log('Modal already open, ignoring new unknown package');
+            }
         } else if (data.success) {
             // Package added successfully
             updateUI(data);
@@ -609,12 +696,11 @@ function parseBarcodeData(text) {
 function showOnboardingModal(data) {
     // Show PZN if available, otherwise GTIN
     let displayId = 'N/A';
-    if (data.national_number && data.national_number_type === 'DE_PZN') {
-        displayId = `PZN: ${data.national_number}`;
-    } else if (data.national_number) {
-        displayId = `${data.national_number_type}: ${data.national_number}`;
+    if (data.national_number) {
+        // Just show the number without the type prefix
+        displayId = data.national_number;
     } else if (data.gtin) {
-        displayId = `GTIN: ${data.gtin}`;
+        displayId = data.gtin;
     }
     document.getElementById('modalPzn').textContent = displayId;
     
@@ -625,7 +711,18 @@ function showOnboardingModal(data) {
     document.getElementById('openUnitsDiv').style.display = 'none';
     document.getElementById('modalOpenUnits').value = '';
 
-    const modal = new bootstrap.Modal(document.getElementById('onboardModal'));
+    const modalEl = document.getElementById('onboardModal');
+    const modal = new bootstrap.Modal(modalEl);
+    
+    // Set flag when modal opens
+    isModalOpen = true;
+    
+    // Reset flag when modal closes
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        isModalOpen = false;
+        onboardingData = null;
+    }, { once: true });
+    
     modal.show();
 }
 
@@ -813,6 +910,10 @@ document.getElementById('modalAddBtn').addEventListener('click', function() {
             document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
             document.body.classList.remove('modal-open');
             document.body.style.removeProperty('padding-right');
+            
+            // Reset modal flag
+            isModalOpen = false;
+            onboardingData = null;
 
             updateUI(data);
             showToast('{{ _("Package added") }}', 'success');
@@ -1038,6 +1139,9 @@ document.addEventListener('DOMContentLoaded', initScanner);
 
 // Cleanup on unload
 window.addEventListener('beforeunload', () => {
+    if (timeoutTimer) {
+        clearTimeout(timeoutTimer);
+    }
     if (codeReader) {
         codeReader.reset();
     }
