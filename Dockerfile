@@ -31,7 +31,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 ###############################
 # 2) Frontend builder: Node.js for webpack bundling
 ###############################
-FROM node:20-slim AS frontend-builder
+FROM node:20-slim@sha256:6db5e436948af8f0244488a1f658c2c8e55a3ae51ca2e1686ed042be8f25f70a AS frontend-builder
 
 WORKDIR /app
 
