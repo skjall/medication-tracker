@@ -4,6 +4,7 @@ PDF Form Mapper routes for creating and managing PDF templates with field mappin
 
 import os
 import tempfile
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from flask import (
@@ -157,12 +158,12 @@ def new_template():
         # Check if file was uploaded
         if "pdf_file" not in request.files:
             flash(_("No PDF file uploaded"), "error")
-            return redirect(request.url)
+            return redirect(url_for("pdf_mapper.new_template"))
 
         file = request.files["pdf_file"]
         if file.filename == "":
             flash(_("No file selected"), "error")
-            return redirect(request.url)
+            return redirect(url_for("pdf_mapper.new_template"))
 
         if file and allowed_file(file.filename):
             # Save the uploaded file
@@ -425,7 +426,7 @@ def detect_fields(id):
         logger = logging.getLogger(__name__)
         logger.error(f"Error detecting fields: {str(e)}")
 
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"success": False, "error": _("An internal error occurred while detecting fields. Please try again.")}), 500
 
 
 @bp.route("/template/<int:id>/create-grid-fields", methods=["POST"])
@@ -523,7 +524,7 @@ def create_grid_fields(id):
         logger = logging.getLogger(__name__)
         logger.error(f"Error creating grid fields: {str(e)}")
 
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"success": False, "error": _("An internal error occurred while creating grid fields. Please try again.")}), 500
 
 
 @bp.route("/template/<int:id>/save-structure", methods=["POST"])
@@ -729,7 +730,8 @@ def preview_template(id):
         )
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logging.exception("Error occurred in PDF processing")
+        return jsonify({"success": False, "error": _("An internal error occurred. Please try again.")}), 500
 
 
 @bp.route("/template/<int:id>/generate", methods=["POST"])
@@ -766,7 +768,8 @@ def generate_pdf(id):
         )
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logging.exception("Error occurred in PDF processing")
+        return jsonify({"success": False, "error": _("An internal error occurred. Please try again.")}), 500
 
 
 @bp.route("/template/<int:id>/download-preview")
@@ -843,12 +846,12 @@ def reupload_template(id):
     if request.method == "POST":
         if "pdf_file" not in request.files:
             flash(_("No PDF file uploaded"), "error")
-            return redirect(request.url)
+            return redirect(url_for("pdf_mapper.reupload_template", id=id))
 
         file = request.files["pdf_file"]
         if file.filename == "":
             flash(_("No file selected"), "error")
-            return redirect(request.url)
+            return redirect(url_for("pdf_mapper.reupload_template", id=id))
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -1380,7 +1383,8 @@ def import_template_config(id):
 
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+        logging.exception("Error occurred while importing template configuration (template ID %s)", id)
+        return jsonify({"success": False, "error": _("An internal error occurred. Please try again later.")})
 
 
 @bp.route("/template/<int:id>/delete", methods=["POST"])
@@ -1398,4 +1402,5 @@ def delete_template_api(id):
 
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+        logging.exception("Error deleting template (ID %s)", id)
+        return jsonify({"success": False, "error": _("An internal error occurred")})

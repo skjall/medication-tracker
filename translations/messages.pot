@@ -27,82 +27,82 @@ msgstr ""
 msgid "No upcoming physician visits scheduled."
 msgstr ""
 
-#: /app/routes/ingredients.py:235 /app/routes/ingredients.py:412
-#: /app/routes/ingredients.py:454
+#: /app/routes/ingredients.py:236 /app/routes/ingredients.py:418
+#: /app/routes/ingredients.py:460
 msgid "Invalid strength value. Please enter a valid number (e.g., 500 or 1.25)"
 msgstr ""
 
-#: /app/routes/ingredients.py:255
+#: /app/routes/ingredients.py:256
 msgid "Active ingredient updated successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:282
+#: /app/routes/ingredients.py:288
 msgid ""
 "Cannot delete active ingredient with existing products. Please delete all"
 " products first."
 msgstr ""
 
-#: /app/routes/ingredients.py:291
+#: /app/routes/ingredients.py:297
 msgid "Active ingredient deleted successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:318
+#: /app/routes/ingredients.py:324
 msgid "Product updated successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:355
+#: /app/routes/ingredients.py:361
 msgid ""
 "Cannot delete product with existing inventory. Please deplete inventory "
 "first."
 msgstr ""
 
-#: /app/routes/ingredients.py:376
+#: /app/routes/ingredients.py:382
 #, python-format
 msgid "Default product updated to %(name)s"
 msgstr ""
 
-#: /app/routes/ingredients.py:386
+#: /app/routes/ingredients.py:392
 msgid "Product deleted successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:470
+#: /app/routes/ingredients.py:476
 #: /app/templates/package_onboarding/onboard.html:846
 msgid "Please select or enter an active ingredient"
 msgstr ""
 
-#: /app/routes/ingredients.py:499
+#: /app/routes/ingredients.py:505
 msgid "Product created successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:603
+#: /app/routes/ingredients.py:609
 msgid "Package added successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:634 /app/routes/inventory.py:601
+#: /app/routes/ingredients.py:640 /app/routes/inventory.py:601
 msgid "Package updated successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:655
+#: /app/routes/ingredients.py:661
 msgid "Package deleted successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:670
+#: /app/routes/ingredients.py:676
 msgid "Product does not belong to this ingredient"
 msgstr ""
 
-#: /app/routes/ingredients.py:677
+#: /app/routes/ingredients.py:683
 msgid "Default product set successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:691
+#: /app/routes/ingredients.py:697
 msgid "Default product cleared"
 msgstr ""
 
-#: /app/routes/ingredients.py:705
+#: /app/routes/ingredients.py:711
 msgid "This medication has already been migrated"
 msgstr ""
 
-#: /app/routes/ingredients.py:755
+#: /app/routes/ingredients.py:761
 msgid "Medication migrated successfully"
 msgstr ""
 
@@ -395,31 +395,31 @@ msgstr ""
 msgid "Package successfully onboarded!"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:159 /app/routes/pdf_mapper.py:845
+#: /app/routes/pdf_mapper.py:160 /app/routes/pdf_mapper.py:848
 msgid "No PDF file uploaded"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:164 /app/routes/pdf_mapper.py:850
+#: /app/routes/pdf_mapper.py:165 /app/routes/pdf_mapper.py:853
 #: /app/routes/settings.py:243 /app/routes/settings.py:387
 #: /app/routes/settings.py:626
 msgid "No file selected"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:208
+#: /app/routes/pdf_mapper.py:209
 msgid ""
 "PDF template uploaded successfully. Please map the PDF form fields to the"
 " table structure."
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:216
+#: /app/routes/pdf_mapper.py:217
 msgid "Invalid file type. Only PDF files are allowed"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:250
+#: /app/routes/pdf_mapper.py:251
 msgid "Column"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:269
+#: /app/routes/pdf_mapper.py:270
 #: /app/templates/ingredients/edit_product.html:33
 #: /app/templates/ingredients/new_product.html:77
 #: /app/templates/ingredients/show.html:91
@@ -427,7 +427,7 @@ msgstr ""
 msgid "Brand Name"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:270
+#: /app/routes/pdf_mapper.py:271
 #: /app/templates/ingredients/edit_product.html:41
 #: /app/templates/ingredients/new_product.html:86
 #: /app/templates/ingredients/show.html:92
@@ -435,11 +435,11 @@ msgstr ""
 msgid "Manufacturer"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:273
+#: /app/routes/pdf_mapper.py:274
 msgid "Full Product Name"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:280
+#: /app/routes/pdf_mapper.py:281
 #: /app/templates/ingredients/edit_product.html:25
 #: /app/templates/ingredients/index.html:23
 #: /app/templates/ingredients/new_product.html:35
@@ -449,37 +449,37 @@ msgstr ""
 msgid "Active Ingredient"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:283 /app/templates/ingredients/edit.html:27
+#: /app/routes/pdf_mapper.py:284 /app/templates/ingredients/edit.html:27
 #: /app/templates/ingredients/show.html:38
 msgid "Strength"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:284 /app/templates/ingredients/new_product.html:59
+#: /app/routes/pdf_mapper.py:285 /app/templates/ingredients/new_product.html:59
 #: /app/templates/package_onboarding/onboard.html:242
 msgid "Unit"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:287
+#: /app/routes/pdf_mapper.py:288
 msgid "Daily Units"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:290
+#: /app/routes/pdf_mapper.py:291
 msgid "Dosage Form (tablets, etc.)"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:295
+#: /app/routes/pdf_mapper.py:296
 msgid "Strength Value"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:300
+#: /app/routes/pdf_mapper.py:301
 msgid "Strength Unit (mg, ml, etc.)"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:305
+#: /app/routes/pdf_mapper.py:306
 msgid "Daily Dosage (Strength × Units)"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:310
+#: /app/routes/pdf_mapper.py:311
 #: /app/templates/ingredients/edit_package.html:28
 #: /app/templates/ingredients/new_package.html:28
 #: /app/templates/ingredients/show_product.html:147
@@ -492,44 +492,44 @@ msgstr ""
 msgid "Package Size"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:313
+#: /app/routes/pdf_mapper.py:314
 msgid "Quantity per Package"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:316
+#: /app/routes/pdf_mapper.py:317
 msgid "PZN"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:317
+#: /app/routes/pdf_mapper.py:318
 #: /app/templates/ingredients/show_product.html:150
 #: /app/templates/package_onboarding/onboard.html:187
 msgid "GTIN"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:322
+#: /app/routes/pdf_mapper.py:323
 msgid "Number of Packages"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:327
+#: /app/routes/pdf_mapper.py:328
 msgid "Package Size (N1/N2/N3)"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:330
+#: /app/routes/pdf_mapper.py:331
 #: /app/templates/ingredients/show_product.html:222
 #: /app/templates/inventory/show.html:41
 #: /app/templates/orders/printable.html:134
 msgid "Total Units"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:331
+#: /app/routes/pdf_mapper.py:332
 msgid "Days Supply"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:332
+#: /app/routes/pdf_mapper.py:333
 msgid "Months Supply"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:335
+#: /app/routes/pdf_mapper.py:336
 #: /app/templates/ingredients/show_product.html:85
 #: /app/templates/orders/show.html:57 /app/templates/physicians/edit.html:3
 #: /app/templates/visits/edit.html:38 /app/templates/visits/index.html:29
@@ -538,11 +538,11 @@ msgstr ""
 msgid "Physician"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:336
+#: /app/routes/pdf_mapper.py:337
 msgid "Instructions"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:337 /app/templates/index.html:31
+#: /app/routes/pdf_mapper.py:338 /app/templates/index.html:31
 #: /app/templates/ingredients/edit.html:58
 #: /app/templates/ingredients/edit_product.html:49
 #: /app/templates/ingredients/new_product.html:93
@@ -557,50 +557,70 @@ msgstr ""
 msgid "Notes"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:401
+#: /app/routes/pdf_mapper.py:402
 #, python-format
 msgid "Found %(count)s existing form fields in PDF"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:415
+#: /app/routes/pdf_mapper.py:416
 msgid "No form fields found in PDF. Would you like to create a grid of fields?"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:497
+#: /app/routes/pdf_mapper.py:429
+msgid "An internal error occurred while detecting fields. Please try again."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:498
 #, python-format
 msgid "Created %(count)s form fields in a %(rows)sx%(cols)s grid"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:514
+#: /app/routes/pdf_mapper.py:515
 msgid "Failed to create form fields in PDF"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:547
+#: /app/routes/pdf_mapper.py:527
+msgid "An internal error occurred while creating grid fields. Please try again."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:548
 msgid "Structure mapping saved successfully"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:575
+#: /app/routes/pdf_mapper.py:576
 msgid "Mappings saved successfully"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:744
+#: /app/routes/pdf_mapper.py:734 /app/routes/pdf_mapper.py:772
+msgid "An internal error occurred. Please try again."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:746
 msgid "No medications selected"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:788
+#: /app/routes/pdf_mapper.py:791
 msgid "Preview not found. Please generate it again."
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:810
+#: /app/routes/pdf_mapper.py:813
 msgid "Generated PDF not found. Please generate it again."
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:834 /app/templates/pdf_mapper/index.html:256
+#: /app/routes/pdf_mapper.py:837 /app/templates/pdf_mapper/index.html:256
 msgid "Template deleted successfully"
 msgstr ""
 
-#: /app/routes/pdf_mapper.py:870
+#: /app/routes/pdf_mapper.py:873
 msgid "PDF file re-uploaded successfully"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:1387
+msgid "An internal error occurred. Please try again later."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:1406
+msgid "An internal error occurred"
 msgstr ""
 
 #: /app/routes/physicians.py:61 /app/routes/physicians.py:125

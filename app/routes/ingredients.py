@@ -12,6 +12,7 @@ from flask import (
     url_for,
     jsonify,
 )
+from urllib.parse import urlparse
 from flask_babel import gettext as _
 
 from models import (
@@ -256,7 +257,12 @@ def edit(id: int):
         
         # Redirect to return_url if provided, otherwise to ingredient show page
         if return_url:
-            return redirect(return_url)
+            # Validate return_url to avoid open redirect vulnerabilities
+            sanitized_url = return_url.replace("\\", "")
+            parsed = urlparse(sanitized_url)
+            # Only allow relative URLs (no scheme and no netloc)
+            if not parsed.scheme and not parsed.netloc:
+                return redirect(sanitized_url)
         return redirect(url_for("ingredients.show", id=ingredient.id))
 
     return render_template(
@@ -413,7 +419,7 @@ def new_product():
                     ),
                     "error",
                 )
-                return redirect(request.url)
+                return redirect(url_for("ingredients.new_product"))
 
             strength_unit = (
                 request.form.get("strength_unit", "").strip() or None
@@ -455,7 +461,7 @@ def new_product():
                     ),
                     "error",
                 )
-                return redirect(request.url)
+                return redirect(url_for("ingredients.new_product"))
 
             ingredient = ActiveIngredient(
                 name=ingredient_name,
@@ -468,7 +474,7 @@ def new_product():
             db.session.flush()
         else:
             flash(_("Please select or enter an active ingredient"), "error")
-            return redirect(request.url)
+            return redirect(url_for("ingredients.new_product"))
 
         # Create product
         product = MedicationProduct(
