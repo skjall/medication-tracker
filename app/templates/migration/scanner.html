@@ -395,10 +395,97 @@ function initScanner() {
     });
 }
 
+// Validation function to filter out false positives
+function isValidBarcode(code, format) {
+    // Must have minimum length
+    if (!code || code.length < 6) {
+        return false;
+    }
+    
+    // Check for known pharmaceutical barcode patterns
+    // DataMatrix codes typically contain FNC1 or structured data
+    if (format === ZXing.BarcodeFormat.DATA_MATRIX) {
+        // Should contain GS1 AIs or be alphanumeric with proper structure
+        const hasGS1 = code.includes(String.fromCharCode(29)) || // FNC1
+                       /\d{2}\d{14}/.test(code) || // GTIN pattern
+                       /01\d{14}/.test(code); // AI 01 pattern
+        const hasReasonableLength = code.length >= 10;
+        return hasGS1 || hasReasonableLength;
+    }
+    
+    // EAN/UPC should be numeric only
+    if (format === ZXing.BarcodeFormat.EAN_13 || 
+        format === ZXing.BarcodeFormat.EAN_8 ||
+        format === ZXing.BarcodeFormat.UPC_A) {
+        return /^\d+$/.test(code);
+    }
+    
+    // Code 39 (used for PZN) should be alphanumeric
+    if (format === ZXing.BarcodeFormat.CODE_39) {
+        // PZN format: starts with minus and 7-8 digits
+        return /^-?\d{7,8}$/.test(code) || /^[A-Z0-9\-]+$/.test(code);
+    }
+    
+    // Code 128 can contain various data
+    if (format === ZXing.BarcodeFormat.CODE_128) {
+        return code.length >= 6 && code.length <= 50;
+    }
+    
+    // QR codes - filter out URLs and short random text
+    if (format === ZXing.BarcodeFormat.QR_CODE) {
+        // Reject URLs
+        if (/^https?:\/\//i.test(code)) {
+            return false;
+        }
+        // Reject very short codes (likely false positives)
+        if (code.length < 8) {
+            return false;
+        }
+        // Accept if it looks like structured data
+        return true;
+    }
+    
+    // Default: accept if reasonable length
+    return code.length >= 6 && code.length <= 100;
+}
+
+let lastScanTime = 0;
+let lastScannedCode = null;
+const SCAN_COOLDOWN = 2000; // 2 seconds between same code
+
 function startScanning(deviceId) {
     codeReader.decodeFromVideoDevice(deviceId, 'scanner-container', (result, err) => {
         if (result) {
-            handleScan(result.text);
+            const now = Date.now();
+            const code = result.text;
+            const format = result.format;
+            
+            // Log scan details
+            console.log('Scan detected:', code);
+            console.log('Format:', format);
+            console.log('Result points:', result.resultPoints ? result.resultPoints.length : 'N/A');
+            
+            // Validate barcode
+            if (!isValidBarcode(code, format)) {
+                console.log('Invalid barcode - ignoring:', code);
+                return;
+            }
+            
+            // Prevent duplicate scans
+            if (code === lastScannedCode && (now - lastScanTime) < SCAN_COOLDOWN) {
+                console.log('Duplicate scan - ignoring');
+                return;
+            }
+            
+            lastScannedCode = code;
+            lastScanTime = now;
+            
+            console.log('Valid scan accepted:', code);
+            handleScan(code);
+        }
+        
+        if (err && !(err instanceof ZXing.NotFoundException)) {
+            console.error('Scan error:', err);
         }
     });
 }
@@ -465,8 +552,14 @@ function parseBarcodeData(text) {
 
     // If no GS1 data found, treat the entire barcode as a generic identifier
     if (!hasGS1Data && text.length > 0) {
+        // Check if it's a PZN (Code39 format, may have leading dash)
+        if (text.match(/^-?\d{7,8}$/)) {
+            // Remove leading dash if present
+            data.national_number = text.replace(/^-/, '');
+            data.national_number_type = 'DE_PZN';
+        }
         // Check if it's an ASIN (10 alphanumeric characters starting with B)
-        if (text.match(/^B[0-9A-Z]{9}$/)) {
+        else if (text.match(/^B[0-9A-Z]{9}$/)) {
             data.national_number = text;
             data.national_number_type = 'ASIN';
         }

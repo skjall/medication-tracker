@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-31 07:53\n"
+"PO-Revision-Date: 2025-08-31 08:18\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -184,43 +184,43 @@ msgstr "Bitte migriere dieses Medikament zum neuen System bevor du es löschst"
 msgid "No inventory found for this medication"
 msgstr "Für dieses Medikament wurde kein Bestand gefunden"
 
-#: /app/routes/migration_scanner.py:35
+#: /app/routes/migration_scanner.py:34
 msgid "No medications need migration. All inventory is already package-based."
 msgstr "Es müssen keine Medikamente migriert werden. Der ganze Bestand ist bereits in Packungen organisiert."
 
-#: /app/routes/migration_scanner.py:52
+#: /app/routes/migration_scanner.py:51
 msgid "This medication has no inventory to migrate"
 msgstr "Dieses Medikament hat keinen Bestand, der migriert werden muss"
 
-#: /app/routes/migration_scanner.py:128
-#: /app/templates/migration/scanner.html:428
+#: /app/routes/migration_scanner.py:127
+#: /app/templates/migration/scanner.html:515
 msgid "Package already scanned"
 msgstr "Packung bereits gescannt"
 
-#: /app/routes/migration_scanner.py:416 /app/templates/scanner/scan.html:840
+#: /app/routes/migration_scanner.py:415 /app/templates/scanner/scan.html:905
 msgid "Package not found"
 msgstr "Packung nicht gefunden"
 
-#: /app/routes/migration_scanner.py:449 /app/routes/migration_scanner.py:520
+#: /app/routes/migration_scanner.py:448 /app/routes/migration_scanner.py:519
 msgid "No packages scanned"
 msgstr "Keine Packungen gescannt"
 
-#: /app/routes/migration_scanner.py:487
+#: /app/routes/migration_scanner.py:486
 #, python-format
 msgid "Partial migration to package-based inventory: %(count)s packages"
 msgstr "Teilweise Migration zu packungsbasiertem Inventar: %(count)s Packungen"
 
-#: /app/routes/migration_scanner.py:501
+#: /app/routes/migration_scanner.py:500
 #, python-format
 msgid "Progress saved! %(count)s packages migrated."
 msgstr "Fortschritt gespeichert! %(count)s Packungen migriert."
 
-#: /app/routes/migration_scanner.py:565
+#: /app/routes/migration_scanner.py:564
 #, python-format
 msgid "Migrated to package-based inventory: %(count)s packages"
 msgstr "Auf packungsbasierte Bestandsaufnahme umgestellt: %(count)s Pakete"
 
-#: /app/routes/migration_scanner.py:579
+#: /app/routes/migration_scanner.py:578
 #, python-format
 msgid "Successfully migrated %(name)s to package-based inventory!"
 msgstr "%(name)s wurde erfolgreich in ein packungsbasiertes Inventar verschoben!"
@@ -1106,7 +1106,7 @@ msgstr[0] "%(count)d Tag entfernt"
 msgstr[1] "%(count)d Tage entfernt"
 
 #: /app/templates/index.html:36 /app/templates/physicians/index.html:64
-#: /app/templates/scanner/scan.html:856 /app/templates/visits/index.html:86
+#: /app/templates/scanner/scan.html:921 /app/templates/visits/index.html:86
 #: /app/templates/visits/index.html:166
 msgid "View Details"
 msgstr "Details anzeigen"
@@ -1776,7 +1776,7 @@ msgstr "Noch keine Medikamente gespeichert. Leg einfach ein neues Produkt an."
 #: /app/templates/ingredients/new_package.html:102
 #: /app/templates/ingredients/show_product.html:139
 #: /app/templates/migration/scanner.html:173
-#: /app/templates/scanner/scan.html:833
+#: /app/templates/scanner/scan.html:898
 msgid "Add Package"
 msgstr "Packung hinzufügen"
 
@@ -2086,7 +2086,7 @@ msgstr "Seriennummer"
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:823
+#: /app/templates/scanner/scan.html:888
 msgid "Batch"
 msgstr "Charge"
 
@@ -2095,7 +2095,7 @@ msgstr "Charge"
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:826
+#: /app/templates/scanner/scan.html:891
 msgid "Expiry"
 msgstr "Verwendbar bis"
 
@@ -2929,12 +2929,12 @@ msgid "Save and close"
 msgstr "Speichern und schließen"
 
 #: /app/templates/migration/scanner.html:77
-#: /app/templates/migration/scanner.html:629
+#: /app/templates/migration/scanner.html:722
 msgid "No packages scanned yet"
 msgstr "Keine Packungen gescannt"
 
 #: /app/templates/migration/scanner.html:78
-#: /app/templates/migration/scanner.html:630
+#: /app/templates/migration/scanner.html:723
 msgid "Start scanning your medication packages"
 msgstr "Fang an, deine Medikamentenverpackungen zu scannen"
 
@@ -3044,45 +3044,45 @@ msgstr "Abschließen (auf 0 setzen)"
 msgid "Camera access required for scanning"
 msgstr "Kamera-Zugriff zum Scannen erforderlich"
 
-#: /app/templates/migration/scanner.html:439
-#: /app/templates/migration/scanner.html:725
+#: /app/templates/migration/scanner.html:526
+#: /app/templates/migration/scanner.html:818
 msgid "Package added"
 msgstr "Packung hinzugefügt"
 
-#: /app/templates/migration/scanner.html:622
+#: /app/templates/migration/scanner.html:715
 msgid "Package removed"
 msgstr "Packung entfernt"
 
-#: /app/templates/migration/scanner.html:727
-#: /app/templates/migration/scanner.html:774
+#: /app/templates/migration/scanner.html:820
+#: /app/templates/migration/scanner.html:867
 msgid "Failed to add package"
 msgstr "Das Hinzufügen der Packung ist fehlgeschlagen"
 
-#: /app/templates/migration/scanner.html:732
+#: /app/templates/migration/scanner.html:825
 msgid "Error adding package"
 msgstr "Fehler beim Hinzufügen der Packung"
 
-#: /app/templates/migration/scanner.html:772
+#: /app/templates/migration/scanner.html:865
 msgid "Open package added"
 msgstr "Offene Packung hinzugefügt"
 
-#: /app/templates/migration/scanner.html:779
+#: /app/templates/migration/scanner.html:872
 msgid "Error adding open package"
 msgstr "Fehler beim Hinzufügen einer offenen Packung"
 
-#: /app/templates/migration/scanner.html:824
+#: /app/templates/migration/scanner.html:917
 msgid "Error saving progress"
 msgstr "Fehler beim Speichern des Fortschritts"
 
-#: /app/templates/migration/scanner.html:932
+#: /app/templates/migration/scanner.html:1025
 msgid "Package updated"
 msgstr "Packung aktualisiert"
 
-#: /app/templates/migration/scanner.html:934
+#: /app/templates/migration/scanner.html:1027
 msgid "Failed to update package"
 msgstr "Die Packung konnte nicht aktualisiert werden"
 
-#: /app/templates/migration/scanner.html:939
+#: /app/templates/migration/scanner.html:1032
 msgid "Error updating package"
 msgstr "Fehler beim Aktualisieren der Packung"
 
@@ -4716,39 +4716,39 @@ msgstr "Lineare Barcodes (EAN, PZN)"
 msgid "Initializing..."
 msgstr "Initialisierung..."
 
-#: /app/templates/scanner/scan.html:552 /app/templates/scanner/scan.html:912
+#: /app/templates/scanner/scan.html:552 /app/templates/scanner/scan.html:977
 msgid "Retry"
 msgstr "Erneut versuchen"
 
-#: /app/templates/scanner/scan.html:740
+#: /app/templates/scanner/scan.html:794
 msgid "Ready to scan"
 msgstr "Bereit zum Scannen"
 
-#: /app/templates/scanner/scan.html:750
+#: /app/templates/scanner/scan.html:804
 msgid "Camera error"
 msgstr "Kamerafehler"
 
-#: /app/templates/scanner/scan.html:783
+#: /app/templates/scanner/scan.html:848
 msgid "Scan failed"
 msgstr "Scan fehlgeschlagen"
 
-#: /app/templates/scanner/scan.html:788
+#: /app/templates/scanner/scan.html:853
 msgid "Processing..."
 msgstr "Verarbeite..."
 
-#: /app/templates/scanner/scan.html:849
+#: /app/templates/scanner/scan.html:914
 msgid "Package Scanned"
 msgstr "Packung gescannt"
 
-#: /app/templates/scanner/scan.html:863
+#: /app/templates/scanner/scan.html:928
 msgid "Scan successful"
 msgstr "Scan erfolgreich"
 
-#: /app/templates/scanner/scan.html:871 /app/templates/scanner/scan.html:875
+#: /app/templates/scanner/scan.html:936 /app/templates/scanner/scan.html:940
 msgid "Error"
 msgstr "Fehler"
 
-#: /app/templates/scanner/scan.html:909
+#: /app/templates/scanner/scan.html:974
 msgid "Camera Access Required"
 msgstr "Kamerazugriff erforderlich"
 

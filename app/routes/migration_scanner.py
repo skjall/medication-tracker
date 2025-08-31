@@ -5,7 +5,6 @@ Migration scanner routes for transitioning from sum-based to package-based inven
 from datetime import datetime, timezone
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session, flash, current_app as app
 from flask_babel import gettext as _
-from sqlalchemy import and_
 
 from models import (
     db,
@@ -648,8 +647,8 @@ def undo_package():
     session.permanent = True
     session.modified = True
     
-    # Calculate remaining
-    total_migrated = sum(p['units'] for p in packages)
+    # Calculate remaining using the updated packages list
+    total_migrated = sum(p['units'] for p in new_packages)
     remaining = max(0, medication.inventory.current_count - total_migrated)
     
     # Verify the session was updated
@@ -659,5 +658,5 @@ def undo_package():
     return jsonify({
         'success': True,
         'remaining_units': remaining,
-        'total_scanned': len(packages)
+        'total_scanned': len(new_packages)
     })
