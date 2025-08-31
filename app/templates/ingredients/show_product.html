@@ -27,7 +27,7 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-8">
+    <div class="{% if substitutes %}col-lg-8{% else %}col-12{% endif %}">
         <!-- Product Details -->
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
@@ -267,7 +267,7 @@
                                 <td>
                                     {% if pkg.status == 'sealed' %}
                                         <span class="badge bg-success">{{ _('Sealed') }}</span>
-                                    {% elif pkg.status == 'open' %}
+                                    {% elif pkg.status == 'opened' %}
                                         <span class="badge bg-warning">{{ _('Open') }}</span>
                                     {% endif %}
                                 </td>
@@ -279,13 +279,33 @@
                 {% else %}
                 <p class="text-muted">{{ _('No packages in stock') }}</p>
                 {% endif %}
+                
+                {% if legacy_inventory and legacy_inventory.current_count > 0 %}
+                <hr>
+                <h6 class="text-muted">{{ _('Legacy Inventory') }}</h6>
+                <div class="alert alert-warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>{{ _('Sum-based system') }}</strong>
+                            <small class="text-muted d-block mt-1">
+                                {{ _('This inventory needs migration to package-based tracking') }}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <span class="h4 mb-0">{{ legacy_inventory.current_count }}</span>
+                            <small class="text-muted d-block">{{ _('units') }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
     
+    {% if substitutes %}
     <div class="col-lg-4">
         <!-- Substitutes -->
-        {% if substitutes %}
         <div class="card mb-4">
             <div class="card-header bg-info text-white">
                 <h6 class="mb-0">
@@ -316,7 +336,7 @@
                 {% endfor %}
             </div>
         </div>
-        {% endif %}
     </div>
+    {% endif %}
 </div>
 {% endblock %}

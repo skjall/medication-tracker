@@ -266,7 +266,7 @@ class ActiveIngredient(db.Model):
                     PackageInventory.query
                     .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
                     .filter(
-                        PackageInventory.status.in_(['sealed', 'open']),
+                        PackageInventory.status.in_(['sealed', 'opened']),
                         PackageInventory.medication_id.is_(None)  # Only new packages
                     )
                 )

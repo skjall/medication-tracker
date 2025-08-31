@@ -178,7 +178,7 @@ class PackageInventory(db.Model):
         String(20),
         default='sealed',
         nullable=False,
-        comment="sealed, open, consumed, expired"
+        comment="sealed, opened, consumed, expired"
     )
     
     # Status timestamps
@@ -205,7 +205,7 @@ class PackageInventory(db.Model):
     def open_package(self):
         """Mark package as opened."""
         if self.status == 'sealed':
-            self.status = 'open'
+            self.status = 'opened'
             self.opened_at = utcnow()
     
     def consume_package(self):

@@ -143,14 +143,30 @@ def show_product(id: int):
     substitutes = product.find_substitutes() if product.can_substitute else []
 
     # Get package inventory for this product
-    from models import PackageInventory, ScannedItem, ProductPackage
+    from models import PackageInventory, ScannedItem, ProductPackage, Medication, Inventory
     from sqlalchemy import or_
+    
+    # Get legacy inventory if exists
+    legacy_inventory = None
+    if product.active_ingredient:
+        # Try to find legacy medication by matching name
+        legacy_medication = Medication.query.filter_by(
+            name=product.active_ingredient.name
+        ).first()
+        if legacy_medication and legacy_medication.inventory:
+            if legacy_medication.inventory.current_count > 0:
+                legacy_inventory = legacy_medication.inventory
     
     # Get all packages for this product
     packages = ProductPackage.query.filter_by(product_id=product.id).all()
     package_gtins = [p.gtin for p in packages if p.gtin]
     package_numbers = [(p.national_number, p.national_number_type) 
                       for p in packages if p.national_number]
+    
+    from flask import current_app
+    current_app.logger.info(f"Product {product.id} packages: GTINs={package_gtins}, Numbers={package_numbers}")
+    for pkg in packages:
+        current_app.logger.info(f"Package {pkg.id}: size={pkg.package_size}, gtin={pkg.gtin}, nat_num={pkg.national_number}, nat_type={pkg.national_number_type}")
     
     package_inventory = []
     if package_gtins or package_numbers:
@@ -164,7 +180,7 @@ def show_product(id: int):
                           ((ProductPackage.national_number == ScannedItem.national_number) & 
                            (ProductPackage.national_number_type == ScannedItem.national_number_type))
                       ))
-            .filter(PackageInventory.status.in_(["sealed", "open"]))
+            .filter(PackageInventory.status.in_(["sealed", "opened"]))
         )
         
         # Build OR conditions for GTIN and national numbers
@@ -173,6 +189,7 @@ def show_product(id: int):
             conditions.append(ScannedItem.gtin.in_(package_gtins))
         if package_numbers:
             for nat_num, nat_type in package_numbers:
+                current_app.logger.info(f"Adding condition: national_number={nat_num}, type={nat_type}")
                 if nat_type:
                     conditions.append((ScannedItem.national_number == nat_num) & 
                                     (ScannedItem.national_number_type == nat_type))
@@ -180,14 +197,20 @@ def show_product(id: int):
                     conditions.append(ScannedItem.national_number == nat_num)
         
         if conditions:
+            current_app.logger.info(f"Filtering with {len(conditions)} conditions")
             query = query.filter(or_(*conditions))
             package_inventory = query.order_by(ScannedItem.expiry_date.asc()).all()
+            current_app.logger.info(f"Found {len(package_inventory)} inventory items")
+            for inv, item, pkg in package_inventory:
+                current_app.logger.info(f"Inventory: id={inv.id}, current={inv.current_units}, original={inv.original_units}, status={inv.status}")
+                current_app.logger.info(f"  ScannedItem: id={item.id}, gtin={item.gtin}, nat_num={item.national_number}, nat_type={item.national_number_type}")
 
     return render_template(
         "ingredients/show_product.html",
         product=product,
         substitutes=substitutes,
         package_inventory=package_inventory,
+        legacy_inventory=legacy_inventory,
         local_time=to_local_timezone(datetime.now(timezone.utc)),
     )
 
@@ -323,7 +346,7 @@ def delete_product(id: int):
             PackageInventory.query.filter_by(
                 medication_id=product.legacy_medication_id
             )
-            .filter(PackageInventory.status.in_(["sealed", "open"]))
+            .filter(PackageInventory.status.in_(["sealed", "opened"]))
             .count()
         )
         if inventory_count > 0:

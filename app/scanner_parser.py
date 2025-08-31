@@ -37,7 +37,9 @@ def parse_datamatrix(data: str) -> Dict[str, Optional[str]]:
         '01': (14, 'gtin'),      # GTIN-14 (fixed)
         '21': (None, 'serial'),  # Serial number (variable, max 20)
         '17': (6, 'expiry'),     # Expiry date YYMMDD (fixed)
-        '10': (None, 'batch')    # Batch number (variable, max 20)
+        '10': (None, 'batch'),   # Batch number (variable, max 20)
+        '710': (None, 'pzn'),    # German PZN (variable, 7-8 digits)
+        '711': (None, 'pzn')     # German PZN alternative (variable, 7-8 digits)
     }
     
     # Check if data contains FNC1 separator (ASCII 29)
@@ -63,10 +65,26 @@ def parse_datamatrix(data: str) -> Dict[str, Optional[str]]:
             # Process this segment (may contain multiple fixed-length AIs)
             seg_pos = 0
             while seg_pos < len(segment) - 1:
-                ai = segment[seg_pos:seg_pos+2]
-                if ai in ai_info:
+                # Check for 3-character AI first (710, 711)
+                ai = None
+                ai_len = 0
+                if seg_pos + 2 < len(segment):
+                    ai3 = segment[seg_pos:seg_pos+3]
+                    if ai3 in ai_info:
+                        ai = ai3
+                        ai_len = 3
+                
+                # If no 3-char AI found, check 2-character AI
+                if not ai:
+                    ai = segment[seg_pos:seg_pos+2]
+                    if ai in ai_info:
+                        ai_len = 2
+                    else:
+                        ai = None
+                
+                if ai:
                     length, field = ai_info[ai]
-                    seg_pos += 2
+                    seg_pos += ai_len
                     
                     if length:
                         # Fixed length field
@@ -102,11 +120,25 @@ def parse_datamatrix(data: str) -> Dict[str, Optional[str]]:
                 if pos + 1 >= len(data):
                     break
                     
-                ai = data[pos:pos+2]
+                # Check for 3-character AI first (710, 711)
+                ai = None
+                ai_len = 0
+                if pos + 2 < len(data):
+                    ai3 = data[pos:pos+3]
+                    if ai3 in ai_info:
+                        ai = ai3
+                        ai_len = 3
                 
-                if ai in ai_info:
+                # If no 3-char AI found, check 2-character AI
+                if not ai:
+                    ai2 = data[pos:pos+2]
+                    if ai2 in ai_info:
+                        ai = ai2
+                        ai_len = 2
+                
+                if ai:
                     length, field = ai_info[ai]
-                    pos += 2  # Skip AI
+                    pos += ai_len  # Skip AI
                     
                     if length:
                         # Fixed length field
@@ -155,8 +187,15 @@ def parse_datamatrix(data: str) -> Dict[str, Optional[str]]:
                     # Not a recognized AI, skip
                     pos += 1
     
-    # Extract national number from GTIN if present
-    if result['gtin']:
+    # Handle PZN if extracted from AI 710/711
+    if 'pzn' in result and result['pzn']:
+        # PZN found via AI 710 or 711
+        result['national_number'] = result['pzn']
+        result['national_number_type'] = 'DE_PZN'
+        del result['pzn']  # Remove temporary field
+    
+    # Extract national number from GTIN if present and no PZN found
+    if result['gtin'] and not result['national_number']:
         national_info = extract_national_number(result['gtin'])
         if national_info:
             result['national_number'] = national_info[0]

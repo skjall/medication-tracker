@@ -101,7 +101,7 @@
                         <dd class="col-sm-8">
                             {% if inventory.status == 'sealed' %}
                                 <span class="badge bg-success">{{ _('Sealed') }}</span>
-                            {% elif inventory.status == 'open' %}
+                            {% elif inventory.status == 'opened' %}
                                 <span class="badge bg-info">{{ _('Open') }}</span>
                             {% elif inventory.status == 'consumed' %}
                                 <span class="badge bg-secondary">{{ _('Consumed') }}</span>

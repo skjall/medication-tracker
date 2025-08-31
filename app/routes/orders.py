@@ -677,7 +677,7 @@ def search_packages(item_id: int):
     # Build filter conditions for both old and new systems
     conditions = [
         PackageInventory.order_item_id.is_(None),
-        PackageInventory.status.in_(["sealed", "open"]),
+        PackageInventory.status.in_(["sealed", "opened"]),
         ScannedItem.scanned_at >= order_date,
         ScannedItem.serial_number.ilike(f"%{search_term}%")
     ]

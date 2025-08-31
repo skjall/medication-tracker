@@ -202,28 +202,11 @@ class MedicationProduct(db.Model):
         """
         total = 0
         
-        # If this product is linked to a legacy medication, include its inventory
-        if self.legacy_medication:
-            # Include legacy inventory count if exists
-            if self.legacy_medication.inventory:
-                total += self.legacy_medication.inventory.current_count
-            
-            # Add package inventory for the legacy medication
-            from models import PackageInventory
-            
-            package_units = (
-                db.session.query(db.func.sum(PackageInventory.current_units))
-                .filter(
-                    PackageInventory.medication_id == self.legacy_medication_id,
-                    PackageInventory.status.in_(['sealed', 'open'])
-                )
-                .scalar()
-            )
-            
-            if package_units:
-                total += package_units
+        # If this product is linked to a legacy medication, include its sum-based inventory
+        if self.legacy_medication and self.legacy_medication.inventory:
+            total += self.legacy_medication.inventory.current_count
         
-        # Add inventory from ProductPackage system
+        # Add all package-based inventory
         from models import PackageInventory, ScannedItem, ProductPackage
         from sqlalchemy import or_
         
@@ -233,32 +216,36 @@ class MedicationProduct(db.Model):
         package_numbers = [(p.national_number, p.national_number_type) 
                           for p in packages if p.national_number]
         
-        if package_gtins or package_numbers:
-            # Build query for package inventory
-            query = (
-                db.session.query(db.func.sum(PackageInventory.current_units))
-                .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
-                .filter(
-                    PackageInventory.status.in_(['sealed', 'open']),
-                    PackageInventory.medication_id.is_(None)  # Only new packages not linked to medications
-                )
+        # Build query for package inventory
+        query = (
+            db.session.query(db.func.sum(PackageInventory.current_units))
+            .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
+            .filter(
+                PackageInventory.status.in_(['sealed', 'open', 'opened'])
             )
-            
-            # Build OR conditions for GTIN and national numbers
-            conditions = []
-            if package_gtins:
-                conditions.append(ScannedItem.gtin.in_(package_gtins))
-            for nat_num, nat_type in package_numbers:
-                conditions.append(
-                    (ScannedItem.national_number == nat_num) & 
-                    (ScannedItem.national_number_type == nat_type)
-                )
-            
-            if conditions:
-                query = query.filter(or_(*conditions))
-                package_units = query.scalar()
-                if package_units:
-                    total += package_units
+        )
+        
+        # Build conditions to match packages
+        conditions = []
+        
+        # Include packages linked to our legacy medication
+        if self.legacy_medication_id:
+            conditions.append(PackageInventory.medication_id == self.legacy_medication_id)
+        
+        # Include packages that match our product packages by GTIN or national number
+        if package_gtins:
+            conditions.append(ScannedItem.gtin.in_(package_gtins))
+        for nat_num, nat_type in package_numbers:
+            conditions.append(
+                (ScannedItem.national_number == nat_num) & 
+                (ScannedItem.national_number_type == nat_type)
+            )
+        
+        if conditions:
+            query = query.filter(or_(*conditions))
+            package_units = query.scalar()
+            if package_units:
+                total += package_units
             
         return total
     

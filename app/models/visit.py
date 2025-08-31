@@ -196,7 +196,7 @@ class OrderItem(db.Model):
         total = 0
         if hasattr(self, 'linked_packages'):
             for package in self.linked_packages:
-                if package.status in ['sealed', 'open']:
+                if package.status in ['sealed', 'opened']:
                     total += package.original_units
         return total
     

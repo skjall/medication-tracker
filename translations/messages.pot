@@ -27,82 +27,82 @@ msgstr ""
 msgid "No upcoming physician visits scheduled."
 msgstr ""
 
-#: /app/routes/ingredients.py:212 /app/routes/ingredients.py:389
-#: /app/routes/ingredients.py:431
+#: /app/routes/ingredients.py:235 /app/routes/ingredients.py:412
+#: /app/routes/ingredients.py:454
 msgid "Invalid strength value. Please enter a valid number (e.g., 500 or 1.25)"
 msgstr ""
 
-#: /app/routes/ingredients.py:232
+#: /app/routes/ingredients.py:255
 msgid "Active ingredient updated successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:259
+#: /app/routes/ingredients.py:282
 msgid ""
 "Cannot delete active ingredient with existing products. Please delete all"
 " products first."
 msgstr ""
 
-#: /app/routes/ingredients.py:268
+#: /app/routes/ingredients.py:291
 msgid "Active ingredient deleted successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:295
+#: /app/routes/ingredients.py:318
 msgid "Product updated successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:332
+#: /app/routes/ingredients.py:355
 msgid ""
 "Cannot delete product with existing inventory. Please deplete inventory "
 "first."
 msgstr ""
 
-#: /app/routes/ingredients.py:353
+#: /app/routes/ingredients.py:376
 #, python-format
 msgid "Default product updated to %(name)s"
 msgstr ""
 
-#: /app/routes/ingredients.py:363
+#: /app/routes/ingredients.py:386
 msgid "Product deleted successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:447
+#: /app/routes/ingredients.py:470
 #: /app/templates/package_onboarding/onboard.html:846
 msgid "Please select or enter an active ingredient"
 msgstr ""
 
-#: /app/routes/ingredients.py:476
+#: /app/routes/ingredients.py:499
 msgid "Product created successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:580
+#: /app/routes/ingredients.py:603
 msgid "Package added successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:611 /app/routes/inventory.py:601
+#: /app/routes/ingredients.py:634 /app/routes/inventory.py:601
 msgid "Package updated successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:632
+#: /app/routes/ingredients.py:655
 msgid "Package deleted successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:647
+#: /app/routes/ingredients.py:670
 msgid "Product does not belong to this ingredient"
 msgstr ""
 
-#: /app/routes/ingredients.py:654
+#: /app/routes/ingredients.py:677
 msgid "Default product set successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:668
+#: /app/routes/ingredients.py:691
 msgid "Default product cleared"
 msgstr ""
 
-#: /app/routes/ingredients.py:682
+#: /app/routes/ingredients.py:705
 msgid "This medication has already been migrated"
 msgstr ""
 
-#: /app/routes/ingredients.py:732
+#: /app/routes/ingredients.py:755
 msgid "Medication migrated successfully"
 msgstr ""
 
@@ -189,6 +189,47 @@ msgstr ""
 msgid "No inventory found for this medication"
 msgstr ""
 
+#: /app/routes/migration_scanner.py:35
+msgid "No medications need migration. All inventory is already package-based."
+msgstr ""
+
+#: /app/routes/migration_scanner.py:52
+msgid "This medication has no inventory to migrate"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:128
+#: /app/templates/migration/scanner.html:428
+msgid "Package already scanned"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:416 /app/templates/scanner/scan.html:840
+msgid "Package not found"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:449 /app/routes/migration_scanner.py:520
+msgid "No packages scanned"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:487
+#, python-format
+msgid "Partial migration to package-based inventory: %(count)s packages"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:501
+#, python-format
+msgid "Progress saved! %(count)s packages migrated."
+msgstr ""
+
+#: /app/routes/migration_scanner.py:565
+#, python-format
+msgid "Migrated to package-based inventory: %(count)s packages"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:579
+#, python-format
+msgid "Successfully migrated %(name)s to package-based inventory!"
+msgstr ""
+
 #: /app/routes/orders.py:92
 msgid "No upcoming physician visit found. Please schedule a visit first."
 msgstr ""
@@ -239,7 +280,7 @@ msgstr ""
 msgid "Item does not belong to this order"
 msgstr ""
 
-#: /app/routes/orders.py:542 /app/routes/scanner.py:175
+#: /app/routes/orders.py:542 /app/routes/scanner.py:181
 #: /app/templates/ingredients/show_product.html:56
 #: /app/templates/inventory/show.html:452
 #: /app/templates/orders/printable.html:149 /app/templates/orders/show.html:179
@@ -438,6 +479,9 @@ msgstr ""
 #: /app/templates/ingredients/new_package.html:28
 #: /app/templates/ingredients/show_product.html:147
 #: /app/templates/inventory/edit_package.html:45
+#: /app/templates/migration/scanner.html:146
+#: /app/templates/migration/scanner.html:196
+#: /app/templates/migration/scanner.html:224
 #: /app/templates/package_onboarding/onboard.html:331
 #: /app/templates/package_onboarding/onboard.html:419
 msgid "Package Size"
@@ -594,144 +638,144 @@ msgstr ""
 msgid "Error deleting physician: {}"
 msgstr ""
 
-#: /app/routes/scanner.py:52
+#: /app/routes/scanner.py:58
 msgid "No barcode data provided"
 msgstr ""
 
-#: /app/routes/scanner.py:146
+#: /app/routes/scanner.py:152
 msgid "Unsupported barcode format"
 msgstr ""
 
-#: /app/routes/scanner.py:147
+#: /app/routes/scanner.py:153
 msgid ""
 "This barcode type is not supported. Only pharmaceutical codes, "
 "DataMatrix, and standard product codes (EAN-13, EAN-8, UPC-A, ASIN) are "
 "supported."
 msgstr ""
 
-#: /app/routes/scanner.py:155
+#: /app/routes/scanner.py:161
 msgid "Invalid barcode: missing serial number"
 msgstr ""
 
-#: /app/routes/scanner.py:182
+#: /app/routes/scanner.py:188
 msgid "Package already in inventory"
 msgstr ""
 
-#: /app/routes/scanner.py:255
+#: /app/routes/scanner.py:261
 msgid "Package configuration updated with scanned data"
 msgstr ""
 
-#: /app/routes/scanner.py:339
+#: /app/routes/scanner.py:343
 #, python-format
 msgid "Order fulfilled with %(overage)d extra units"
 msgstr ""
 
-#: /app/routes/scanner.py:343
+#: /app/routes/scanner.py:347
 #, python-format
 msgid ""
 "Order fulfilled. Received %(quantity)d units in %(package_size)s. "
 "%(overage)d extra units."
 msgstr ""
 
-#: /app/routes/scanner.py:349
+#: /app/routes/scanner.py:353
 msgid "Order fulfilled exactly"
 msgstr ""
 
-#: /app/routes/scanner.py:351
+#: /app/routes/scanner.py:355
 #, python-format
 msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s."
 msgstr ""
 
-#: /app/routes/scanner.py:362
+#: /app/routes/scanner.py:366
 #, python-format
 msgid "Partial fulfillment: %(remaining)d units still needed"
 msgstr ""
 
-#: /app/routes/scanner.py:366
+#: /app/routes/scanner.py:370
 #, python-format
 msgid ""
 "Partially fulfilled. Received %(quantity)d units in %(package_size)s. "
 "Still need %(remaining)d units."
 msgstr ""
 
-#: /app/routes/scanner.py:412
+#: /app/routes/scanner.py:416
 #, python-format
 msgid "Package scanned: %(package_size)s (%(quantity)d units) - Batch: %(batch)s"
 msgstr ""
 
-#: /app/routes/scanner.py:426
+#: /app/routes/scanner.py:430
 #, python-format
 msgid ""
 "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d "
 "units). %(fulfillment)s"
 msgstr ""
 
-#: /app/routes/scanner.py:434
+#: /app/routes/scanner.py:438
 #, python-format
 msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)"
 msgstr ""
 
-#: /app/routes/scanner.py:492
+#: /app/routes/scanner.py:496
 msgid "Product Code"
 msgstr ""
 
-#: /app/routes/scanner.py:498
+#: /app/routes/scanner.py:502
 #, python-format
 msgid "%(label)s %(number)s not found"
 msgstr ""
 
-#: /app/routes/scanner.py:502 /app/routes/scanner.py:510
-#: /app/routes/scanner.py:516 /app/routes/scanner.py:522
-#: /app/routes/scanner.py:528
+#: /app/routes/scanner.py:506 /app/routes/scanner.py:514
+#: /app/routes/scanner.py:520 /app/routes/scanner.py:526
+#: /app/routes/scanner.py:532
 msgid "Please add this package."
 msgstr ""
 
-#: /app/routes/scanner.py:507
+#: /app/routes/scanner.py:511
 #, python-format
 msgid "EAN-13 barcode %(code)s not found"
 msgstr ""
 
-#: /app/routes/scanner.py:513
+#: /app/routes/scanner.py:517
 #, python-format
 msgid "EAN-8 barcode %(code)s not found"
 msgstr ""
 
-#: /app/routes/scanner.py:519
+#: /app/routes/scanner.py:523
 #, python-format
 msgid "UPC barcode %(code)s not found"
 msgstr ""
 
-#: /app/routes/scanner.py:525
+#: /app/routes/scanner.py:529
 #, python-format
 msgid "Product barcode %(code)s not found"
 msgstr ""
 
-#: /app/routes/scanner.py:531
+#: /app/routes/scanner.py:535
 msgid "Unrecognized barcode format"
 msgstr ""
 
-#: /app/routes/scanner.py:532
+#: /app/routes/scanner.py:536
 msgid "This barcode type is not supported"
 msgstr ""
 
-#: /app/routes/scanner.py:607
+#: /app/routes/scanner.py:611
 msgid "Package not in inventory"
 msgstr ""
 
-#: /app/routes/scanner.py:612
+#: /app/routes/scanner.py:616
 msgid "Invalid number of units"
 msgstr ""
 
-#: /app/routes/scanner.py:616
+#: /app/routes/scanner.py:620
 msgid "Not enough units in package"
 msgstr ""
 
-#: /app/routes/scanner.py:633
+#: /app/routes/scanner.py:637
 #, python-format
 msgid "%(units)d units consumed"
 msgstr ""
 
-#: /app/routes/scanner.py:649
+#: /app/routes/scanner.py:653
 msgid "Package marked as expired"
 msgstr ""
 
@@ -1048,8 +1092,9 @@ msgstr ""
 #: /app/templates/inventory/depletion.html:3
 #: /app/templates/inventory/index.html:3 /app/templates/inventory/low.html:3
 #: /app/templates/inventory/show.html:3 /app/templates/layout.html:6
-#: /app/templates/orders/edit.html:3 /app/templates/orders/index.html:2
-#: /app/templates/orders/new.html:3 /app/templates/orders/show.html:3
+#: /app/templates/migration/select.html:3 /app/templates/orders/edit.html:3
+#: /app/templates/orders/index.html:2 /app/templates/orders/new.html:3
+#: /app/templates/orders/show.html:3
 #: /app/templates/package_onboarding/onboard.html:3
 #: /app/templates/pdf_mapper/content.html:3
 #: /app/templates/pdf_mapper/index.html:3 /app/templates/pdf_mapper/new.html:3
@@ -1093,7 +1138,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: /app/templates/index.html:36 /app/templates/physicians/index.html:64
-#: /app/templates/scanner/scan.html:841 /app/templates/visits/index.html:86
+#: /app/templates/scanner/scan.html:856 /app/templates/visits/index.html:86
 #: /app/templates/visits/index.html:166
 msgid "View Details"
 msgstr ""
@@ -1303,7 +1348,8 @@ msgstr ""
 #: /app/templates/ingredients/show_product.html:110
 #: /app/templates/ingredients/show_product.html:119
 #: /app/templates/ingredients/show_product.html:159
-#: /app/templates/ingredients/show_product.html:311
+#: /app/templates/ingredients/show_product.html:297
+#: /app/templates/ingredients/show_product.html:331
 #: /app/templates/inventory/depletion.html:99
 #: /app/templates/inventory/depletion.html:100
 #: /app/templates/inventory/edit_package.html:61
@@ -1321,9 +1367,12 @@ msgstr ""
 #: /app/templates/inventory/show.html:309
 #: /app/templates/inventory/show.html:362
 #: /app/templates/inventory/show.html:363
-#: /app/templates/inventory/show.html:422 /app/templates/orders/show.html:193
-#: /app/templates/orders/show.html:209 /app/templates/orders/show.html:215
-#: /app/templates/orders/show.html:378 /app/templates/physicians/show.html:165
+#: /app/templates/inventory/show.html:422
+#: /app/templates/migration/scanner.html:89
+#: /app/templates/migration/scanner.html:256
+#: /app/templates/orders/show.html:193 /app/templates/orders/show.html:209
+#: /app/templates/orders/show.html:215 /app/templates/orders/show.html:378
+#: /app/templates/physicians/show.html:165
 #: /app/templates/schedules/edit.html:40 /app/templates/schedules/new.html:40
 #: /app/templates/visits/show.html:178
 msgid "units"
@@ -1504,6 +1553,9 @@ msgstr ""
 #: /app/templates/ingredients/new_product.html:144
 #: /app/templates/inventory/edit_package.html:251
 #: /app/templates/inventory/edit_package.html:255
+#: /app/templates/migration/scanner.html:172
+#: /app/templates/migration/scanner.html:205
+#: /app/templates/migration/scanner.html:240
 #: /app/templates/orders/_fulfill_modal.html:41
 #: /app/templates/orders/edit.html:223 /app/templates/orders/new.html:255
 #: /app/templates/orders/show.html:397
@@ -1527,6 +1579,7 @@ msgstr ""
 #: /app/templates/ingredients/edit_package.html:98
 #: /app/templates/ingredients/edit_product.html:99
 #: /app/templates/inventory/edit_package.html:247
+#: /app/templates/migration/scanner.html:241
 msgid "Save Changes"
 msgstr ""
 
@@ -1534,6 +1587,7 @@ msgstr ""
 #: /app/templates/ingredients/edit_package.html:20
 #: /app/templates/inventory/edit_package.html:3
 #: /app/templates/inventory/edit_package.html:8
+#: /app/templates/migration/scanner.html:217
 msgid "Edit Package"
 msgstr ""
 
@@ -1753,7 +1807,8 @@ msgstr ""
 #: /app/templates/ingredients/new_package.html:3
 #: /app/templates/ingredients/new_package.html:102
 #: /app/templates/ingredients/show_product.html:139
-#: /app/templates/scanner/scan.html:818
+#: /app/templates/migration/scanner.html:173
+#: /app/templates/scanner/scan.html:833
 msgid "Add Package"
 msgstr ""
 
@@ -1872,6 +1927,8 @@ msgstr ""
 
 #: /app/templates/ingredients/show.html:18
 #: /app/templates/ingredients/show_product.html:24
+#: /app/templates/migration/scanner.html:13
+#: /app/templates/migration/select.html:12
 #: /app/templates/scanner/package_details.html:11
 msgid "Back"
 msgstr ""
@@ -1961,7 +2018,7 @@ msgid "Days Remaining"
 msgstr ""
 
 #: /app/templates/ingredients/show.html:255
-#: /app/templates/ingredients/show_product.html:292
+#: /app/templates/ingredients/show_product.html:312
 msgid "Substitutable Products"
 msgstr ""
 
@@ -1975,7 +2032,8 @@ msgstr ""
 msgid "Add New Product Variant"
 msgstr ""
 
-#: /app/templates/ingredients/show.html:297 /app/templates/orders/show.html:261
+#: /app/templates/ingredients/show.html:297
+#: /app/templates/migration/select.html:52 /app/templates/orders/show.html:261
 msgid "View Inventory"
 msgstr ""
 
@@ -2062,7 +2120,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:808
+#: /app/templates/scanner/scan.html:823
 msgid "Batch"
 msgstr ""
 
@@ -2071,7 +2129,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:811
+#: /app/templates/scanner/scan.html:826
 msgid "Expiry"
 msgstr ""
 
@@ -2090,7 +2148,8 @@ msgstr ""
 
 #: /app/templates/ingredients/show_product.html:271
 #: /app/templates/inventory/edit_package.html:276
-#: /app/templates/inventory/show.html:466 /app/templates/orders/edit.html:54
+#: /app/templates/inventory/show.html:466
+#: /app/templates/migration/scanner.html:92 /app/templates/orders/edit.html:54
 #: /app/templates/orders/index.html:49 /app/templates/orders/show.html:71
 #: /app/templates/scanner/index.html:104
 #: /app/templates/scanner/package_details.html:105
@@ -2100,6 +2159,18 @@ msgstr ""
 
 #: /app/templates/ingredients/show_product.html:280
 msgid "No packages in stock"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:285
+msgid "Legacy Inventory"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:290
+msgid "Sum-based system"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:292
+msgid "This inventory needs migration to package-based tracking"
 msgstr ""
 
 #: /app/templates/inventory/depletion.html:12
@@ -2231,6 +2302,7 @@ msgid "Package Information"
 msgstr ""
 
 #: /app/templates/inventory/edit_package.html:60
+#: /app/templates/migration/scanner.html:229
 msgid "Original Units"
 msgstr ""
 
@@ -2711,6 +2783,7 @@ msgid "Start Scanning Packages"
 msgstr ""
 
 #: /app/templates/inventory/show.html:417
+#: /app/templates/migration/scanner.html:67
 msgid "Scanned Packages"
 msgstr ""
 
@@ -2786,7 +2859,7 @@ msgstr ""
 
 #: /app/templates/layout.html:52 /app/templates/scanner/index.html:3
 #: /app/templates/scanner/index.html:9 /app/templates/scanner/scan.html:3
-#: /app/templates/scanner/scan.html:490
+#: /app/templates/scanner/scan.html:505
 msgid "Scanner"
 msgstr ""
 
@@ -2887,6 +2960,210 @@ msgstr ""
 
 #: /app/templates/layout.html:155 /app/templates/settings/system.html:28
 msgid "Local time"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:3
+msgid "Migration Scanner"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:23
+msgid "units left"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:53
+msgid "Save and close"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:77
+#: /app/templates/migration/scanner.html:629
+msgid "No packages scanned yet"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:78
+#: /app/templates/migration/scanner.html:630
+msgid "Start scanning your medication packages"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:118
+msgid "Tips"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:120
+msgid "Scan all full packages first"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:121
+msgid "Add open packages at the end"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:122
+msgid "Click \"Save and close\" when finished to complete migration"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:134
+msgid "New Package Setup"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:139
+msgid "For"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:148
+msgid "Small"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:149
+msgid "Medium"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:150
+msgid "Large"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:155
+#: /app/templates/package_onboarding/onboard.html:343
+msgid "Units per Package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:156
+msgid "Enter package size"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:162
+msgid "This is an open package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:167
+#: /app/templates/migration/scanner.html:191
+msgid "Units remaining"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:184
+msgid "Add Open Package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:188
+msgid "Enter details for your open package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:206
+msgid "Add"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:234
+msgid "Actual Units in Package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:236
+msgid "Enter the actual number of units in this package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:252
+msgid "Remaining Inventory"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:256
+msgid "You still have"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:256
+msgid "of sum-based inventory remaining."
+msgstr ""
+
+#: /app/templates/migration/scanner.html:257
+msgid "What would you like to do?"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:261
+msgid "Continue Scanning"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:264
+msgid "Save & Exit"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:267
+msgid "Finalize (Set to 0)"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:394
+msgid "Camera access required for scanning"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:439
+#: /app/templates/migration/scanner.html:725
+msgid "Package added"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:622
+msgid "Package removed"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:727
+#: /app/templates/migration/scanner.html:774
+msgid "Failed to add package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:732
+msgid "Error adding package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:772
+msgid "Open package added"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:779
+msgid "Error adding open package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:824
+msgid "Error saving progress"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:932
+msgid "Package updated"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:934
+msgid "Failed to update package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:939
+msgid "Error updating package"
+msgstr ""
+
+#: /app/templates/migration/select.html:3
+msgid "Migration Center"
+msgstr ""
+
+#: /app/templates/migration/select.html:9
+msgid "Package Migration"
+msgstr ""
+
+#: /app/templates/migration/select.html:18
+msgid ""
+"Migrate your medications to the new package-based system for better "
+"tracking and expiry management."
+msgstr ""
+
+#: /app/templates/migration/select.html:22
+msgid "Select a medication to migrate:"
+msgstr ""
+
+#: /app/templates/migration/select.html:33
+msgid "units remaining"
+msgstr ""
+
+#: /app/templates/migration/select.html:38
+msgid "Start"
+msgstr ""
+
+#: /app/templates/migration/select.html:49
+msgid "All medications migrated!"
+msgstr ""
+
+#: /app/templates/migration/select.html:50
+msgid "Your inventory is fully package-based."
 msgstr ""
 
 #: /app/templates/orders/_fulfill_modal.html:10
@@ -3638,10 +3915,6 @@ msgstr ""
 
 #: /app/templates/package_onboarding/onboard.html:339
 msgid "Enter custom size..."
-msgstr ""
-
-#: /app/templates/package_onboarding/onboard.html:343
-msgid "Units per Package"
 msgstr ""
 
 #: /app/templates/package_onboarding/onboard.html:345
@@ -4500,55 +4773,63 @@ msgstr ""
 msgid "Raw Data"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:495 /app/templates/scanner/scan.html:552
+#: /app/templates/scanner/scan.html:487
+msgid "Migration Available"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:488
+msgid "You have medications that can be migrated to the new package-based system."
+msgstr ""
+
+#: /app/templates/scanner/scan.html:490
+msgid "Start Migration"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:510 /app/templates/scanner/scan.html:567
 msgid "DataMatrix codes"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:499 /app/templates/scanner/scan.html:556
+#: /app/templates/scanner/scan.html:514 /app/templates/scanner/scan.html:571
 msgid "Linear barcodes (EAN, PZN)"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:503 /app/templates/scanner/scan.html:560
+#: /app/templates/scanner/scan.html:518 /app/templates/scanner/scan.html:575
 msgid "Initializing..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:537 /app/templates/scanner/scan.html:897
+#: /app/templates/scanner/scan.html:552 /app/templates/scanner/scan.html:912
 msgid "Retry"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:725
+#: /app/templates/scanner/scan.html:740
 msgid "Ready to scan"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:735
+#: /app/templates/scanner/scan.html:750
 msgid "Camera error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:768
+#: /app/templates/scanner/scan.html:783
 msgid "Scan failed"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:773
+#: /app/templates/scanner/scan.html:788
 msgid "Processing..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:825
-msgid "Package not found"
-msgstr ""
-
-#: /app/templates/scanner/scan.html:834
+#: /app/templates/scanner/scan.html:849
 msgid "Package Scanned"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:848
+#: /app/templates/scanner/scan.html:863
 msgid "Scan successful"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:856 /app/templates/scanner/scan.html:860
+#: /app/templates/scanner/scan.html:871 /app/templates/scanner/scan.html:875
 msgid "Error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:894
+#: /app/templates/scanner/scan.html:909
 msgid "Camera Access Required"
 msgstr ""
 

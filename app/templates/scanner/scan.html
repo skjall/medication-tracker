@@ -479,6 +479,21 @@
 {% endblock %}
 
 {% block content %}
+<!-- Migration Notice -->
+{% if has_migration_eligible %}
+<div class="container mt-3">
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exchange-alt me-2"></i>
+        <strong>{{ _('Migration Available') }}</strong>
+        <p class="mb-2">{{ _('You have medications that can be migrated to the new package-based system.') }}</p>
+        <a href="{{ url_for('migration_scanner.select_medication') }}" class="btn btn-warning btn-sm">
+            <i class="fas fa-rocket me-1"></i>{{ _('Start Migration') }}
+        </a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+{% endif %}
+
 <!-- Mobile full-screen wrapper -->
 <div class="scanner-wrapper">
     <!-- Desktop card container -->

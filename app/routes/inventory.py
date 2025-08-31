@@ -96,7 +96,7 @@ def show(id: int):
         .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
         .outerjoin(MedicationPackage, ScannedItem.medication_package_id == MedicationPackage.id)
         .filter(PackageInventory.medication_id == inventory.medication_id)
-        .filter(PackageInventory.status.in_(['sealed', 'open', 'empty']))  # Include empty packages
+        .filter(PackageInventory.status.in_(['sealed', 'opened', 'empty']))  # Include empty packages
         .order_by(ScannedItem.expiry_date.asc())
         .all()
     )
@@ -147,7 +147,7 @@ def show(id: int):
                     db.session.query(PackageInventory, ScannedItem)
                     .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
                     .filter(PackageInventory.medication_id == None)  # Only new system packages
-                    .filter(PackageInventory.status.in_(['sealed', 'open', 'empty']))
+                    .filter(PackageInventory.status.in_(['sealed', 'opened', 'empty']))
                 )
                 
                 # Build OR conditions for GTIN and national numbers
@@ -477,7 +477,7 @@ def edit_package(package_id: int):
         
         # Update package status
         new_status = request.form.get("status")
-        if new_status in ["sealed", "open", "empty", "discarded"]:
+        if new_status in ["sealed", "opened", "empty", "discarded"]:
             package.status = new_status
         
         # Update order association
@@ -545,7 +545,7 @@ def edit_package(package_id: int):
                     if new_units == 0:
                         package.status = "empty"
                     elif new_units < package.original_units and package.status == "sealed":
-                        package.status = "open"
+                        package.status = "opened"
                     
                     # Create inventory log if units changed
                     adjustment = new_units - old_units

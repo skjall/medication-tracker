@@ -177,7 +177,7 @@ class Medication(db.Model):
         from models import PackageInventory
         package_units = PackageInventory.query.filter(
             PackageInventory.medication_id == self.id,
-            PackageInventory.status.in_(['sealed', 'open'])
+            PackageInventory.status.in_(['sealed', 'opened'])
         ).with_entities(db.func.sum(PackageInventory.current_units)).scalar()
         
         if package_units:
@@ -204,7 +204,7 @@ class Medication(db.Model):
                     db.session.query(db.func.sum(PackageInventory.current_units))
                     .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
                     .filter(
-                        PackageInventory.status.in_(['sealed', 'open']),
+                        PackageInventory.status.in_(['sealed', 'opened']),
                         PackageInventory.medication_id.is_(None)  # Only new packages
                     )
                 )
@@ -291,11 +291,11 @@ class Medication(db.Model):
         return PackageInventory.query.join(ScannedItem)\
             .filter(
                 PackageInventory.medication_id == self.id,
-                PackageInventory.status.in_(['open', 'sealed']),
+                PackageInventory.status.in_(['opened', 'sealed']),
                 PackageInventory.current_units > 0
             ).order_by(
                 # Open packages first
-                case((PackageInventory.status == 'open', 0), else_=1),
+                case((PackageInventory.status == 'opened', 0), else_=1),
                 # Then by expiry date (nulls last)
                 ScannedItem.expiry_date.asc().nullslast(),
                 # Then by opened date for open packages
@@ -351,7 +351,7 @@ class Medication(db.Model):
             
             # If package is sealed, open it
             if package.status == 'sealed':
-                package.status = 'open'
+                package.status = 'opened'
                 package.opened_at = utcnow()
                 result['notes'].append(f"Opened package {package.scanned_item.serial_number}")
             

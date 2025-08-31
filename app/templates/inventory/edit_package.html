@@ -138,7 +138,7 @@
                             <option value="sealed" {% if package.status == 'sealed' %}selected{% endif %}>
                                 {{ _('Sealed - Not opened yet') }}
                             </option>
-                            <option value="open" {% if package.status == 'open' %}selected{% endif %}>
+                            <option value="opened" {% if package.status == 'opened' %}selected{% endif %}>
                                 {{ _('Open - In use') }}
                             </option>
                             <option value="empty" {% if package.status == 'empty' %}selected{% endif %}>
@@ -272,7 +272,7 @@
                 {% if package.status == 'sealed' %}
                     <span class="badge bg-success">{{ _('Sealed') }}</span>
                     <p class="mt-2 mb-0">{{ _('This package has not been opened yet') }}</p>
-                {% elif package.status == 'open' %}
+                {% elif package.status == 'opened' %}
                     <span class="badge bg-warning">{{ _('Open') }}</span>
                     <p class="mt-2 mb-0">{{ _('This package is currently in use') }}</p>
                 {% elif package.status == 'empty' %}

@@ -42,7 +42,13 @@ def index():
 def scan():
     """Handle barcode scanning."""
     if request.method == "GET":
-        return render_template("scanner/scan.html")
+        # Check if there are medications eligible for migration
+        from models import Medication, Inventory
+        has_migration_eligible = Medication.query.join(Inventory).filter(
+            Inventory.current_count > 0
+        ).count() > 0
+        
+        return render_template("scanner/scan.html", has_migration_eligible=has_migration_eligible)
 
     # Process scanned data
     data = request.json
@@ -166,7 +172,7 @@ def scan():
             PackageInventory.query.filter_by(
                 scanned_item_id=existing_scanned.id
             )
-            .filter(PackageInventory.status.in_(["sealed", "open"]))
+            .filter(PackageInventory.status.in_(["sealed", "opened"]))
             .first()
         )
 
@@ -285,30 +291,28 @@ def scan():
             db.session.flush()
 
         # Find pending order item by matching active ingredient
-        from models import Order, OrderItem, Medication
+        from models import Order, OrderItem
 
         pending_order_item = None
         fulfillment_message = None
 
-        # Find medications that match this active ingredient
-        active_ingredient = product_package.product.active_ingredient
-        if active_ingredient:
-            matching_meds = Medication.query.filter_by(name=active_ingredient.name).all()
-            matching_med_ids = [m.id for m in matching_meds]
-            
-            if matching_med_ids:
-                # Look for the oldest pending or partial order with matching medication
-                pending_order_item = (
-                    OrderItem.query.join(Order)
-                    .filter(
-                        OrderItem.medication_id.in_(matching_med_ids),
-                        OrderItem.fulfillment_status.in_(["pending", "partial"]),
-                        OrderItem.units_received < OrderItem.quantity_needed,
-                        Order.status.in_(["planned", "printed"]),
-                    )
-                    .order_by(Order.created_date.asc())
-                    .first()
+        # Check if this package matches any pending order
+        if product_package.product:
+            # Look for the oldest pending or partial order with matching product or ingredient
+            pending_order_item = (
+                OrderItem.query.join(Order)
+                .filter(
+                    db.or_(
+                        OrderItem.product_id == product_package.product.id,
+                        OrderItem.active_ingredient_id == product_package.product.active_ingredient_id
+                    ),
+                    OrderItem.fulfillment_status.in_(["pending", "partial"]),
+                    OrderItem.units_received < OrderItem.quantity_needed,
+                    Order.status.in_(["planned", "printed"]),
                 )
+                .order_by(Order.created_date.asc())
+                .first()
+            )
 
         # Update order fulfillment if order found
         if pending_order_item:
