@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-08-31 10:46\n"
+"PO-Revision-Date: 2025-08-31 11:03\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -197,7 +197,7 @@ msgstr "Dieses Medikament hat keinen Bestand, der migriert werden muss"
 msgid "Package already scanned"
 msgstr "Packung bereits gescannt"
 
-#: /app/routes/migration_scanner.py:415 /app/templates/scanner/scan.html:999
+#: /app/routes/migration_scanner.py:415 /app/templates/scanner/scan.html:993
 msgid "Package not found"
 msgstr "Packung nicht gefunden"
 
@@ -275,7 +275,7 @@ msgstr "Bestellung als erfüllt markiert"
 msgid "Item does not belong to this order"
 msgstr "Artikel gehört nicht zu dieser Bestellung"
 
-#: /app/routes/orders.py:542 /app/routes/scanner.py:181
+#: /app/routes/orders.py:542 /app/routes/scanner.py:212
 #: /app/templates/ingredients/show_product.html:56
 #: /app/templates/inventory/show.html:452
 #: /app/templates/orders/printable.html:149 /app/templates/orders/show.html:179
@@ -623,135 +623,136 @@ msgstr "Arzt '{}' wurde erfolgreich gelöscht."
 msgid "Error deleting physician: {}"
 msgstr "Fehler beim Löschen des Arztes: {}"
 
-#: /app/routes/scanner.py:58
+#: /app/routes/scanner.py:64
 msgid "No barcode data provided"
 msgstr "Keine Strichcode-Daten angegeben"
 
-#: /app/routes/scanner.py:152
+#: /app/routes/scanner.py:176
 msgid "Unsupported barcode format"
 msgstr "Nicht unterstütztes Barcode-Format"
 
-#: /app/routes/scanner.py:153
+#: /app/routes/scanner.py:178
 msgid "This barcode type is not supported. Only pharmaceutical codes, DataMatrix, and standard product codes (EAN-13, EAN-8, UPC-A, ASIN) are supported."
 msgstr "Dieser Barcode-Typ wird nicht unterstützt. Nur Pharmazie-Codes, DataMatrix und Standard-Produktcodes (EAN-13, EAN-8, UPC-A, ASIN) werden unterstützt."
 
-#: /app/routes/scanner.py:161
+#: /app/routes/scanner.py:192
 msgid "Invalid barcode: missing serial number"
 msgstr "Ungültiger Strichcode: Seriennummer fehlt"
 
-#: /app/routes/scanner.py:188
+#: /app/routes/scanner.py:219
 msgid "Package already in inventory"
 msgstr "Packung bereits im Inventar"
 
-#: /app/routes/scanner.py:261
+#: /app/routes/scanner.py:298
 msgid "Package configuration updated with scanned data"
 msgstr "Packungsinformationen mit gescannten Daten aktualisiert"
 
-#: /app/routes/scanner.py:343
+#: /app/routes/scanner.py:379
 #, python-format
 msgid "Order fulfilled with %(overage)d extra units"
 msgstr "Bestellung erledigt mit %(overage)d zusätzliche Einheiten"
 
-#: /app/routes/scanner.py:347
+#: /app/routes/scanner.py:383
 #, python-format
 msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s. %(overage)d extra units."
 msgstr "Bestellung erledigt. %(quantity)d Einheiten in %(package_size)s enthalten. %(overage)d zusätzliche Einheiten."
 
-#: /app/routes/scanner.py:353
+#: /app/routes/scanner.py:389
 msgid "Order fulfilled exactly"
 msgstr "Bestellung erledigt"
 
-#: /app/routes/scanner.py:355
+#: /app/routes/scanner.py:391
 #, python-format
 msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s."
 msgstr "Bestellung erledigt. %(quantity)d Einheiten in %(package_size)s erhalten."
 
-#: /app/routes/scanner.py:366
+#: /app/routes/scanner.py:402
 #, python-format
 msgid "Partial fulfillment: %(remaining)d units still needed"
 msgstr "Teilweise erfüllt: %(remaining)d Einheiten noch erforderlich"
 
-#: /app/routes/scanner.py:370
+#: /app/routes/scanner.py:406
 #, python-format
 msgid "Partially fulfilled. Received %(quantity)d units in %(package_size)s. Still need %(remaining)d units."
 msgstr "Teilweise erledigt. %(quantity)d Einheiten in %(package_size)s erhalten. Noch %(remaining)d Einheiten benötigt."
 
-#: /app/routes/scanner.py:416
+#: /app/routes/scanner.py:452
 #, python-format
 msgid "Package scanned: %(package_size)s (%(quantity)d units) - Batch: %(batch)s"
 msgstr "Packung gescannt: %(package_size)s (%(quantity)d Einheiten) - Charge: %(batch)s"
 
-#: /app/routes/scanner.py:430
+#: /app/routes/scanner.py:466
 #, python-format
 msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units). %(fulfillment)s"
 msgstr "Zum Inventar hinzugefügt: %(product_name)s %(package_size)s (%(quantity)d Einheiten). %(fulfillment)s"
 
-#: /app/routes/scanner.py:438
+#: /app/routes/scanner.py:474
 #, python-format
 msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)"
 msgstr "Zum Inventar hinzugefügt: %(product_name)s %(package_size)s (%(quantity)d Einheiten)"
 
-#: /app/routes/scanner.py:496
+#: /app/routes/scanner.py:532 /app/templates/migration/scanner.html:142
+#: /app/templates/migration/scanner.html:699
 msgid "Product Code"
 msgstr "Produktcode"
 
-#: /app/routes/scanner.py:502
+#: /app/routes/scanner.py:538
 #, python-format
 msgid "%(label)s %(number)s not found"
 msgstr "%(label)s %(number)s nicht gefunden"
 
-#: /app/routes/scanner.py:506 /app/routes/scanner.py:514
-#: /app/routes/scanner.py:520 /app/routes/scanner.py:526
-#: /app/routes/scanner.py:532
+#: /app/routes/scanner.py:542 /app/routes/scanner.py:549
+#: /app/routes/scanner.py:554 /app/routes/scanner.py:559
+#: /app/routes/scanner.py:564
 msgid "Please add this package."
 msgstr "Bitte füge diese Packung hinzu."
 
-#: /app/routes/scanner.py:511
+#: /app/routes/scanner.py:547
 #, python-format
 msgid "EAN-13 barcode %(code)s not found"
 msgstr "EAN-13-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:517
+#: /app/routes/scanner.py:552
 #, python-format
 msgid "EAN-8 barcode %(code)s not found"
 msgstr "EAN-8-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:523
+#: /app/routes/scanner.py:557
 #, python-format
 msgid "UPC barcode %(code)s not found"
 msgstr "UPC-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:529
+#: /app/routes/scanner.py:562
 #, python-format
 msgid "Product barcode %(code)s not found"
 msgstr "Produkt-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:535
+#: /app/routes/scanner.py:567
 msgid "Unrecognized barcode format"
 msgstr "Unbekanntes Strichcode-Format"
 
-#: /app/routes/scanner.py:536
+#: /app/routes/scanner.py:568
 msgid "This barcode type is not supported"
 msgstr "Dieser Strichcode-Typ wird nicht unterstützt"
 
-#: /app/routes/scanner.py:611
+#: /app/routes/scanner.py:643
 msgid "Package not in inventory"
 msgstr "Packung nicht im Inventar"
 
-#: /app/routes/scanner.py:616
+#: /app/routes/scanner.py:648
 msgid "Invalid number of units"
 msgstr "Ungültige Anzahl an Einheiten"
 
-#: /app/routes/scanner.py:620
+#: /app/routes/scanner.py:652
 msgid "Not enough units in package"
 msgstr "Nicht genug Einheiten in der Packung"
 
-#: /app/routes/scanner.py:637
+#: /app/routes/scanner.py:669
 #, python-format
 msgid "%(units)d units consumed"
 msgstr "%(units)d Einheiten verbraucht"
 
-#: /app/routes/scanner.py:653
+#: /app/routes/scanner.py:685
 msgid "Package marked as expired"
 msgstr "Packung als abgelaufen markiert"
 
@@ -1106,7 +1107,7 @@ msgstr[0] "%(count)d Tag entfernt"
 msgstr[1] "%(count)d Tage entfernt"
 
 #: /app/templates/index.html:36 /app/templates/physicians/index.html:64
-#: /app/templates/scanner/scan.html:1015 /app/templates/visits/index.html:86
+#: /app/templates/scanner/scan.html:1009 /app/templates/visits/index.html:86
 #: /app/templates/visits/index.html:166
 msgid "View Details"
 msgstr "Details anzeigen"
@@ -1776,7 +1777,7 @@ msgstr "Noch keine Medikamente gespeichert. Leg einfach ein neues Produkt an."
 #: /app/templates/ingredients/new_package.html:102
 #: /app/templates/ingredients/show_product.html:139
 #: /app/templates/migration/scanner.html:173
-#: /app/templates/scanner/scan.html:992
+#: /app/templates/scanner/scan.html:986
 msgid "Add Package"
 msgstr "Packung hinzufügen"
 
@@ -2086,7 +2087,7 @@ msgstr "Seriennummer"
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:982
+#: /app/templates/scanner/scan.html:976
 msgid "Batch"
 msgstr "Charge"
 
@@ -2095,7 +2096,7 @@ msgstr "Charge"
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:985
+#: /app/templates/scanner/scan.html:979
 msgid "Expiry"
 msgstr "Verwendbar bis"
 
@@ -2929,12 +2930,12 @@ msgid "Save and close"
 msgstr "Speichern und schließen"
 
 #: /app/templates/migration/scanner.html:77
-#: /app/templates/migration/scanner.html:819
+#: /app/templates/migration/scanner.html:829
 msgid "No packages scanned yet"
 msgstr "Keine Packungen gescannt"
 
 #: /app/templates/migration/scanner.html:78
-#: /app/templates/migration/scanner.html:820
+#: /app/templates/migration/scanner.html:830
 msgid "Start scanning your medication packages"
 msgstr "Fang an, deine Medikamentenverpackungen zu scannen"
 
@@ -2961,10 +2962,6 @@ msgstr "Neue Packung einrichten"
 #: /app/templates/migration/scanner.html:139
 msgid "For"
 msgstr "Für"
-
-#: /app/templates/migration/scanner.html:142
-msgid "National Code"
-msgstr "Nationaler Code"
 
 #: /app/templates/migration/scanner.html:148
 msgid "Small"
@@ -3049,59 +3046,59 @@ msgid "Camera access required for scanning"
 msgstr "Kamera-Zugriff zum Scannen erforderlich"
 
 #: /app/templates/migration/scanner.html:500
-#: /app/templates/scanner/scan.html:853
+#: /app/templates/scanner/scan.html:847
 msgid "Scanner stopped"
-msgstr "Scanner angehalten"
+msgstr ""
 
 #: /app/templates/migration/scanner.html:507
-#: /app/templates/scanner/scan.html:856
+#: /app/templates/scanner/scan.html:850
 msgid "Scanner stopped due to inactivity"
-msgstr "Scanner wegen Inaktivität angehalten"
+msgstr ""
 
 #: /app/templates/migration/scanner.html:509
-#: /app/templates/scanner/scan.html:858
+#: /app/templates/scanner/scan.html:852
 msgid "Restart Scanner"
-msgstr "Scanner neu starten"
+msgstr ""
 
 #: /app/templates/migration/scanner.html:613
-#: /app/templates/migration/scanner.html:919
+#: /app/templates/migration/scanner.html:929
 msgid "Package added"
 msgstr "Packung hinzugefügt"
 
-#: /app/templates/migration/scanner.html:812
+#: /app/templates/migration/scanner.html:822
 msgid "Package removed"
 msgstr "Packung entfernt"
 
-#: /app/templates/migration/scanner.html:921
-#: /app/templates/migration/scanner.html:968
+#: /app/templates/migration/scanner.html:931
+#: /app/templates/migration/scanner.html:978
 msgid "Failed to add package"
 msgstr "Das Hinzufügen der Packung ist fehlgeschlagen"
 
-#: /app/templates/migration/scanner.html:926
+#: /app/templates/migration/scanner.html:936
 msgid "Error adding package"
 msgstr "Fehler beim Hinzufügen der Packung"
 
-#: /app/templates/migration/scanner.html:966
+#: /app/templates/migration/scanner.html:976
 msgid "Open package added"
 msgstr "Offene Packung hinzugefügt"
 
-#: /app/templates/migration/scanner.html:973
+#: /app/templates/migration/scanner.html:983
 msgid "Error adding open package"
 msgstr "Fehler beim Hinzufügen einer offenen Packung"
 
-#: /app/templates/migration/scanner.html:1018
+#: /app/templates/migration/scanner.html:1028
 msgid "Error saving progress"
 msgstr "Fehler beim Speichern des Fortschritts"
 
-#: /app/templates/migration/scanner.html:1126
+#: /app/templates/migration/scanner.html:1136
 msgid "Package updated"
 msgstr "Packung aktualisiert"
 
-#: /app/templates/migration/scanner.html:1128
+#: /app/templates/migration/scanner.html:1138
 msgid "Failed to update package"
 msgstr "Die Packung konnte nicht aktualisiert werden"
 
-#: /app/templates/migration/scanner.html:1133
+#: /app/templates/migration/scanner.html:1143
 msgid "Error updating package"
 msgstr "Fehler beim Aktualisieren der Packung"
 
@@ -4735,39 +4732,39 @@ msgstr "Lineare Barcodes (EAN, PZN)"
 msgid "Initializing..."
 msgstr "Initialisierung..."
 
-#: /app/templates/scanner/scan.html:552 /app/templates/scanner/scan.html:1071
+#: /app/templates/scanner/scan.html:552 /app/templates/scanner/scan.html:1065
 msgid "Retry"
 msgstr "Erneut versuchen"
 
-#: /app/templates/scanner/scan.html:818
+#: /app/templates/scanner/scan.html:812
 msgid "Ready to scan"
 msgstr "Bereit zum Scannen"
 
-#: /app/templates/scanner/scan.html:828
+#: /app/templates/scanner/scan.html:822
 msgid "Camera error"
 msgstr "Kamerafehler"
 
-#: /app/templates/scanner/scan.html:942
+#: /app/templates/scanner/scan.html:936
 msgid "Scan failed"
 msgstr "Scan fehlgeschlagen"
 
-#: /app/templates/scanner/scan.html:947
+#: /app/templates/scanner/scan.html:941
 msgid "Processing..."
 msgstr "Verarbeite..."
 
-#: /app/templates/scanner/scan.html:1008
+#: /app/templates/scanner/scan.html:1002
 msgid "Package Scanned"
 msgstr "Packung gescannt"
 
-#: /app/templates/scanner/scan.html:1022
+#: /app/templates/scanner/scan.html:1016
 msgid "Scan successful"
 msgstr "Scan erfolgreich"
 
-#: /app/templates/scanner/scan.html:1030 /app/templates/scanner/scan.html:1034
+#: /app/templates/scanner/scan.html:1024 /app/templates/scanner/scan.html:1028
 msgid "Error"
 msgstr "Fehler"
 
-#: /app/templates/scanner/scan.html:1068
+#: /app/templates/scanner/scan.html:1062
 msgid "Camera Access Required"
 msgstr "Kamerazugriff erforderlich"
 

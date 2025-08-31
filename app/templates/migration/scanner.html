@@ -139,7 +139,7 @@
                     <small class="text-muted">{{ _('For') }}: {{ medication.name }}</small>
                 </div>
                 <div class="mb-2">
-                    <small class="text-muted">{{ _('National Code') }}: <span id="modalPzn"></span></small>
+                    <small class="text-muted"><span id="modalIdLabel">{{ _('Product Code') }}</span>: <span id="modalPzn"></span></small>
                 </div>
 
                 <div class="mb-3">
@@ -408,7 +408,7 @@ function isValidBarcode(code, format) {
     if (!code || code.length < 6) {
         return false;
     }
-    
+
     // Check for known pharmaceutical barcode patterns
     // DataMatrix codes typically contain FNC1 or structured data
     if (format === ZXing.BarcodeFormat.DATA_MATRIX) {
@@ -419,42 +419,30 @@ function isValidBarcode(code, format) {
         const hasReasonableLength = code.length >= 10;
         return hasGS1 || hasReasonableLength;
     }
-    
+
     // EAN/UPC validation - be stricter for pharmaceutical context
-    if (format === ZXing.BarcodeFormat.EAN_13 || 
+    if (format === ZXing.BarcodeFormat.EAN_13 ||
         format === ZXing.BarcodeFormat.EAN_8 ||
         format === ZXing.BarcodeFormat.UPC_A) {
         // Must be numeric
         if (!/^\d+$/.test(code)) {
             return false;
         }
-        
-        // For UPC-A, reject common non-pharmaceutical prefixes
-        // Most pharmaceutical UPCs start with 3 (NDC codes)
-        if (format === ZXing.BarcodeFormat.UPC_A) {
-            // Reject UPCs that don't look pharmaceutical
-            // Accept: 3xxxxx (pharmaceutical NDC)
-            // Reject: 0xxxxx (general retail), 6xxxxx, 7xxxxx, etc.
-            if (!code.startsWith('3') && !code.startsWith('00003')) {
-                console.log('Rejecting non-pharmaceutical UPC:', code);
-                return false;
-            }
-        }
-        
+
         return true;
     }
-    
+
     // Code 39 (used for PZN) should be alphanumeric
     if (format === ZXing.BarcodeFormat.CODE_39) {
         // PZN format: starts with minus and 7-8 digits
         return /^-?\d{7,8}$/.test(code) || /^[A-Z0-9\-]+$/.test(code);
     }
-    
+
     // Code 128 can contain various data
     if (format === ZXing.BarcodeFormat.CODE_128) {
         return code.length >= 6 && code.length <= 50;
     }
-    
+
     // QR codes - filter out URLs and short random text
     if (format === ZXing.BarcodeFormat.QR_CODE) {
         // Reject URLs
@@ -468,7 +456,7 @@ function isValidBarcode(code, format) {
         // Accept if it looks like structured data
         return true;
     }
-    
+
     // Default: accept if reasonable length
     return code.length >= 6 && code.length <= 100;
 }
@@ -482,7 +470,7 @@ function resetTimeout() {
     if (timeoutTimer) {
         clearTimeout(timeoutTimer);
     }
-    
+
     // Set new timer
     timeoutTimer = setTimeout(() => {
         console.log('Scanner timeout - stopping after 5 minutes of inactivity');
@@ -495,10 +483,10 @@ function stopScanner() {
     if (codeReader) {
         codeReader.reset();
     }
-    
+
     // Update status
     updateStatus('{{ _("Scanner stopped") }}', 'warning');
-    
+
     // Show restart button in scanner area
     const scannerContainer = document.getElementById('scanner-container');
     scannerContainer.innerHTML = `
@@ -515,11 +503,11 @@ function stopScanner() {
 function restartScanner() {
     scannerStopped = false;
     lastValidScanTime = Date.now();
-    
+
     // Recreate video element
     const scannerContainer = document.getElementById('scanner-container');
     scannerContainer.innerHTML = '<video id="scanner-video" width="100%" height="400"></video>';
-    
+
     // Reinitialize scanner
     initScanner();
 }
@@ -531,42 +519,42 @@ function startScanning(deviceId) {
     if (scannerStopped) {
         return; // Don't start if stopped
     }
-    
+
     // Start timeout timer
     resetTimeout();
-    
+
     codeReader.decodeFromVideoDevice(deviceId, 'scanner-container', (result, err) => {
         if (result) {
             const now = Date.now();
             const code = result.text;
             const format = result.format;
-            
+
             // Log scan details
             console.log('Scan detected:', code);
             console.log('Format:', format);
             console.log('Result points:', result.resultPoints ? result.resultPoints.length : 'N/A');
-            
+
             // Validate barcode
             if (!isValidBarcode(code, format)) {
                 console.log('Invalid barcode - ignoring:', code);
                 return;
             }
-            
+
             // Prevent duplicate scans
             if (code === lastScannedCode && (now - lastScanTime) < SCAN_COOLDOWN) {
                 console.log('Duplicate scan - ignoring');
                 return;
             }
-            
+
             lastScannedCode = code;
             lastScanTime = now;
             lastValidScanTime = now; // Reset timeout on valid scan
             resetTimeout(); // Reset the timeout timer
-            
+
             console.log('Valid scan accepted:', code);
             handleScan(code);
         }
-        
+
         if (err && !(err instanceof ZXing.NotFoundException)) {
             console.error('Scan error:', err);
         }
@@ -678,7 +666,7 @@ function parseBarcodeData(text) {
         data.national_number_type = 'DE_PZN';
         delete data.pzn;
     }
-    
+
     // Extract PZN from GTIN if it's a German NTIN
     if (data.gtin && !data.national_number) {
         // Check for German NTIN (National Trade Item Number)
@@ -696,14 +684,24 @@ function parseBarcodeData(text) {
 function showOnboardingModal(data) {
     // Show PZN if available, otherwise GTIN
     let displayId = 'N/A';
+    let labelText = '{{ _("Product Code") }}';
+
     if (data.national_number) {
         // Just show the number without the type prefix
         displayId = data.national_number;
+        if (data.national_number_type === 'DE_PZN') {
+            labelText = 'PZN';
+        } else if (data.national_number_type) {
+            labelText = data.national_number_type;
+        }
     } else if (data.gtin) {
         displayId = data.gtin;
+        labelText = 'GTIN';
     }
+
     document.getElementById('modalPzn').textContent = displayId;
-    
+    document.getElementById('modalIdLabel').textContent = labelText;
+
     // Reset form fields
     document.getElementById('modalUnits').value = '';
     document.getElementById('modalAddBtn').disabled = true;
@@ -713,16 +711,16 @@ function showOnboardingModal(data) {
 
     const modalEl = document.getElementById('onboardModal');
     const modal = new bootstrap.Modal(modalEl);
-    
+
     // Set flag when modal opens
     isModalOpen = true;
-    
+
     // Reset flag when modal closes
     modalEl.addEventListener('hidden.bs.modal', function () {
         isModalOpen = false;
         onboardingData = null;
     }, { once: true });
-    
+
     modal.show();
 }
 
@@ -865,17 +863,17 @@ document.getElementById('modalIsOpen').addEventListener('change', function() {
 
 document.getElementById('modalAddBtn').addEventListener('click', function() {
     const packageSize = parseInt(document.getElementById('modalUnits').value);
-    const remainingUnits = parseInt(document.getElementById('remainingUnitsMobile')?.textContent || 
+    const remainingUnits = parseInt(document.getElementById('remainingUnitsMobile')?.textContent ||
                                      document.getElementById('remainingUnitsDesktop')?.textContent || 0);
-    
+
     // Check if manually marked as open
     const manuallyOpen = document.getElementById('modalIsOpen').checked;
     const manualUnits = manuallyOpen ? parseInt(document.getElementById('modalOpenUnits').value) : packageSize;
-    
+
     // Auto-determine if it's an open package: if remaining < package size
     let actualUnits = manualUnits;
     let isOpen = manuallyOpen;
-    
+
     if (!manuallyOpen && remainingUnits < packageSize) {
         // Auto-detect as open package
         actualUnits = remainingUnits;
@@ -910,7 +908,7 @@ document.getElementById('modalAddBtn').addEventListener('click', function() {
             document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
             document.body.classList.remove('modal-open');
             document.body.style.removeProperty('padding-right');
-            
+
             // Reset modal flag
             isModalOpen = false;
             onboardingData = null;
@@ -997,7 +995,7 @@ document.getElementById('saveProgressBtn').addEventListener('click', function() 
     if (modal) {
         modal.hide();
     }
-    
+
     // Save progress (creates packages, reduces old inventory by scanned amount)
     fetch(`{{ url_for("migration_scanner.save_migration_progress", medication_id=medication.id) }}`, {
         method: 'POST',

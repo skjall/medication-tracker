@@ -44,11 +44,17 @@ def scan():
     if request.method == "GET":
         # Check if there are medications eligible for migration
         from models import Medication, Inventory
-        has_migration_eligible = Medication.query.join(Inventory).filter(
-            Inventory.current_count > 0
-        ).count() > 0
-        
-        return render_template("scanner/scan.html", has_migration_eligible=has_migration_eligible)
+
+        has_migration_eligible = (
+            Medication.query.join(Inventory)
+            .filter(Inventory.current_count > 0)
+            .count()
+            > 0
+        )
+
+        return render_template(
+            "scanner/scan.html", has_migration_eligible=has_migration_eligible
+        )
 
     # Process scanned data
     data = request.json
@@ -67,7 +73,9 @@ def scan():
     if barcode_info:
         # This is a recognized standalone pharmaceutical barcode
         national_number, number_type = barcode_info
-        app.logger.info(f"Identified as pharmaceutical code: {number_type} - {national_number}")
+        app.logger.info(
+            f"Identified as pharmaceutical code: {number_type} - {national_number}"
+        )
         parsed = {
             "gtin": None,
             "serial": f"{number_type}_{national_number}_{datetime.now().timestamp()}",  # Generate unique serial
@@ -80,20 +88,27 @@ def scan():
         # Parse as DataMatrix or other GS1 format
         parsed = parse_datamatrix(barcode_data)
         if parsed and parsed.get("serial"):
-            app.logger.info(f"Identified as DataMatrix/GS1 code with GTIN: {parsed.get('gtin', 'N/A')}, Serial: {parsed.get('serial', 'N/A')[:20]}...")
+            app.logger.info(
+                f"Identified as DataMatrix/GS1 code with GTIN: {parsed.get('gtin', 'N/A')}, Serial: {parsed.get('serial', 'N/A')[:20]}..."
+            )
 
         # If DataMatrix parsing also failed, check if it's a simple product barcode
         if not parsed or not parsed.get("serial"):
             # Check if it's a valid EAN-13, EAN-8, or UPC-A barcode
             import re
+
             barcode_clean = barcode_data.strip()
-            
+
             # Log the barcode type being processed
-            app.logger.info(f"Processing unknown barcode: {barcode_clean[:20]}... (length: {len(barcode_clean)})")
-            
+            app.logger.info(
+                f"Processing unknown barcode: {barcode_clean[:20]}... (length: {len(barcode_clean)})"
+            )
+
             # EAN-13 (13 digits), EAN-8 (8 digits), UPC-A (12 digits), ASIN (10 alphanumeric)
-            if re.match(r'^[0-9]{13}$', barcode_clean):
-                app.logger.info(f"Identified as EAN-13 barcode: {barcode_clean}")
+            if re.match(r"^[0-9]{13}$", barcode_clean):
+                app.logger.info(
+                    f"Identified as EAN-13 barcode: {barcode_clean}"
+                )
                 parsed = {
                     "gtin": barcode_clean,
                     "serial": f"EAN13_{barcode_clean}_{datetime.now().timestamp()}",
@@ -102,8 +117,10 @@ def scan():
                     "national_number": None,
                     "national_number_type": None,
                 }
-            elif re.match(r'^[0-9]{8}$', barcode_clean):
-                app.logger.info(f"Identified as EAN-8 barcode: {barcode_clean}")
+            elif re.match(r"^[0-9]{8}$", barcode_clean):
+                app.logger.info(
+                    f"Identified as EAN-8 barcode: {barcode_clean}"
+                )
                 parsed = {
                     "gtin": barcode_clean,
                     "serial": f"EAN8_{barcode_clean}_{datetime.now().timestamp()}",
@@ -112,8 +129,10 @@ def scan():
                     "national_number": None,
                     "national_number_type": None,
                 }
-            elif re.match(r'^[0-9]{12}$', barcode_clean):
-                app.logger.info(f"Identified as UPC-A barcode: {barcode_clean}")
+            elif re.match(r"^[0-9]{12}$", barcode_clean):
+                app.logger.info(
+                    f"Identified as UPC-A barcode: {barcode_clean}"
+                )
                 parsed = {
                     "gtin": barcode_clean,
                     "serial": f"UPCA_{barcode_clean}_{datetime.now().timestamp()}",
@@ -122,7 +141,7 @@ def scan():
                     "national_number": None,
                     "national_number_type": None,
                 }
-            elif re.match(r'^[A-Z0-9]{10}$', barcode_clean, re.IGNORECASE):
+            elif re.match(r"^[A-Z0-9]{10}$", barcode_clean, re.IGNORECASE):
                 # Amazon ASIN - store as national number, not GTIN
                 app.logger.info(f"Identified as Amazon ASIN: {barcode_clean}")
                 parsed = {
@@ -133,9 +152,11 @@ def scan():
                     "national_number": barcode_clean,
                     "national_number_type": "ASIN",
                 }
-            elif re.match(r'^[A-Z0-9]{8,14}$', barcode_clean, re.IGNORECASE):
+            elif re.match(r"^[A-Z0-9]{8,14}$", barcode_clean, re.IGNORECASE):
                 # Other alphanumeric product codes - store as vendor-specific national number
-                app.logger.info(f"Identified as vendor-specific product code: {barcode_clean}")
+                app.logger.info(
+                    f"Identified as vendor-specific product code: {barcode_clean}"
+                )
                 parsed = {
                     "gtin": None,
                     "serial": f"VENDOR_{barcode_clean}_{datetime.now().timestamp()}",
@@ -146,13 +167,23 @@ def scan():
                 }
             else:
                 # Truly unknown format - don't offer onboarding
-                app.logger.warning(f"Unknown barcode format: {barcode_clean[:50]}... (not EAN/UPC/ASIN/pharmaceutical)")
+                app.logger.warning(
+                    f"Unknown barcode format: {barcode_clean[:50]}... (not EAN/UPC/ASIN/pharmaceutical)"
+                )
                 return (
-                    jsonify({
-                        "error": _("Unsupported barcode format"),
-                        "hint": _("This barcode type is not supported. Only pharmaceutical codes, DataMatrix, and standard product codes (EAN-13, EAN-8, UPC-A, ASIN) are supported."),
-                        "barcode_data": barcode_clean[:50] if len(barcode_clean) > 50 else barcode_clean
-                    }),
+                    jsonify(
+                        {
+                            "error": _("Unsupported barcode format"),
+                            "hint": _(
+                                "This barcode type is not supported. Only pharmaceutical codes, DataMatrix, and standard product codes (EAN-13, EAN-8, UPC-A, ASIN) are supported."
+                            ),
+                            "barcode_data": (
+                                barcode_clean[:50]
+                                if len(barcode_clean) > 50
+                                else barcode_clean
+                            ),
+                        }
+                    ),
                     400,
                 )
 
@@ -215,14 +246,20 @@ def scan():
 
     # First check new ProductPackage table
     if parsed.get("gtin"):
-        app.logger.info(f"Searching for ProductPackage with GTIN: {parsed['gtin']}")
+        app.logger.info(
+            f"Searching for ProductPackage with GTIN: {parsed['gtin']}"
+        )
         product_package = ProductPackage.query.filter_by(
             gtin=parsed["gtin"]
         ).first()
         if product_package:
-            app.logger.info(f"Found ProductPackage: {product_package.id} - {product_package.product.display_name}")
+            app.logger.info(
+                f"Found ProductPackage: {product_package.id} - {product_package.product.display_name}"
+            )
         else:
-            app.logger.info(f"No ProductPackage found with GTIN: {parsed['gtin']}")
+            app.logger.info(
+                f"No ProductPackage found with GTIN: {parsed['gtin']}"
+            )
 
     if not product_package and parsed.get("national_number"):
         # Try with exact type if we know it
@@ -304,7 +341,8 @@ def scan():
                 .filter(
                     db.or_(
                         OrderItem.product_id == product_package.product.id,
-                        OrderItem.active_ingredient_id == product_package.product.active_ingredient_id
+                        OrderItem.active_ingredient_id
+                        == product_package.product.active_ingredient_id,
                     ),
                     OrderItem.fulfillment_status.in_(["pending", "partial"]),
                     OrderItem.units_received < OrderItem.quantity_needed,
@@ -328,9 +366,7 @@ def scan():
                 >= pending_order_item.quantity_needed
             ):
                 pending_order_item.fulfillment_status = "fulfilled"
-                pending_order_item.fulfilled_at = datetime.now(
-                    timezone.utc
-                )
+                pending_order_item.fulfilled_at = datetime.now(timezone.utc)
                 if (
                     pending_order_item.units_received
                     > pending_order_item.quantity_needed
@@ -347,14 +383,14 @@ def scan():
                         "Order fulfilled. Received %(quantity)d units in %(package_size)s. %(overage)d extra units.",
                         quantity=product_package.quantity,
                         package_size=product_package.package_size,
-                        overage=overage
+                        overage=overage,
                     )
                 else:
                     fulfillment_message = _("Order fulfilled exactly")
                     pending_order_item.fulfillment_notes = _(
                         "Order fulfilled. Received %(quantity)d units in %(package_size)s.",
                         quantity=product_package.quantity,
-                        package_size=product_package.package_size
+                        package_size=product_package.package_size,
                     )
             else:
                 pending_order_item.fulfillment_status = "partial"
@@ -370,7 +406,7 @@ def scan():
                     "Partially fulfilled. Received %(quantity)d units in %(package_size)s. Still need %(remaining)d units.",
                     quantity=product_package.quantity,
                     package_size=product_package.package_size,
-                    remaining=remaining
+                    remaining=remaining,
                 )
 
             # Update the order status
@@ -416,7 +452,7 @@ def scan():
                         "Package scanned: %(package_size)s (%(quantity)d units) - Batch: %(batch)s",
                         package_size=product_package.package_size,
                         quantity=product_package.quantity,
-                        batch=parsed.get('batch', _('N/A'))
+                        batch=parsed.get("batch", _("N/A")),
                     ),
                 )
                 db.session.add(log_entry)
@@ -431,14 +467,14 @@ def scan():
                 product_name=product_package.product.display_name,
                 package_size=product_package.package_size,
                 quantity=product_package.quantity,
-                fulfillment=fulfillment_message
+                fulfillment=fulfillment_message,
             )
         else:
             message = _(
                 "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)",
                 product_name=product_package.product.display_name,
                 package_size=product_package.package_size,
-                quantity=product_package.quantity
+                quantity=product_package.quantity,
             )
 
         # Return success with inventory added (for both legacy and new package-based products)
@@ -508,26 +544,22 @@ def scan():
             # We have a recognized GTIN (EAN-13, EAN-8, UPC-A)
             if parsed.get("serial", "").startswith("EAN13"):
                 error_msg = _(
-                    "EAN-13 barcode %(code)s not found",
-                    code=parsed["gtin"]
+                    "EAN-13 barcode %(code)s not found", code=parsed["gtin"]
                 )
                 hint = _("Please add this package.")
             elif parsed.get("serial", "").startswith("EAN8"):
                 error_msg = _(
-                    "EAN-8 barcode %(code)s not found",
-                    code=parsed["gtin"]
+                    "EAN-8 barcode %(code)s not found", code=parsed["gtin"]
                 )
                 hint = _("Please add this package.")
             elif parsed.get("serial", "").startswith("UPCA"):
                 error_msg = _(
-                    "UPC barcode %(code)s not found",
-                    code=parsed["gtin"]
+                    "UPC barcode %(code)s not found", code=parsed["gtin"]
                 )
                 hint = _("Please add this package.")
             else:
                 error_msg = _(
-                    "Product barcode %(code)s not found",
-                    code=parsed["gtin"]
+                    "Product barcode %(code)s not found", code=parsed["gtin"]
                 )
                 hint = _("Please add this package.")
         else:

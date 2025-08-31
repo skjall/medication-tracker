@@ -655,12 +655,6 @@
             if (!/^\d+$/.test(code)) {
                 return false;
             }
-            // Pharmaceutical UPC codes typically start with '3' (NDC prefix)
-            // or '00003' when zero-padded
-            if (!code.startsWith('3') && !code.startsWith('00003')) {
-                console.log('Rejecting non-pharmaceutical UPC:', code);
-                return false;
-            }
             return true;
         }
 
