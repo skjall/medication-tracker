@@ -476,29 +476,42 @@
         text-decoration: none;
     }
 
-    /* Migration button for mobile */
-    @media (max-width: 768px) {
+    /* Migration FAB button for both desktop and mobile */
+    .migration-fab {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #ffc107;
+        color: white;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 1030; /* Below toasts (1050) but above other content */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .migration-fab:hover {
+        background: #ffb300;
+        color: white;
+        transform: scale(1.05);
+        text-decoration: none;
+    }
+    
+    .migration-fab i {
+        font-size: 1.5rem;
+    }
+    
+    /* Adjust position on desktop for better visibility */
+    @media (min-width: 769px) {
         .migration-fab {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: #ffc107;
-            color: white;
-            border: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 30;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-        .migration-fab:hover {
-            background: #ffb300;
-            color: white;
-            transform: scale(1.05);
+            bottom: 30px;
+            right: 30px;
         }
     }
 </style>
@@ -507,6 +520,13 @@
 {% block content %}
 <!-- Mobile full-screen wrapper -->
 <div class="scanner-wrapper">
+    {% if has_migration_eligible %}
+    <!-- Migration Scanner FAB (appears on both desktop and mobile) -->
+    <a href="{{ url_for('migration_scanner.select_medication') }}" class="migration-fab" title="{{ _('Migration Scanner') }}">
+        <i class="fas fa-exchange-alt"></i>
+    </a>
+    {% endif %}
+    
     <!-- Desktop card container -->
     <div class="container desktop-only">
         <div class="row justify-content-center">
@@ -562,11 +582,6 @@
                             <button class="btn btn-sm btn-primary d-none" id="retry-camera-btn-desktop">
                                 <i class="fas fa-camera"></i> {{ _('Retry') }}
                             </button>
-                            {% if has_migration_eligible %}
-                            <a href="{{ url_for('migration_scanner.select_medication') }}" class="btn btn-sm btn-outline-warning">
-                                <i class="fas fa-exchange-alt me-1"></i>{{ _('Migration Scanner') }}
-                            </a>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -576,12 +591,6 @@
 
     <!-- Mobile full-screen scanner -->
     <div class="scanner-mobile mobile-only">
-        {% if has_migration_eligible %}
-        <!-- Migration Scanner FAB for mobile -->
-        <a href="{{ url_for('migration_scanner.select_medication') }}" class="migration-fab mobile-only" title="{{ _('Migration Scanner') }}">
-            <i class="fas fa-exchange-alt"></i>
-        </a>
-        {% endif %}
         
         <!-- Top controls overlay -->
         <div class="scanner-controls">
