@@ -13,13 +13,14 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # Local application imports
 from .base import db, utcnow
-from utils import ensure_timezone_utc
 
 if TYPE_CHECKING:
     from .inventory import Inventory
     from .visit import OrderItem
     from .schedule import MedicationSchedule
     from .physician import Physician
+    from .scanner import MedicationPackage
+    from .medication_product import MedicationProduct
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -32,6 +33,16 @@ class Medication(db.Model):
     """
 
     __tablename__ = "medications"
+    
+    def __init__(self, **kwargs):
+        """Initialize medication and set auto_deduction_enabled_at if needed."""
+        super().__init__(**kwargs)
+        
+        # If auto_deduction is enabled on creation, set the enabled_at timestamp
+        # This prevents retroactive deductions for periods before the medication was added
+        if self.auto_deduction_enabled and self.auto_deduction_enabled_at is None:
+            from .base import utcnow
+            self.auto_deduction_enabled_at = utcnow()
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
@@ -42,6 +53,11 @@ class Medication(db.Model):
     )
     is_otc: Mapped[bool] = mapped_column(
         Boolean, default=False, comment="True if medication is over-the-counter"
+    )
+    
+    # Aut idem flag - allows generic substitution by pharmacist
+    aut_idem: Mapped[bool] = mapped_column(
+        Boolean, default=True, comment="True if generic substitution is allowed"
     )
 
     # Legacy fields - marked as deprecated but kept for database compatibility
@@ -77,6 +93,29 @@ class Medication(db.Model):
 
     # Auto deduction enabled flag
     auto_deduction_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    # Track when auto deduction was enabled to prevent retroactive deductions before that date
+    auto_deduction_enabled_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, 
+        nullable=True,
+        comment="UTC timestamp when auto-deduction was last enabled"
+    )
+    
+    # Inventory mode for hybrid system
+    inventory_mode: Mapped[Optional[str]] = mapped_column(
+        String(20), 
+        default='legacy',
+        nullable=True,
+        comment="legacy, packages, or hybrid"
+    )
+    
+    # Default product for ordering (when multiple products exist for this medication)
+    default_product_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("medication_products.id"),
+        nullable=True,
+        comment="Default product to use for ordering packages"
+    )
 
     # Relationships
     physician: Mapped[Optional["Physician"]] = relationship(
@@ -88,13 +127,23 @@ class Medication(db.Model):
         uselist=False,
         cascade="all, delete-orphan",
     )
-    order_items: Mapped[List["OrderItem"]] = relationship(
-        "OrderItem", back_populates="medication", cascade="save-update"
-    )
+    # Removed order_items relationship - orders now use ActiveIngredient
 
     # New relationship for medication schedules
     schedules: Mapped[List["MedicationSchedule"]] = relationship(
         "MedicationSchedule", back_populates="medication", cascade="all, delete-orphan"
+    )
+    
+    # Scanner system relationship
+    packages: Mapped[List["MedicationPackage"]] = relationship(
+        "MedicationPackage", back_populates="medication", cascade="all, delete-orphan"
+    )
+    
+    # Default product relationship
+    default_product: Mapped[Optional["MedicationProduct"]] = relationship(
+        "MedicationProduct",
+        foreign_keys=[default_product_id],
+        post_update=True  # Avoid circular dependency issues
     )
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -116,11 +165,76 @@ class Medication(db.Model):
         return sum(schedule.calculate_daily_usage() for schedule in self.schedules)
 
     @property
+    def total_inventory_count(self) -> float:
+        """Get total inventory including both legacy and package-based inventory."""
+        total = 0
+        
+        # Add legacy inventory
+        if self.inventory:
+            total += self.inventory.current_count
+        
+        # Add package inventory linked directly to this medication
+        from models import PackageInventory
+        package_units = PackageInventory.query.filter(
+            PackageInventory.medication_id == self.id,
+            PackageInventory.status.in_(['sealed', 'opened'])
+        ).with_entities(db.func.sum(PackageInventory.current_units)).scalar()
+        
+        if package_units:
+            total += package_units
+        
+        # Also add inventory from packages linked through the new product system
+        if self.default_product:
+            # Use the product's total inventory count (which includes new packages)
+            # But subtract what we've already counted above to avoid double counting
+            product_total = self.default_product.total_inventory_count
+            # The product count includes legacy packages we already counted, so we need the difference
+            # This gets us only the NEW packages not linked to medication_id
+            from models import ScannedItem, ProductPackage
+            from sqlalchemy import or_
+            
+            # Get packages linked through product but without medication_id
+            packages = ProductPackage.query.filter_by(product_id=self.default_product_id).all()
+            package_gtins = [p.gtin for p in packages if p.gtin]
+            package_numbers = [(p.national_number, p.national_number_type) 
+                              for p in packages if p.national_number]
+            
+            if package_gtins or package_numbers:
+                query = (
+                    db.session.query(db.func.sum(PackageInventory.current_units))
+                    .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
+                    .filter(
+                        PackageInventory.status.in_(['sealed', 'opened']),
+                        PackageInventory.medication_id.is_(None)  # Only new packages
+                    )
+                )
+                
+                conditions = []
+                if package_gtins:
+                    conditions.append(ScannedItem.gtin.in_(package_gtins))
+                for nat_num, nat_type in package_numbers:
+                    conditions.append(
+                        (ScannedItem.national_number == nat_num) & 
+                        (ScannedItem.national_number_type == nat_type)
+                    )
+                
+                if conditions:
+                    query = query.filter(or_(*conditions))
+                    new_package_units = query.scalar()
+                    if new_package_units:
+                        total += new_package_units
+            
+        return total
+
+    @property
     def days_remaining(self) -> Optional[float]:
         """Calculate how many days of medication remain based on current inventory."""
-        if not self.inventory or self.daily_usage == 0:
+        if self.daily_usage == 0:
             return None
-        return self.inventory.current_count / self.daily_usage
+        total_count = self.total_inventory_count
+        if total_count == 0:
+            return None
+        return total_count / self.daily_usage
 
     @property
     def depletion_date(self) -> Optional[datetime]:
@@ -128,6 +242,164 @@ class Medication(db.Model):
         if self.days_remaining is None:
             return None
         return utcnow() + timedelta(days=self.days_remaining)
+    
+    @property
+    def has_package_inventory(self) -> bool:
+        """Check if medication has any packages with units available."""
+        from models import PackageInventory
+        return db.session.query(
+            PackageInventory.query.filter_by(medication_id=self.id)
+            .filter(PackageInventory.current_units > 0)
+            .exists()
+        ).scalar()
+    
+    @property
+    def has_any_packages(self) -> bool:
+        """Check if medication has ANY packages (including empty ones)."""
+        from models import PackageInventory
+        return db.session.query(
+            PackageInventory.query.filter_by(medication_id=self.id).exists()
+        ).scalar()
+    
+    @property
+    def uses_package_system(self) -> bool:
+        """
+        Determine if this medication should use package-based inventory.
+        True when legacy inventory is empty (or doesn't exist) and ANY packages exist (even empty).
+        Once packages are registered, we stay in package mode.
+        """
+        has_legacy = self.inventory and self.inventory.current_count > 0
+        # Use package system if no legacy AND any packages exist (even empty ones)
+        return not has_legacy and self.has_any_packages
+    
+    @property
+    def active_package_count(self) -> int:
+        """Count of packages with units available."""
+        from models import PackageInventory
+        return PackageInventory.query.filter_by(medication_id=self.id)\
+            .filter(PackageInventory.current_units > 0).count()
+
+    def get_next_package_for_deduction(self):
+        """
+        Get the next package to deduct from using FIFO principle.
+        Priority: 1. Open packages (by expiry, then opened date)
+                  2. Sealed packages (by expiry, then scan date)
+        """
+        from models import PackageInventory, ScannedItem
+        from sqlalchemy import case
+        
+        return PackageInventory.query.join(ScannedItem)\
+            .filter(
+                PackageInventory.medication_id == self.id,
+                PackageInventory.status.in_(['opened', 'sealed']),
+                PackageInventory.current_units > 0
+            ).order_by(
+                # Open packages first
+                case((PackageInventory.status == 'opened', 0), else_=1),
+                # Then by expiry date (nulls last)
+                ScannedItem.expiry_date.asc().nullslast(),
+                # Then by opened date for open packages
+                PackageInventory.opened_at.asc().nullslast(),
+                # Finally by scan date
+                ScannedItem.scanned_at.asc()
+            ).first()
+    
+    def deduct_units(self, amount: int, reason: str = None) -> Dict:
+        """
+        Intelligent deduction that handles both legacy and package inventory.
+        Deducts from legacy first, then from packages using FIFO.
+        
+        Returns:
+            Dict with deduction details including success status and what was deducted from
+        """
+        from models import PackageInventory
+        result = {
+            'success': False,
+            'total_deducted': 0,
+            'legacy_deducted': 0,
+            'packages_deducted': [],
+            'insufficient': False,
+            'notes': []
+        }
+        
+        remaining = amount
+        
+        # Capture the original total inventory count before any modifications
+        original_total_count = self.total_inventory_count
+        
+        # Step 1: Try to deduct from legacy inventory first
+        if self.inventory and self.inventory.current_count > 0:
+            legacy_deduction = min(remaining, self.inventory.current_count)
+            # Only update legacy inventory, don't log yet - we'll log the total at the end
+            self.inventory.current_count -= legacy_deduction
+            self.inventory.last_updated = utcnow()
+            remaining -= legacy_deduction
+            result['legacy_deducted'] = legacy_deduction
+            result['total_deducted'] += legacy_deduction
+            
+            if legacy_deduction > 0:
+                result['notes'].append(f"Deducted {legacy_deduction} from legacy inventory")
+        
+        # Step 2: If still need more, deduct from packages
+        while remaining > 0:
+            package = self.get_next_package_for_deduction()
+            if not package:
+                # No more packages available
+                result['insufficient'] = True
+                result['notes'].append(f"Insufficient inventory: needed {remaining} more units")
+                break
+            
+            # If package is sealed, open it
+            if package.status == 'sealed':
+                package.status = 'opened'
+                package.opened_at = utcnow()
+                result['notes'].append(f"Opened package {package.scanned_item.serial_number}")
+            
+            # Deduct what we can from this package
+            package_deduction = min(remaining, package.current_units)
+            package.current_units -= package_deduction
+            remaining -= package_deduction
+            
+            # Mark as empty if depleted
+            if package.current_units == 0:
+                package.status = 'empty'
+                package.consumed_at = utcnow()
+            
+            result['packages_deducted'].append({
+                'package_id': package.id,
+                'serial': package.scanned_item.serial_number if package.scanned_item else f"Package #{package.id}",
+                'amount': package_deduction,
+                'remaining': package.current_units
+            })
+            result['total_deducted'] += package_deduction
+        
+        # Create a single inventory log entry for the entire deduction
+        if self.inventory and result['total_deducted'] > 0:
+            from models import InventoryLog
+            
+            # Build detailed reason string
+            reason_parts = []
+            if result['legacy_deducted'] > 0:
+                reason_parts.append(f"Legacy: {result['legacy_deducted']} units")
+            for pkg in result['packages_deducted']:
+                reason_parts.append(f"Package {pkg['serial']}: {pkg['amount']} units")
+            
+            detailed_reason = f"{reason or 'Automatic deduction'}"
+            if len(reason_parts) > 0:
+                detailed_reason += f" ({', '.join(reason_parts)})"
+            
+            # Create log entry with the correct total counts
+            log = InventoryLog(
+                inventory_id=self.inventory.id,
+                previous_count=original_total_count,
+                adjustment=-result['total_deducted'],
+                new_count=original_total_count - result['total_deducted'],
+                notes=detailed_reason,
+            )
+            db.session.add(log)
+        
+        result['success'] = remaining == 0
+        return result
 
     def check_and_deduct_inventory(self, current_time: datetime) -> Tuple[bool, float]:
         """
@@ -140,9 +412,10 @@ class Medication(db.Model):
             Tuple of (deduction_made, amount_deducted)
         """
         # Ensure current_time is timezone-aware
+        from utils import ensure_timezone_utc
         current_time = ensure_timezone_utc(current_time)
 
-        if not self.auto_deduction_enabled or not self.inventory:
+        if not self.auto_deduction_enabled:
             return False, 0
 
         total_deducted = 0.0
@@ -150,18 +423,22 @@ class Medication(db.Model):
 
         for schedule in self.schedules:
             if schedule.is_due_now(current_time):
-                # Deduct the scheduled amount
+                # Deduct the scheduled amount using new intelligent deduction
                 amount = schedule.units_per_dose
-                if amount > 0 and self.inventory.current_count >= amount:
-                    self.inventory.update_count(
-                        -amount,
-                        f"Automatic deduction: {amount} units at {current_time.strftime('%d.%m.%Y %H:%M')}",
+                if amount > 0 and self.total_inventory_count >= amount:
+                    result = self.deduct_units(
+                        amount, 
+                        f"Scheduled deduction for {current_time.strftime('%Y-%m-%d %H:%M')}"
                     )
-                    total_deducted += amount
-                    deduction_made = True
-
-                    # Update last deduction time
-                    schedule.last_deduction = current_time
+                    if result['success']:
+                        total_deducted += result['total_deducted']
+                        deduction_made = True
+                        schedule.last_deduction = current_time
+                        
+                        # Log the deduction details
+                        logger.debug(f"Deduction for {self.name}: {result['notes']}")
+                    else:
+                        logger.warning(f"Failed to deduct {amount} units from {self.name}: insufficient inventory")
 
         return deduction_made, total_deducted
 
@@ -184,6 +461,7 @@ class Medication(db.Model):
         """
         # Ensure visit_date is timezone-aware
         from models import Settings
+        from utils import ensure_timezone_utc
 
         visit_date = ensure_timezone_utc(visit_date)
         now = datetime.now(timezone.utc)
@@ -255,6 +533,7 @@ class Medication(db.Model):
             The number of units needed
         """
         # Ensure dates are timezone-aware
+        from utils import ensure_timezone_utc
         start_date = ensure_timezone_utc(start_date)
         end_date = ensure_timezone_utc(end_date)
         # Calculate days in period
@@ -271,13 +550,31 @@ class Medication(db.Model):
         """
         Convert required units into package quantities, using only a single package type.
         Chooses the package type that minimizes overage, with preference for larger packages.
+        
+        Uses default product's ProductPackage configurations if set,
+        otherwise falls back to legacy N1/N2/N3 system.
 
         Args:
             units_needed: Total number of units/pills needed
 
         Returns:
-            Dictionary with keys 'N1', 'N2', 'N3' and corresponding package counts
+            Dictionary with package names as keys and counts as values
+            For default product: Uses actual package names from ProductPackage
+            For legacy: Uses 'N1', 'N2', 'N3' keys
         """
+        # First check if we have a default product set
+        if self.default_product and self.default_product.packages:
+            return self._calculate_packages_from_product(self.default_product, units_needed)
+        
+        # Otherwise check if this medication has been migrated to the new product system
+        # and use the first migrated product as fallback
+        if self.migrated_product and len(self.migrated_product) > 0:
+            product = self.migrated_product[0]
+            if product.packages and len(product.packages) > 0:
+                # Use new ProductPackage system
+                return self._calculate_packages_from_product(product, units_needed)
+        
+        # Fall back to legacy N1/N2/N3 system
         packages = {"N1": 0, "N2": 0, "N3": 0}
 
         # If no units needed, return empty packages
@@ -322,4 +619,62 @@ class Medication(db.Model):
         if best_package:
             packages[best_package[0]] = best_package[1]
 
+        return packages
+    
+    def _calculate_packages_from_product(self, product, units_needed: int) -> Dict[str, int]:
+        """
+        Calculate optimal package combination using ProductPackage configurations.
+        
+        Args:
+            product: MedicationProduct with ProductPackage configurations
+            units_needed: Total units required
+            
+        Returns:
+            Dictionary with package_size names as keys and counts as values
+        """
+        packages = {}
+        
+        # If no units needed, return empty
+        if units_needed <= 0:
+            return packages
+        
+        # Build list of available packages from ProductPackage
+        available_packages = []
+        for pkg in product.packages:
+            if pkg.quantity and pkg.quantity > 0:
+                # Initialize the package count to 0
+                packages[pkg.package_size] = 0
+                available_packages.append((pkg.package_size, pkg.quantity))
+        
+        # Sort by package size in descending order (largest first)
+        available_packages.sort(key=lambda x: x[1], reverse=True)
+        
+        # If no packages defined, fall back to legacy system
+        if not available_packages:
+            # Fall back to legacy if product has no packages configured
+            legacy_packages = {"N1": 0, "N2": 0, "N3": 0}
+            if self.package_size_n1:
+                legacy_packages["N1"] = (units_needed + self.package_size_n1 - 1) // self.package_size_n1
+            return legacy_packages
+        
+        best_package = None
+        min_overage = float("inf")
+        
+        # Find the optimal package with minimum overage
+        for package_name, package_size in available_packages:
+            # Calculate how many packages we need and the resulting overage
+            count = (units_needed + package_size - 1) // package_size  # Ceiling division
+            total_units = count * package_size
+            overage = total_units - units_needed
+            
+            # Choose package with minimum overage
+            # If same overage, prefer larger packages (they come first in sorted list)
+            if overage < min_overage:
+                min_overage = overage
+                best_package = (package_name, count)
+        
+        # Set the count for the best package
+        if best_package:
+            packages[best_package[0]] = best_package[1]
+        
         return packages

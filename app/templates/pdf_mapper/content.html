@@ -1,0 +1,1301 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Configure PDF Template') }} - {{ _('Medication Tracker') }}{% endblock %}
+
+{% block head_extra %}
+<style>
+    .mapper-container {
+        display: flex;
+        gap: 20px;
+        min-height: 600px;
+    }
+    
+    /* Left Panel - Available Fields */
+    .fields-panel {
+        flex: 0 0 300px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        overflow-y: auto;
+    }
+    
+    .field-category {
+        margin-bottom: 1.5rem;
+    }
+    
+    .field-item {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        cursor: move;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .field-item:hover {
+        border-color: var(--bs-primary);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    
+    .field-item.dragging {
+        opacity: 0.5;
+    }
+    
+    /* Right Panel - PDF Preview */
+    .pdf-panel {
+        flex: 1;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        overflow: auto;
+    }
+    
+    /* Column Configuration - Vertical List */
+    .columns-config {
+        margin-top: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        background: #f8f9fa;
+    }
+    
+    .column-config-item {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .column-config-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .column-config-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .column-number {
+        font-weight: bold;
+        color: var(--bs-primary);
+        font-size: 1.1rem;
+    }
+    
+    .drop-zone {
+        min-height: 60px;
+        border: 2px dashed #dee2e6;
+        border-radius: 5px;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+    
+    .drop-zone.drag-over {
+        border-color: var(--bs-success);
+        background: #d4edda;
+    }
+    
+    .drop-zone.has-fields {
+        border-style: solid;
+        background: #f0f8ff;
+    }
+    
+    .dropped-field {
+        background: var(--bs-primary);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        cursor: move;
+        transition: all 0.2s;
+        position: relative;
+    }
+    
+    .dropped-field:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .dropped-field.dragging {
+        opacity: 0.5;
+        z-index: 1000;
+    }
+    
+    .dropped-field .drag-handle {
+        cursor: move;
+        opacity: 0.7;
+        margin-right: 0.25rem;
+    }
+    
+    .dropped-field .remove-btn {
+        cursor: pointer;
+        opacity: 0.8;
+        margin-left: 0.25rem;
+    }
+    
+    .dropped-field .remove-btn:hover {
+        opacity: 1;
+    }
+    
+    /* Visual feedback for drop position */
+    .drop-zone.drag-over-reorder {
+        background: #e7f3ff;
+    }
+    
+    .drop-indicator {
+        height: 2px;
+        background: var(--bs-success);
+        margin: 0.25rem 0;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    
+    .drop-indicator.active {
+        opacity: 1;
+    }
+    
+    /* Preview Table */
+    .preview-section {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 2px solid #dee2e6;
+    }
+    
+    .preview-table-wrapper {
+        overflow-x: auto;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+    
+    .preview-table {
+        width: 100%;
+        min-width: 600px;
+        border-collapse: collapse;
+    }
+    
+    .preview-table thead {
+        background: #e9ecef;
+        font-weight: bold;
+    }
+    
+    .preview-table th,
+    .preview-table td {
+        padding: 0.75rem;
+        border: 1px solid #dee2e6;
+        text-align: left;
+        font-size: 0.875rem;
+    }
+    
+    .preview-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .preview-cell.empty {
+        color: #999;
+        font-style: italic;
+    }
+    
+    /* Tab Order Panel */
+    .tab-order-panel {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .tab-order-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .tab-order-item {
+        background: white;
+        border: 1px solid #dee2e6;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        cursor: move;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .tab-order-item .badge {
+        min-width: 30px;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        position: sticky;
+        top: 0;
+        background: white;
+        padding: 1rem 0;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 1rem;
+        z-index: 10;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .mapper-container {
+            flex-direction: column;
+        }
+        
+        .fields-panel {
+            flex: none;
+            width: 100%;
+            max-height: 300px;
+            margin-bottom: 1rem;
+        }
+        
+        .pdf-panel {
+            width: 100%;
+        }
+        
+        .columns-config {
+            max-height: none;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .action-buttons .btn-group {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        
+        .preview-table {
+            font-size: 0.75rem;
+        }
+        
+        .preview-table th,
+        .preview-table td {
+            padding: 0.5rem;
+        }
+    }
+    
+    /* Structure mapping styles */
+    .structure-drop-zone {
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+    
+    .structure-drop-zone.drag-over {
+        background: rgba(13, 110, 253, 0.1);
+        border-color: #0d6efd !important;
+    }
+    
+    .field-item {
+        padding: 5px 10px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        cursor: move;
+        transition: all 0.2s ease;
+    }
+    
+    .field-item:hover {
+        background: #e9ecef;
+    }
+    
+    .field-item.dragging {
+        opacity: 0.5;
+    }
+    
+    .mapped.badge {
+        cursor: default;
+        display: inline-block;
+    }
+    
+    /* Progress Steps Styling */
+    .mapping-progress {
+        background: linear-gradient(to right, #f8f9fa, #fff);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    
+    .step-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .step-indicator.active .step-circle {
+        background: #339af0;
+        color: white;
+        box-shadow: 0 0 0 4px rgba(51, 154, 240, 0.2);
+    }
+    
+    .step-indicator.completed .step-circle {
+        background: #51cf66;
+        color: white;
+    }
+    
+    .step-indicator.pending .step-circle {
+        background: #e9ecef;
+        color: #adb5bd;
+    }
+    
+    .step-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        transition: all 0.3s ease;
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .step-label {
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .step-indicator.active .step-label {
+        color: #339af0;
+        font-weight: 600;
+    }
+    
+    .step-indicator.completed .step-label {
+        color: #51cf66;
+    }
+    
+    .step-connector {
+        width: 100px;
+        height: 2px;
+        background: #dee2e6;
+        margin: 0 10px;
+        margin-bottom: 28px;
+        transition: all 0.3s ease;
+    }
+    
+    .step-connector.completed {
+        background: #51cf66;
+    }
+    
+    .step-link {
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .step-link:hover .step-circle {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Progress Steps -->
+    <div class="mapping-progress">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('pdf_mapper.index') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Templates') }}
+            </a>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator {% if template.structure_mapping %}completed{% else %}pending{% endif %}">
+                    <a href="{{ url_for('pdf_mapper.structure_view', id=template.id) }}" class="step-link">
+                        <div class="step-circle">
+                            <i class="fas fa-table"></i>
+                        </div>
+                        <div class="step-label">{{ _('Structure') }}</div>
+                    </a>
+                </div>
+                
+                <div class="step-connector {% if template.structure_mapping %}completed{% endif %}"></div>
+                
+                <div class="step-indicator {% if template.column_formulas %}completed{% else %}active{% endif %}">
+                    <div class="step-circle">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="step-label">{{ _('Content') }}</div>
+                </div>
+                
+                <div class="step-connector {% if template.column_formulas %}completed{% endif %}"></div>
+                
+                <div class="step-indicator {% if template.column_formulas %}completed{% else %}pending{% endif %}">
+                    <div class="step-circle">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="step-label">{{ _('Ready') }}</div>
+                </div>
+            </div>
+            <div style="width: 150px;"></div> <!-- Spacer for balance -->
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-database me-2"></i>{{ _('Content Mapping') }}
+            <small class="text-muted">{{ template.name }}</small>
+        </h1>
+        <div>
+            <a href="{{ url_for('pdf_mapper.structure_view', id=template.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-table me-1"></i>{{ _('Edit Structure') }}
+            </a>
+            <a href="{{ url_for('pdf_mapper.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Templates') }}
+            </a>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <div class="btn-group" role="group">
+            <button class="btn btn-outline-primary" onclick="detectFields()">
+                <i class="fas fa-search me-1"></i>{{ _('Detect PDF Fields') }}
+            </button>
+            <button class="btn btn-outline-primary" onclick="applyTabOrder()">
+                <i class="fas fa-sort me-1"></i>{{ _('Set Tab Order') }}
+            </button>
+            <button class="btn btn-outline-primary" onclick="previewWithData()">
+                <i class="fas fa-eye me-1"></i>{{ _('Preview') }}
+            </button>
+        </div>
+        
+        <button class="btn btn-success float-end" onclick="saveMappings()">
+            <i class="fas fa-save me-1"></i>{{ _('Save Configuration') }}
+        </button>
+    </div>
+
+    <!-- Main Mapper Interface -->
+    <div class="mapper-container">
+        <!-- Left Panel: Available Fields -->
+        <div class="fields-panel">
+            <h5 class="mb-3">{{ _('Available Fields') }}</h5>
+            <div class="alert alert-info small">
+                <i class="fas fa-info-circle me-1"></i>
+                {{ _('Drag fields to columns below') }}
+            </div>
+            
+            {% for category, fields in available_fields.items() %}
+            <div class="field-category">
+                <h6 class="text-muted text-uppercase small">{{ category }}</h6>
+                {% for field in fields %}
+                <div class="field-item" draggable="true" data-field-id="{{ field.id }}" data-field-label="{{ field.label }}">
+                    <span>{{ field.icon }}</span>
+                    <span>{{ field.label }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Right Panel: PDF Table Configuration -->
+        <div class="pdf-panel">
+            <h5>{{ _('Table Configuration') }}</h5>
+            <div class="alert alert-info">
+                <i class="fas fa-table me-2"></i>
+                {{ _('Configured for %(rows)s rows × %(cols)s columns', rows=template.rows_per_page, cols=template.columns_count) }}
+            </div>
+
+            <!-- Column Configuration List -->
+            <h6>{{ _('Column Mappings') }}</h6>
+            <div class="columns-config">
+                {% for col in range(1, template.columns_count + 1) %}
+                <div class="column-config-item">
+                    <div class="column-config-header">
+                        <span class="column-number">{{ _('Column %(num)s', num=col) }}</span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearColumn({{ col }})">
+                            <i class="fas fa-times me-1"></i>{{ _('Clear') }}
+                        </button>
+                    </div>
+                    <div class="drop-zone" data-column="{{ col }}">
+                        <div class="text-muted small">{{ _('Drop fields here') }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-section">
+                <h6>{{ _('Data Preview') }}</h6>
+                <div class="preview-table-wrapper">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                {% for col in range(1, template.columns_count + 1) %}
+                                <th>{{ _('Column %(num)s', num=col) }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in range(1, 4) %}
+                            <tr>
+                                {% for col in range(1, template.columns_count + 1) %}
+                                <td class="preview-cell empty" data-row="{{ row }}" data-column="{{ col }}">
+                                    <em>{{ _('Empty') }}</em>
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Order Configuration -->
+            <div class="tab-order-panel">
+                <h6>{{ _('Tab Order') }}</h6>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="tab_pattern" id="tab_lr" value="lr" checked>
+                    <label class="form-check-label" for="tab_lr">
+                        {{ _('Left → Right, Top → Bottom') }}
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="tab_pattern" id="tab_tb" value="tb">
+                    <label class="form-check-label" for="tab_tb">
+                        {{ _('Top → Bottom, Left → Right') }}
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let fieldMappings = {{ template.field_mappings | tojson if template.field_mappings else '{}' }};
+let columnFormulas = {{ template.column_formulas | tojson if template.column_formulas else '{}' }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDragDrop();
+    loadExistingMappings();
+});
+
+function initializeDragDrop() {
+    // Make fields draggable
+    document.querySelectorAll('.field-item').forEach(item => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+    });
+    
+    // Make drop zones droppable
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.addEventListener('dragover', handleDragOver);
+        zone.addEventListener('drop', handleDrop);
+        zone.addEventListener('dragleave', handleDragLeave);
+        zone.addEventListener('dragenter', handleDragEnter);
+    });
+    
+    // Initialize any existing dropped fields as draggable
+    initializeDroppedFields();
+}
+
+function initializeDroppedFields() {
+    // Make all dropped fields draggable
+    document.querySelectorAll('.dropped-field').forEach(field => {
+        makeFieldDraggable(field);
+    });
+}
+
+function makeFieldDraggable(field) {
+    field.draggable = true;
+    field.addEventListener('dragstart', handleChipDragStart);
+    field.addEventListener('dragend', handleChipDragEnd);
+}
+
+let draggedElement = null;
+let draggedType = null; // 'new-field' or 'existing-chip'
+let draggedFromColumn = null;
+
+function handleDragStart(e) {
+    draggedElement = e.target;
+    draggedType = 'new-field';
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('field-id', e.target.dataset.fieldId);
+    e.dataTransfer.setData('field-label', e.target.dataset.fieldLabel);
+    e.dataTransfer.setData('drag-type', 'new-field');
+    e.target.classList.add('dragging');
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+    draggedElement = null;
+    draggedType = null;
+}
+
+function handleChipDragStart(e) {
+    draggedElement = e.target;
+    draggedType = 'existing-chip';
+    draggedFromColumn = e.target.closest('.drop-zone').dataset.column;
+    
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('field-id', e.target.dataset.field);
+    e.dataTransfer.setData('field-label', e.target.textContent.replace('×', '').trim());
+    e.dataTransfer.setData('drag-type', 'existing-chip');
+    e.dataTransfer.setData('from-column', draggedFromColumn);
+    e.target.classList.add('dragging');
+}
+
+function handleChipDragEnd(e) {
+    e.target.classList.remove('dragging');
+    draggedElement = null;
+    draggedType = null;
+    draggedFromColumn = null;
+}
+
+function handleDragEnter(e) {
+    if (e.target.classList.contains('drop-zone')) {
+        e.target.classList.add('drag-over-reorder');
+    }
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    
+    const dragType = draggedType || 'new-field';
+    e.dataTransfer.dropEffect = dragType === 'existing-chip' ? 'move' : 'copy';
+    
+    // Add visual feedback for drop position
+    const zone = e.target.closest('.drop-zone');
+    if (zone) {
+        zone.classList.add('drag-over');
+        
+        // Clear all previous indicators
+        zone.querySelectorAll('.dropped-field').forEach(field => {
+            field.style.borderTop = '';
+            field.style.borderBottom = '';
+        });
+        
+        // Show where the item will be inserted for existing chips
+        if (dragType === 'existing-chip') {
+            const targetChip = e.target.closest('.dropped-field');
+            if (targetChip && targetChip !== draggedElement) {
+                const rect = targetChip.getBoundingClientRect();
+                const midpoint = rect.top + rect.height / 2;
+                
+                if (e.clientY < midpoint) {
+                    targetChip.style.borderTop = '3px solid var(--bs-success)';
+                } else {
+                    targetChip.style.borderBottom = '3px solid var(--bs-success)';
+                }
+            }
+        }
+    }
+    
+    return false;
+}
+
+function handleDragLeave(e) {
+    if (e.target.classList.contains('drop-zone')) {
+        e.target.classList.remove('drag-over');
+        e.target.classList.remove('drag-over-reorder');
+        
+        // Clear all insertion indicators in the zone
+        e.target.querySelectorAll('.dropped-field').forEach(field => {
+            field.style.borderTop = '';
+            field.style.borderBottom = '';
+        });
+    }
+}
+
+function handleDrop(e) {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+    e.preventDefault();
+    
+    const zone = e.currentTarget.closest('.drop-zone') || e.currentTarget;
+    zone.classList.remove('drag-over');
+    zone.classList.remove('drag-over-reorder');
+    
+    // Clear insertion indicators
+    zone.querySelectorAll('.dropped-field').forEach(field => {
+        field.style.borderTop = '';
+        field.style.borderBottom = '';
+    });
+    
+    const fieldId = e.dataTransfer.getData('field-id');
+    const fieldLabel = e.dataTransfer.getData('field-label');
+    const dragType = e.dataTransfer.getData('drag-type') || draggedType || 'new-field';
+    const fromColumn = e.dataTransfer.getData('from-column') || draggedFromColumn;
+    const toColumn = zone.dataset.column;
+    
+    // Find the target element (where to insert)
+    const targetChip = e.target.closest('.dropped-field');
+    
+    if (dragType === 'existing-chip') {
+        // Moving an existing chip
+        if (fromColumn === toColumn) {
+            // Rearranging within the same column
+            rearrangeFieldInColumn(toColumn, fieldId, targetChip, e.clientY);
+        } else {
+            // Moving to a different column
+            moveFieldBetweenColumns(fromColumn, toColumn, fieldId, fieldLabel, targetChip, e.clientY);
+        }
+    } else {
+        // Adding a new field from the sidebar
+        addFieldToColumn(toColumn, fieldId, fieldLabel);
+    }
+    
+    updatePreview();
+    return false;
+}
+
+function addFieldToColumn(column, fieldId, fieldLabel, skipFormulaUpdate = false) {
+    const zone = document.querySelector(`.drop-zone[data-column="${column}"]`);
+    
+    // Check if field already exists
+    if (zone.querySelector(`[data-field="${fieldId}"]`)) {
+        return;
+    }
+    
+    // Clear placeholder text
+    const placeholder = zone.querySelector('.text-muted');
+    if (placeholder) {
+        placeholder.remove();
+    }
+    
+    // Add field chip with drag handle
+    const chip = document.createElement('div');
+    chip.className = 'dropped-field';
+    chip.dataset.field = fieldId;
+    chip.draggable = true;
+    chip.innerHTML = `
+        <span class="drag-handle">⋮⋮</span>
+        ${fieldLabel}
+        <span class="remove-btn" onclick="removeField('${column}', '${fieldId}')">×</span>
+    `;
+    
+    zone.appendChild(chip);
+    zone.classList.add('has-fields');
+    
+    // Make the new chip draggable
+    makeFieldDraggable(chip);
+    
+    // Update column formula only if not loading existing mappings
+    if (!skipFormulaUpdate) {
+        if (!columnFormulas[column]) {
+            columnFormulas[column] = { fields: [], separator: ' ' };
+        }
+        if (!columnFormulas[column].fields.includes(fieldId)) {
+            columnFormulas[column].fields.push(fieldId);
+        }
+    }
+}
+
+function rearrangeFieldInColumn(column, fieldId, targetElement, mouseY) {
+    // Find the dragged chip
+    const draggedChip = document.querySelector(`.drop-zone[data-column="${column}"] .dropped-field[data-field="${fieldId}"]`);
+    if (!draggedChip) return;
+    
+    // Don't do anything if dropping on itself
+    if (targetElement === draggedChip) return;
+    
+    const zone = document.querySelector(`.drop-zone[data-column="${column}"]`);
+    
+    // Determine where to insert based on the target
+    if (targetElement && targetElement.classList.contains('dropped-field')) {
+        // Get the target's position
+        const rect = targetElement.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+        
+        // Insert before or after based on mouse Y position
+        if (mouseY < midpoint) {
+            // Insert before the target
+            targetElement.parentNode.insertBefore(draggedChip, targetElement);
+        } else {
+            // Insert after the target
+            if (targetElement.nextSibling) {
+                targetElement.parentNode.insertBefore(draggedChip, targetElement.nextSibling);
+            } else {
+                zone.appendChild(draggedChip);
+            }
+        }
+    } else {
+        // If no specific target, append to the end
+        zone.appendChild(draggedChip);
+    }
+    
+    // Update the column formula to match the new order
+    updateColumnFormulaOrder(column);
+}
+
+function moveFieldBetweenColumns(fromColumn, toColumn, fieldId, fieldLabel, targetElement, mouseY) {
+    // Remove from source column
+    removeField(fromColumn, fieldId);
+    
+    // Add to target column
+    const zone = document.querySelector(`.drop-zone[data-column="${toColumn}"]`);
+    
+    // Clear placeholder if exists
+    const placeholder = zone.querySelector('.text-muted');
+    if (placeholder) {
+        placeholder.remove();
+    }
+    
+    // Create new chip
+    const chip = document.createElement('div');
+    chip.className = 'dropped-field';
+    chip.dataset.field = fieldId;
+    chip.draggable = true;
+    chip.innerHTML = `
+        <span class="drag-handle">⋮⋮</span>
+        ${fieldLabel}
+        <span class="remove-btn" onclick="removeField('${toColumn}', '${fieldId}')">×</span>
+    `;
+    
+    // Insert at the right position
+    if (targetElement && targetElement.classList.contains('dropped-field')) {
+        const rect = targetElement.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+        
+        if (mouseY < midpoint) {
+            targetElement.parentNode.insertBefore(chip, targetElement);
+        } else {
+            if (targetElement.nextSibling) {
+                targetElement.parentNode.insertBefore(chip, targetElement.nextSibling);
+            } else {
+                zone.appendChild(chip);
+            }
+        }
+    } else {
+        zone.appendChild(chip);
+    }
+    
+    zone.classList.add('has-fields');
+    makeFieldDraggable(chip);
+    
+    // Update column formulas
+    updateColumnFormulaOrder(toColumn);
+}
+
+function updateColumnFormulaOrder(column) {
+    // Rebuild the fields array based on the current DOM order
+    const zone = document.querySelector(`.drop-zone[data-column="${column}"]`);
+    const chips = zone.querySelectorAll('.dropped-field');
+    
+    if (chips.length === 0) {
+        delete columnFormulas[column];
+        return;
+    }
+    
+    if (!columnFormulas[column]) {
+        columnFormulas[column] = { fields: [], separator: ' ' };
+    }
+    
+    columnFormulas[column].fields = Array.from(chips).map(chip => chip.dataset.field);
+}
+
+function removeField(column, fieldId) {
+    const zone = document.querySelector(`.drop-zone[data-column="${column}"]`);
+    const chip = zone.querySelector(`[data-field="${fieldId}"]`);
+    
+    if (chip) {
+        chip.remove();
+    }
+    
+    // Update column formula
+    if (columnFormulas[column]) {
+        columnFormulas[column].fields = columnFormulas[column].fields.filter(f => f !== fieldId);
+        
+        if (columnFormulas[column].fields.length === 0) {
+            delete columnFormulas[column];
+            zone.classList.remove('has-fields');
+            
+            // Add placeholder back
+            const placeholder = document.createElement('div');
+            placeholder.className = 'text-muted small';
+            placeholder.textContent = '{{ _("Drop fields here") }}';
+            zone.appendChild(placeholder);
+        }
+    }
+    
+    updatePreview();
+}
+
+function clearColumn(column) {
+    // Clear all fields from a column
+    const zone = document.querySelector(`.drop-zone[data-column="${column}"]`);
+    
+    // Remove all field chips
+    zone.querySelectorAll('.dropped-field').forEach(chip => {
+        chip.remove();
+    });
+    
+    // Remove from columnFormulas
+    delete columnFormulas[column];
+    
+    // Add placeholder back
+    if (!zone.querySelector('.text-muted')) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'text-muted small';
+        placeholder.textContent = '{{ _("Drop fields here") }}';
+        zone.appendChild(placeholder);
+    }
+    
+    zone.classList.remove('has-fields');
+    updatePreview();
+}
+
+function updatePreview() {
+    // Always use space as separator
+    Object.keys(columnFormulas).forEach(column => {
+        if (columnFormulas[column]) {
+            columnFormulas[column].separator = ' ';
+        }
+    });
+    
+    // Generate different sample data for each row
+    const sampleDataRows = [
+        {
+            'brand_name': 'Ibuprofen 400mg',
+            'manufacturer': '1A Pharma',
+            'display_name': 'Ibuprofen 400mg (1A Pharma)',
+            'active_ingredient': 'Ibuprofen',
+            'strength': '400',
+            'unit': 'mg',
+            'package_size': 'N2',
+            'quantity': '50',
+            'pzn': '12345678',
+            'gtin': '4150123456789',
+            'physician': 'Dr. Smith',
+            'instructions': 'Take with food',
+            'notes': 'Take with food',
+            // Dosage fields
+            'daily_units': '2',
+            'dosage_form': 'tablets',
+            'strength_value': '400',
+            'strength_unit': 'mg',
+            'daily_dosage': '800 mg',
+            // Order fields
+            'packages_ordered': '2',
+            'package_size_ordered': 'N2',
+            'total_units': '100',
+            'days_supply': '50',
+            'months_supply': '1.7'
+        },
+        {
+            'brand_name': 'Pantoprazol 20mg',
+            'manufacturer': 'Hexal',
+            'display_name': 'Pantoprazol 20mg (Hexal)',
+            'active_ingredient': 'Pantoprazole',
+            'strength': '20',
+            'unit': 'mg',
+            'package_size': 'N3',
+            'quantity': '100',
+            'pzn': '87654321',
+            'gtin': '4150987654321',
+            'physician': 'Dr. Johnson',
+            'instructions': 'Before breakfast',
+            'notes': '30 min before meal',
+            // Dosage fields
+            'daily_units': '1',
+            'dosage_form': 'tablets',
+            'strength_value': '20',
+            'strength_unit': 'mg',
+            'daily_dosage': '20 mg',
+            // Order fields
+            'packages_ordered': '3',
+            'package_size_ordered': 'N3',
+            'total_units': '300',
+            'days_supply': '300',
+            'months_supply': '10'
+        },
+        {
+            'brand_name': 'Amoxicillin 500mg',
+            'manufacturer': 'Ratiopharm',
+            'display_name': 'Amoxicillin 500mg (Ratiopharm)',
+            'active_ingredient': 'Amoxicillin',
+            'strength': '500',
+            'unit': 'mg',
+            'package_size': 'N1',
+            'quantity': '20',
+            'pzn': '11223344',
+            'gtin': '4150112233445',
+            'physician': 'Dr. Mueller',
+            'instructions': 'Every 8 hours',
+            'notes': 'Complete full course',
+            // Dosage fields
+            'daily_units': '3',
+            'dosage_form': 'capsules',
+            'strength_value': '500',
+            'strength_unit': 'mg',
+            'daily_dosage': '1500 mg',
+            // Order fields
+            'packages_ordered': '1',
+            'package_size_ordered': 'N1',
+            'total_units': '20',
+            'days_supply': '7',
+            'months_supply': '0.2'
+        }
+    ];
+    
+    // Update preview cells
+    document.querySelectorAll('.preview-cell').forEach(cell => {
+        const row = parseInt(cell.dataset.row) - 1; // Convert to 0-based index
+        const column = cell.dataset.column;
+        const sampleData = sampleDataRows[row] || sampleDataRows[0]; // Fallback to first row if needed
+        
+        if (columnFormulas[column] && columnFormulas[column].fields.length > 0) {
+            const values = [];
+            columnFormulas[column].fields.forEach(fieldId => {
+                if (sampleData[fieldId]) {
+                    values.push(sampleData[fieldId]);
+                }
+            });
+            
+            cell.textContent = values.join(columnFormulas[column].separator || ' ');
+            cell.classList.remove('empty');
+        } else {
+            cell.innerHTML = `<em>{{ _('Empty') }}</em>`;
+            cell.classList.add('empty');
+        }
+    });
+}
+
+function loadExistingMappings() {
+    // Load existing column formulas if any
+    if (Object.keys(columnFormulas).length > 0) {
+        Object.entries(columnFormulas).forEach(([column, formula]) => {
+            formula.fields.forEach(fieldId => {
+                // Find the field label
+                const fieldElement = document.querySelector(`.field-item[data-field-id="${fieldId}"]`);
+                if (fieldElement) {
+                    const fieldLabel = fieldElement.dataset.fieldLabel;
+                    // Pass true to skip formula update since we're loading existing formulas
+                    addFieldToColumn(column, fieldId, fieldLabel, true);
+                }
+            });
+        });
+        
+        updatePreview();
+    }
+}
+
+function detectFields() {
+    showToast('{{ _("Detecting PDF form fields...") }}', 'info');
+    
+    fetch(`/pdf-mapper/template/{{ template.id }}/detect-fields`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.existing_fields) {
+                showToast(`{{ _('Found %(count)s existing form fields in the PDF!') }}`.replace('%(count)s', data.fields_count), 'success');
+                
+                // Show the detected fields
+                displayDetectedFields(data.fields);
+            }
+        } else if (data.needs_creation) {
+            // Ask user if they want to create grid fields
+            if (confirm(data.message + '\n\n' + '{{ _("This will add a grid of form fields to your PDF. Continue?") }}')) {
+                createGridFields();
+            }
+        } else {
+            showToast(data.message || '{{ _("Error detecting fields") }}', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('{{ _("Failed to detect fields") }}', 'error');
+        console.error('Field detection error:', error);
+    });
+}
+
+function createGridFields() {
+    showToast('{{ _("Creating form field grid...") }}', 'info');
+    
+    fetch(`/pdf-mapper/template/{{ template.id }}/create-grid-fields`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showToast(data.error || '{{ _("Error creating fields") }}', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('{{ _("Failed to create fields") }}', 'error');
+        console.error('Field creation error:', error);
+    });
+}
+
+function displayDetectedFields(fields) {
+    // Show message and redirect to structure mapping
+    showToast(`{{ _('Found %(count)s form fields. Please configure the structure mapping first.') }}`.replace('%(count)s', fields.length), 'info');
+    
+    // Redirect to structure view after a short delay
+    setTimeout(() => {
+        window.location.href = "{{ url_for('pdf_mapper.structure_view', id=template.id) }}";
+    }, 2000);
+}
+
+function analyzeFieldPattern(fields) {
+    // Analyze field names to detect pattern
+    const fieldNames = fields.map(f => f.name);
+    
+    // Count numbered fields (e.g., med_1, med_2, etc.)
+    const numberedFields = {};
+    fieldNames.forEach(name => {
+        const match = name.match(/(.+?)_?(\d+)$/);
+        if (match) {
+            const base = match[1];
+            const num = parseInt(match[2]);
+            if (!numberedFields[base]) numberedFields[base] = [];
+            numberedFields[base].push(num);
+        }
+    });
+    
+    // Find the maximum row number
+    let maxRow = 0;
+    Object.values(numberedFields).forEach(nums => {
+        const max = Math.max(...nums);
+        if (max > maxRow) maxRow = max;
+    });
+    
+    return {
+        rowCount: maxRow || 1,
+        numberedFields: numberedFields,
+        hasPattern: Object.keys(numberedFields).length > 0
+    };
+}
+
+// Structure mapping is now handled in a separate view at /pdf-mapper/template/<id>/structure
+
+function applyTabOrder() {
+    const pattern = document.querySelector('input[name="tab_pattern"]:checked').value;
+    const tabOrder = [];
+    
+    if (pattern === 'lr') {
+        // Left to right, top to bottom
+        for (let row = 1; row <= {{ template.rows_per_page }}; row++) {
+            for (let col = 1; col <= {{ template.columns_count }}; col++) {
+                tabOrder.push(`row_${row}_col_${col}`);
+            }
+        }
+    } else {
+        // Top to bottom, left to right
+        for (let col = 1; col <= {{ template.columns_count }}; col++) {
+            for (let row = 1; row <= {{ template.rows_per_page }}; row++) {
+                tabOrder.push(`row_${row}_col_${col}`);
+            }
+        }
+    }
+    
+    // Save tab order with mappings
+    fieldMappings.tab_order = tabOrder;
+    showToast('{{ _("Tab order set successfully") }}', 'success');
+}
+
+function previewWithData() {
+    fetch(`{{ url_for('pdf_mapper.preview_template', id=template.id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            column_formulas: columnFormulas
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('{{ _("Preview generated successfully") }}', 'success');
+            window.open(data.preview_url, '_blank');
+        } else {
+            showToast(data.error || '{{ _("Error generating preview") }}', 'error');
+        }
+    });
+}
+
+function saveMappings() {
+    // Always use space as separator
+    Object.keys(columnFormulas).forEach(column => {
+        if (columnFormulas[column]) {
+            columnFormulas[column].separator = ' ';
+        }
+    });
+    
+    // Get tab order
+    const pattern = document.querySelector('input[name="tab_pattern"]:checked').value;
+    const tabOrder = [];
+    
+    if (pattern === 'lr') {
+        for (let row = 1; row <= {{ template.rows_per_page }}; row++) {
+            for (let col = 1; col <= {{ template.columns_count }}; col++) {
+                tabOrder.push(`row_${row}_col_${col}`);
+            }
+        }
+    } else {
+        for (let col = 1; col <= {{ template.columns_count }}; col++) {
+            for (let row = 1; row <= {{ template.rows_per_page }}; row++) {
+                tabOrder.push(`row_${row}_col_${col}`);
+            }
+        }
+    }
+    
+    fetch(`{{ url_for('pdf_mapper.save_mappings', id=template.id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            field_mappings: fieldMappings,
+            column_formulas: columnFormulas,
+            tab_order: tabOrder
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('{{ _("Configuration saved successfully!") }}', 'success');
+            setTimeout(() => {
+                window.location.href = '{{ url_for("pdf_mapper.index") }}';
+            }, 1500);
+        } else {
+            showToast(data.error || '{{ _("Error saving configuration") }}', 'error');
+        }
+    });
+}
+
+// Preview updates are now automatic when fields are added/removed
+</script>
+{% endblock %}

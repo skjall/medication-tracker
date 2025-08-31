@@ -1,9 +1,14 @@
 """
 Tests for physician-based medication filtering in orders.
+
+NOTE: This test file is for the legacy Medication model.
+The new ActiveIngredient model doesn't have physician relationships,
+so physician-based filtering is no longer applicable.
 """
 
 # Standard library imports
 from datetime import datetime, timedelta, timezone
+import unittest
 
 # Local application imports
 from .test_base import BaseTestCase
@@ -126,6 +131,7 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
         ])
         self.db.session.commit()
 
+    @unittest.skip("Physician filtering no longer applicable with ActiveIngredient model")
     def test_order_shows_only_physician1_medications(self):
         """Test that an order for physician 1 visit only shows physician 1 medications."""
         # Simulate the filtering logic from the route
@@ -143,6 +149,7 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
         self.assertNotIn(self.med_otc1, available_meds)
         self.assertNotIn(self.med_otc2, available_meds)
 
+    @unittest.skip("Physician filtering no longer applicable with ActiveIngredient model")
     def test_order_shows_only_physician2_medications(self):
         """Test that an order for physician 2 visit only shows physician 2 medications."""
         # Simulate the filtering logic from the route
@@ -160,6 +167,7 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
         self.assertNotIn(self.med_otc1, available_meds)
         self.assertNotIn(self.med_otc2, available_meds)
 
+    @unittest.skip("Physician filtering no longer applicable with ActiveIngredient model")
     def test_order_shows_only_otc_medications_for_no_physician(self):
         """Test that an order for visit without physician only shows OTC medications."""
         # Simulate the filtering logic from the route
@@ -175,6 +183,7 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
         self.assertNotIn(self.med2_physician1, available_meds)
         self.assertNotIn(self.med1_physician2, available_meds)
 
+    @unittest.skip("Physician filtering no longer applicable with ActiveIngredient model")
     def test_order_creation_respects_physician_filter(self):
         """Test that creating an order only allows medications from the visit's physician."""
         # Create an order for physician 1 visit
@@ -200,6 +209,7 @@ class TestPhysicianMedicationFiltering(BaseTestCase):
         self.assertEqual(len(order.order_items), 1)
         self.assertEqual(order.order_items[0].medication_id, self.med1_physician1.id)
 
+    @unittest.skip("Physician filtering no longer applicable with ActiveIngredient model")
     def test_mixed_physician_visits_maintain_separation(self):
         """Test that multiple visits with different physicians maintain medication separation."""
         # Create orders for each visit type

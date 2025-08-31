@@ -1,5 +1,6 @@
-"""
-This module provides functionality to fill a PDF prescription form
+"""PDF Utilities for generating order PDFs.
+
+This module provides functionality to fill a PDF order form
 """
 
 # Standard library imports
@@ -15,107 +16,21 @@ from pypdf import PdfReader, PdfWriter
 logger = logging.getLogger(__name__)
 
 
-def fill_prescription_form(
-    template_path: str,
-    output_path: str,
-    form_data: Dict[str, str],
-    field_mappings: Dict[int, str],
-    first_tab_index: int,
-    medications: List[Dict[str, Any]],
-    medications_per_page: int = 15,
-) -> bool:
-    """
-    Fill a PDF prescription form with the given data.
 
-    Args:
-        template_path: Path to the template PDF file
-        output_path: Path where the filled PDF will be saved
-        form_data: Dictionary with form field data (patient info, etc.)
-        field_mappings: Dictionary mapping column numbers to medication attributes
-        first_tab_index: Tab index of the first field in the form
-        medications: List of medication dictionaries with data to fill
-        medications_per_page: Maximum number of medications per page
-
-    Returns:
-        True if successful, False otherwise
-    """
-    try:
-        # Check if template exists
-        if not os.path.exists(template_path):
-            logger.error(f"Template file not found: {template_path}")
-            return False
-
-        # Open the template PDF
-        with open(template_path, "rb") as template_file:
-            pdf_reader = PdfReader(template_file)
-            pdf_writer = PdfWriter()
-
-            # Get the first page
-            template_page = pdf_reader.pages[0]
-
-            # Add the page to the writer
-            pdf_writer.add_page(template_page)
-
-            # Get form fields
-            form_fields = pdf_reader.get_fields()
-
-            if not form_fields:
-                logger.error("No form fields found in the template PDF")
-                return False
-
-            # Fill basic form data (patient info, etc.)
-            for field_name, value in form_data.items():
-                if field_name in form_fields:
-                    pdf_writer.update_page_form_field_values(0, {field_name: value})
-
-            # Fill medication data
-            num_meds = min(len(medications), medications_per_page)
-
-            for i in range(num_meds):
-                med = medications[i]
-
-                # Calculate base tab index for this medication row
-                row_base_index = first_tab_index + (i * len(field_mappings))
-
-                # Fill each field according to the mappings
-                for col_num, field_attr in field_mappings.items():
-                    # Calculate the field index for this cell
-                    field_index = row_base_index + int(col_num) - 1
-                    field_name = f"field{field_index}"
-
-                    # Get the value from the medication for this field
-                    value = med.get(field_attr, "")
-
-                    # Update the field
-                    pdf_writer.update_page_form_field_values(
-                        0, {field_name: str(value)}
-                    )
-
-            # Save the modified PDF
-            with open(output_path, "wb") as output_file:
-                pdf_writer.write(output_file)
-
-            return True
-
-    except Exception as e:
-        logger.error(f"Error filling prescription form: {e}")
-        return False
-
-
-def generate_prescription_pdf(
+def generate_order_pdf(
     order_id: int, template_id: Optional[int] = None
 ) -> Optional[str]:
     """
-    Generate a filled prescription PDF for the given order.
+    Generate a filled order PDF for the given order.
 
     Args:
         order_id: ID of the order to generate PDF for
-        template_id: Optional ID of the template to use (uses active template if None)
+        template_id: Optional ID of the template to use (uses physician's template if None)
 
     Returns:
         Path to the generated PDF file or None if generation failed
     """
-    from models import Order, PrescriptionTemplate
+    from models import Order, PDFTemplate
 
     try:
         # Get the order
@@ -124,15 +39,18 @@ def generate_prescription_pdf(
             logger.error(f"Order not found: {order_id}")
             return None
 
-        # Get template
-        template = None
+        # Get template from physician or use specified template
+        pdf_template = None
+        
         if template_id:
-            template = PrescriptionTemplate.query.get(template_id)
+            pdf_template = PDFTemplate.query.get(template_id)
         else:
-            template = PrescriptionTemplate.get_active_template()
+            # Check if physician has a PDF template assigned
+            if order.physician_visit and order.physician_visit.physician and order.physician_visit.physician.pdf_template:
+                pdf_template = order.physician_visit.physician.pdf_template
 
-        if not template:
-            logger.error("No active prescription template found")
+        if not pdf_template:
+            logger.error("No PDF template assigned to physician")
             return None
 
         # Create data for the form
@@ -143,58 +61,60 @@ def generate_prescription_pdf(
             or "",  # You might want to add patient name fields
         }
 
-        # Create medication data
-        medications = []
-        for item in order.order_items:
-            med = item.medication
-
-            # Create a dictionary with all possible fields
-            med_data = {
-                "medication_name": med.name,
-                "active_ingredient": med.active_ingredient or "",
-                "form": med.form or "",
-                "dosage": med.dosage,
-                "frequency": med.frequency,
-                "daily_usage": med.daily_usage,
-                "package_size_n1": med.package_size_n1,
-                "package_size_n2": med.package_size_n2,
-                "package_size_n3": med.package_size_n3,
-                "quantity_needed": item.quantity_needed,
-                "packages_n1": item.packages_n1,
-                "packages_n2": item.packages_n2,
-                "packages_n3": item.packages_n3,
-                "notes": med.notes or "",
-            }
-
-            medications.append(med_data)
-
+        # Use the PDFTemplate system
+        if not pdf_template.column_formulas:
+            logger.error(f"PDFTemplate {pdf_template.id} is not fully configured")
+            return None
+            
+        # Generate PDF using PDFTemplate's function
+        from routes.pdf_mapper import generate_filled_pdf_from_template
+        
+        # Get active ingredients from order items
+        order_ingredients = [item.active_ingredient for item in order.order_items]
+        
+        # Convert ingredients to a format the PDF generator can understand
+        # For now, try to find legacy medications that match the ingredients
+        from models import Medication
+        medications_for_pdf = []
+        for ingredient in order_ingredients:
+            # Try to find a medication with the same name as the ingredient
+            med = Medication.query.filter_by(name=ingredient.name).first()
+            if med:
+                medications_for_pdf.append(med)
+            else:
+                # If no matching medication, we'll need to update the PDF generator
+                logger.warning(f"No matching medication found for ingredient: {ingredient.name}")
+        
+        if not medications_for_pdf:
+            logger.error("No medications found for PDF generation")
+            return None
+        
         # Create the output directory if it doesn't exist
-        from flask import current_app
-
-        output_dir = os.path.join(current_app.root_path, "data", "prescriptions")
+        from utils import get_data_directory
+        output_dir = os.path.join(get_data_directory(), "orders")
         os.makedirs(output_dir, exist_ok=True)
 
         # Generate a unique filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"prescription_order_{order_id}_{timestamp}.pdf"
+        output_filename = f"order_{order_id}_{timestamp}.pdf"
         output_path = os.path.join(output_dir, output_filename)
-
-        # Fill the form
-        success = fill_prescription_form(
-            template_path=template.template_path,
-            output_path=output_path,
-            form_data=form_data,
-            field_mappings=template.column_mapping_dict,
-            first_tab_index=template.first_field_tab_index,
-            medications=medications,
-            medications_per_page=template.medications_per_page,
-        )
-
-        if success:
+        
+        try:
+            # Generate the PDF and save to our desired location
+            temp_path = generate_filled_pdf_from_template(pdf_template, medications_for_pdf)
+            
+            # Move the temp file to our desired location
+            import shutil
+            shutil.move(temp_path, output_path)
+            
             return output_path
-        else:
+        except FileNotFoundError as e:
+            logger.error(f"PDF template file not found: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Error generating PDF with PDFTemplate: {e}")
             return None
 
     except Exception as e:
-        logger.error(f"Error generating prescription PDF: {e}")
+        logger.error(f"Error generating order PDF: {e}")
         return None

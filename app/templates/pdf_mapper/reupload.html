@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Re-upload PDF') }} - {{ template.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-upload me-2"></i>{{ _('Re-upload PDF File') }}
+        </h1>
+        <a href="{{ url_for('pdf_mapper.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Templates') }}
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>{{ _('PDF File Missing') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ _('The PDF file for template "%(name)s" is missing. Please re-upload the PDF file.', name=template.name) }}
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="pdf_file" class="form-label">
+                                <i class="fas fa-file-pdf me-1"></i>{{ _('PDF File') }} <span class="text-danger">*</span>
+                            </label>
+                            <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept=".pdf" required>
+                            <div class="form-text">{{ _('Select the PDF file for this template') }}</div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>{{ _('Note:') }}</strong> {{ _('Your template configuration (structure and content mappings) will be preserved. Only the PDF file will be updated.') }}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('pdf_mapper.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-1"></i>{{ _('Upload PDF') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>{{ _('Template Information') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">{{ _('Name') }}:</dt>
+                        <dd class="col-sm-8">{{ template.name }}</dd>
+
+                        {% if template.description %}
+                        <dt class="col-sm-4">{{ _('Description') }}:</dt>
+                        <dd class="col-sm-8">{{ template.description }}</dd>
+                        {% endif %}
+
+                        <dt class="col-sm-4">{{ _('Grid Size') }}:</dt>
+                        <dd class="col-sm-8">{{ template.rows_per_page }} × {{ template.columns_count }}</dd>
+
+                        <dt class="col-sm-4">{{ _('Configuration') }}:</dt>
+                        <dd class="col-sm-8">
+                            {% if template.column_formulas %}
+                                <span class="badge bg-success">{{ _('Complete') }}</span>
+                            {% elif template.structure_mapping %}
+                                <span class="badge bg-info">{{ _('Structure mapped') }}</span>
+                            {% else %}
+                                <span class="badge bg-warning">{{ _('Not configured') }}</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

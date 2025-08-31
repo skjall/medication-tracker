@@ -1,0 +1,342 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ product.display_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-box-open me-2"></i>{{ product.display_name }}
+    </h1>
+    <div>
+        <a href="{{ url_for('ingredients.edit_product', id=product.id) }}" class="btn btn-outline-primary">
+            <i class="fas fa-edit me-1"></i>{{ _('Edit') }}
+        </a>
+        {% if not product.total_inventory_count or product.total_inventory_count == 0 %}
+        <form method="POST" action="{{ url_for('ingredients.delete_product', id=product.id) }}" 
+              onsubmit="return confirm('{{ _('Are you sure you want to delete this product?') }}');" 
+              class="d-inline">
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash me-1"></i>{{ _('Delete') }}
+            </button>
+        </form>
+        {% endif %}
+        <a href="{{ url_for('ingredients.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back') }}
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="{% if substitutes %}col-lg-8{% else %}col-12{% endif %}">
+        <!-- Product Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ _('Product Information') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">{{ _('Basic Information') }}</h6>
+                        <dl>
+                            <dt>{{ _('Active Ingredient') }}</dt>
+                            <dd>
+                                <a href="{{ url_for('ingredients.show', id=product.active_ingredient.id) }}">
+                                    {{ product.active_ingredient.full_name }}
+                                </a>
+                                <a href="{{ url_for('ingredients.edit', id=product.active_ingredient.id, return_url=request.url) }}" 
+                                   class="text-primary ms-2" title="{{ _('Edit ingredient') }}">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </dd>
+                            
+                            <dt>{{ _('Brand Name') }}</dt>
+                            <dd>{{ product.brand_name }}</dd>
+                            
+                            <dt>{{ _('Manufacturer') }}</dt>
+                            <dd>{{ product.manufacturer or _('Unknown') }}</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">{{ _('Order Information') }}</h6>
+                        <dl>
+                            <dt>{{ _('Substitution') }}</dt>
+                            <dd>
+                                {% if product.aut_idem %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check"></i> {{ _('Allowed (Aut idem)') }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times"></i> {{ _('Not allowed') }}
+                                    </span>
+                                {% endif %}
+                            </dd>
+                            
+                            <dt>{{ _('Type') }}</dt>
+                            <dd>
+                                {% if product.is_otc %}
+                                    <span class="badge bg-success">{{ _('Over-the-counter') }}</span>
+                                {% else %}
+                                    <span class="badge bg-primary">{{ _('Order required') }}</span>
+                                {% endif %}
+                            </dd>
+                            
+                            {% if product.physician %}
+                            <dt>{{ _('Physician') }}</dt>
+                            <dd>{{ product.physician.name }}</dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+                
+                {% if product.package_size_n1 or product.package_size_n2 or product.package_size_n3 %}
+                <hr>
+                <h6 class="text-muted">{{ _('Package Sizes') }}</h6>
+                <div class="row">
+                    {% if product.package_size_n1 %}
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <div class="h5 mb-0">N1</div>
+                            <div class="h3 text-primary">{{ product.package_size_n1 }}</div>
+                            <small class="text-muted">{{ _('units') }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if product.package_size_n2 %}
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <div class="h5 mb-0">N2</div>
+                            <div class="h3 text-primary">{{ product.package_size_n2 }}</div>
+                            <small class="text-muted">{{ _('units') }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if product.package_size_n3 %}
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <div class="h5 mb-0">N3</div>
+                            <div class="h3 text-primary">{{ product.package_size_n3 }}</div>
+                            <small class="text-muted">{{ _('units') }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if product.notes %}
+                <hr>
+                <h6 class="text-muted">{{ _('Notes') }}</h6>
+                <p>{{ product.notes }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Package Configurations -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ _('Package Configurations') }}</h5>
+                <a href="{{ url_for('ingredients.new_package', id=product.id) }}" class="btn btn-sm btn-light">
+                    <i class="fas fa-plus me-1"></i>{{ _('Add Package') }}
+                </a>
+            </div>
+            {% if product.packages %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Package Size') }}</th>
+                            <th>{{ _('Quantity') }}</th>
+                            <th>{{ _('National Drug Code') }}</th>
+                            <th>{{ _('GTIN') }}</th>
+                            <th>{{ _('List Price') }}</th>
+                            <th>{{ _('Actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for package in product.packages %}
+                        <tr>
+                            <td><strong>{{ package.package_size }}</strong></td>
+                            <td>{{ package.quantity }} {{ _('units') }}</td>
+                            <td>
+                                {% if package.national_number %}
+                                    <code>{{ package.national_number }}</code>
+                                    {% if package.national_number_type %}
+                                        <small class="text-muted">({{ package.national_number_type }})</small>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if package.gtin %}
+                                    <code>{{ package.gtin }}</code>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if package.list_price %}
+                                    {{ "%.2f"|format(package.list_price) }} €
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('ingredients.edit_package', id=package.id) }}" 
+                                       class="btn btn-sm btn-outline-secondary" title="{{ _('Edit') }}">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('ingredients.delete_package', id=package.id) }}" 
+                                          onsubmit="return confirm('{{ _('Are you sure you want to delete this package configuration?') }}');" 
+                                          class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ _('Delete') }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="card-body">
+                <p class="text-muted mb-0">
+                    {{ _('No package configurations yet.') }}
+                    <a href="{{ url_for('ingredients.new_package', id=product.id) }}">{{ _('Add the first package') }}</a>
+                </p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Current Inventory -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">{{ _('Current Inventory') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <small class="text-muted">{{ _('Total Units') }}</small>
+                        <div class="h3">{{ product.total_inventory_count }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">{{ _('Daily Usage') }}</small>
+                        <div class="h3">{{ "%.1f"|format(product.daily_usage) }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">{{ _('Days Remaining') }}</small>
+                        <div class="h3">
+                            {% if product.daily_usage > 0 and product.total_inventory_count > 0 %}
+                                {{ (product.total_inventory_count / product.daily_usage)|int }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if package_inventory %}
+                <h6 class="text-muted">{{ _('Packages in Stock') }}</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>{{ _('Serial') }}</th>
+                                <th>{{ _('Batch') }}</th>
+                                <th>{{ _('Expiry') }}</th>
+                                <th>{{ _('Units') }}</th>
+                                <th>{{ _('Status') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pkg, item, package_config in package_inventory %}
+                            <tr>
+                                <td><code>{{ item.serial_number }}</code></td>
+                                <td>{{ item.batch_number or '-' }}</td>
+                                <td>
+                                    {% if item.expiry_date %}
+                                        {{ item.expiry_date.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ pkg.current_units }} / {{ pkg.original_units }}</td>
+                                <td>
+                                    {% if pkg.status == 'sealed' %}
+                                        <span class="badge bg-success">{{ _('Sealed') }}</span>
+                                    {% elif pkg.status == 'opened' %}
+                                        <span class="badge bg-warning">{{ _('Open') }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{{ _('No packages in stock') }}</p>
+                {% endif %}
+                
+                {% if legacy_inventory and legacy_inventory.current_count > 0 %}
+                <hr>
+                <h6 class="text-muted">{{ _('Legacy Inventory') }}</h6>
+                <div class="alert alert-warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>{{ _('Sum-based system') }}</strong>
+                            <small class="text-muted d-block mt-1">
+                                {{ _('This inventory needs migration to package-based tracking') }}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <span class="h4 mb-0">{{ legacy_inventory.current_count }}</span>
+                            <small class="text-muted d-block">{{ _('units') }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    {% if substitutes %}
+    <div class="col-lg-4">
+        <!-- Substitutes -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-exchange-alt me-2"></i>{{ _('Substitutable Products') }}
+                </h6>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for substitute in substitutes %}
+                <a href="{{ url_for('ingredients.show_product', id=substitute.id) }}" 
+                   class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ substitute.brand_name }}</strong><br>
+                            <small class="text-muted">
+                                {{ substitute.manufacturer }}
+                                {% if substitute.pzn %}
+                                    | NDC: {{ substitute.pzn }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        {% if substitute.total_inventory_count > 0 %}
+                        <span class="badge bg-success">
+                            {{ substitute.total_inventory_count }} {{ _('units') }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

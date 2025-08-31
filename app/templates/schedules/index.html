@@ -1,19 +1,19 @@
 <!-- Template for listing medication schedules -->
 {% extends "layout.html" %}
 
-{% block title %}Medication Schedules: {{ medication.name }} - Medication Tracker{% endblock %}
+{% block title %}{{ _('Medication Schedules') }}: {{ medication.name }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-clock me-2"></i>Schedules for {{ medication.name }}
+        <i class="fas fa-clock me-2"></i>{{ _('Schedules for') }} {{ medication.name }}
     </h1>
     <div>
-        <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Medication
+        <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Details') }}
         </a>
         <a href="{{ url_for('schedules.new', medication_id=medication.id) }}" class="btn btn-primary ms-2">
-            <i class="fas fa-plus me-1"></i>Add Schedule
+            <i class="fas fa-plus me-1"></i>{{ _('Add Schedule') }}
         </a>
     </div>
 </div>
@@ -21,28 +21,28 @@
 <!-- Auto Deduction Toggle Card -->
 <div class="card border-success mb-4">
     <div class="card-header {% if medication.auto_deduction_enabled %}bg-success{% else %}bg-secondary{% endif %} text-white">
-        <h5 class="mb-0">Automatic Inventory Deduction</h5>
+        <h5 class="mb-0">{{ _('Automatic Inventory Deduction') }}</h5>
     </div>
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <p class="mb-0">
                     {% if medication.auto_deduction_enabled %}
-                        <i class="fas fa-check-circle text-success me-2"></i> Automatic deduction is <strong>enabled</strong> for this medication
+                        <i class="fas fa-check-circle text-success me-2"></i> {{ _('Automatic deduction is') }} <strong>{{ _('enabled') }}</strong> {{ _('for this medication') }}
                     {% else %}
-                        <i class="fas fa-times-circle text-danger me-2"></i> Automatic deduction is <strong>disabled</strong> for this medication
+                        <i class="fas fa-times-circle text-danger me-2"></i> {{ _('Automatic deduction is') }} <strong>{{ _('disabled') }}</strong> {{ _('for this medication') }}
                     {% endif %}
                 </p>
                 <p class="text-muted mt-2 small">
-                    When enabled, inventory will be automatically deducted according to the schedules defined below
+                    {{ _('When enabled, inventory will be automatically deducted according to the schedules defined below') }}
                 </p>
             </div>
             <form method="POST" action="{{ url_for('schedules.toggle_auto_deduction', medication_id=medication.id) }}">
                 <button type="submit" class="btn {% if medication.auto_deduction_enabled %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
                     {% if medication.auto_deduction_enabled %}
-                        <i class="fas fa-toggle-off me-1"></i>Disable Auto-Deduction
+                        <i class="fas fa-toggle-off me-1"></i>{{ _('Disable Auto-Deduction') }}
                     {% else %}
-                        <i class="fas fa-toggle-on me-1"></i>Enable Auto-Deduction
+                        <i class="fas fa-toggle-on me-1"></i>{{ _('Enable Auto-Deduction') }}
                     {% endif %}
                 </button>
             </form>
@@ -53,7 +53,7 @@
 <!-- Schedules Card -->
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Medication Schedules</h5>
+        <h5 class="mb-0">{{ _('Medication Schedules') }}</h5>
     </div>
     <div class="card-body">
         {% if schedules %}
@@ -61,13 +61,13 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Schedule Type</th>
-                            <th>Times</th>
-                            <th>Details</th>
-                            <th>Units Per Dose</th>
-                            <th>Daily Average</th>
-                            <th>Last Deduction</th>
-                            <th>Actions</th>
+                            <th>{{ _('Schedule Type') }}</th>
+                            <th>{{ _('Times') }}</th>
+                            <th>{{ _('Details') }}</th>
+                            <th>{{ _('Units Per Dose') }}</th>
+                            <th>{{ _('Daily Average') }}</th>
+                            <th>{{ _('Last Deduction') }}</th>
+                            <th class="text-end">{{ _('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -75,11 +75,11 @@
                             <tr>
                                 <td>
                                     {% if schedule.schedule_type.value == 'daily' %}
-                                        <span class="badge bg-success">Daily</span>
+                                        <span class="badge bg-success">{{ _('Daily') }}</span>
                                     {% elif schedule.schedule_type.value == 'interval' %}
-                                        <span class="badge bg-info">Every {{ schedule.interval_days }} day(s)</span>
+                                        <span class="badge bg-info">{{ _('Every') }} {{ schedule.interval_days }} {{ _('day(s)') }}</span>
                                     {% elif schedule.schedule_type.value == 'weekdays' %}
-                                        <span class="badge bg-primary">Selected Days</span>
+                                        <span class="badge bg-primary">{{ _('Selected Days of Week') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -90,14 +90,14 @@
                                 </td>
                                 <td>
                                     {% if schedule.schedule_type.value == 'weekdays' %}
-                                        {% set day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] %}
+                                        {% set day_names = [_('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat'), _('Sun')] %}
                                         {% for day_num in schedule.formatted_weekdays %}
                                             <span class="badge bg-light text-dark">{{ day_names[day_num] }}</span>
                                         {% endfor %}
                                     {% elif schedule.schedule_type.value == 'interval' %}
-                                        <span class="text-muted">Every {{ schedule.interval_days }} day(s)</span>
+                                        <span class="text-muted">{{ _('Every') }} {{ schedule.interval_days }} {{ _('day(s)') }}</span>
                                     {% else %}
-                                        <span class="text-muted">Every day</span>
+                                        <span class="text-muted">{{ _('Every day') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ schedule.units_per_dose }}</td>
@@ -106,15 +106,15 @@
                                     {% if schedule.last_deduction %}
                                         {{ format_datetime(schedule.last_deduction) }}
                                     {% else %}
-                                        <span class="text-muted">Never</span>
+                                        <span class="text-muted">{{ _('Never') }}</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ url_for('schedules.edit', id=schedule.id) }}" class="btn btn-outline-primary" title="Edit">
+                                        <a href="{{ url_for('schedules.edit', id=schedule.id) }}" class="btn btn-outline-primary" title="{{ _('Edit') }}">
                                             <i class="fas fa-pen-to-square"></i>
                                         </a>
-                                        <button type="button" class="btn btn-outline-danger" title="Delete"
+                                        <button type="button" class="btn btn-outline-danger" title="{{ _('Delete') }}"
                                                 data-bs-toggle="modal" data-bs-target="#deleteModal"
                                                 data-schedule-id="{{ schedule.id }}">
                                             <i class="fas fa-trash"></i>
@@ -132,10 +132,10 @@
                     <i class="fas fa-info-circle me-3 fa-2x"></i>
                     <div>
                         <p class="mb-0">
-                            <strong>Total Daily Usage:</strong> {{ medication.daily_usage|round(2) }} units per day
+                            <strong>{{ _('Total Daily Usage') }}:</strong> {{ medication.daily_usage|round(2) }} {{ _('units per day') }}
                         </p>
                         <p class="mb-0 mt-1 small text-muted">
-                            This is the sum of all schedule daily averages and is used for depletion calculations.
+                            {{ _('This is the sum of all schedule daily averages and is used for depletion calculations.') }}
                         </p>
                     </div>
                 </div>
@@ -143,10 +143,10 @@
         {% else %}
             <div class="alert alert-warning">
                 <i class="fas fa-exclamation-triangle me-2"></i>
-                No schedules defined for this medication yet. Add a schedule to enable automatic inventory deduction.
+                {{ _('No schedules defined for this medication yet. Add a schedule to enable automatic inventory deduction.') }}
             </div>
             <a href="{{ url_for('schedules.new', medication_id=medication.id) }}" class="btn btn-primary">
-                <i class="fas fa-plus me-1"></i>Add First Schedule
+                <i class="fas fa-plus me-1"></i>{{ _('Add First Schedule') }}
             </a>
         {% endif %}
     </div>
@@ -157,16 +157,16 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="deleteModalLabel">{{ _('Confirm Deletion') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to delete this schedule? This action cannot be undone.
+                {{ _('Are you sure you want to delete this schedule? This action cannot be undone.') }}
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
                 <form id="deleteForm" method="POST">
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-danger">{{ _('Delete') }}</button>
                 </form>
             </div>
         </div>

@@ -1,0 +1,44 @@
+services:
+  medication-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-dev}
+        CROWDIN_API_TOKEN: ${CROWDIN_API_TOKEN:-}
+        CROWDIN_PROJECT_ID: ${CROWDIN_PROJECT_ID:-}
+        CACHE_BUST: ${CACHE_BUST:-1}
+    container_name: medication-tracker-dev
+    ports:
+      - '8087:8087'
+    volumes:
+      # Persistent data volumes
+      - medication_tracker_dev_data:/app/data
+      - medication_tracker_dev_logs:/app/logs
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=${SECRET_KEY:-dev_secret_key_change_in_production}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+      # Auto-reload on code changes
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          'import urllib.request; urllib.request.urlopen("http://localhost:8087/")',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    # Override the command to use Flask's development server with auto-reload
+    command: python main.py
+
+volumes:
+  medication_tracker_dev_data:
+    name: medication_tracker_dev_data
+  medication_tracker_dev_logs:
+    name: medication_tracker_dev_logs

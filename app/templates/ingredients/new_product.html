@@ -1,0 +1,277 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('New Product') }}{% endblock %}
+
+{% block head_extra %}
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-plus-circle me-2"></i>{{ _('New Product') }}
+    </h1>
+    <a href="{% if from_ingredient_id %}{{ url_for('ingredients.show', id=from_ingredient_id) }}{% else %}{{ url_for('ingredients.index') }}{% endif %}" class="btn btn-outline-secondary">
+        <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+    </a>
+</div>
+
+<form method="POST" action="{{ url_for('ingredients.new_product') }}">
+    {% if from_ingredient_id %}
+    <input type="hidden" name="return_to_ingredient" value="{{ from_ingredient_id }}">
+    {% endif %}
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ _('Product Information') }}</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Active Ingredient -->
+                    <div class="mb-3">
+                        <label for="ingredient_select" class="form-label">
+                            {{ _('Active Ingredient') }} <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-control" id="ingredient_select" name="ingredient_id" style="width: 100%;">
+                            <option value=""></option>
+                            {% for ingredient in ingredients %}
+                            <option value="{{ ingredient.id }}" {% if selected_ingredient and selected_ingredient.id == ingredient.id %}selected{% endif %}>{{ ingredient.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle"></i> {{ _('Type to search or enter a new ingredient name') }}
+                        </div>
+                        <div id="new_ingredient_fields" style="display: none;" class="mt-2 p-3 bg-light rounded">
+                            <h6 class="text-muted mb-2">{{ _('Creating new ingredient:') }}</h6>
+                            <input type="text" class="form-control mb-2" name="ingredient_name" id="ingredient_name"
+                                   placeholder="{{ _('Ingredient name (e.g., Ibuprofen)') }}" readonly>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control mb-2" name="strength"
+                                           pattern="^[0-9]+([\.\,][0-9]+)?$"
+                                           title="{{ _('Please enter a valid number (e.g., 500 or 1.25)') }}"
+                                           placeholder="{{ _('Strength (e.g., 400)') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control mb-2" name="strength_unit">
+                                        <option value="">{{ _('Unit') }}</option>
+                                        <option value="mg">mg</option>
+                                        <option value="µg">µg (mcg)</option>
+                                        <option value="g">g</option>
+                                        <option value="ml">ml</option>
+                                        <option value="IE">IE</option>
+                                        <option value="%">%</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <input type="text" class="form-control" name="form"
+                                   placeholder="{{ _('Form (optional, e.g., tablet, inhalation)') }}">
+                        </div>
+                    </div>
+
+                    <!-- Brand Name -->
+                    <div class="mb-3">
+                        <label for="brand_name" class="form-label">
+                            {{ _('Brand Name') }} <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="brand_name" name="brand_name" required
+                               placeholder="{{ _('e.g., Salbutamol 1A Pharma 100µg') }}">
+                        <div class="form-text">{{ _('Full commercial name of the product') }}</div>
+                    </div>
+
+                    <!-- Manufacturer -->
+                    <div class="mb-3">
+                        <label for="manufacturer" class="form-label">{{ _('Manufacturer') }}</label>
+                        <input type="text" class="form-control" id="manufacturer" name="manufacturer"
+                               placeholder="{{ _('e.g., 1A Pharma, ratiopharm, Hexal') }}">
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">{{ _('Notes') }}</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Order Settings -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">{{ _('Order Settings') }}</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Aut idem -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="aut_idem" name="aut_idem" checked>
+                        <label class="form-check-label" for="aut_idem">
+                            <strong>{{ _('Allow substitution (Aut idem)') }}</strong>
+                            <div class="form-text">{{ _('Pharmacist may substitute with generic equivalent') }}</div>
+                        </label>
+                    </div>
+
+                    <!-- OTC -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="is_otc" name="is_otc">
+                        <label class="form-check-label" for="is_otc">
+                            <strong>{{ _('Over-the-counter (OTC)') }}</strong>
+                            <div class="form-text">{{ _('No order required (OTC)') }}</div>
+                        </label>
+                    </div>
+
+                    <!-- Physician -->
+                    <div class="mb-3">
+                        <label for="physician_id" class="form-label">{{ _('Prescribing Physician') }}</label>
+                        <select class="form-select" id="physician_id" name="physician_id">
+                            <option value="">{{ _('None (OTC or general)') }}</option>
+                            {% for physician in physicians %}
+                            <option value="{{ physician.id }}">{{ physician.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save me-2"></i>{{ _('Create Product') }}
+                </button>
+                <a href="{% if from_ingredient_id %}{{ url_for('ingredients.show', id=from_ingredient_id) }}{% else %}{{ url_for('ingredients.index') }}{% endif %}" class="btn btn-outline-secondary">
+                    {{ _('Cancel') }}
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const newIngredientFields = document.getElementById('new_ingredient_fields');
+    const ingredientNameInput = document.getElementById('ingredient_name');
+
+    // Initialize Select2 with tagging support for new ingredients
+    $('#ingredient_select').select2({
+        theme: 'bootstrap-5',
+        placeholder: '{{ _("Search for ingredient or type new name...") }}',
+        allowClear: true,
+        tags: true,
+        createTag: function (params) {
+            var term = $.trim(params.term);
+            if (term === '') {
+                return null;
+            }
+            return {
+                id: 'new:' + term,
+                text: term + ' ({{ _("Create new") }})',
+                newTag: true
+            };
+        },
+        templateResult: function(data) {
+            var $result = $('<span></span>');
+            $result.text(data.text);
+            if (data.newTag) {
+                $result.append(' <span class="badge bg-success ms-2">{{ _("New") }}</span>');
+            }
+            return $result;
+        },
+        language: {
+            noResults: function() {
+                return '{{ _("No ingredients found. Type to create new.") }}';
+            },
+            searching: function() {
+                return '{{ _("Searching...") }}';
+            }
+        }
+    });
+
+    // Handle selection changes
+    $('#ingredient_select').on('select2:select', function (e) {
+        var data = e.params.data;
+        if (data.newTag) {
+            // Show new ingredient fields for a new ingredient
+            newIngredientFields.style.display = 'block';
+            ingredientNameInput.value = data.text.replace(' ({{ _("Create new") }})', '');
+            ingredientNameInput.readOnly = true;
+        } else {
+            // Hide new ingredient fields for existing ingredient
+            newIngredientFields.style.display = 'none';
+            ingredientNameInput.value = '';
+            ingredientNameInput.readOnly = false;
+        }
+    });
+
+    // Handle clearing
+    $('#ingredient_select').on('select2:clear', function (e) {
+        newIngredientFields.style.display = 'none';
+        ingredientNameInput.value = '';
+        ingredientNameInput.readOnly = false;
+    });
+
+    // Initialize physician select with Select2 as well
+    $('#physician_id').select2({
+        theme: 'bootstrap-5',
+        placeholder: '{{ _("Select physician...") }}',
+        allowClear: true
+    });
+
+    // Auto-disable physician if OTC is checked
+    const otcCheckbox = document.getElementById('is_otc');
+    const physicianSelect = $('#physician_id');
+
+    otcCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            physicianSelect.val(null).trigger('change');
+            physicianSelect.prop('disabled', true);
+        } else {
+            physicianSelect.prop('disabled', false);
+        }
+    });
+
+    // Add real-time validation for strength field
+    const strengthInput = document.querySelector('input[name="strength"]');
+
+    if (strengthInput) {
+        strengthInput.addEventListener('input', function() {
+            const value = this.value.trim();
+
+            if (value === '') {
+                // Empty is valid (optional field)
+                this.classList.remove('is-invalid');
+                this.classList.remove('is-valid');
+                return;
+            }
+
+            // Allow numbers with dot or comma as decimal separator
+            const pattern = /^[0-9]+([\.,][0-9]+)?$/;
+
+            if (pattern.test(value)) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            }
+        });
+
+        // Replace comma with dot before submitting
+        const form = strengthInput.closest('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (strengthInput.value) {
+                    strengthInput.value = strengthInput.value.replace(',', '.');
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

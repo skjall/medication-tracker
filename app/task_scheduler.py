@@ -7,7 +7,9 @@ background tasks in the Flask application.
 
 # Standard library imports
 import atexit
+import json
 import logging
+import os
 import threading
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
@@ -46,7 +48,7 @@ class PeriodicTask:
         self.is_running = False
         self.error_count = 0
 
-    def run(self) -> None:
+    def run(self, scheduler=None) -> None:
         """Execute the task function with the specified arguments."""
         if self.is_running:
             logger.warning(
@@ -60,6 +62,10 @@ class PeriodicTask:
             self.func(*self.args, **self.kwargs)
             self.last_run = datetime.now(timezone.utc)
             self.error_count = 0  # Reset error count on successful execution
+            
+            # Save state after successful run
+            if scheduler:
+                scheduler._save_state()
         except Exception as e:
             self.error_count += 1
             logger.error(f"Error executing task {self.name}: {e}", exc_info=True)
@@ -132,6 +138,7 @@ class TaskScheduler:
         self.thread: Optional[threading.Thread] = None
         self._sleep_interval = 1  # Check tasks every second
         self._shutdown_event = threading.Event()
+        self._state_file = "/app/data/scheduler_state.json"
 
         # Keep track of app reference
         self.app = None
@@ -147,6 +154,9 @@ class TaskScheduler:
             app: Flask application instance
         """
         self.app = app
+
+        # Load saved state
+        self._load_state()
 
         # Register shutdown function
         atexit.register(self.shutdown)
@@ -206,6 +216,15 @@ class TaskScheduler:
             logger.warning(f"Task {name} already exists, replacing it")
 
         task = PeriodicTask(name, func, interval_seconds, args, kwargs)
+        
+        # Restore last_run time if available from saved state
+        if hasattr(self, '_loaded_state') and name in self._loaded_state:
+            try:
+                task.last_run = datetime.fromisoformat(self._loaded_state[name])
+                logger.info(f"Restored last_run time for task '{name}': {task.last_run}")
+            except Exception as e:
+                logger.warning(f"Failed to restore last_run for task '{name}': {e}")
+        
         self.tasks[name] = task
         logger.info(f"Added task '{name}' with interval {interval_seconds} seconds")
 
@@ -248,6 +267,9 @@ class TaskScheduler:
             # Ignore errors that happen during logging shutdown
             pass
 
+        # Save state before shutting down
+        self._save_state()
+
         self.running = False
         self._shutdown_event.set()  # Signal the thread to exit
 
@@ -276,9 +298,9 @@ class TaskScheduler:
                         if self.app:
                             # Run within app context if we have an app
                             with self.app.app_context():
-                                task.run()
+                                task.run(scheduler=self)
                         else:
-                            task.run()
+                            task.run(scheduler=self)
 
                 # Sleep until next check, but allow for early interrupt
                 self._shutdown_event.wait(timeout=self._sleep_interval)
@@ -313,3 +335,39 @@ class TaskScheduler:
         self.start()
 
         logger.info("Task scheduler restarted")
+
+    def _save_state(self) -> None:
+        """Save task last_run times to persistent storage."""
+        try:
+            state = {}
+            for name, task in self.tasks.items():
+                if task.last_run:
+                    state[name] = task.last_run.isoformat()
+            
+            # Ensure data directory exists
+            os.makedirs(os.path.dirname(self._state_file), exist_ok=True)
+            
+            # Write state to file
+            with open(self._state_file, 'w') as f:
+                json.dump(state, f)
+                
+            logger.debug(f"Saved scheduler state for {len(state)} tasks")
+        except Exception as e:
+            logger.error(f"Failed to save scheduler state: {e}")
+
+    def _load_state(self) -> None:
+        """Load task last_run times from persistent storage."""
+        try:
+            if os.path.exists(self._state_file):
+                with open(self._state_file, 'r') as f:
+                    state = json.load(f)
+                
+                # Store loaded state to apply to tasks when they're registered
+                self._loaded_state = state
+                logger.info(f"Loaded scheduler state for {len(state)} tasks")
+            else:
+                self._loaded_state = {}
+                logger.debug("No scheduler state file found, starting fresh")
+        except Exception as e:
+            logger.error(f"Failed to load scheduler state: {e}")
+            self._loaded_state = {}

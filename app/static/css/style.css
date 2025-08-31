@@ -29,6 +29,9 @@
   background-color: #ff8000 !important;
   color: white !important;
 }
+.btn-warning-success {
+  color: white !important;
+}
 
 .bg-primary {
   background-color: #2979a9 !important;
@@ -116,6 +119,11 @@ footer {
   margin-right: 0.25rem;
 }
 
+/* Remove right margin for icon-only buttons */
+.btn i:only-child {
+  margin-right: 0;
+}
+
 /* Style for card link buttons */
 .card-link-btn {
   text-decoration: none;
@@ -157,6 +165,42 @@ label.form-label {
 .form-select:focus {
   border-color: #80bdff;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Fix for select option readability */
+.form-select option:checked,
+.form-select option:hover,
+.form-select option:focus,
+.form-select option:active {
+  color: white !important;
+  background-color: #2979a9 !important;
+}
+
+/* Ensure dropdown options are readable */
+.form-select option {
+  color: #212529;
+  background-color: white;
+}
+
+/* Custom button group styling for schedule type selector */
+.btn-group .btn-check:checked + .btn-outline-primary,
+.btn-group .btn-outline-primary.active {
+  color: white !important;
+  background-color: #2979a9 !important;
+  border-color: #2979a9 !important;
+}
+
+.btn-group .btn-outline-primary:hover {
+  color: white !important;
+  background-color: #3a8fc5 !important;
+  border-color: #3a8fc5 !important;
+}
+
+/* Remove Bootstrap's default blue for active state */
+.btn-outline-primary {
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #2979a9;
+  --bs-btn-active-border-color: #2979a9;
 }
 
 /* Show text-overflow as ellipsis for longer notes in tables */
@@ -323,4 +367,86 @@ label.form-label {
   width: 40px;
   height: 40px;
   font-size: 20px;
+}
+
+/* Toast Styles */
+.toast-container {
+  pointer-events: none;
+}
+
+.toast-container .toast {
+  pointer-events: auto;
+  margin-bottom: 0.5rem;
+  min-width: 300px;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast.hiding {
+  animation: slideOutRight 0.3s ease-in;
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Toast color customizations */
+.toast.text-bg-success {
+  background-color: #198754 !important;
+}
+
+.toast.text-bg-danger {
+  background-color: #dc3545 !important;
+}
+
+.toast.text-bg-warning {
+  background-color: #ff8000 !important;
+}
+
+.toast.text-bg-info {
+  background-color: #1196a5 !important;
+}
+
+/* Ensure toast body text is readable */
+.toast-body {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Toast close button styling */
+.toast .btn-close-white {
+  filter: brightness(0) invert(1);
+}
+
+/* Responsive toast positioning */
+@media (max-width: 576px) {
+  .toast-container {
+    left: 0;
+    right: 0;
+    padding: 0.5rem !important;
+  }
+
+  .toast-container .toast {
+    max-width: 100%;
+    width: 100%;
+  }
 }

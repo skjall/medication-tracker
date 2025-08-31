@@ -29,7 +29,7 @@ from models import (
     ScheduleType,
     db,
 )
-from utils import ensure_timezone_utc, format_date, format_datetime, from_local_timezone
+from utils import ensure_timezone_utc, format_date, format_datetime, from_local_timezone, get_data_directory
 
 
 # Get a logger specific to this module
@@ -89,7 +89,7 @@ def export_medications_to_csv() -> Response:
                 med.package_size_n3 or "",
                 med.min_threshold,
                 med.safety_margin_days,
-                med.inventory.current_count if med.inventory else 0,
+                med.total_inventory_count,
                 round(med.days_remaining, 1) if med.days_remaining else "N/A",
                 format_datetime(med.created_at),
                 format_datetime(med.updated_at),
@@ -349,11 +349,11 @@ def create_database_backup() -> str:
         Path to the backup file
     """
     # Get the database path from app config
-    db_path = os.path.join(current_app.root_path, "data", "medication_tracker.db")
+    db_path = os.path.join(get_data_directory(), "medication_tracker.db")
 
     # Create backup filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_dir = os.path.join(current_app.root_path, "data", "backups")
+    backup_dir = os.path.join(get_data_directory(), "backups")
 
     # Ensure backup directory exists
     os.makedirs(backup_dir, exist_ok=True)
@@ -549,7 +549,7 @@ def optimize_database() -> Tuple[bool, str]:
     """
     import sqlite3
 
-    db_path = os.path.join(current_app.root_path, "data", "medication_tracker.db")
+    db_path = os.path.join(get_data_directory(), "medication_tracker.db")
 
     try:
         # Connect to the database

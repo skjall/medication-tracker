@@ -1,0 +1,6018 @@
+# Translations template for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: /app/main.py:130 /app/templates/index.html:3 /app/templates/index.html:9
+#: /app/templates/layout.html:29 /app/templates/settings/system.html:11
+#: /app/templates/test_translation.html:5
+msgid "Dashboard"
+msgstr ""
+
+#: /app/main.py:131 /app/templates/index.html:43
+#: /app/templates/visits/index.html:104
+msgid "No upcoming physician visits scheduled."
+msgstr ""
+
+#: /app/routes/ingredients.py:236 /app/routes/ingredients.py:418
+#: /app/routes/ingredients.py:460
+msgid "Invalid strength value. Please enter a valid number (e.g., 500 or 1.25)"
+msgstr ""
+
+#: /app/routes/ingredients.py:256
+msgid "Active ingredient updated successfully"
+msgstr ""
+
+#: /app/routes/ingredients.py:288
+msgid ""
+"Cannot delete active ingredient with existing products. Please delete all"
+" products first."
+msgstr ""
+
+#: /app/routes/ingredients.py:297
+msgid "Active ingredient deleted successfully"
+msgstr ""
+
+#: /app/routes/ingredients.py:324
+msgid "Product updated successfully"
+msgstr ""
+
+#: /app/routes/ingredients.py:361
+msgid ""
+"Cannot delete product with existing inventory. Please deplete inventory "
+"first."
+msgstr ""
+
+#: /app/routes/ingredients.py:382
+#, python-format
+msgid "Default product updated to %(name)s"
+msgstr ""
+
+#: /app/routes/ingredients.py:392
+msgid "Product deleted successfully"
+msgstr ""
+
+#: /app/routes/ingredients.py:476
+#: /app/templates/package_onboarding/onboard.html:846
+msgid "Please select or enter an active ingredient"
+msgstr ""
+
+#: /app/routes/ingredients.py:505
+msgid "Product created successfully"
+msgstr ""
+
+#: /app/routes/ingredients.py:609
+msgid "Package added successfully"
+msgstr ""
+
+#: /app/routes/ingredients.py:640 /app/routes/inventory.py:601
+msgid "Package updated successfully"
+msgstr ""
+
+#: /app/routes/ingredients.py:661
+msgid "Package deleted successfully"
+msgstr ""
+
+#: /app/routes/ingredients.py:676
+msgid "Product does not belong to this ingredient"
+msgstr ""
+
+#: /app/routes/ingredients.py:683
+msgid "Default product set successfully"
+msgstr ""
+
+#: /app/routes/ingredients.py:697
+msgid "Default product cleared"
+msgstr ""
+
+#: /app/routes/ingredients.py:711
+msgid "This medication has already been migrated"
+msgstr ""
+
+#: /app/routes/ingredients.py:761
+msgid "Medication migrated successfully"
+msgstr ""
+
+#: /app/routes/inventory.py:236
+msgid "No inventory record found for this medication"
+msgstr ""
+
+#: /app/routes/inventory.py:250
+msgid "Please enter a valid amount to deduct"
+msgstr ""
+
+#: /app/routes/inventory.py:256
+#, python-format
+msgid ""
+"Not enough inventory. Available: %(available)s units, Requested: "
+"%(requested)s units"
+msgstr ""
+
+#: /app/routes/inventory.py:272
+#, python-format
+msgid "Successfully deducted %(amount)s units"
+msgstr ""
+
+#: /app/routes/inventory.py:275
+msgid "from legacy"
+msgstr ""
+
+#: /app/routes/inventory.py:279 /app/templates/inventory/edit_package.html:174
+msgid "used"
+msgstr ""
+
+#: /app/routes/inventory.py:279 /app/templates/inventory/edit_package.html:220
+msgid "packages"
+msgstr ""
+
+#: /app/routes/inventory.py:279 /app/templates/inventory/index.html:172
+#: /app/templates/inventory/index.html:387
+msgid "package"
+msgid_plural "packages"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/routes/inventory.py:284
+#, python-format
+msgid "Failed to deduct units: %(reason)s"
+msgstr ""
+
+#: /app/routes/inventory.py:325
+#, python-brace-format
+msgid "Inventory for {} adjusted by {}"
+msgstr ""
+
+#: /app/routes/inventory.py:395
+#, python-brace-format
+msgid "Inventory updated for {}"
+msgstr ""
+
+#: /app/routes/inventory.py:457
+msgid "Serial number already exists for another package"
+msgstr ""
+
+#: /app/routes/inventory.py:473
+msgid "Invalid expiry date format"
+msgstr ""
+
+#: /app/routes/inventory.py:594
+#, python-format
+msgid "Units must be between 0 and %(max)s"
+msgstr ""
+
+#: /app/routes/inventory.py:597
+msgid "Invalid units value"
+msgstr ""
+
+#: /app/routes/medications.py:58 /app/routes/medications.py:79
+msgid "This medication needs to be migrated to the new system"
+msgstr ""
+
+#: /app/routes/medications.py:86
+msgid "Please migrate this medication to the new system before deleting"
+msgstr ""
+
+#: /app/routes/medications.py:97
+msgid "No inventory found for this medication"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:34
+msgid "No medications need migration. All inventory is already package-based."
+msgstr ""
+
+#: /app/routes/migration_scanner.py:51
+msgid "This medication has no inventory to migrate"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:127
+#: /app/templates/migration/scanner.html:597
+msgid "Package already scanned"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:153 /app/routes/migration_scanner.py:249
+#, python-format
+msgid "Migration complete. All %(count)s units have been accounted for."
+msgstr ""
+
+#: /app/routes/migration_scanner.py:470 /app/templates/scanner/scan.html:960
+msgid "Package not found"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:503 /app/routes/migration_scanner.py:574
+msgid "No packages scanned"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:541
+#, python-format
+msgid "Partial migration to package-based inventory: %(count)s packages"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:555
+#, python-format
+msgid "Progress saved! %(count)s packages migrated."
+msgstr ""
+
+#: /app/routes/migration_scanner.py:619
+#, python-format
+msgid "Migrated to package-based inventory: %(count)s packages"
+msgstr ""
+
+#: /app/routes/migration_scanner.py:633
+#, python-format
+msgid "Successfully migrated %(name)s to package-based inventory!"
+msgstr ""
+
+#: /app/routes/orders.py:92
+msgid "No upcoming physician visit found. Please schedule a visit first."
+msgstr ""
+
+#: /app/routes/orders.py:140
+msgid "Order created successfully"
+msgstr ""
+
+#: /app/routes/orders.py:264
+msgid "Cannot edit fulfilled orders"
+msgstr ""
+
+#: /app/routes/orders.py:337
+msgid "Order updated successfully"
+msgstr ""
+
+#: /app/routes/orders.py:369
+msgid "Cannot delete fulfilled orders"
+msgstr ""
+
+#: /app/routes/orders.py:379
+msgid "Order deleted successfully"
+msgstr ""
+
+#: /app/routes/orders.py:439
+#, python-brace-format
+msgid "Order status updated to {}"
+msgstr ""
+
+#: /app/routes/orders.py:441
+msgid "Invalid status"
+msgstr ""
+
+#: /app/routes/orders.py:458
+msgid "Order marked as unfulfilled"
+msgstr ""
+
+#: /app/routes/orders.py:483
+#, python-brace-format
+msgid "Order marked as fulfilled and {} items added to inventory"
+msgstr ""
+
+#: /app/routes/orders.py:485
+msgid "Order marked as fulfilled"
+msgstr ""
+
+#: /app/routes/orders.py:508
+msgid "Item does not belong to this order"
+msgstr ""
+
+#: /app/routes/orders.py:542 /app/routes/scanner.py:212
+#: /app/templates/ingredients/show_product.html:56
+#: /app/templates/inventory/show.html:452
+#: /app/templates/orders/printable.html:149 /app/templates/orders/show.html:179
+#: /app/templates/scanner/index.html:72 /app/templates/scanner/index.html:155
+#: /app/templates/scanner/package_details.html:30
+msgid "Unknown"
+msgstr ""
+
+#: /app/routes/orders.py:543
+#, python-brace-format
+msgid "Item {} marked as {}"
+msgstr ""
+
+#: /app/routes/orders.py:572
+#, python-brace-format
+msgid "Successfully fulfilled {} items"
+msgstr ""
+
+#: /app/routes/orders.py:584 /app/routes/orders.py:611
+msgid "Invalid order item"
+msgstr ""
+
+#: /app/routes/orders.py:589
+msgid "Can only cancel pending items"
+msgstr ""
+
+#: /app/routes/orders.py:599
+msgid "Item cancelled successfully"
+msgstr ""
+
+#: /app/routes/orders.py:616
+msgid "Can only undo cancellation for cancelled items"
+msgstr ""
+
+#: /app/routes/orders.py:629
+msgid "Cancellation undone successfully"
+msgstr ""
+
+#: /app/routes/orders.py:649
+msgid ""
+"The PDF template file is missing. Please re-upload the template in PDF "
+"Forms."
+msgstr ""
+
+#: /app/routes/orders.py:651
+msgid ""
+"No PDF template assigned to physician. Please assign a template in "
+"physician settings."
+msgstr ""
+
+#: /app/routes/orders.py:788
+msgid "Package linked successfully"
+msgstr ""
+
+#: /app/routes/orders.py:802
+msgid "Package is not linked to this order item"
+msgstr ""
+
+#: /app/routes/orders.py:840
+msgid "Package unlinked successfully"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:52
+msgid "Please select an active ingredient"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:59
+msgid "Please enter an active ingredient name"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:66
+msgid "Active ingredient already exists, using existing one"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:84
+msgid "Please complete step 1 first"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:92
+msgid "Please select a product"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:99
+msgid "Please enter a product name"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:110
+msgid "Product already exists, using existing one"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:137
+msgid "Please enter package size and quantity"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:154
+msgid "Package configuration updated"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:234
+#, python-format
+msgid ""
+"Package added via scanner onboarding: %(size)s (%(units)s units), Batch: "
+"%(batch)s, Expiry: %(expiry)s"
+msgstr ""
+
+#: /app/routes/package_onboarding.py:253
+msgid "Package successfully onboarded!"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:160 /app/routes/pdf_mapper.py:848
+msgid "No PDF file uploaded"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:165 /app/routes/pdf_mapper.py:853
+#: /app/routes/settings.py:243 /app/routes/settings.py:387
+#: /app/routes/settings.py:626
+msgid "No file selected"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:209
+msgid ""
+"PDF template uploaded successfully. Please map the PDF form fields to the"
+" table structure."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:217
+msgid "Invalid file type. Only PDF files are allowed"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:251
+msgid "Column"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:270
+#: /app/templates/ingredients/edit_product.html:33
+#: /app/templates/ingredients/new_product.html:77
+#: /app/templates/ingredients/show.html:91
+#: /app/templates/ingredients/show_product.html:52
+msgid "Brand Name"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:271
+#: /app/templates/ingredients/edit_product.html:41
+#: /app/templates/ingredients/new_product.html:86
+#: /app/templates/ingredients/show.html:92
+#: /app/templates/ingredients/show_product.html:55
+msgid "Manufacturer"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:274
+msgid "Full Product Name"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:281
+#: /app/templates/ingredients/edit_product.html:25
+#: /app/templates/ingredients/index.html:23
+#: /app/templates/ingredients/new_product.html:35
+#: /app/templates/ingredients/show_product.html:41
+#: /app/templates/package_onboarding/onboard.html:161
+#: /app/templates/package_onboarding/onboard.html:413
+msgid "Active Ingredient"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:284 /app/templates/ingredients/edit.html:27
+#: /app/templates/ingredients/show.html:38
+msgid "Strength"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:285 /app/templates/ingredients/new_product.html:59
+#: /app/templates/package_onboarding/onboard.html:242
+msgid "Unit"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:288
+msgid "Daily Units"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:291
+msgid "Dosage Form (tablets, etc.)"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:296
+msgid "Strength Value"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:301
+msgid "Strength Unit (mg, ml, etc.)"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:306
+msgid "Daily Dosage (Strength × Units)"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:311
+#: /app/templates/ingredients/edit_package.html:28
+#: /app/templates/ingredients/new_package.html:28
+#: /app/templates/ingredients/show_product.html:147
+#: /app/templates/inventory/edit_package.html:45
+#: /app/templates/migration/scanner.html:146
+#: /app/templates/migration/scanner.html:196
+#: /app/templates/migration/scanner.html:224
+#: /app/templates/package_onboarding/onboard.html:331
+#: /app/templates/package_onboarding/onboard.html:419
+msgid "Package Size"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:314
+msgid "Quantity per Package"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:317
+msgid "PZN"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:318
+#: /app/templates/ingredients/show_product.html:150
+#: /app/templates/package_onboarding/onboard.html:187
+msgid "GTIN"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:323
+msgid "Number of Packages"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:328
+msgid "Package Size (N1/N2/N3)"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:331
+#: /app/templates/ingredients/show_product.html:222
+#: /app/templates/inventory/show.html:41
+#: /app/templates/orders/printable.html:134
+msgid "Total Units"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:332
+msgid "Days Supply"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:333
+msgid "Months Supply"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:336
+#: /app/templates/ingredients/show_product.html:85
+#: /app/templates/orders/show.html:57 /app/templates/physicians/edit.html:3
+#: /app/templates/visits/edit.html:38 /app/templates/visits/index.html:29
+#: /app/templates/visits/index.html:127 /app/templates/visits/new.html:33
+#: /app/templates/visits/show.html:48
+msgid "Physician"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:337
+msgid "Instructions"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:338 /app/templates/index.html:31
+#: /app/templates/ingredients/edit.html:58
+#: /app/templates/ingredients/edit_product.html:49
+#: /app/templates/ingredients/new_product.html:93
+#: /app/templates/ingredients/show.html:75
+#: /app/templates/ingredients/show_product.html:128
+#: /app/templates/inventory/show.html:535
+#: /app/templates/physicians/edit.html:85 /app/templates/physicians/new.html:75
+#: /app/templates/physicians/show.html:86
+#: /app/templates/physicians/show.html:219 /app/templates/visits/edit.html:56
+#: /app/templates/visits/index.html:31 /app/templates/visits/index.html:128
+#: /app/templates/visits/new.html:48 /app/templates/visits/show.html:72
+msgid "Notes"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:402
+#, python-format
+msgid "Found %(count)s existing form fields in PDF"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:416
+msgid "No form fields found in PDF. Would you like to create a grid of fields?"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:429
+msgid "An internal error occurred while detecting fields. Please try again."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:498
+#, python-format
+msgid "Created %(count)s form fields in a %(rows)sx%(cols)s grid"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:515
+msgid "Failed to create form fields in PDF"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:527
+msgid "An internal error occurred while creating grid fields. Please try again."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:548
+msgid "Structure mapping saved successfully"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:576
+msgid "Mappings saved successfully"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:734 /app/routes/pdf_mapper.py:772
+msgid "An internal error occurred. Please try again."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:746
+msgid "No medications selected"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:791
+msgid "Preview not found. Please generate it again."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:813
+msgid "Generated PDF not found. Please generate it again."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:837 /app/templates/pdf_mapper/index.html:256
+msgid "Template deleted successfully"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:873
+msgid "PDF file re-uploaded successfully"
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:1387
+msgid "An internal error occurred. Please try again later."
+msgstr ""
+
+#: /app/routes/pdf_mapper.py:1406
+msgid "An internal error occurred"
+msgstr ""
+
+#: /app/routes/physicians.py:61 /app/routes/physicians.py:125
+msgid "Physician name is required."
+msgstr ""
+
+#: /app/routes/physicians.py:80
+#, python-brace-format
+msgid "Physician '{}' has been created successfully."
+msgstr ""
+
+#: /app/routes/physicians.py:87
+#, python-brace-format
+msgid "Error creating physician: {}"
+msgstr ""
+
+#: /app/routes/physicians.py:141
+#, python-brace-format
+msgid "Physician '{}' has been updated successfully."
+msgstr ""
+
+#: /app/routes/physicians.py:148
+#, python-brace-format
+msgid "Error updating physician: {}"
+msgstr ""
+
+#: /app/routes/physicians.py:166
+msgid ""
+"Cannot delete physician who has associated medications or visits. Please "
+"reassign them first."
+msgstr ""
+
+#: /app/routes/physicians.py:175
+#, python-brace-format
+msgid "Physician '{}' has been deleted successfully."
+msgstr ""
+
+#: /app/routes/physicians.py:182
+#, python-brace-format
+msgid "Error deleting physician: {}"
+msgstr ""
+
+#: /app/routes/scanner.py:64
+msgid "No barcode data provided"
+msgstr ""
+
+#: /app/routes/scanner.py:176
+msgid "Unsupported barcode format"
+msgstr ""
+
+#: /app/routes/scanner.py:178
+msgid ""
+"This barcode type is not supported. Only pharmaceutical codes, "
+"DataMatrix, and standard product codes (EAN-13, EAN-8, UPC-A, ASIN) are "
+"supported."
+msgstr ""
+
+#: /app/routes/scanner.py:192
+msgid "Invalid barcode: missing serial number"
+msgstr ""
+
+#: /app/routes/scanner.py:219
+msgid "Package already in inventory"
+msgstr ""
+
+#: /app/routes/scanner.py:298
+msgid "Package configuration updated with scanned data"
+msgstr ""
+
+#: /app/routes/scanner.py:379
+#, python-format
+msgid "Order fulfilled with %(overage)d extra units"
+msgstr ""
+
+#: /app/routes/scanner.py:383
+#, python-format
+msgid ""
+"Order fulfilled. Received %(quantity)d units in %(package_size)s. "
+"%(overage)d extra units."
+msgstr ""
+
+#: /app/routes/scanner.py:389
+msgid "Order fulfilled exactly"
+msgstr ""
+
+#: /app/routes/scanner.py:391
+#, python-format
+msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s."
+msgstr ""
+
+#: /app/routes/scanner.py:402
+#, python-format
+msgid "Partial fulfillment: %(remaining)d units still needed"
+msgstr ""
+
+#: /app/routes/scanner.py:406
+#, python-format
+msgid ""
+"Partially fulfilled. Received %(quantity)d units in %(package_size)s. "
+"Still need %(remaining)d units."
+msgstr ""
+
+#: /app/routes/scanner.py:452
+#, python-format
+msgid "Package scanned: %(package_size)s (%(quantity)d units) - Batch: %(batch)s"
+msgstr ""
+
+#: /app/routes/scanner.py:466
+#, python-format
+msgid ""
+"Added to inventory: %(product_name)s %(package_size)s (%(quantity)d "
+"units). %(fulfillment)s"
+msgstr ""
+
+#: /app/routes/scanner.py:474
+#, python-format
+msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)"
+msgstr ""
+
+#: /app/routes/scanner.py:532 /app/templates/migration/scanner.html:142
+#: /app/templates/migration/scanner.html:714
+msgid "Product Code"
+msgstr ""
+
+#: /app/routes/scanner.py:538
+#, python-format
+msgid "%(label)s %(number)s not found"
+msgstr ""
+
+#: /app/routes/scanner.py:542 /app/routes/scanner.py:549
+#: /app/routes/scanner.py:554 /app/routes/scanner.py:559
+#: /app/routes/scanner.py:564
+msgid "Please add this package."
+msgstr ""
+
+#: /app/routes/scanner.py:547
+#, python-format
+msgid "EAN-13 barcode %(code)s not found"
+msgstr ""
+
+#: /app/routes/scanner.py:552
+#, python-format
+msgid "EAN-8 barcode %(code)s not found"
+msgstr ""
+
+#: /app/routes/scanner.py:557
+#, python-format
+msgid "UPC barcode %(code)s not found"
+msgstr ""
+
+#: /app/routes/scanner.py:562
+#, python-format
+msgid "Product barcode %(code)s not found"
+msgstr ""
+
+#: /app/routes/scanner.py:567
+msgid "Unrecognized barcode format"
+msgstr ""
+
+#: /app/routes/scanner.py:568
+msgid "This barcode type is not supported"
+msgstr ""
+
+#: /app/routes/scanner.py:643
+msgid "Package not in inventory"
+msgstr ""
+
+#: /app/routes/scanner.py:648
+msgid "Invalid number of units"
+msgstr ""
+
+#: /app/routes/scanner.py:652
+msgid "Not enough units in package"
+msgstr ""
+
+#: /app/routes/scanner.py:669
+#, python-format
+msgid "%(units)d units consumed"
+msgstr ""
+
+#: /app/routes/scanner.py:685
+msgid "Package marked as expired"
+msgstr ""
+
+#: /app/routes/schedule.py:50 /app/routes/schedule.py:65
+#: /app/routes/schedule.py:174
+msgid "This medication has not been migrated to the new system yet."
+msgstr ""
+
+#: /app/routes/schedule.py:90 /app/routes/schedule.py:229
+#: /app/templates/schedules/edit_ingredient.html:188
+#: /app/templates/schedules/new_ingredient.html:175
+msgid "Please add at least one time for the medication"
+msgstr ""
+
+#: /app/routes/schedule.py:114
+msgid "Schedule updated successfully"
+msgstr ""
+
+#: /app/routes/schedule.py:134
+msgid "Cannot edit this schedule - migration required."
+msgstr ""
+
+#: /app/routes/schedule.py:157
+msgid "Schedule deleted successfully"
+msgstr ""
+
+#: /app/routes/schedule.py:187
+msgid "Medication deductions checked successfully"
+msgstr ""
+
+#: /app/routes/schedule.py:262
+msgid "Schedule added successfully"
+msgstr ""
+
+#: /app/routes/schedule.py:299
+#, python-brace-format
+msgid "Automatic deduction {} for {}"
+msgstr ""
+
+#: /app/routes/settings.py:91
+msgid "Physician visit settings updated successfully"
+msgstr ""
+
+#: /app/routes/settings.py:124
+msgid ""
+"Orders for this visit will now be planned to last until the next-but-one "
+"visit"
+msgstr ""
+
+#: /app/routes/settings.py:128
+msgid ""
+"Orders for this visit will now be planned to last until the next visit "
+"only"
+msgstr ""
+
+#: /app/routes/settings.py:197
+#, python-brace-format
+msgid "Unknown export type: {}"
+msgstr ""
+
+#: /app/routes/settings.py:218
+#, python-brace-format
+msgid "Error creating backup: {}"
+msgstr ""
+
+#: /app/routes/settings.py:231
+msgid ""
+"You must confirm that you understand the restore will replace all current"
+" data"
+msgstr ""
+
+#: /app/routes/settings.py:238
+msgid "No file provided for restore"
+msgstr ""
+
+#: /app/routes/settings.py:251
+#, python-brace-format
+msgid "Invalid file type. Please upload a database file ({})"
+msgstr ""
+
+#: /app/routes/settings.py:274
+msgid "Invalid database file: missing required tables"
+msgstr ""
+
+#: /app/routes/settings.py:280
+#, python-brace-format
+msgid "Invalid database file: {}"
+msgstr ""
+
+#: /app/routes/settings.py:355
+#, python-brace-format
+msgid "Database restored but migration failed: {}"
+msgstr ""
+
+#: /app/routes/settings.py:363
+msgid "Database successfully restored and migrations applied!"
+msgstr ""
+
+#: /app/routes/settings.py:372
+#, python-brace-format
+msgid "Error restoring database: {}"
+msgstr ""
+
+#: /app/routes/settings.py:382 /app/routes/settings.py:621
+msgid "No file part"
+msgstr ""
+
+#: /app/routes/settings.py:406 /app/routes/settings.py:676
+#, python-brace-format
+msgid "... and {} more errors"
+msgstr ""
+
+#: /app/routes/settings.py:412
+#, python-brace-format
+msgid "Successfully imported {} medications"
+msgstr ""
+
+#: /app/routes/settings.py:418
+msgid "No medications were imported"
+msgstr ""
+
+#: /app/routes/settings.py:421
+#, python-brace-format
+msgid "Import of {} is not yet implemented"
+msgstr ""
+
+#: /app/routes/settings.py:454
+msgid "Please keep at least 30 days of logs"
+msgstr ""
+
+#: /app/routes/settings.py:460
+#, python-brace-format
+msgid "Successfully removed {} old inventory logs"
+msgstr ""
+
+#: /app/routes/settings.py:474
+msgid "Verification text doesn't match. Data was not reset."
+msgstr ""
+
+#: /app/routes/settings.py:482
+#, python-brace-format
+msgid "Backup created at {}"
+msgstr ""
+
+#: /app/routes/settings.py:491
+msgid ""
+"All data has been reset. The application has been restored to initial "
+"state."
+msgstr ""
+
+#: /app/routes/settings.py:497
+#, python-brace-format
+msgid "Error resetting data: {}"
+msgstr ""
+
+#: /app/routes/settings.py:519
+#, python-brace-format
+msgid "Invalid timezone: {}"
+msgstr ""
+
+#: /app/routes/settings.py:527
+#, python-brace-format
+msgid "Application timezone updated to {}"
+msgstr ""
+
+#: /app/routes/settings.py:668
+#, python-brace-format
+msgid "Unknown import type: {}"
+msgstr ""
+
+#: /app/routes/settings.py:682
+#, python-brace-format
+msgid "Successfully imported {} {} records"
+msgstr ""
+
+#: /app/routes/settings.py:688
+#, python-brace-format
+msgid "No {} were imported"
+msgstr ""
+
+#: /app/routes/settings.py:691
+#, python-brace-format
+msgid "Error during import: {}"
+msgstr ""
+
+#: /app/routes/settings.py:756
+msgid "Unable to check for updates"
+msgstr ""
+
+#: /app/routes/settings.py:766
+msgid "Connection timeout"
+msgstr ""
+
+#: /app/routes/settings.py:796
+#, python-brace-format
+msgid "Verification text doesn't match. Expected '{}'. Data was not reset."
+msgstr ""
+
+#: /app/routes/settings.py:814
+msgid "All medication data has been reset"
+msgstr ""
+
+#: /app/routes/settings.py:821
+#, python-brace-format
+msgid "All inventory data has been reset ({} records)"
+msgstr ""
+
+#: /app/routes/settings.py:832
+#, python-brace-format
+msgid "All order data has been reset ({} records)"
+msgstr ""
+
+#: /app/routes/settings.py:841
+#, python-brace-format
+msgid "All visit data has been reset ({} records)"
+msgstr ""
+
+#: /app/routes/settings.py:850
+#, python-brace-format
+msgid "All schedule data has been reset ({} records)"
+msgstr ""
+
+#: /app/routes/settings.py:861
+#, python-brace-format
+msgid "All physician data has been reset ({} records)"
+msgstr ""
+
+#: /app/routes/settings.py:868
+#, python-brace-format
+msgid "Unknown data type: {}"
+msgstr ""
+
+#: /app/routes/settings.py:873
+#, python-brace-format
+msgid "Error resetting {}: {}"
+msgstr ""
+
+#: /app/routes/system.py:182
+msgid "Task scheduler has been restarted"
+msgstr ""
+
+#: /app/routes/system.py:184
+msgid "Task scheduler not available"
+msgstr ""
+
+#: /app/routes/system.py:199
+#, python-brace-format
+msgid "Found {} schedules with pipe-separated times. Check logs for details."
+msgstr ""
+
+#: /app/routes/system.py:203 /app/routes/system.py:226
+msgid "No pipe-separated times detected in medication schedules."
+msgstr ""
+
+#: /app/routes/system.py:207
+#, python-brace-format
+msgid "Error running detection: {}"
+msgstr ""
+
+#: /app/routes/system.py:248
+#, python-brace-format
+msgid "Successfully fixed {} schedules with pipe-separated times."
+msgstr ""
+
+#: /app/routes/system.py:250
+#, python-brace-format
+msgid "Failed to fix {} schedules. Check logs for details."
+msgstr ""
+
+#: /app/routes/system.py:254
+#, python-brace-format
+msgid "Error running fix: {}"
+msgstr ""
+
+#: /app/routes/system.py:292
+msgid "Database migrations completed successfully"
+msgstr ""
+
+#: /app/routes/system.py:294
+msgid "Error running database migrations"
+msgstr ""
+
+#: /app/routes/visits.py:100
+#, python-brace-format
+msgid "Physician visit scheduled for {}"
+msgstr ""
+
+#: /app/routes/visits.py:113 /app/routes/visits.py:248
+msgid "Invalid date format. Please use DD.MM.YYYY format."
+msgstr ""
+
+#: /app/routes/visits.py:243
+#, python-brace-format
+msgid "Physician visit updated to {}"
+msgstr ""
+
+#: /app/routes/visits.py:282
+msgid "Cannot delete visit with associated orders. Delete the orders first."
+msgstr ""
+
+#: /app/routes/visits.py:292
+msgid "Physician visit deleted successfully"
+msgstr ""
+
+#: /app/routes/visits.py:309
+msgid "No upcoming physician visits scheduled"
+msgstr ""
+
+#: /app/templates/404.html:3 /app/templates/404.html:10
+msgid "Page Not Found"
+msgstr ""
+
+#: /app/templates/404.html:3 /app/templates/index.html:3
+#: /app/templates/inventory/depletion.html:3
+#: /app/templates/inventory/index.html:3 /app/templates/inventory/low.html:3
+#: /app/templates/inventory/show.html:3 /app/templates/layout.html:6
+#: /app/templates/migration/select.html:3 /app/templates/orders/edit.html:3
+#: /app/templates/orders/index.html:2 /app/templates/orders/new.html:3
+#: /app/templates/orders/show.html:3
+#: /app/templates/package_onboarding/onboard.html:3
+#: /app/templates/pdf_mapper/content.html:3
+#: /app/templates/pdf_mapper/index.html:3 /app/templates/pdf_mapper/new.html:3
+#: /app/templates/physicians/index.html:3 /app/templates/physicians/new.html:3
+#: /app/templates/schedules/edit.html:4
+#: /app/templates/schedules/edit_ingredient.html:3
+#: /app/templates/schedules/index.html:4
+#: /app/templates/schedules/index_ingredient.html:3
+#: /app/templates/schedules/new.html:4
+#: /app/templates/schedules/new_ingredient.html:3
+#: /app/templates/settings/data_management.html:3
+#: /app/templates/settings/physician_visits.html:4
+#: /app/templates/settings/system.html:3 /app/templates/system/status.html:3
+#: /app/templates/visits/edit.html:3 /app/templates/visits/index.html:3
+#: /app/templates/visits/new.html:3 /app/templates/visits/show.html:3
+msgid "Medication Tracker"
+msgstr ""
+
+#: /app/templates/404.html:11
+msgid "The page you are looking for does not exist or has been moved."
+msgstr ""
+
+#: /app/templates/404.html:14
+msgid "Go to Dashboard"
+msgstr ""
+
+#: /app/templates/dashboard/next_but_one.html:13
+#: /app/templates/system/status.html:11
+msgid "Back to Dashboard"
+msgstr ""
+
+#: /app/templates/index.html:20
+msgid "Next Physician Visit"
+msgstr ""
+
+#: /app/templates/index.html:27 /app/templates/index.html:114
+#, python-format
+msgid "%(count)d day away"
+msgid_plural "%(count)d days away"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/index.html:36 /app/templates/physicians/index.html:64
+#: /app/templates/scanner/scan.html:976 /app/templates/visits/index.html:86
+#: /app/templates/visits/index.html:166
+msgid "View Details"
+msgstr ""
+
+#: /app/templates/index.html:39 /app/templates/orders/index.html:6
+#: /app/templates/orders/new.html:3 /app/templates/orders/new.html:258
+#: /app/templates/visits/index.html:92 /app/templates/visits/show.html:105
+#: /app/templates/visits/show.html:137
+msgid "Create Order"
+msgstr ""
+
+#: /app/templates/index.html:45 /app/templates/index.html:488
+#: /app/templates/visits/index.html:107 /app/templates/visits/new.html:3
+#: /app/templates/visits/new.html:8
+msgid "Schedule a Visit"
+msgstr ""
+
+#: /app/templates/index.html:57
+msgid "Low Inventory Alert"
+msgstr ""
+
+#: /app/templates/index.html:62
+msgid "The following ingredients are below minimum threshold:"
+msgstr ""
+
+#: /app/templates/index.html:70 /app/templates/index.html:223
+#: /app/templates/index.html:286 /app/templates/index.html:358
+#: /app/templates/index.html:421 /app/templates/inventory/index.html:245
+#: /app/templates/inventory/index.html:460
+#: /app/templates/physicians/show.html:168
+#: /app/templates/test_translation.html:6
+#: /app/templates/test_translation.html:7
+#: /app/templates/test_translation.html:10
+#, python-format
+msgid "%(count)d unit"
+msgid_plural "%(count)d units"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/index.html:74
+msgid "Update"
+msgstr ""
+
+#: /app/templates/index.html:81
+msgid "View All Low Stock"
+msgstr ""
+
+#: /app/templates/index.html:87
+msgid "All ingredients are above minimum threshold levels."
+msgstr ""
+
+#: /app/templates/index.html:103
+msgid "Gap Coverage Warning"
+msgstr ""
+
+#: /app/templates/index.html:111
+#, python-format
+msgid "%(count)d ingredient"
+msgid_plural "%(count)d ingredients"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/index.html:112
+msgid "will run out before your visit"
+msgid_plural "will run out before your visit"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/index.html:113
+msgid "with"
+msgstr ""
+
+#: /app/templates/index.html:114
+msgid "on"
+msgstr ""
+
+#: /app/templates/index.html:125
+msgid "Runs out"
+msgstr ""
+
+#: /app/templates/index.html:130
+#, python-format
+msgid "%(count)d unit left"
+msgid_plural "%(count)d units left"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/index.html:133 /app/templates/orders/show.html:256
+msgid "View Ingredient"
+msgstr ""
+
+#: /app/templates/index.html:143
+#, python-format
+msgid "And %(count)d more ingredient"
+msgid_plural "And %(count)d more ingredients"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/index.html:150
+msgid "View Visit Details"
+msgstr ""
+
+#: /app/templates/index.html:153 /app/templates/visits/show.html:252
+msgid "Create Gap Coverage Order"
+msgstr ""
+
+#: /app/templates/index.html:169
+msgid "Ingredients Overview"
+msgstr ""
+
+#: /app/templates/index.html:183 /app/templates/inventory/index.html:60
+msgid "Unassigned Ingredients"
+msgstr ""
+
+#: /app/templates/index.html:194 /app/templates/index.html:329
+#: /app/templates/ingredients/edit.html:20
+#: /app/templates/ingredients/show.html:34
+#: /app/templates/inventory/index.html:71
+#: /app/templates/inventory/index.html:288 /app/templates/inventory/low.html:28
+#: /app/templates/pdf_mapper/reupload.html:66
+#: /app/templates/physicians/edit.html:31
+#: /app/templates/physicians/index.html:30
+#: /app/templates/physicians/new.html:25 /app/templates/physicians/show.html:34
+#: /app/templates/physicians/show.html:148
+#: /app/templates/system/status.html:159 /app/templates/visits/show.html:162
+msgid "Name"
+msgstr ""
+
+#: /app/templates/index.html:195 /app/templates/index.html:330
+#: /app/templates/ingredients/show.html:241
+#: /app/templates/ingredients/show_product.html:226
+#: /app/templates/inventory/depletion.html:84
+#: /app/templates/inventory/index.html:76
+#: /app/templates/inventory/index.html:293 /app/templates/inventory/low.html:29
+#: /app/templates/inventory/show.html:94
+#: /app/templates/orders/printable.html:132
+#: /app/templates/physicians/show.html:149
+#: /app/templates/schedules/index_ingredient.html:88
+#: /app/templates/visits/show.html:163
+msgid "Daily Usage"
+msgstr ""
+
+#: /app/templates/index.html:196 /app/templates/index.html:331
+#: /app/templates/ingredients/show_product.html:217
+#: /app/templates/scanner/index.html:46
+msgid "Current Inventory"
+msgstr ""
+
+#: /app/templates/index.html:197 /app/templates/index.html:332
+#: /app/templates/inventory/depletion.html:86
+#: /app/templates/inventory/index.html:79
+#: /app/templates/inventory/index.html:296 /app/templates/inventory/low.html:32
+msgid "Days Left"
+msgstr ""
+
+#: /app/templates/index.html:198 /app/templates/index.html:333
+#: /app/templates/inventory/depletion.html:87
+#: /app/templates/inventory/index.html:80
+#: /app/templates/inventory/index.html:297 /app/templates/inventory/low.html:33
+msgid "Depletion Date"
+msgstr ""
+
+#: /app/templates/index.html:199 /app/templates/index.html:334
+#: /app/templates/ingredients/show.html:94
+#: /app/templates/ingredients/show.html:194
+#: /app/templates/ingredients/show_product.html:251
+#: /app/templates/inventory/depletion.html:88
+#: /app/templates/inventory/index.html:81
+#: /app/templates/inventory/index.html:298
+#: /app/templates/inventory/show.html:437 /app/templates/orders/index.html:23
+#: /app/templates/orders/printable.html:112 /app/templates/orders/show.html:64
+#: /app/templates/orders/show.html:163 /app/templates/pdf_mapper/index.html:44
+#: /app/templates/physicians/show.html:151 /app/templates/scanner/index.html:59
+#: /app/templates/scanner/index.html:144
+#: /app/templates/scanner/package_details.html:75
+#: /app/templates/system/migrations.html:55
+#: /app/templates/system/status.html:162
+msgid "Status"
+msgstr ""
+
+#: /app/templates/index.html:200 /app/templates/index.html:335
+#: /app/templates/ingredients/index.html:27
+#: /app/templates/ingredients/show.html:95
+#: /app/templates/ingredients/show_product.html:152
+#: /app/templates/inventory/depletion.html:89
+#: /app/templates/inventory/index.html:82
+#: /app/templates/inventory/index.html:299 /app/templates/inventory/low.html:35
+#: /app/templates/inventory/show.html:442 /app/templates/orders/edit.html:70
+#: /app/templates/orders/index.html:27 /app/templates/orders/index.html:154
+#: /app/templates/orders/show.html:164 /app/templates/physicians/index.html:36
+#: /app/templates/physicians/show.html:152
+#: /app/templates/physicians/show.html:220 /app/templates/scanner/index.html:60
+#: /app/templates/scanner/package_details.html:162
+#: /app/templates/schedules/index.html:70
+#: /app/templates/schedules/index_ingredient.html:90
+#: /app/templates/visits/index.html:34 /app/templates/visits/index.html:130
+#: /app/templates/visits/show.html:169
+msgid "Actions"
+msgstr ""
+
+#: /app/templates/index.html:219 /app/templates/index.html:354
+#: /app/templates/ingredients/index.html:45
+#: /app/templates/ingredients/index.html:105
+#: /app/templates/ingredients/show.html:59
+#: /app/templates/ingredients/show.html:115
+#: /app/templates/ingredients/show_product.html:101
+#: /app/templates/ingredients/show_product.html:110
+#: /app/templates/ingredients/show_product.html:119
+#: /app/templates/ingredients/show_product.html:159
+#: /app/templates/ingredients/show_product.html:297
+#: /app/templates/ingredients/show_product.html:331
+#: /app/templates/inventory/depletion.html:99
+#: /app/templates/inventory/depletion.html:100
+#: /app/templates/inventory/edit_package.html:61
+#: /app/templates/inventory/index.html:165
+#: /app/templates/inventory/index.html:169
+#: /app/templates/inventory/index.html:380
+#: /app/templates/inventory/index.html:384 /app/templates/inventory/low.html:44
+#: /app/templates/inventory/low.html:47 /app/templates/inventory/low.html:65
+#: /app/templates/inventory/show.html:68 /app/templates/inventory/show.html:96
+#: /app/templates/inventory/show.html:142
+#: /app/templates/inventory/show.html:174
+#: /app/templates/inventory/show.html:223
+#: /app/templates/inventory/show.html:277
+#: /app/templates/inventory/show.html:278
+#: /app/templates/inventory/show.html:309
+#: /app/templates/inventory/show.html:362
+#: /app/templates/inventory/show.html:363
+#: /app/templates/inventory/show.html:422
+#: /app/templates/migration/scanner.html:89
+#: /app/templates/migration/scanner.html:256
+#: /app/templates/orders/show.html:193 /app/templates/orders/show.html:209
+#: /app/templates/orders/show.html:215 /app/templates/orders/show.html:378
+#: /app/templates/physicians/show.html:165
+#: /app/templates/schedules/edit.html:40 /app/templates/schedules/new.html:40
+#: /app/templates/visits/show.html:178
+msgid "units"
+msgstr ""
+
+#: /app/templates/index.html:225 /app/templates/index.html:360
+#: /app/templates/inventory/index.html:176
+#: /app/templates/inventory/index.html:391 /app/templates/orders/edit.html:96
+#: /app/templates/orders/new.html:129 /app/templates/physicians/show.html:170
+msgid "No inventory"
+msgstr ""
+
+#: /app/templates/index.html:230 /app/templates/index.html:365
+#, python-format
+msgid "%(count)d day"
+msgid_plural "%(count)d days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/index.html:232 /app/templates/index.html:239
+#: /app/templates/index.html:367 /app/templates/index.html:374
+#: /app/templates/inventory/edit_package.html:42
+#: /app/templates/inventory/edit_package.html:55
+#: /app/templates/inventory/index.html:183
+#: /app/templates/inventory/index.html:192
+#: /app/templates/inventory/index.html:398
+#: /app/templates/inventory/index.html:407 /app/templates/inventory/low.html:53
+#: /app/templates/inventory/low.html:60
+msgid "N/A"
+msgstr ""
+
+#: /app/templates/index.html:244 /app/templates/index.html:379
+#: /app/templates/inventory/depletion.html:109
+#: /app/templates/inventory/index.html:199
+#: /app/templates/inventory/index.html:414
+msgid "Critical"
+msgstr ""
+
+#: /app/templates/index.html:246 /app/templates/index.html:381
+#: /app/templates/inventory/index.html:21
+#: /app/templates/inventory/index.html:201
+#: /app/templates/inventory/index.html:416 /app/templates/layout.html:49
+#: /app/templates/physicians/show.html:176
+msgid "Low Stock"
+msgstr ""
+
+#: /app/templates/index.html:248 /app/templates/index.html:383
+#: /app/templates/inventory/index.html:203
+#: /app/templates/inventory/index.html:418
+#: /app/templates/physicians/show.html:178
+msgid "Running Low"
+msgstr ""
+
+#: /app/templates/index.html:250 /app/templates/index.html:385
+#: /app/templates/inventory/depletion.html:115
+#: /app/templates/inventory/index.html:205
+#: /app/templates/inventory/index.html:420
+#: /app/templates/physicians/show.html:180
+msgid "OK"
+msgstr ""
+
+#: /app/templates/index.html:281 /app/templates/index.html:416
+#: /app/templates/inventory/index.html:240
+#: /app/templates/inventory/index.html:455
+#, python-format
+msgid "%(count)d package"
+msgid_plural "%(count)d packages"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/index.html:283 /app/templates/index.html:418
+#: /app/templates/inventory/index.html:111
+#: /app/templates/inventory/index.html:242
+#: /app/templates/inventory/index.html:326
+#: /app/templates/inventory/index.html:457
+#: /app/templates/inventory/show.html:49
+msgid "Legacy"
+msgstr ""
+
+#: /app/templates/index.html:289 /app/templates/index.html:424
+#: /app/templates/inventory/index.html:248
+#: /app/templates/inventory/index.html:463
+msgid "Favorite"
+msgstr ""
+
+#: /app/templates/index.html:319 /app/templates/inventory/index.html:278
+msgid "Over-the-Counter (OTC) Medications"
+msgstr ""
+
+#: /app/templates/index.html:447
+msgid "No ingredients found in the system."
+msgstr ""
+
+#: /app/templates/index.html:449
+msgid "Manage Medications"
+msgstr ""
+
+#: /app/templates/index.html:456
+msgid "Manage Ingredients"
+msgstr ""
+
+#: /app/templates/index.html:459
+msgid "Inventory Detail"
+msgstr ""
+
+#: /app/templates/index.html:474 /app/templates/ingredients/show.html:287
+#: /app/templates/settings/system.html:170
+msgid "Quick Actions"
+msgstr ""
+
+#: /app/templates/index.html:482
+msgid "Add New Medication"
+msgstr ""
+
+#: /app/templates/index.html:494 /app/templates/orders/index.html:132
+msgid "Create New Order"
+msgstr ""
+
+#: /app/templates/index.html:500
+msgid "View Depletion Forecast"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:3
+#: /app/templates/ingredients/edit.html:11
+msgid "Edit Active Ingredient"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:31
+#: /app/templates/ingredients/new_product.html:54
+msgid "Please enter a valid number (e.g., 500 or 1.25)"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:32
+msgid "e.g., 500"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:33
+msgid "Please enter a valid number"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:36
+msgid "Strength Unit"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:39
+msgid "e.g., mg"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:44
+#: /app/templates/ingredients/index.html:24
+#: /app/templates/ingredients/show.html:43
+msgid "Form"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:47
+msgid "e.g., Tablet, Capsule, Syrup"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:51
+#: /app/templates/ingredients/index.html:26
+#: /app/templates/ingredients/show.html:51
+msgid "ATC Code"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:54
+msgid "e.g., N02BE01"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:65
+#: /app/templates/ingredients/edit.html:69
+#: /app/templates/ingredients/edit_package.html:11
+#: /app/templates/ingredients/edit_package.html:95
+#: /app/templates/ingredients/edit_product.html:11
+#: /app/templates/ingredients/edit_product.html:102
+#: /app/templates/ingredients/new_package.html:11
+#: /app/templates/ingredients/new_package.html:99
+#: /app/templates/ingredients/new_product.html:17
+#: /app/templates/ingredients/new_product.html:144
+#: /app/templates/inventory/edit_package.html:251
+#: /app/templates/inventory/edit_package.html:255
+#: /app/templates/migration/scanner.html:172
+#: /app/templates/migration/scanner.html:205
+#: /app/templates/migration/scanner.html:240
+#: /app/templates/orders/_fulfill_modal.html:41
+#: /app/templates/orders/edit.html:223 /app/templates/orders/new.html:255
+#: /app/templates/orders/show.html:397
+#: /app/templates/package_onboarding/onboard.html:443
+#: /app/templates/pdf_mapper/index.html:129
+#: /app/templates/pdf_mapper/index.html:152
+#: /app/templates/pdf_mapper/new.html:129
+#: /app/templates/pdf_mapper/reupload.html:46
+#: /app/templates/physicians/edit.html:111
+#: /app/templates/physicians/new.html:101 /app/templates/schedules/edit.html:99
+#: /app/templates/schedules/edit_ingredient.html:104
+#: /app/templates/schedules/index.html:167
+#: /app/templates/schedules/new_ingredient.html:98
+#: /app/templates/settings/data_management.html:149
+#: /app/templates/settings/data_management.html:190
+#: /app/templates/visits/edit.html:67
+msgid "Cancel"
+msgstr ""
+
+#: /app/templates/ingredients/edit.html:73
+#: /app/templates/ingredients/edit_package.html:98
+#: /app/templates/ingredients/edit_product.html:99
+#: /app/templates/inventory/edit_package.html:247
+#: /app/templates/migration/scanner.html:241
+msgid "Save Changes"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:3
+#: /app/templates/ingredients/edit_package.html:20
+#: /app/templates/inventory/edit_package.html:3
+#: /app/templates/inventory/edit_package.html:8
+#: /app/templates/migration/scanner.html:217
+msgid "Edit Package"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:8
+msgid "Edit Package Configuration"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:35
+#: /app/templates/ingredients/new_package.html:40
+msgid "Quantity (units)"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:43
+#: /app/templates/ingredients/new_package.html:48
+msgid "Identifiers"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:47
+#: /app/templates/ingredients/new_package.html:52
+#: /app/templates/ingredients/show_product.html:149
+msgid "National Drug Code"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:52
+#: /app/templates/ingredients/new_package.html:57
+msgid "Code Type"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:54
+#: /app/templates/ingredients/new_package.html:59
+msgid "Select type..."
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:67
+#: /app/templates/ingredients/new_package.html:72
+msgid "GTIN (PC)"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:70
+#: /app/templates/ingredients/new_package.html:75
+msgid "Global Trade Item Number - also found as PC on the package"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:74
+#: /app/templates/ingredients/new_package.html:79
+msgid "Additional Information"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:78
+#: /app/templates/ingredients/new_package.html:83
+#: /app/templates/package_onboarding/onboard.html:359
+msgid "Package Manufacturer"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:81
+#: /app/templates/ingredients/new_package.html:85
+msgid "If different from product manufacturer"
+msgstr ""
+
+#: /app/templates/ingredients/edit_package.html:84
+#: /app/templates/ingredients/new_package.html:88
+#: /app/templates/ingredients/show_product.html:151
+#: /app/templates/package_onboarding/onboard.html:348
+msgid "List Price"
+msgstr ""
+
+#: /app/templates/ingredients/edit_product.html:3
+#: /app/templates/ingredients/edit_product.html:8
+msgid "Edit Product"
+msgstr ""
+
+#: /app/templates/ingredients/edit_product.html:20
+#: /app/templates/ingredients/new_product.html:29
+#: /app/templates/ingredients/show_product.html:34
+msgid "Product Information"
+msgstr ""
+
+#: /app/templates/ingredients/edit_product.html:27
+msgid "Cannot be changed after creation"
+msgstr ""
+
+#: /app/templates/ingredients/edit_product.html:60
+#: /app/templates/ingredients/new_product.html:104
+msgid "Order Settings"
+msgstr ""
+
+#: /app/templates/ingredients/edit_product.html:68
+#: /app/templates/ingredients/new_product.html:111
+msgid "Allow substitution (Aut idem)"
+msgstr ""
+
+#: /app/templates/ingredients/edit_product.html:69
+#: /app/templates/ingredients/new_product.html:112
+msgid "Pharmacist may substitute with generic equivalent"
+msgstr ""
+
+#: /app/templates/ingredients/edit_product.html:78
+#: /app/templates/ingredients/new_product.html:120
+msgid "Over-the-counter (OTC)"
+msgstr ""
+
+#: /app/templates/ingredients/edit_product.html:79
+#: /app/templates/ingredients/new_product.html:121
+msgid "No order required (OTC)"
+msgstr ""
+
+#: /app/templates/ingredients/edit_product.html:85
+#: /app/templates/ingredients/new_product.html:127
+msgid "Prescribing Physician"
+msgstr ""
+
+#: /app/templates/ingredients/edit_product.html:87
+#: /app/templates/ingredients/new_product.html:129
+msgid "None (OTC or general)"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:12
+#: /app/templates/ingredients/new_product.html:3
+#: /app/templates/ingredients/new_product.html:14
+msgid "New Product"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:25
+#: /app/templates/ingredients/show.html:58
+msgid "Total Inventory"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:47
+#: /app/templates/ingredients/index.html:107
+#: /app/templates/ingredients/show.html:118
+#: /app/templates/inventory/edit_package.html:279
+#: /app/templates/inventory/show.html:468
+#: /app/templates/pdf_mapper/content.html:564
+#: /app/templates/pdf_mapper/content.html:1083
+msgid "Empty"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:60
+#: /app/templates/ingredients/index.html:128
+#: /app/templates/ingredients/show.html:136
+#: /app/templates/inventory/index.html:210
+#: /app/templates/inventory/index.html:425 /app/templates/orders/index.html:78
+#: /app/templates/orders/index.html:198 /app/templates/physicians/show.html:190
+#: /app/templates/physicians/show.html:248
+msgid "View"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:64
+#: /app/templates/ingredients/index.html:132
+#: /app/templates/ingredients/show.html:12
+#: /app/templates/ingredients/show.html:140
+#: /app/templates/ingredients/show_product.html:12
+#: /app/templates/ingredients/show_product.html:187
+#: /app/templates/inventory/show.html:498 /app/templates/orders/index.html:85
+#: /app/templates/orders/show.html:102 /app/templates/physicians/edit.html:3
+#: /app/templates/physicians/index.html:69
+#: /app/templates/physicians/show.html:18
+#: /app/templates/schedules/index.html:114
+#: /app/templates/schedules/index_ingredient.html:131
+msgid "Edit"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:69
+#: /app/templates/ingredients/show.html:301
+msgid "Are you sure you want to delete this active ingredient?"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:71
+#: /app/templates/ingredients/index.html:139
+#: /app/templates/ingredients/show.html:164
+#: /app/templates/ingredients/show_product.html:19
+#: /app/templates/ingredients/show_product.html:193
+#: /app/templates/orders/show.html:129 /app/templates/pdf_mapper/index.html:89
+#: /app/templates/schedules/index.html:117
+#: /app/templates/schedules/index.html:169
+#: /app/templates/schedules/index_ingredient.html:134
+msgid "Delete"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:77
+#: /app/templates/ingredients/show.html:15
+msgid "Add Product"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:110
+#: /app/templates/ingredients/show.html:123
+msgid "Substitution allowed"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:115
+#: /app/templates/ingredients/show.html:128
+#: /app/templates/inventory/index.html:101
+#: /app/templates/inventory/index.html:317 /app/templates/orders/show.html:61
+#: /app/templates/physicians/show.html:162
+msgid "OTC"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:120
+#: /app/templates/ingredients/show.html:62
+msgid "Default Product"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:137
+#: /app/templates/ingredients/show.html:162
+#: /app/templates/ingredients/show_product.html:16
+msgid "Are you sure you want to delete this product?"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:157
+msgid "No products registered for this ingredient"
+msgstr ""
+
+#: /app/templates/ingredients/index.html:169
+msgid "No medications registered yet. Start by creating a new product."
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:3
+#: /app/templates/ingredients/new_package.html:102
+#: /app/templates/ingredients/show_product.html:139
+#: /app/templates/migration/scanner.html:173
+#: /app/templates/scanner/scan.html:953
+msgid "Add Package"
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:8
+msgid "Add Package Configuration"
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:20
+msgid "New Package for"
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:31
+msgid "Select size..."
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:32
+#: /app/templates/orders/edit.html:190 /app/templates/orders/new.html:223
+msgid "Small package"
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:33
+#: /app/templates/orders/edit.html:198 /app/templates/orders/new.html:230
+msgid "Medium package"
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:34
+#: /app/templates/orders/edit.html:206 /app/templates/orders/new.html:237
+msgid "Large package"
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:35
+msgid "Custom size"
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:43
+msgid "e.g., 20, 50, 100"
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:54
+msgid "e.g., 12345678"
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:74
+msgid "e.g., 04150123456789"
+msgstr ""
+
+#: /app/templates/ingredients/new_package.html:91
+msgid "e.g., 12.50"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:44
+msgid "Type to search or enter a new ingredient name"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:47
+#: /app/templates/package_onboarding/onboard.html:233
+msgid "Creating new ingredient:"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:49
+msgid "Ingredient name (e.g., Ibuprofen)"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:55
+#: /app/templates/package_onboarding/onboard.html:238
+msgid "Strength (e.g., 400)"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:70
+msgid "Form (optional, e.g., tablet, inhalation)"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:80
+msgid "e.g., Salbutamol 1A Pharma 100µg"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:81
+msgid "Full commercial name of the product"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:88
+msgid "e.g., 1A Pharma, ratiopharm, Hexal"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:141
+msgid "Create Product"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:164
+msgid "Search for ingredient or type new name..."
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:174
+#: /app/templates/ingredients/new_product.html:202
+#: /app/templates/package_onboarding/onboard.html:650
+#: /app/templates/package_onboarding/onboard.html:754
+msgid "Create new"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:182
+msgid "New"
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:188
+msgid "No ingredients found. Type to create new."
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:191
+#: /app/templates/orders/show.html:643
+msgid "Searching..."
+msgstr ""
+
+#: /app/templates/ingredients/new_product.html:222
+msgid "Select physician..."
+msgstr ""
+
+#: /app/templates/ingredients/show.html:18
+#: /app/templates/ingredients/show_product.html:24
+#: /app/templates/migration/scanner.html:13
+#: /app/templates/migration/select.html:12
+#: /app/templates/scanner/package_details.html:11
+msgid "Back"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:28
+msgid "Active Ingredient Information"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:55
+msgid "Total Products"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:84
+msgid "Available Products"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:107
+#: /app/templates/pdf_mapper/index.html:30
+msgid "Default"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:147
+msgid "Set as Default"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:154
+msgid "Remove Default"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:178
+msgid "No products registered for this active ingredient yet."
+msgstr ""
+
+#: /app/templates/ingredients/show.html:189
+msgid "Auto-Deduction"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:197
+#: /app/templates/schedules/index_ingredient.html:27
+msgid "Enabled"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:199
+#: /app/templates/schedules/index_ingredient.html:32
+msgid "Disabled"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:206
+msgid "Enabled since"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:213
+#: /app/templates/schedules/index.html:43
+msgid "Disable Auto-Deduction"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:215
+#: /app/templates/schedules/index.html:45
+msgid "Enable Auto-Deduction"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:223
+msgid "Schedules"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:230
+msgid "Manage Schedules"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:234
+#: /app/templates/schedules/index.html:16
+#: /app/templates/schedules/index_ingredient.html:12
+#: /app/templates/schedules/new_ingredient.html:3
+msgid "Add Schedule"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:241 /app/templates/orders/show.html:183
+#: /app/templates/schedules/index_ingredient.html:119
+msgid "units/day"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:243
+#: /app/templates/ingredients/show_product.html:230
+#: /app/templates/inventory/show.html:80
+#: /app/templates/schedules/index_ingredient.html:68
+msgid "Days Remaining"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:255
+#: /app/templates/ingredients/show_product.html:312
+msgid "Substitutable Products"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:260
+msgid ""
+"The following products can be substituted for each other (Aut idem "
+"allowed):"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:292
+msgid "Add New Product Variant"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:297
+#: /app/templates/migration/select.html:52 /app/templates/orders/show.html:261
+msgid "View Inventory"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:304
+msgid "Delete Active Ingredient"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:39
+msgid "Basic Information"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:47
+msgid "Edit ingredient"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:60
+#: /app/templates/orders/printable.html:108 /app/templates/orders/show.html:27
+msgid "Order Information"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:62
+msgid "Substitution"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:66
+msgid "Allowed (Aut idem)"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:70
+msgid "Not allowed"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:75
+#: /app/templates/orders/show.html:60
+msgid "Type"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:78
+msgid "Over-the-counter"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:80
+msgid "Order required"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:94
+msgid "Package Sizes"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:137
+msgid "Package Configurations"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:148
+msgid "Quantity"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:191
+msgid "Are you sure you want to delete this package configuration?"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:207
+msgid "No package configurations yet."
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:208
+msgid "Add the first package"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:242
+msgid "Packages in Stock"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:247
+#: /app/templates/inventory/show.html:440 /app/templates/scanner/index.html:55
+#: /app/templates/scanner/index.html:142
+#: /app/templates/scanner/package_details.html:48
+msgid "Serial"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:248
+#: /app/templates/inventory/edit_package.html:70
+#: /app/templates/inventory/show.html:438
+#: /app/templates/package_onboarding/onboard.html:199
+#: /app/templates/scanner/index.html:56
+#: /app/templates/scanner/package_details.html:54
+#: /app/templates/scanner/scan.html:943
+msgid "Batch"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:249
+#: /app/templates/inventory/show.html:439
+#: /app/templates/package_onboarding/onboard.html:205
+#: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
+#: /app/templates/scanner/package_details.html:59
+#: /app/templates/scanner/scan.html:946
+msgid "Expiry"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:250
+#: /app/templates/inventory/show.html:436 /app/templates/scanner/index.html:58
+#: /app/templates/scanner/package_details.html:113
+msgid "Units"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:269
+#: /app/templates/inventory/edit_package.html:273
+#: /app/templates/inventory/show.html:464 /app/templates/scanner/index.html:102
+#: /app/templates/scanner/package_details.html:103
+msgid "Sealed"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:271
+#: /app/templates/inventory/edit_package.html:276
+#: /app/templates/inventory/show.html:466
+#: /app/templates/migration/scanner.html:92 /app/templates/orders/edit.html:54
+#: /app/templates/orders/index.html:49 /app/templates/orders/show.html:71
+#: /app/templates/scanner/index.html:104
+#: /app/templates/scanner/package_details.html:105
+#: /app/templates/visits/show.html:121
+msgid "Open"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:280
+msgid "No packages in stock"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:285
+msgid "Legacy Inventory"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:290
+msgid "Sum-based system"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:292
+msgid "This inventory needs migration to package-based tracking"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:12
+#: /app/templates/inventory/low.html:12 /app/templates/inventory/show.html:12
+#: /app/templates/orders/new.html:12 /app/templates/orders/show.html:13
+#: /app/templates/physicians/new.html:11 /app/templates/physicians/show.html:15
+#: /app/templates/schedules/edit.html:13 /app/templates/schedules/new.html:13
+#: /app/templates/visits/new.html:11 /app/templates/visits/show.html:12
+msgid "Back to List"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:20
+msgid "Medication Depletion Timeline"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:30
+#: /app/templates/physicians/show.html:232 /app/templates/visits/index.html:199
+msgid "Today"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:33
+msgid "+30 days"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:36
+msgid "+60 days"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:39
+msgid "+90 days"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:42
+msgid "+120 days"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:57
+msgid "days left"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:66
+msgid "No medications with depletion dates available."
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:75
+msgid "Sorted by Depletion Date"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:83
+#: /app/templates/inventory/edit_package.html:41
+#: /app/templates/orders/new.html:89 /app/templates/scanner/index.html:54
+#: /app/templates/scanner/index.html:140
+#: /app/templates/scanner/package_details.html:23
+msgid "Medication"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:85
+#: /app/templates/inventory/index.html:78
+#: /app/templates/inventory/index.html:295 /app/templates/inventory/low.html:31
+#: /app/templates/orders/edit.html:69 /app/templates/orders/new.html:90
+#: /app/templates/physicians/show.html:150 /app/templates/visits/show.html:166
+msgid "Current Stock"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:102
+#: /app/templates/inventory/index.html:181
+#: /app/templates/inventory/index.html:396 /app/templates/inventory/low.html:51
+#: /app/templates/orders/printable.html:119
+#: /app/templates/physicians/show.html:234 /app/templates/scanner/index.html:85
+#: /app/templates/schedules/index_ingredient.html:100
+#: /app/templates/settings/physician_visits.html:27
+#: /app/templates/visits/index.html:59 /app/templates/visits/index.html:229
+#: /app/templates/visits/show.html:179
+msgid "days"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:111
+#: /app/templates/visits/show.html:256
+msgid "Warning"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:113
+msgid "Monitor"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:120
+#: /app/templates/inventory/low.html:69 /app/templates/visits/show.html:216
+msgid "Manage Inventory"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:124
+#: /app/templates/inventory/depletion.html:128
+#: /app/templates/inventory/low.html:73 /app/templates/inventory/low.html:77
+#: /app/templates/visits/show.html:212
+msgid "View Medication"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:143
+msgid "Medications without depletion data:"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:149
+msgid "no inventory data"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:151
+msgid "empty"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:153
+msgid "no daily usage set"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:13
+#: /app/templates/inventory/edit_package.html:17
+msgid "Back to Inventory"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:28
+#: /app/templates/inventory/edit_package.html:103
+#: /app/templates/scanner/package_details.html:3
+#: /app/templates/scanner/package_details.html:9
+msgid "Package Details"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:37
+#: /app/templates/scanner/package_details.html:19
+msgid "Package Information"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:60
+#: /app/templates/migration/scanner.html:229
+msgid "Original Units"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:66
+#: /app/templates/inventory/edit_package.html:107
+msgid "Serial Number"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:74
+#: /app/templates/inventory/edit_package.html:90
+msgid "from GS1"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:77
+#: /app/templates/inventory/edit_package.html:93
+#: /app/templates/physicians/index.html:49
+#: /app/templates/physicians/show.html:44
+msgid "Not specified"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:81
+#: /app/templates/inventory/edit_package.html:125
+msgid "Expiry Date"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:103
+msgid "Not from GS1 scan - can be edited"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:110
+msgid "e.g. SN123456789"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:111
+msgid "Unique identifier for this package"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:116
+msgid "Batch Number"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:119
+msgid "e.g. LOT123456"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:120
+msgid "Enter the batch/lot number from the package"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:128
+msgid "Select the expiry date from the package"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:136
+#: /app/templates/scanner/package_details.html:100
+msgid "Package Status"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:139
+msgid "Sealed - Not opened yet"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:142
+msgid "Open - In use"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:145
+msgid "Empty - All units consumed"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:148
+msgid "Discarded - Removed from inventory"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:152
+msgid "Update the status to reflect the current state of the package"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:157
+msgid "Current Units Remaining"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:178
+msgid ""
+"Adjust if you have taken medication from this package without updating "
+"the system"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:184
+msgid "Quick Adjustments"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:201
+msgid "Mark Empty"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:204
+msgid "Reset to Full"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:211
+msgid "Associated Order"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:213
+msgid "No order association"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:215
+#: /app/templates/orders/index.html:13
+msgid "Pending Orders"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:218
+#: /app/templates/inventory/edit_package.html:229
+#: /app/templates/orders/show.html:3 /app/templates/orders/show.html:9
+#, python-format
+msgid "Order #%(order_id)s"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:226
+#: /app/templates/orders/index.html:141
+msgid "Fulfilled Orders"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:236
+msgid "Link this package to a medication order"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:240
+#: /app/templates/inventory/show.html:268
+#: /app/templates/inventory/show.html:353
+msgid "Notes (Optional)"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:242
+msgid "Add any notes about this adjustment"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:268
+msgid "Status Information"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:271
+msgid "Current Status"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:274
+msgid "This package has not been opened yet"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:277
+msgid "This package is currently in use"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:280
+msgid "All units have been consumed"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:282
+msgid "Discarded"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:283
+msgid "This package has been removed from inventory"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:291
+msgid "Usage Information"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:294
+msgid "Units Used"
+msgstr ""
+
+#: /app/templates/inventory/edit_package.html:302
+#: /app/templates/inventory/show.html:441 /app/templates/orders/show.html:657
+#: /app/templates/scanner/package_details.html:72
+msgid "Scanned"
+msgstr ""
+
+#: /app/templates/inventory/index.html:35
+msgid "Search ingredients..."
+msgstr ""
+
+#: /app/templates/inventory/index.html:73
+#: /app/templates/inventory/index.html:290
+msgid "Current Package"
+msgstr ""
+
+#: /app/templates/inventory/index.html:74
+#: /app/templates/inventory/index.html:291
+msgid "Next Package"
+msgstr ""
+
+#: /app/templates/inventory/index.html:104
+#: /app/templates/inventory/index.html:319
+msgid "No generic substitution"
+msgstr ""
+
+#: /app/templates/inventory/index.html:197
+#: /app/templates/inventory/index.html:412
+msgid "No Data"
+msgstr ""
+
+#: /app/templates/inventory/index.html:215
+#: /app/templates/inventory/index.html:430
+msgid "Create"
+msgstr ""
+
+#: /app/templates/inventory/index.html:487
+msgid "No medications registered yet."
+msgstr ""
+
+#: /app/templates/inventory/index.html:488
+msgid "Add your first medication"
+msgstr ""
+
+#: /app/templates/inventory/low.html:3 /app/templates/inventory/low.html:8
+msgid "Low Inventory"
+msgstr ""
+
+#: /app/templates/inventory/low.html:20
+msgid "Medications Below Threshold"
+msgstr ""
+
+#: /app/templates/inventory/low.html:30
+msgid "Min Threshold"
+msgstr ""
+
+#: /app/templates/inventory/low.html:34
+msgid "Needed Units"
+msgstr ""
+
+#: /app/templates/inventory/low.html:91
+msgid "Create Order for Low Inventory Items"
+msgstr ""
+
+#: /app/templates/inventory/low.html:97
+msgid "Good news!"
+msgstr ""
+
+#: /app/templates/inventory/low.html:97
+msgid "All medications are above their minimum thresholds."
+msgstr ""
+
+#: /app/templates/inventory/show.html:16 /app/templates/inventory/show.html:20
+msgid "Medication Details"
+msgstr ""
+
+#: /app/templates/inventory/show.html:32
+msgid "Current Inventory Status"
+msgstr ""
+
+#: /app/templates/inventory/show.html:44
+msgid "Package-based inventory"
+msgstr ""
+
+#: /app/templates/inventory/show.html:51 /app/templates/orders/index.html:26
+#: /app/templates/orders/index.html:153
+#: /app/templates/orders/printable.html:133 /app/templates/visits/show.html:168
+msgid "Packages"
+msgstr ""
+
+#: /app/templates/inventory/show.html:55
+msgid "Sum-based inventory"
+msgstr ""
+
+#: /app/templates/inventory/show.html:68
+msgid "Minimum threshold"
+msgstr ""
+
+#: /app/templates/inventory/show.html:83
+msgid "Will run out on"
+msgstr ""
+
+#: /app/templates/inventory/show.html:96
+msgid "Dosage"
+msgstr ""
+
+#: /app/templates/inventory/show.html:97
+msgid "Frequency"
+msgstr ""
+
+#: /app/templates/inventory/show.html:97
+msgid "per day"
+msgstr ""
+
+#: /app/templates/inventory/show.html:114
+msgid "Quick Intake"
+msgstr ""
+
+#: /app/templates/inventory/show.html:116
+msgid "Manual Entry"
+msgstr ""
+
+#: /app/templates/inventory/show.html:124
+msgid "Out of Stock"
+msgstr ""
+
+#: /app/templates/inventory/show.html:125
+msgid "No inventory available for manual deduction."
+msgstr ""
+
+#: /app/templates/inventory/show.html:132
+msgid "Amount"
+msgstr ""
+
+#: /app/templates/inventory/show.html:146
+msgid "Reason"
+msgstr ""
+
+#: /app/templates/inventory/show.html:146
+msgid "Optional"
+msgstr ""
+
+#: /app/templates/inventory/show.html:151
+msgid "e.g., Extra dose, pain relief, missed dose..."
+msgstr ""
+
+#: /app/templates/inventory/show.html:155
+msgid "Record Intake"
+msgstr ""
+
+#: /app/templates/inventory/show.html:162
+#, python-brace-format
+msgid "Low inventory: Only {} units available."
+msgstr ""
+
+#: /app/templates/inventory/show.html:169
+msgid "For on-demand medications or extra doses outside regular schedule"
+msgstr ""
+
+#: /app/templates/inventory/show.html:174
+msgid "Available"
+msgstr ""
+
+#: /app/templates/inventory/show.html:192
+msgid "Legacy Inventory System"
+msgstr ""
+
+#: /app/templates/inventory/show.html:198
+msgid ""
+"You are using the new package scanning system. The forms below should "
+"only be used to adjust existing legacy stock. Please use the barcode "
+"scanner for adding new inventory."
+msgstr ""
+
+#: /app/templates/inventory/show.html:198
+#: /app/templates/pdf_mapper/reupload.html:41
+msgid "Note:"
+msgstr ""
+
+#: /app/templates/inventory/show.html:209
+msgid "Adjust Inventory (Relative)"
+msgstr ""
+
+#: /app/templates/inventory/show.html:214
+msgid "add or subtract"
+msgstr ""
+
+#: /app/templates/inventory/show.html:214
+msgid "units from your current inventory."
+msgstr ""
+
+#: /app/templates/inventory/show.html:214
+#: /app/templates/inventory/show.html:300
+msgid "Use this form to"
+msgstr ""
+
+#: /app/templates/inventory/show.html:220
+msgid "Adjustment Amount Directly"
+msgstr ""
+
+#: /app/templates/inventory/show.html:222
+msgid "Enter adjustment amount"
+msgstr ""
+
+#: /app/templates/inventory/show.html:226
+msgid ""
+"Enter a positive number to add units, or a negative number to subtract "
+"units"
+msgstr ""
+
+#: /app/templates/inventory/show.html:232
+msgid "Or Adjust by Package Quantities"
+msgstr ""
+
+#: /app/templates/inventory/show.html:236
+#: /app/templates/inventory/show.html:321
+msgid "N1 Packages"
+msgstr ""
+
+#: /app/templates/inventory/show.html:246
+#: /app/templates/inventory/show.html:331
+msgid "N2 Packages"
+msgstr ""
+
+#: /app/templates/inventory/show.html:256
+#: /app/templates/inventory/show.html:341
+msgid "N3 Packages"
+msgstr ""
+
+#: /app/templates/inventory/show.html:269
+msgid "Optional notes about this adjustment"
+msgstr ""
+
+#: /app/templates/inventory/show.html:277
+#: /app/templates/inventory/show.html:362
+#: /app/templates/settings/system.html:40
+msgid "Current"
+msgstr ""
+
+#: /app/templates/inventory/show.html:278
+#: /app/templates/inventory/show.html:363
+msgid "New total"
+msgstr ""
+
+#: /app/templates/inventory/show.html:284
+msgid "Apply Adjustment"
+msgstr ""
+
+#: /app/templates/inventory/show.html:295
+msgid "Set Inventory (Absolute)"
+msgstr ""
+
+#: /app/templates/inventory/show.html:300
+msgid "set absolute values"
+msgstr ""
+
+#: /app/templates/inventory/show.html:300
+msgid "for your inventory quantities."
+msgstr ""
+
+#: /app/templates/inventory/show.html:306
+msgid "Set Total Units Directly"
+msgstr ""
+
+#: /app/templates/inventory/show.html:312
+msgid "Enter the total number of units you currently have"
+msgstr ""
+
+#: /app/templates/inventory/show.html:317
+msgid "Or Set Package Quantities"
+msgstr ""
+
+#: /app/templates/inventory/show.html:354
+msgid "Optional notes about this inventory update"
+msgstr ""
+
+#: /app/templates/inventory/show.html:369
+msgid "Update Inventory"
+msgstr ""
+
+#: /app/templates/inventory/show.html:392
+msgid "Package Scanning Available"
+msgstr ""
+
+#: /app/templates/inventory/show.html:396
+msgid ""
+"You have configured package sizes for this medication. You can now use "
+"the barcode scanner to track individual packages with batch numbers and "
+"expiry dates."
+msgstr ""
+
+#: /app/templates/inventory/show.html:397
+msgid "Important:"
+msgstr ""
+
+#: /app/templates/inventory/show.html:397
+msgid ""
+"Once you start using the package scanning system, you should stop adding "
+"inventory through the legacy sum-based method to avoid confusion."
+msgstr ""
+
+#: /app/templates/inventory/show.html:400
+msgid "Start Scanning Packages"
+msgstr ""
+
+#: /app/templates/inventory/show.html:417
+#: /app/templates/migration/scanner.html:67
+msgid "Scanned Packages"
+msgstr ""
+
+#: /app/templates/inventory/show.html:422
+msgid "Total"
+msgstr ""
+
+#: /app/templates/inventory/show.html:425
+msgid "Scan More"
+msgstr ""
+
+#: /app/templates/inventory/show.html:435
+#: /app/templates/package_onboarding/onboard.html:169
+msgid "Package"
+msgstr ""
+
+#: /app/templates/inventory/show.html:519
+msgid "Inventory History"
+msgstr ""
+
+#: /app/templates/inventory/show.html:521
+msgid "View Full History"
+msgstr ""
+
+#: /app/templates/inventory/show.html:531
+msgid "Date & Time"
+msgstr ""
+
+#: /app/templates/inventory/show.html:532
+msgid "Previous Count"
+msgstr ""
+
+#: /app/templates/inventory/show.html:533
+msgid "Adjustment"
+msgstr ""
+
+#: /app/templates/inventory/show.html:534
+msgid "New Count"
+msgstr ""
+
+#: /app/templates/inventory/show.html:554
+msgid "No inventory adjustments recorded yet."
+msgstr ""
+
+#: /app/templates/ingredients/index.html:3
+#: /app/templates/ingredients/index.html:8 /app/templates/layout.html:35
+#: /app/templates/physicians/index.html:34
+#: /app/templates/physicians/show.html:122
+msgid "Medications"
+msgstr ""
+
+#: /app/templates/layout.html:38
+msgid "All Medications"
+msgstr ""
+
+#: /app/templates/inventory/depletion.html:3
+#: /app/templates/inventory/depletion.html:8
+#: /app/templates/inventory/index.html:25 /app/templates/layout.html:40
+#: /app/templates/layout.html:50
+msgid "Depletion Forecast"
+msgstr ""
+
+#: /app/templates/ingredients/show.html:93
+#: /app/templates/inventory/index.html:3 /app/templates/inventory/index.html:8
+#: /app/templates/inventory/show.html:3 /app/templates/inventory/show.html:8
+#: /app/templates/layout.html:45
+msgid "Inventory"
+msgstr ""
+
+#: /app/templates/inventory/index.html:33 /app/templates/layout.html:48
+msgid "Inventory Overview"
+msgstr ""
+
+#: /app/templates/layout.html:52 /app/templates/scanner/index.html:3
+#: /app/templates/scanner/index.html:9 /app/templates/scanner/scan.html:3
+#: /app/templates/scanner/scan.html:505
+msgid "Scanner"
+msgstr ""
+
+#: /app/templates/layout.html:58 /app/templates/physicians/index.html:3
+#: /app/templates/physicians/index.html:8
+#: /app/templates/settings/data_management.html:97
+msgid "Physicians"
+msgstr ""
+
+#: /app/templates/layout.html:61 /app/templates/physicians/edit.html:16
+#: /app/templates/physicians/index.html:18
+msgid "All Physicians"
+msgstr ""
+
+#: /app/templates/layout.html:62 /app/templates/physicians/index.html:11
+#: /app/templates/physicians/index.html:85 /app/templates/physicians/new.html:3
+msgid "Add Physician"
+msgstr ""
+
+#: /app/templates/layout.html:67 /app/templates/visits/index.html:3
+#: /app/templates/visits/index.html:8
+msgid "Physician Visits"
+msgstr ""
+
+#: /app/templates/layout.html:70 /app/templates/visits/edit.html:15
+msgid "All Visits"
+msgstr ""
+
+#: /app/templates/layout.html:71 /app/templates/visits/new.html:64
+msgid "Schedule Visit"
+msgstr ""
+
+#: /app/templates/layout.html:72
+msgid "Next Visit"
+msgstr ""
+
+#: /app/templates/layout.html:77
+#: /app/templates/settings/data_management.html:99
+#: /app/templates/visits/index.html:32 /app/templates/visits/index.html:129
+msgid "Orders"
+msgstr ""
+
+#: /app/templates/layout.html:80 /app/templates/orders/edit.html:15
+msgid "All Orders"
+msgstr ""
+
+#: /app/templates/layout.html:81
+msgid "New Order"
+msgstr ""
+
+#: /app/templates/layout.html:86
+msgid "System"
+msgstr ""
+
+#: /app/templates/layout.html:89 /app/templates/settings/system.html:140
+#: /app/templates/system/status.html:3 /app/templates/system/status.html:8
+msgid "System Status"
+msgstr ""
+
+#: /app/templates/layout.html:90 /app/templates/settings/system.html:3
+#: /app/templates/settings/system.html:8
+msgid "System Settings"
+msgstr ""
+
+#: /app/templates/layout.html:92 /app/templates/pdf_mapper/index.html:3
+#: /app/templates/pdf_mapper/index.html:9
+msgid "PDF Form Templates"
+msgstr ""
+
+#: /app/templates/layout.html:93
+msgid "Visit Planning"
+msgstr ""
+
+#: /app/templates/layout.html:94 /app/templates/settings/data_management.html:3
+#: /app/templates/settings/data_management.html:8
+#: /app/templates/settings/system.html:114
+msgid "Data Management"
+msgstr ""
+
+#: /app/templates/layout.html:95
+msgid "Database Updates"
+msgstr ""
+
+#: /app/templates/layout.html:141 /app/templates/layout.html:204
+#: /app/templates/orders/_fulfill_modal.html:11
+#: /app/templates/orders/show.html:338 /app/templates/orders/show.html:347
+#: /app/templates/orders/show.html:359 /app/templates/orders/show.html:413
+#: /app/templates/orders/show.html:425 /app/templates/orders/show.html:441
+#: /app/templates/orders/show.html:453 /app/templates/schedules/index.html:161
+#: /app/templates/settings/data_management.html:126
+#: /app/templates/settings/data_management.html:165
+msgid "Close"
+msgstr ""
+
+#: /app/templates/layout.html:154
+msgid "Timezone"
+msgstr ""
+
+#: /app/templates/layout.html:155 /app/templates/settings/system.html:28
+msgid "Local time"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:3
+msgid "Migration Scanner"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:23
+msgid "units left"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:53
+msgid "Save and close"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:77
+#: /app/templates/migration/scanner.html:867
+msgid "No packages scanned yet"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:78
+#: /app/templates/migration/scanner.html:868
+msgid "Start scanning your medication packages"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:118
+msgid "Tips"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:120
+msgid "Scan all full packages first"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:121
+msgid "Add open packages at the end"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:122
+msgid "Click \"Save and close\" when finished to complete migration"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:134
+msgid "New Package Setup"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:139
+msgid "For"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:148
+msgid "Small"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:149
+msgid "Medium"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:150
+msgid "Large"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:155
+#: /app/templates/package_onboarding/onboard.html:343
+msgid "Units per Package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:156
+msgid "Enter package size"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:162
+msgid "This is an open package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:167
+#: /app/templates/migration/scanner.html:191
+msgid "Units remaining"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:184
+msgid "Add Open Package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:188
+msgid "Enter details for your open package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:206
+msgid "Add"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:234
+msgid "Actual Units in Package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:236
+msgid "Enter the actual number of units in this package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:252
+msgid "Remaining Inventory"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:256
+msgid "You still have"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:256
+msgid "of sum-based inventory remaining."
+msgstr ""
+
+#: /app/templates/migration/scanner.html:257
+msgid "What would you like to do?"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:261
+msgid "Continue Scanning"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:264
+msgid "Save & Exit"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:267
+msgid "Finalize (Set to 0)"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:406
+msgid "Camera access required for scanning"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:516
+#: /app/templates/scanner/scan.html:811
+msgid "Ready to scan"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:536
+#: /app/templates/scanner/scan.html:864
+msgid "Resetting scanner..."
+msgstr ""
+
+#: /app/templates/migration/scanner.html:565
+#: /app/templates/scanner/scan.html:908
+msgid "Processing..."
+msgstr ""
+
+#: /app/templates/migration/scanner.html:601
+#: /app/templates/migration/scanner.html:625
+msgid "Migration Complete"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:624
+msgid "Final package added as open package with remaining units"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:627
+#: /app/templates/migration/scanner.html:974
+msgid "Package added"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:860
+msgid "Package removed"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:874
+msgid "Failed to remove package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:879
+msgid "Error removing package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:976
+#: /app/templates/migration/scanner.html:1023
+msgid "Failed to add package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:981
+msgid "Error adding package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:1021
+msgid "Open package added"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:1028
+msgid "Error adding open package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:1073
+msgid "Error saving progress"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:1181
+msgid "Package updated"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:1183
+msgid "Failed to update package"
+msgstr ""
+
+#: /app/templates/migration/scanner.html:1188
+msgid "Error updating package"
+msgstr ""
+
+#: /app/templates/migration/select.html:3
+msgid "Migration Center"
+msgstr ""
+
+#: /app/templates/migration/select.html:9
+msgid "Package Migration"
+msgstr ""
+
+#: /app/templates/migration/select.html:18
+msgid ""
+"Migrate your medications to the new package-based system for better "
+"tracking and expiry management."
+msgstr ""
+
+#: /app/templates/migration/select.html:22
+msgid "Select a medication to migrate:"
+msgstr ""
+
+#: /app/templates/migration/select.html:33
+msgid "units remaining"
+msgstr ""
+
+#: /app/templates/migration/select.html:38
+msgid "Start"
+msgstr ""
+
+#: /app/templates/migration/select.html:49
+msgid "All medications migrated!"
+msgstr ""
+
+#: /app/templates/migration/select.html:50
+msgid "Your inventory is fully package-based."
+msgstr ""
+
+#: /app/templates/orders/_fulfill_modal.html:10
+msgid "Mark Order as Fulfilled"
+msgstr ""
+
+#: /app/templates/orders/_fulfill_modal.html:17
+msgid "How would you like to mark this order as fulfilled?"
+msgstr ""
+
+#: /app/templates/orders/_fulfill_modal.html:22
+msgid "Mark as fulfilled only"
+msgstr ""
+
+#: /app/templates/orders/_fulfill_modal.html:23
+msgid "Order will be marked as complete without updating inventory"
+msgstr ""
+
+#: /app/templates/orders/_fulfill_modal.html:30
+msgid "Mark as fulfilled and update inventory"
+msgstr ""
+
+#: /app/templates/orders/_fulfill_modal.html:31
+msgid "Mark all pending items as fulfilled and add to inventory"
+msgstr ""
+
+#: /app/templates/orders/_fulfill_modal.html:37
+msgid ""
+"Tip: Use individual item fulfillment below to add specific medications to"
+" inventory or handle partial deliveries."
+msgstr ""
+
+#: /app/templates/orders/_fulfill_modal.html:37
+msgid ""
+"Tip: Use individual item fulfillment on the order details page to add "
+"specific medications to inventory or handle partial deliveries."
+msgstr ""
+
+#: /app/templates/orders/_fulfill_modal.html:43
+msgid "Mark as Fulfilled"
+msgstr ""
+
+#: /app/templates/orders/edit.html:3 /app/templates/orders/edit.html:8
+#, python-format
+msgid "Edit Order #%(order_id)s"
+msgstr ""
+
+#: /app/templates/orders/edit.html:12 /app/templates/orders/printable.html:98
+#: /app/templates/physicians/edit.html:13
+#: /app/templates/schedules/index.html:13 /app/templates/visits/edit.html:12
+msgid "Back to Details"
+msgstr ""
+
+#: /app/templates/orders/edit.html:22
+#, python-format
+msgid "Edit Order for Physician Visit on %(date)s"
+msgstr ""
+
+#: /app/templates/orders/edit.html:31 /app/templates/orders/new.html:47
+#, python-format
+msgid "This order was for your physician visit %(days)s days ago on %(date)s."
+msgstr ""
+
+#: /app/templates/orders/edit.html:33 /app/templates/orders/new.html:49
+#, python-format
+msgid "This order is for your physician visit today (%(date)s)."
+msgstr ""
+
+#: /app/templates/orders/edit.html:35 /app/templates/orders/new.html:51
+#, python-format
+msgid "This order is for your physician visit in %(days)s days on %(date)s."
+msgstr ""
+
+#: /app/templates/orders/edit.html:40 /app/templates/orders/new.html:66
+#, python-format
+msgid "Showing medications prescribed by %(physician)s only."
+msgstr ""
+
+#: /app/templates/orders/edit.html:42 /app/templates/orders/new.html:68
+msgid "Showing over-the-counter medications and supplements only."
+msgstr ""
+
+#: /app/templates/orders/edit.html:52 /app/templates/orders/show.html:66
+msgid "Order Status"
+msgstr ""
+
+#: /app/templates/orders/edit.html:55 /app/templates/orders/index.html:49
+#: /app/templates/orders/show.html:78 /app/templates/orders/show.html:243
+#: /app/templates/visits/show.html:121
+msgid "Partial"
+msgstr ""
+
+#: /app/templates/orders/edit.html:56 /app/templates/orders/show.html:85
+msgid "Fulfilled"
+msgstr ""
+
+#: /app/templates/orders/edit.html:62
+msgid "Select Ingredients"
+msgstr ""
+
+#: /app/templates/orders/edit.html:68 /app/templates/orders/show.html:159
+msgid "Ingredient"
+msgstr ""
+
+#: /app/templates/orders/edit.html:94 /app/templates/orders/edit.html:174
+#: /app/templates/orders/new.html:127 /app/templates/orders/new.html:135
+#: /app/templates/orders/new.html:142 /app/templates/orders/new.html:143
+#: /app/templates/orders/new.html:148
+#, python-format
+msgid "%(units)s units"
+msgstr ""
+
+#: /app/templates/orders/edit.html:101
+msgid "Calculate Needs"
+msgstr ""
+
+#: /app/templates/orders/edit.html:112 /app/templates/orders/new.html:162
+#: /app/templates/orders/printable.html:131
+msgid "Quantity Needed"
+msgstr ""
+
+#: /app/templates/orders/edit.html:121 /app/templates/orders/new.html:170
+#: /app/templates/package_onboarding/onboard.html:165
+#: /app/templates/package_onboarding/onboard.html:416
+msgid "Product"
+msgstr ""
+
+#: /app/templates/orders/edit.html:149 /app/templates/orders/new.html:193
+msgid "Package Quantities"
+msgstr ""
+
+#: /app/templates/orders/edit.html:151 /app/templates/orders/new.html:195
+msgid "Calculate"
+msgstr ""
+
+#: /app/templates/orders/edit.html:226
+msgid "Update Order"
+msgstr ""
+
+#: /app/templates/orders/edit.html:272
+msgid "This order has been fulfilled and cannot be edited."
+msgstr ""
+
+#: /app/templates/orders/index.html:1 /app/templates/orders/index.html:4
+msgid "Medication Orders"
+msgstr ""
+
+#: /app/templates/orders/index.html:21 /app/templates/orders/index.html:149
+#: /app/templates/orders/printable.html:110
+msgid "Order #"
+msgstr ""
+
+#: /app/templates/orders/index.html:22 /app/templates/orders/index.html:150
+#: /app/templates/physicians/show.html:217 /app/templates/visits/edit.html:29
+#: /app/templates/visits/index.html:28 /app/templates/visits/index.html:126
+#: /app/templates/visits/new.html:24
+msgid "Visit Date"
+msgstr ""
+
+#: /app/templates/orders/index.html:24 /app/templates/orders/index.html:151
+msgid "Created Date"
+msgstr ""
+
+#: /app/templates/orders/index.html:25 /app/templates/orders/index.html:152
+msgid "Ingredients"
+msgstr ""
+
+#: /app/templates/orders/index.html:54 /app/templates/orders/index.html:174
+#, python-format
+msgid "%(num)s ingredient"
+msgid_plural "%(num)s ingredients"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/orders/index.html:93 /app/templates/orders/index.html:206
+#: /app/templates/orders/show.html:107
+msgid "Print PDF"
+msgstr ""
+
+#: /app/templates/orders/index.html:102 /app/templates/orders/index.html:215
+msgid "Printable Version"
+msgstr ""
+
+#: /app/templates/orders/index.html:112
+msgid "Fulfill Order"
+msgstr ""
+
+#: /app/templates/orders/index.html:129
+msgid "No pending orders found."
+msgstr ""
+
+#: /app/templates/orders/index.html:230
+msgid "No fulfilled orders found."
+msgstr ""
+
+#: /app/templates/orders/new.html:8
+msgid "Create Medication Order"
+msgstr ""
+
+#: /app/templates/orders/new.html:15 /app/templates/orders/show.html:16
+msgid "Visit Details"
+msgstr ""
+
+#: /app/templates/orders/new.html:22
+#, python-format
+msgid "Order for Physician Visit on %(date)s"
+msgstr ""
+
+#: /app/templates/orders/new.html:30
+msgid "Gap Coverage Order"
+msgstr ""
+
+#: /app/templates/orders/new.html:32
+msgid "This is a gap coverage order."
+msgstr ""
+
+#: /app/templates/orders/new.html:34
+#, python-format
+msgid ""
+"Some medications ran out before your visit on %(date)s (%(days)s days "
+"ago)."
+msgstr ""
+
+#: /app/templates/orders/new.html:36
+#, python-format
+msgid "Some medications will run out before your visit today (%(date)s)."
+msgstr ""
+
+#: /app/templates/orders/new.html:38
+#, python-format
+msgid ""
+"Some medications will run out before your visit on %(date)s (in %(days)s "
+"days)."
+msgstr ""
+
+#: /app/templates/orders/new.html:42
+msgid ""
+"Only medications that will deplete before the visit are shown below, with"
+" quantities calculated to bridge the gap between when they run out and "
+"your visit date."
+msgstr ""
+
+#: /app/templates/orders/new.html:56
+msgid "Next-But-One Planning"
+msgstr ""
+
+#: /app/templates/orders/new.html:57
+msgid "Medication needs are calculated to last until your next-but-one visit"
+msgstr ""
+
+#: /app/templates/orders/new.html:59
+msgid "Standard Planning"
+msgstr ""
+
+#: /app/templates/orders/new.html:60
+msgid "Medication needs are calculated to last until your next visit only"
+msgstr ""
+
+#: /app/templates/orders/new.html:72
+msgid "Select the medications you need and adjust quantities as necessary."
+msgstr ""
+
+#: /app/templates/orders/new.html:83
+msgid "Select Medications"
+msgstr ""
+
+#: /app/templates/orders/new.html:93
+msgid "Needed for Gap Coverage"
+msgstr ""
+
+#: /app/templates/orders/new.html:95
+msgid "Needed Until Next-But-One Visit"
+msgstr ""
+
+#: /app/templates/orders/new.html:97
+msgid "Needed Until Next Visit"
+msgstr ""
+
+#: /app/templates/orders/new.html:100 /app/templates/visits/show.html:167
+msgid "Additional Needed"
+msgstr ""
+
+#: /app/templates/orders/new.html:122
+#, python-format
+msgid "%(usage)s units/day"
+msgstr ""
+
+#: /app/templates/orders/new.html:134
+#, python-format
+msgid ""
+"Visit in %(visit_days)s days, depletes in %(depletion_days)s days = "
+"%(gap_days)s days gap"
+msgstr ""
+
+#: /app/templates/orders/new.html:134
+#, python-format
+msgid "Gap coverage: %(usage)s/day × %(days)s days = %(units)s units"
+msgstr ""
+
+#: /app/templates/orders/new.html:134
+#, python-format
+msgid "Safety margin: %(usage)s/day × %(days)s days = %(units)s units"
+msgstr ""
+
+#: /app/templates/orders/new.html:134
+#, python-format
+msgid "Total: %(units)s units"
+msgstr ""
+
+#: /app/templates/orders/new.html:134
+#, python-format
+msgid "Until visit: %(usage)s/day × %(days)s days = %(units)s units"
+msgstr ""
+
+#: /app/templates/orders/new.html:134
+#, python-format
+msgid "Until next visit: %(usage)s/day × %(days)s days = %(units)s units"
+msgstr ""
+
+#: /app/templates/orders/new.html:142
+#, python-format
+msgid "To order: %(units)s units"
+msgstr ""
+
+#: /app/templates/orders/new.html:142 /app/templates/orders/new.html:148
+msgid "Total needed"
+msgstr ""
+
+#: /app/templates/orders/new.html:142 /app/templates/orders/new.html:148
+#, python-format
+msgid "Current stock: %(units)s units"
+msgstr ""
+
+#: /app/templates/orders/new.html:148
+msgid "Sufficient stock"
+msgstr ""
+
+#: /app/templates/orders/new.html:149 /app/templates/visits/show.html:190
+msgid "Sufficient"
+msgstr ""
+
+#: /app/templates/orders/new.html:212
+#, python-format
+msgid "%(units)s units each"
+msgstr ""
+
+#: /app/templates/orders/printable.html:96
+msgid "Print Order"
+msgstr ""
+
+#: /app/templates/orders/printable.html:103
+msgid "Medication Order"
+msgstr ""
+
+#: /app/templates/orders/printable.html:111
+msgid "Date Created"
+msgstr ""
+
+#: /app/templates/orders/printable.html:113
+#: /app/templates/visits/index.html:213 /app/templates/visits/show.html:3
+msgid "Physician Visit"
+msgstr ""
+
+#: /app/templates/orders/printable.html:116
+msgid "Print Information"
+msgstr ""
+
+#: /app/templates/orders/printable.html:118
+msgid "Printed"
+msgstr ""
+
+#: /app/templates/orders/printable.html:119
+msgid "Days Until Visit"
+msgstr ""
+
+#: /app/templates/orders/printable.html:124
+msgid "Medications Ordered"
+msgstr ""
+
+#: /app/templates/orders/printable.html:130 /app/templates/orders/show.html:341
+#: /app/templates/orders/show.html:363
+msgid "Medication Name"
+msgstr ""
+
+#: /app/templates/orders/printable.html:152
+#: /app/templates/orders/printable.html:168
+#: /app/templates/orders/printable.html:175
+#: /app/templates/orders/printable.html:182
+#: /app/templates/orders/printable.html:209
+msgid "unit"
+msgid_plural "units"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/orders/printable.html:153
+msgid "unit/day"
+msgid_plural "units/day"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/orders/printable.html:206
+msgid "No packages ordered"
+msgstr ""
+
+#: /app/templates/orders/printable.html:216
+msgid "No medications in this order."
+msgstr ""
+
+#: /app/templates/orders/printable.html:222
+msgid "Generated by Medication Tracker"
+msgstr ""
+
+#: /app/templates/orders/show.html:34
+msgid "Order ID"
+msgstr ""
+
+#: /app/templates/orders/show.html:37
+msgid "Visit"
+msgstr ""
+
+#: /app/templates/orders/show.html:43
+#, python-format
+msgid "%(days)s days"
+msgstr ""
+
+#: /app/templates/orders/show.html:47 /app/templates/visits/show.html:79
+msgid "Created"
+msgstr ""
+
+#: /app/templates/orders/show.html:53
+msgid "Items"
+msgstr ""
+
+#: /app/templates/orders/show.html:54
+#, python-format
+msgid "%(num)s medication"
+msgid_plural "%(num)s medications"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/orders/show.html:111
+msgid "Print"
+msgstr ""
+
+#: /app/templates/orders/show.html:116
+msgid "Fulfill"
+msgstr ""
+
+#: /app/templates/orders/show.html:121
+msgid "Unfulfill"
+msgstr ""
+
+#: /app/templates/orders/show.html:127
+msgid "Are you sure you want to delete this order? This cannot be undone."
+msgstr ""
+
+#: /app/templates/orders/show.html:146
+msgid "Order Contents"
+msgstr ""
+
+#: /app/templates/orders/show.html:149
+#, python-format
+msgid "%(num)s item"
+msgid_plural "%(num)s items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/orders/show.html:160
+msgid "Required"
+msgstr ""
+
+#: /app/templates/orders/show.html:161
+msgid "Order Details"
+msgstr ""
+
+#: /app/templates/orders/show.html:162
+msgid "Fulfillment"
+msgstr ""
+
+#: /app/templates/orders/show.html:230
+#, python-format
+msgid "%(num)s package linked"
+msgid_plural "%(num)s packages linked"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/orders/show.html:241 /app/templates/system/migrations.html:71
+msgid "Pending"
+msgstr ""
+
+#: /app/templates/orders/show.html:245
+msgid "Done"
+msgstr ""
+
+#: /app/templates/orders/show.html:247
+msgid "Modified"
+msgstr ""
+
+#: /app/templates/orders/show.html:249
+msgid "Cancelled"
+msgstr ""
+
+#: /app/templates/orders/show.html:270 /app/templates/orders/show.html:337
+msgid "Manage Package Links"
+msgstr ""
+
+#: /app/templates/orders/show.html:281
+msgid "Mark Fulfilled"
+msgstr ""
+
+#: /app/templates/orders/show.html:285 /app/templates/orders/show.html:412
+#: /app/templates/orders/show.html:427
+msgid "Cancel Item"
+msgstr ""
+
+#: /app/templates/orders/show.html:295 /app/templates/orders/show.html:440
+msgid "Undo Cancel"
+msgstr ""
+
+#: /app/templates/orders/show.html:315
+msgid "No medications in this order yet."
+msgstr ""
+
+#: /app/templates/orders/show.html:319
+msgid "Add Medications"
+msgstr ""
+
+#: /app/templates/orders/show.html:358
+msgid "Fulfill Medication"
+msgstr ""
+
+#: /app/templates/orders/show.html:366
+msgid "Fulfillment Status"
+msgstr ""
+
+#: /app/templates/orders/show.html:368
+msgid "Fulfilled - Delivered as ordered"
+msgstr ""
+
+#: /app/templates/orders/show.html:369
+msgid "Modified - Different quantity received"
+msgstr ""
+
+#: /app/templates/orders/show.html:370
+msgid "Cancelled - Not available"
+msgstr ""
+
+#: /app/templates/orders/show.html:375
+msgid "Actual Quantity Received"
+msgstr ""
+
+#: /app/templates/orders/show.html:380
+#, python-format
+msgid "Original order: %(quantity)s units"
+msgstr ""
+
+#: /app/templates/orders/show.html:384
+msgid "Notes (optional)"
+msgstr ""
+
+#: /app/templates/orders/show.html:385
+msgid "e.g., Doctor modified order, pharmacy substitution, etc."
+msgstr ""
+
+#: /app/templates/orders/show.html:391
+msgid "Add to inventory"
+msgstr ""
+
+#: /app/templates/orders/show.html:393
+msgid ""
+"Check this to automatically update your inventory with the received "
+"medication"
+msgstr ""
+
+#: /app/templates/orders/show.html:399
+msgid "Update Status"
+msgstr ""
+
+#: /app/templates/orders/show.html:417
+msgid "Are you sure you want to cancel this item?"
+msgstr ""
+
+#: /app/templates/orders/show.html:422
+msgid "This action will mark the item as cancelled in the order."
+msgstr ""
+
+#: /app/templates/orders/show.html:445
+msgid "Do you want to restore this cancelled item?"
+msgstr ""
+
+#: /app/templates/orders/show.html:450
+msgid "This will restore the item to pending status."
+msgstr ""
+
+#: /app/templates/orders/show.html:455
+msgid "Restore Item"
+msgstr ""
+
+#: /app/templates/orders/show.html:566
+msgid "Loading..."
+msgstr ""
+
+#: /app/templates/orders/show.html:597
+msgid "Currently Linked Packages"
+msgstr ""
+
+#: /app/templates/orders/show.html:601
+msgid "No S/N"
+msgstr ""
+
+#: /app/templates/orders/show.html:604
+msgid "Unlink"
+msgstr ""
+
+#: /app/templates/orders/show.html:611
+msgid "No packages currently linked"
+msgstr ""
+
+#: /app/templates/orders/show.html:615
+msgid "Search Available Packages"
+msgstr ""
+
+#: /app/templates/orders/show.html:618
+msgid "Enter serial number..."
+msgstr ""
+
+#: /app/templates/orders/show.html:620
+msgid "Search"
+msgstr ""
+
+#: /app/templates/orders/show.html:623
+msgid "Search for packages scanned after the order date"
+msgstr ""
+
+#: /app/templates/orders/show.html:639
+msgid "Please enter a serial number to search"
+msgstr ""
+
+#: /app/templates/orders/show.html:649
+msgid "Search Results"
+msgstr ""
+
+#: /app/templates/orders/show.html:656
+#, python-format
+msgid "%(count)s units"
+msgstr ""
+
+#: /app/templates/orders/show.html:661
+msgid "Link"
+msgstr ""
+
+#: /app/templates/orders/show.html:669
+msgid "No packages found matching your search"
+msgstr ""
+
+#: /app/templates/orders/show.html:673
+msgid "Error searching packages"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:3
+#: /app/templates/package_onboarding/onboard.html:150
+msgid "Onboard New Package"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:153
+msgid "Back to Scanner"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:173
+msgid "Review & Save"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:182
+msgid "Scanned Package Information"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:193
+#: /app/templates/scanner/index.html:141
+msgid "National Number"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:222
+msgid "Step 1: Select or Create Active Ingredient"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:226
+msgid "Type to search or enter a new ingredient name..."
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:253
+msgid "Form (e.g., tablet)"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:260
+msgid "Popular ingredients:"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:274
+msgid "Step 2: Select or Create Product"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:279
+msgid "Type to search or enter a new product name..."
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:286
+msgid "Creating new product:"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:289
+msgid "Manufacturer (e.g., 1A Pharma)"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:295
+msgid "Product Settings"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:301
+msgid "Over-the-counter (OTC) - No order required"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:309
+msgid "Allow generic substitution (Aut idem)"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:318
+msgid "Available products:"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:327
+msgid "Step 3: Package Configuration"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:333
+msgid "Small Package"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:334
+msgid "Medium Package"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:335
+msgid "Large Package"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:336
+msgid "Custom Size"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:339
+msgid "Enter custom size..."
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:345
+msgid "e.g., 100"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:352
+msgid "0.00"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:361
+msgid "If different from product"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:364
+msgid "PZN/National Code"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:366
+msgid "e.g., PZN-12345678"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:368
+msgid "Package-specific pharmaceutical code"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:371
+msgid "GTIN/EAN"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:373
+msgid "e.g., 4012345678901"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:375
+msgid "Global Trade Item Number"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:383
+msgid "Step 4: Review and Save"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:388
+msgid "Package Action"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:395
+msgid "Add this package to inventory"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:396
+msgid ""
+"Track this package in your inventory for stock levels and depletion "
+"monitoring"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:401
+msgid ""
+"Uncheck if you only want to register the product information without "
+"adding this specific package to your stock"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:409
+msgid "Review Information"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:422
+msgid "Order Required"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:425
+msgid "Barcode Data"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:446
+msgid "Previous"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:451
+msgid "Next"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:454
+msgid "Save Package"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:873
+msgid "Please select or enter a product"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:904
+msgid "Please enter a custom package size"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:910
+msgid "Please enter the number of units per package"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:936
+msgid "No (OTC)"
+msgstr ""
+
+#: /app/templates/package_onboarding/onboard.html:936
+msgid "Yes"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:3
+msgid "Configure PDF Template"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:430
+#: /app/templates/pdf_mapper/content.html:474
+#: /app/templates/pdf_mapper/new.html:45
+#: /app/templates/pdf_mapper/reupload.html:12
+#: /app/templates/pdf_mapper/structure.html:344
+#: /app/templates/pdf_mapper/structure.html:455
+msgid "Back to Templates"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:438
+#: /app/templates/pdf_mapper/index.html:67
+#: /app/templates/pdf_mapper/structure.html:351
+msgid "Structure"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:448
+#: /app/templates/pdf_mapper/index.html:71
+#: /app/templates/pdf_mapper/structure.html:363
+msgid "Content"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:457
+#: /app/templates/pdf_mapper/index.html:49
+#: /app/templates/pdf_mapper/structure.html:375
+msgid "Ready"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:466
+msgid "Content Mapping"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:471
+msgid "Edit Structure"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:483
+msgid "Detect PDF Fields"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:486
+msgid "Set Tab Order"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:489
+msgid "Preview"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:494
+msgid "Save Configuration"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:502
+msgid "Available Fields"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:505
+msgid "Drag fields to columns below"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:523
+#: /app/templates/pdf_mapper/new.html:92
+msgid "Table Configuration"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:526
+#, python-format
+msgid "Configured for %(rows)s rows × %(cols)s columns"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:530
+msgid "Column Mappings"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:535
+#: /app/templates/pdf_mapper/content.html:555
+#, python-format
+msgid "Column %(num)s"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:537
+msgid "Clear"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:541
+#: /app/templates/pdf_mapper/content.html:941
+#: /app/templates/pdf_mapper/content.html:965
+msgid "Drop fields here"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:549
+msgid "Data Preview"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:576
+msgid "Tab Order"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:580
+msgid "Left → Right, Top → Bottom"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:586
+msgid "Top → Bottom, Left → Right"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1109
+#: /app/templates/pdf_mapper/structure.html:723
+msgid "Detecting PDF form fields..."
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1118
+#, python-format
+msgid "Found %(count)s existing form fields in the PDF!"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1125
+msgid "This will add a grid of form fields to your PDF. Continue?"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1129
+#: /app/templates/pdf_mapper/structure.html:758
+msgid "Error detecting fields"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1133
+#: /app/templates/pdf_mapper/structure.html:754
+msgid "Failed to detect fields"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1139
+msgid "Creating form field grid..."
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1152
+msgid "Error creating fields"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1156
+msgid "Failed to create fields"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1163
+#, python-format
+msgid "Found %(count)s form fields. Please configure the structure mapping first."
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1225
+msgid "Tab order set successfully"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1241
+msgid "Preview generated successfully"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1244
+msgid "Error generating preview"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1289
+msgid "Configuration saved successfully!"
+msgstr ""
+
+#: /app/templates/pdf_mapper/content.html:1294
+msgid "Error saving configuration"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:13
+msgid "New Template"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:39
+msgid "Rows"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:39
+msgid "Columns"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:47
+msgid "File missing"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:51
+msgid "Structure done"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:53
+#: /app/templates/pdf_mapper/reupload.html:84
+#: /app/templates/physicians/edit.html:101
+#: /app/templates/physicians/new.html:91
+msgid "Not configured"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:62
+#: /app/templates/pdf_mapper/reupload.html:3
+msgid "Re-upload PDF"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:63
+msgid "Re-upload"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:75
+#: /app/templates/pdf_mapper/index.html:154
+msgid "Generate PDF"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:80
+msgid "Import Config"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:84
+msgid "Export Config"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:90
+msgid "Are you sure you want to delete this template?"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:104
+msgid "No PDF templates found. Upload a PDF form to get started."
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:114
+msgid "Import Template Configuration"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:123
+msgid "Select JSON configuration file"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:125
+msgid ""
+"Import a previously exported template configuration to update the "
+"structure and content mappings for this template"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:131
+msgid "Import"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:143
+msgid "Select Medications for PDF"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:173
+msgid "Importing configuration for"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:186
+msgid "Please select a file"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:191
+msgid "No template selected"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:211
+msgid "Template configuration imported successfully"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:215
+msgid "Error importing configuration"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:219
+msgid "Invalid JSON file"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:242
+msgid "Template exported successfully"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:244
+msgid "Error exporting template"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:259
+msgid "Error deleting template"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:289
+msgid "Select All"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:292
+msgid "Select None"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:300
+msgid "No medications found"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:322
+msgid "Please select at least one medication"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:344
+msgid "PDF generated successfully!"
+msgstr ""
+
+#: /app/templates/pdf_mapper/index.html:346
+msgid "Error generating PDF"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:3 /app/templates/pdf_mapper/new.html:42
+msgid "Upload PDF Template"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:55
+msgid "Drop PDF file here or click to browse"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:56
+msgid "Upload a PDF form that will be used as a template"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:77
+msgid "Template Name"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:79
+msgid "e.g., Order Form 2024"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:82
+#: /app/templates/pdf_mapper/reupload.html:70
+#: /app/templates/system/migrations.html:58
+msgid "Description"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:84
+msgid "Optional description"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:99
+msgid "Rows per Page"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:101
+msgid "Number of medication rows in the table"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:108
+msgid "Number of Columns"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:110
+msgid "Number of data columns in the table"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:119
+msgid "Tip:"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:120
+msgid ""
+"After uploading, you will be able to auto-detect the table and configure "
+"field mappings."
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:132
+msgid "Upload and Continue"
+msgstr ""
+
+#: /app/templates/pdf_mapper/new.html:173
+msgid "Please upload a PDF file"
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:9
+msgid "Re-upload PDF File"
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:21
+msgid "PDF File Missing"
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:27
+#, python-format
+msgid ""
+"The PDF file for template \"%(name)s\" is missing. Please re-upload the "
+"PDF file."
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:33
+msgid "PDF File"
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:36
+msgid "Select the PDF file for this template"
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:41
+msgid ""
+"Your template configuration (structure and content mappings) will be "
+"preserved. Only the PDF file will be updated."
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:49
+msgid "Upload PDF"
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:61
+msgid "Template Information"
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:74
+msgid "Grid Size"
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:77
+msgid "Configuration"
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:80
+msgid "Complete"
+msgstr ""
+
+#: /app/templates/pdf_mapper/reupload.html:82
+msgid "Structure mapped"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:3
+#: /app/templates/pdf_mapper/structure.html:383
+msgid "Structure Mapping"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:389
+msgid ""
+"Drag the detected PDF form fields to their corresponding positions in the"
+" table below."
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:398
+msgid "PDF Fields"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:411
+msgid "No fields detected yet."
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:412
+msgid "Click here to detect fields"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:422
+msgid "Table Structure"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:429
+#: /app/templates/pdf_mapper/structure.html:438
+msgid "Row"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:442
+#: /app/templates/pdf_mapper/structure.html:644
+#: /app/templates/pdf_mapper/structure.html:671
+msgid "Drop here"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:460
+msgid "Clear All"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:463
+msgid "Save & Continue"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:665
+msgid "Are you sure you want to clear all mappings?"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:731
+#, python-format
+msgid "Found %(count)s fields"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:766
+msgid "Please map at least one field before saving"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:770
+msgid "Saving structure mapping..."
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:790
+msgid "Failed to save structure"
+msgstr ""
+
+#: /app/templates/pdf_mapper/structure.html:794
+msgid "Error saving structure"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:8
+msgid "Edit Physician"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:23 /app/templates/physicians/new.html:17
+#: /app/templates/physicians/show.html:29
+msgid "Physician Information"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:35 /app/templates/physicians/new.html:28
+msgid "Full name of the physician"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:42
+#: /app/templates/physicians/index.html:31
+#: /app/templates/physicians/new.html:35 /app/templates/physicians/show.html:39
+msgid "Specialty"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:46 /app/templates/physicians/new.html:38
+msgid "Medical specialty (e.g., Cardiology, Gynecology)"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:55
+#: /app/templates/physicians/index.html:32
+#: /app/templates/physicians/new.html:47 /app/templates/physicians/show.html:50
+msgid "Phone"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:59 /app/templates/physicians/new.html:50
+msgid "Contact phone number"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:66
+#: /app/templates/physicians/index.html:33
+#: /app/templates/physicians/new.html:57 /app/templates/physicians/show.html:63
+msgid "Email"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:70 /app/templates/physicians/new.html:60
+msgid "Email address"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:77 /app/templates/physicians/new.html:67
+#: /app/templates/physicians/show.html:77
+msgid "Address"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:80 /app/templates/physicians/new.html:70
+msgid "Office or clinic address"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:88 /app/templates/physicians/new.html:78
+msgid "Additional notes or information"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:93 /app/templates/physicians/new.html:83
+#: /app/templates/physicians/show.html:94
+msgid "PDF Template"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:96 /app/templates/physicians/new.html:86
+#: /app/templates/physicians/show.html:101
+msgid "No template assigned"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:106
+#: /app/templates/physicians/new.html:96
+msgid "PDF template to use for orders at this physician"
+msgstr ""
+
+#: /app/templates/physicians/edit.html:114
+msgid "Update Physician"
+msgstr ""
+
+#: /app/templates/physicians/index.html:20
+msgid "Search physicians..."
+msgstr ""
+
+#: /app/templates/physicians/index.html:35
+#: /app/templates/physicians/show.html:127
+#: /app/templates/settings/data_management.html:98
+msgid "Visits"
+msgstr ""
+
+#: /app/templates/physicians/index.html:82
+msgid "No Physicians Found"
+msgstr ""
+
+#: /app/templates/physicians/index.html:83
+msgid "Get started by adding your first physician."
+msgstr ""
+
+#: /app/templates/physicians/new.html:8
+msgid "Add New Physician"
+msgstr ""
+
+#: /app/templates/physicians/new.html:104
+msgid "Save Physician"
+msgstr ""
+
+#: /app/templates/physicians/show.html:3
+msgid "Physician Details"
+msgstr ""
+
+#: /app/templates/physicians/show.html:57
+#: /app/templates/physicians/show.html:70
+msgid "Not provided"
+msgstr ""
+
+#: /app/templates/physicians/show.html:114
+msgid "Statistics"
+msgstr ""
+
+#: /app/templates/physicians/show.html:140
+msgid "Prescribed Medications"
+msgstr ""
+
+#: /app/templates/physicians/show.html:183
+msgid "No Inventory"
+msgstr ""
+
+#: /app/templates/physicians/show.html:209
+msgid "Scheduled Visits"
+msgstr ""
+
+#: /app/templates/physicians/show.html:218
+msgid "Days Until"
+msgstr ""
+
+#: /app/templates/physicians/show.html:230 /app/templates/visits/show.html:41
+msgid "Past visit"
+msgstr ""
+
+#: /app/templates/physicians/show.html:241
+msgid "No notes"
+msgstr ""
+
+#: /app/templates/physicians/show.html:266
+msgid "Danger Zone"
+msgstr ""
+
+#: /app/templates/physicians/show.html:271
+msgid "Delete this physician permanently. This action cannot be undone."
+msgstr ""
+
+#: /app/templates/physicians/show.html:273
+msgid "Note"
+msgstr ""
+
+#: /app/templates/physicians/show.html:273
+msgid ""
+"This physician has associated medications or visits and cannot be deleted"
+" until they are reassigned."
+msgstr ""
+
+#: /app/templates/physicians/show.html:277
+msgid ""
+"Are you sure you want to delete this physician? This action cannot be "
+"undone."
+msgstr ""
+
+#: /app/templates/physicians/show.html:280
+msgid "Delete Physician"
+msgstr ""
+
+#: /app/templates/scanner/index.html:11
+msgid "Scan Package"
+msgstr ""
+
+#: /app/templates/scanner/index.html:20
+msgid "Total Scanned"
+msgstr ""
+
+#: /app/templates/scanner/index.html:28
+msgid "Active Packages"
+msgstr ""
+
+#: /app/templates/scanner/index.html:36 /app/templates/scanner/index.html:83
+#: /app/templates/scanner/index.html:108 /app/templates/scanner/index.html:181
+#: /app/templates/scanner/package_details.html:63
+#: /app/templates/scanner/package_details.html:82
+#: /app/templates/scanner/package_details.html:109
+msgid "Expired"
+msgstr ""
+
+#: /app/templates/scanner/index.html:106 /app/templates/scanner/index.html:179
+#: /app/templates/scanner/package_details.html:80
+#: /app/templates/scanner/package_details.html:107
+#: /app/templates/scanner/package_details.html:132
+msgid "Consumed"
+msgstr ""
+
+#: /app/templates/scanner/index.html:123
+msgid "No packages in inventory"
+msgstr ""
+
+#: /app/templates/scanner/index.html:131
+msgid "Recent Scans"
+msgstr ""
+
+#: /app/templates/scanner/index.html:139
+msgid "Scanned At"
+msgstr ""
+
+#: /app/templates/scanner/index.html:177
+#: /app/templates/scanner/package_details.html:78
+msgid "Active"
+msgstr ""
+
+#: /app/templates/scanner/index.html:190
+msgid "No recent scans"
+msgstr ""
+
+#: /app/templates/scanner/package_details.html:35
+msgid "Number"
+msgstr ""
+
+#: /app/templates/scanner/package_details.html:65
+#: /app/templates/scanner/package_details.html:67
+msgid "days remaining"
+msgstr ""
+
+#: /app/templates/scanner/package_details.html:84
+msgid "Returned"
+msgstr ""
+
+#: /app/templates/scanner/package_details.html:96
+msgid "Inventory Status"
+msgstr ""
+
+#: /app/templates/scanner/package_details.html:127
+msgid "Opened"
+msgstr ""
+
+#: /app/templates/scanner/package_details.html:139
+msgid "Consume Units"
+msgstr ""
+
+#: /app/templates/scanner/package_details.html:146
+msgid "Consume"
+msgstr ""
+
+#: /app/templates/scanner/package_details.html:155
+msgid "This package is not in inventory"
+msgstr ""
+
+#: /app/templates/scanner/package_details.html:168
+msgid "Mark as Expired"
+msgstr ""
+
+#: /app/templates/scanner/package_details.html:181
+msgid "Raw Data"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:487
+msgid "Migration Available"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:488
+msgid "You have medications that can be migrated to the new package-based system."
+msgstr ""
+
+#: /app/templates/scanner/scan.html:490
+msgid "Start Migration"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:510 /app/templates/scanner/scan.html:567
+msgid "DataMatrix codes"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:514 /app/templates/scanner/scan.html:571
+msgid "Linear barcodes (EAN, PZN)"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:518 /app/templates/scanner/scan.html:575
+msgid "Initializing..."
+msgstr ""
+
+#: /app/templates/scanner/scan.html:552 /app/templates/scanner/scan.html:1032
+msgid "Retry"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:821
+msgid "Camera error"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:903
+msgid "Scan failed"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:969
+msgid "Package Scanned"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:983
+msgid "Scan successful"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:991 /app/templates/scanner/scan.html:995
+msgid "Error"
+msgstr ""
+
+#: /app/templates/scanner/scan.html:1029
+msgid "Camera Access Required"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:4 /app/templates/schedules/edit.html:20
+#: /app/templates/schedules/edit_ingredient.html:8
+msgid "Edit Schedule for"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:9
+#: /app/templates/schedules/edit_ingredient.html:3
+msgid "Edit Schedule"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:27
+#: /app/templates/schedules/edit_ingredient.html:25
+#: /app/templates/schedules/index.html:64
+#: /app/templates/schedules/index_ingredient.html:85
+#: /app/templates/schedules/new.html:27
+#: /app/templates/schedules/new_ingredient.html:25
+msgid "Schedule Type"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:29 /app/templates/schedules/new.html:29
+msgid "Daily (Every Day)"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:30 /app/templates/schedules/new.html:30
+msgid "Interval (Every X Days)"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:31 /app/templates/schedules/index.html:82
+#: /app/templates/schedules/new.html:31
+msgid "Selected Days of Week"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:37 /app/templates/schedules/index.html:67
+#: /app/templates/schedules/new.html:37
+msgid "Units Per Dose"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:42 /app/templates/schedules/new.html:42
+msgid "How many units to take each time"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:48 /app/templates/schedules/new.html:48
+msgid "Every X Days"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:52 /app/templates/schedules/new.html:52
+msgid "Daily (same as Daily option)"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:53 /app/templates/schedules/new.html:53
+msgid "Every other day"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:54 /app/templates/schedules/new.html:54
+msgid "Every third day"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:55 /app/templates/schedules/new.html:55
+msgid "etc."
+msgstr ""
+
+#: /app/templates/schedules/edit.html:62 /app/templates/schedules/new.html:62
+msgid "Days of Week"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:64
+#: /app/templates/schedules/edit_ingredient.html:60
+#: /app/templates/schedules/new.html:64
+#: /app/templates/schedules/new_ingredient.html:56
+msgid "Monday"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:64
+#: /app/templates/schedules/edit_ingredient.html:61
+#: /app/templates/schedules/new.html:64
+#: /app/templates/schedules/new_ingredient.html:57
+msgid "Tuesday"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:64
+#: /app/templates/schedules/edit_ingredient.html:62
+#: /app/templates/schedules/new.html:64
+#: /app/templates/schedules/new_ingredient.html:58
+msgid "Wednesday"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:64
+#: /app/templates/schedules/edit_ingredient.html:63
+#: /app/templates/schedules/new.html:64
+#: /app/templates/schedules/new_ingredient.html:59
+msgid "Thursday"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:64
+#: /app/templates/schedules/edit_ingredient.html:64
+#: /app/templates/schedules/new.html:64
+#: /app/templates/schedules/new_ingredient.html:60
+msgid "Friday"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:64
+#: /app/templates/schedules/edit_ingredient.html:65
+#: /app/templates/schedules/new.html:64
+#: /app/templates/schedules/new_ingredient.html:61
+msgid "Saturday"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:64
+#: /app/templates/schedules/edit_ingredient.html:66
+#: /app/templates/schedules/new.html:64
+#: /app/templates/schedules/new_ingredient.html:62
+msgid "Sunday"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:76
+#: /app/templates/schedules/edit_ingredient.html:89
+#: /app/templates/schedules/new.html:75
+#: /app/templates/schedules/new_ingredient.html:83
+msgid "Times of Day"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:92 /app/templates/schedules/new.html:89
+msgid "Add Another Time"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:94 /app/templates/schedules/new.html:91
+msgid "Enter times in 24-hour format (e.g., 09:00, 17:30)"
+msgstr ""
+
+#: /app/templates/schedules/edit.html:102
+#: /app/templates/schedules/edit_ingredient.html:107
+msgid "Update Schedule"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:11
+#: /app/templates/schedules/new_ingredient.html:11
+msgid "Back to Schedules"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:19
+#: /app/templates/schedules/new_ingredient.html:19
+msgid "Schedule Information"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:30
+#: /app/templates/schedules/edit_ingredient.html:122
+#: /app/templates/schedules/index.html:78
+#: /app/templates/schedules/index_ingredient.html:98
+#: /app/templates/schedules/new_ingredient.html:29
+#: /app/templates/schedules/new_ingredient.html:116
+msgid "Daily"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:36
+#: /app/templates/schedules/edit_ingredient.html:125
+#: /app/templates/schedules/new_ingredient.html:34
+#: /app/templates/schedules/new_ingredient.html:119
+#: /app/templates/system/status.html:160
+msgid "Interval"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:42
+#: /app/templates/schedules/edit_ingredient.html:128
+#: /app/templates/schedules/new_ingredient.html:39
+#: /app/templates/schedules/new_ingredient.html:122
+msgid "Specific Weekdays"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:49
+#: /app/templates/schedules/new_ingredient.html:46
+msgid "Interval (days)"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:52
+#: /app/templates/schedules/new_ingredient.html:48
+msgid "Take medication every X days"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:57
+#: /app/templates/schedules/new_ingredient.html:53
+msgid "Select Days"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:81
+#: /app/templates/schedules/index_ingredient.html:87
+#: /app/templates/schedules/new_ingredient.html:75
+msgid "Units per Dose"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:84
+#: /app/templates/schedules/new_ingredient.html:78
+msgid "Number of units (pills, tablets, etc.) to take per dose"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:94
+#: /app/templates/schedules/new_ingredient.html:88
+msgid "Add Time"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:97
+#: /app/templates/schedules/new_ingredient.html:91
+msgid "Add at least one time when the medication should be taken"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:119
+#: /app/templates/schedules/new_ingredient.html:113
+msgid "Schedule Types"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:123
+#: /app/templates/schedules/new_ingredient.html:117
+msgid "Take medication every day at specified times"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:126
+#: /app/templates/schedules/new_ingredient.html:120
+msgid "Take medication every X days (e.g., every 2 days, every 3 days)"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:129
+#: /app/templates/schedules/new_ingredient.html:123
+msgid "Take medication only on selected days of the week"
+msgstr ""
+
+#: /app/templates/schedules/edit_ingredient.html:197
+#: /app/templates/schedules/new_ingredient.html:184
+msgid "Please select at least one weekday"
+msgstr ""
+
+#: /app/templates/schedules/index.html:4 /app/templates/schedules/index.html:56
+#: /app/templates/schedules/index_ingredient.html:8
+#: /app/templates/schedules/index_ingredient.html:78
+msgid "Medication Schedules"
+msgstr ""
+
+#: /app/templates/schedules/index.html:9
+#: /app/templates/schedules/index_ingredient.html:3
+msgid "Schedules for"
+msgstr ""
+
+#: /app/templates/schedules/index.html:24
+#: /app/templates/settings/system.html:76
+msgid "Automatic Inventory Deduction"
+msgstr ""
+
+#: /app/templates/schedules/index.html:31
+msgid "enabled"
+msgstr ""
+
+#: /app/templates/schedules/index.html:31
+#: /app/templates/schedules/index.html:33
+msgid "Automatic deduction is"
+msgstr ""
+
+#: /app/templates/schedules/index.html:31
+#: /app/templates/schedules/index.html:33
+msgid "for this medication"
+msgstr ""
+
+#: /app/templates/schedules/index.html:33
+msgid "disabled"
+msgstr ""
+
+#: /app/templates/schedules/index.html:37
+msgid ""
+"When enabled, inventory will be automatically deducted according to the "
+"schedules defined below"
+msgstr ""
+
+#: /app/templates/schedules/index.html:65
+#: /app/templates/schedules/index_ingredient.html:86
+msgid "Times"
+msgstr ""
+
+#: /app/templates/schedules/index.html:66
+msgid "Details"
+msgstr ""
+
+#: /app/templates/schedules/index.html:68
+msgid "Daily Average"
+msgstr ""
+
+#: /app/templates/schedules/index.html:69
+#: /app/templates/schedules/index_ingredient.html:89
+msgid "Last Deduction"
+msgstr ""
+
+#: /app/templates/schedules/index.html:80
+#: /app/templates/schedules/index.html:98
+msgid "day(s)"
+msgstr ""
+
+#: /app/templates/schedules/index.html:80
+#: /app/templates/schedules/index.html:98
+#: /app/templates/schedules/index_ingredient.html:100
+msgid "Every"
+msgstr ""
+
+#: /app/templates/schedules/index.html:93
+msgid "Mon"
+msgstr ""
+
+#: /app/templates/schedules/index.html:93
+msgid "Tue"
+msgstr ""
+
+#: /app/templates/schedules/index.html:93
+msgid "Wed"
+msgstr ""
+
+#: /app/templates/schedules/index.html:93
+msgid "Thu"
+msgstr ""
+
+#: /app/templates/schedules/index.html:93
+msgid "Fri"
+msgstr ""
+
+#: /app/templates/schedules/index.html:93
+msgid "Sat"
+msgstr ""
+
+#: /app/templates/schedules/index.html:93
+msgid "Sun"
+msgstr ""
+
+#: /app/templates/schedules/index.html:100
+msgid "Every day"
+msgstr ""
+
+#: /app/templates/schedules/index.html:109
+#: /app/templates/schedules/index_ingredient.html:125
+#: /app/templates/settings/system.html:154
+#: /app/templates/system/status.html:174
+msgid "Never"
+msgstr ""
+
+#: /app/templates/schedules/index.html:135
+msgid "Total Daily Usage"
+msgstr ""
+
+#: /app/templates/schedules/index.html:135
+msgid "units per day"
+msgstr ""
+
+#: /app/templates/schedules/index.html:138
+msgid ""
+"This is the sum of all schedule daily averages and is used for depletion "
+"calculations."
+msgstr ""
+
+#: /app/templates/schedules/index.html:146
+msgid ""
+"No schedules defined for this medication yet. Add a schedule to enable "
+"automatic inventory deduction."
+msgstr ""
+
+#: /app/templates/schedules/index.html:149
+#: /app/templates/schedules/index_ingredient.html:152
+msgid "Add First Schedule"
+msgstr ""
+
+#: /app/templates/schedules/index.html:160
+msgid "Confirm Deletion"
+msgstr ""
+
+#: /app/templates/schedules/index.html:164
+msgid ""
+"Are you sure you want to delete this schedule? This action cannot be "
+"undone."
+msgstr ""
+
+#: /app/templates/schedules/index_ingredient.html:15
+msgid "Back to Ingredient"
+msgstr ""
+
+#: /app/templates/schedules/index_ingredient.html:25
+msgid "Automatic Deduction"
+msgstr ""
+
+#: /app/templates/schedules/index_ingredient.html:29
+msgid "since"
+msgstr ""
+
+#: /app/templates/schedules/index_ingredient.html:38
+msgid "Disable"
+msgstr ""
+
+#: /app/templates/schedules/index_ingredient.html:40
+msgid "Enable"
+msgstr ""
+
+#: /app/templates/schedules/index_ingredient.html:54
+msgid "Active Schedules"
+msgstr ""
+
+#: /app/templates/schedules/index_ingredient.html:58
+msgid "Units per Day"
+msgstr ""
+
+#: /app/templates/schedules/index_ingredient.html:102
+msgid "Weekdays"
+msgstr ""
+
+#: /app/templates/schedules/index_ingredient.html:135
+msgid "Are you sure you want to delete this schedule?"
+msgstr ""
+
+#: /app/templates/schedules/index_ingredient.html:150
+msgid "No schedules defined yet. Add a schedule to enable automatic deduction."
+msgstr ""
+
+#: /app/templates/schedules/new.html:4 /app/templates/schedules/new.html:20
+msgid "New Schedule for"
+msgstr ""
+
+#: /app/templates/schedules/new.html:9
+msgid "New Schedule"
+msgstr ""
+
+#: /app/templates/schedules/new.html:96 /app/templates/visits/new.html:61
+msgid "Reset"
+msgstr ""
+
+#: /app/templates/schedules/new.html:99
+#: /app/templates/schedules/new_ingredient.html:101
+msgid "Save Schedule"
+msgstr ""
+
+#: /app/templates/schedules/new_ingredient.html:8
+msgid "Add Schedule for"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:11
+#: /app/templates/settings/physician_visits.html:12
+msgid "Back to System Settings"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:21
+#: /app/templates/system/status.html:140
+msgid "Backup Database"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:22
+msgid "Download complete database backup"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:24
+#: /app/templates/settings/system.html:175
+msgid "Download Backup"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:33
+#: /app/templates/settings/data_management.html:125
+#: /app/templates/settings/data_management.html:151
+msgid "Restore Database"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:34
+msgid "Restore from backup file"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:36
+msgid "Restore Backup"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:45
+msgid "Optimize Database"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:46
+msgid "Improve database performance"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:49
+msgid "Optimize Now"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:59
+#: /app/templates/settings/data_management.html:164
+#: /app/templates/settings/data_management.html:192
+msgid "Clear Old Logs"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:60
+msgid "Free up database space"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:62
+msgid "Clear Logs"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:72
+msgid "Database Statistics"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:79
+msgid "Database Info"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:80
+msgid "Size:"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:87
+msgid "Medical Data"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:88
+msgid "Active Ingredients"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:89
+msgid "Products"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:90
+msgid "Package Inventories"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:96
+msgid "Clinical Data"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:106
+msgid ""
+"inventory log entries in database. Consider clearing old logs to save "
+"space."
+msgstr ""
+
+#: /app/templates/settings/data_management.html:132
+msgid "Warning:"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:132
+msgid ""
+"Restoring a database backup will REPLACE ALL CURRENT DATA. This action "
+"cannot be undone."
+msgstr ""
+
+#: /app/templates/settings/data_management.html:136
+msgid "Database Backup File"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:138
+msgid "Select a database backup file (.db, .sqlite, .sqlite3)"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:144
+msgid "I understand that all current data will be replaced"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:169
+msgid "This will clear inventory log entries older than the selected time period."
+msgstr ""
+
+#: /app/templates/settings/data_management.html:172
+msgid "Keep logs from the last:"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:174
+msgid "30 days"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:175
+msgid "60 days"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:176
+msgid "90 days"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:177
+msgid "180 days"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:178
+msgid "1 year"
+msgstr ""
+
+#: /app/templates/settings/data_management.html:185
+#, python-format
+msgid "Currently %(count)s log entries in database"
+msgstr ""
+
+#: /app/templates/settings/physician_visits.html:4
+msgid "Physician Visit Settings"
+msgstr ""
+
+#: /app/templates/settings/physician_visits.html:9
+#: /app/templates/settings/physician_visits.html:18
+#: /app/templates/settings/system.html:104
+msgid "Visit Planning Settings"
+msgstr ""
+
+#: /app/templates/settings/physician_visits.html:23
+msgid "Default Physician Visit Interval"
+msgstr ""
+
+#: /app/templates/settings/physician_visits.html:30
+msgid ""
+"This interval is used to predict future visits and calculate medication "
+"needs."
+msgstr ""
+
+#: /app/templates/settings/system.html:24
+msgid "Timezone Settings"
+msgstr ""
+
+#: /app/templates/settings/system.html:27
+msgid "Current timezone"
+msgstr ""
+
+#: /app/templates/settings/system.html:32
+msgid "Search Timezone"
+msgstr ""
+
+#: /app/templates/settings/system.html:33
+msgid "Start typing to search (e.g. 'Berlin', 'New York')"
+msgstr ""
+
+#: /app/templates/settings/system.html:37
+msgid "Select Timezone"
+msgstr ""
+
+#: /app/templates/settings/system.html:67
+msgid "Update Timezone"
+msgstr ""
+
+#: /app/templates/settings/system.html:79
+msgid ""
+"The system automatically deducts medication from your inventory based on "
+"your defined schedules."
+msgstr ""
+
+#: /app/templates/settings/system.html:83
+msgid ""
+"Automatic deduction runs hourly to check if any medications are due to be"
+" taken."
+msgstr ""
+
+#: /app/templates/settings/system.html:86
+msgid "You can manually trigger the deduction check for testing:"
+msgstr ""
+
+#: /app/templates/settings/system.html:88 /app/templates/system/status.html:244
+msgid "Run Deduction Check Now"
+msgstr ""
+
+#: /app/templates/settings/system.html:96
+msgid "Related Settings"
+msgstr ""
+
+#: /app/templates/settings/system.html:105
+msgid "Configure visit intervals and order planning"
+msgstr ""
+
+#: /app/templates/settings/system.html:115
+msgid "Backup, restore, import and export data"
+msgstr ""
+
+#: /app/templates/settings/system.html:124
+#: /app/templates/system/migrations.html:8
+msgid "Database Migrations"
+msgstr ""
+
+#: /app/templates/settings/system.html:125
+msgid "View and manage database updates"
+msgstr ""
+
+#: /app/templates/settings/system.html:145
+msgid "Operating Normally"
+msgstr ""
+
+#: /app/templates/settings/system.html:149
+msgid "Last Deduction:"
+msgstr ""
+
+#: /app/templates/settings/system.html:158
+#: /app/templates/system/status.html:113
+msgid "Active Schedules:"
+msgstr ""
+
+#: /app/templates/settings/system.html:161
+msgid "Upcoming Visits:"
+msgstr ""
+
+#: /app/templates/settings/system.html:178
+msgid "Manage Data"
+msgstr ""
+
+#: /app/templates/settings/system.html:181
+msgid "Check Updates"
+msgstr ""
+
+#: /app/templates/settings/system.html:190
+msgid "Version Information"
+msgstr ""
+
+#: /app/templates/system/migrations.html:11
+msgid "Back to System Status"
+msgstr ""
+
+#: /app/templates/system/migrations.html:18
+msgid "Migration Status"
+msgstr ""
+
+#: /app/templates/system/migrations.html:26
+msgid ""
+"Database migrations are needed. Your database schema is not up to date "
+"with the application code."
+msgstr ""
+
+#: /app/templates/system/migrations.html:30
+msgid "Run Migrations"
+msgstr ""
+
+#: /app/templates/system/migrations.html:36
+msgid "Database is up to date. No migrations needed."
+msgstr ""
+
+#: /app/templates/system/migrations.html:47
+msgid "All Migrations"
+msgstr ""
+
+#: /app/templates/system/migrations.html:56
+msgid "Revision"
+msgstr ""
+
+#: /app/templates/system/migrations.html:57
+#: /app/templates/system/migrations.html:67
+msgid "Applied"
+msgstr ""
+
+#: /app/templates/system/migrations.html:86
+msgid "No migration history available."
+msgstr ""
+
+#: /app/templates/system/migrations.html:95
+#: /app/templates/system/status.html:238
+msgid "Debug Actions"
+msgstr ""
+
+#: /app/templates/system/migrations.html:102
+msgid "Run Migrations Now"
+msgstr ""
+
+#: /app/templates/system/migrations.html:109
+#: /app/templates/system/status.html:256
+msgid "Refresh Status"
+msgstr ""
+
+#: /app/templates/system/status.html:18
+msgid "Task Scheduler"
+msgstr ""
+
+#: /app/templates/system/status.html:24
+msgid "Current Status:"
+msgstr ""
+
+#: /app/templates/system/status.html:27 /app/templates/system/status.html:179
+msgid "Running"
+msgstr ""
+
+#: /app/templates/system/status.html:29
+msgid "Stopped"
+msgstr ""
+
+#: /app/templates/system/status.html:33
+msgid "Current Time (UTC):"
+msgstr ""
+
+#: /app/templates/system/status.html:36
+msgid "Last Deduction Check (UTC):"
+msgstr ""
+
+#: /app/templates/system/status.html:41
+msgid "Never run"
+msgstr ""
+
+#: /app/templates/system/status.html:53
+msgid "Database Status"
+msgstr ""
+
+#: /app/templates/system/status.html:59
+msgid "Database Type:"
+msgstr ""
+
+#: /app/templates/system/status.html:62
+msgid "Database Size:"
+msgstr ""
+
+#: /app/templates/system/status.html:67
+msgid "Not available"
+msgstr ""
+
+#: /app/templates/system/status.html:71
+msgid "Total Tables:"
+msgstr ""
+
+#: /app/templates/system/status.html:74
+msgid "Migration Version:"
+msgstr ""
+
+#: /app/templates/system/status.html:79
+msgid "Not initialized"
+msgstr ""
+
+#: /app/templates/system/status.html:86
+msgid "Total Medications:"
+msgstr ""
+
+#: /app/templates/system/status.html:89
+msgid "Active Inventories:"
+msgstr ""
+
+#: /app/templates/system/status.html:92
+msgid "Low Stock Items:"
+msgstr ""
+
+#: /app/templates/system/status.html:101
+msgid "Total Orders:"
+msgstr ""
+
+#: /app/templates/system/status.html:110
+msgid "Physician Visits:"
+msgstr ""
+
+#: /app/templates/system/status.html:119
+msgid "Migrations Status:"
+msgstr ""
+
+#: /app/templates/system/status.html:122
+msgid "Updates Available"
+msgstr ""
+
+#: /app/templates/system/status.html:124
+msgid "Up to Date"
+msgstr ""
+
+#: /app/templates/system/status.html:137
+msgid "View Migration History"
+msgstr ""
+
+#: /app/templates/system/status.html:151
+msgid "Scheduled Tasks"
+msgstr ""
+
+#: /app/templates/system/status.html:161
+msgid "Last Run"
+msgstr ""
+
+#: /app/templates/system/status.html:169
+msgid "seconds"
+msgstr ""
+
+#: /app/templates/system/status.html:181
+msgid "Idle"
+msgstr ""
+
+#: /app/templates/system/status.html:191
+msgid "No scheduled tasks found."
+msgstr ""
+
+#: /app/templates/system/status.html:200
+msgid "System Information"
+msgstr ""
+
+#: /app/templates/system/status.html:206
+msgid "Python Version:"
+msgstr ""
+
+#: /app/templates/system/status.html:209
+msgid "Flask Version:"
+msgstr ""
+
+#: /app/templates/system/status.html:212
+msgid "Timezone:"
+msgstr ""
+
+#: /app/templates/system/status.html:218
+msgid "Server Time:"
+msgstr ""
+
+#: /app/templates/system/status.html:221
+msgid "Local Time:"
+msgstr ""
+
+#: /app/templates/system/status.html:229
+msgid ""
+"The task scheduler runs background tasks including automatic inventory "
+"deduction."
+msgstr ""
+
+#: /app/templates/system/status.html:230
+msgid "If the scheduler is not running, automatic deduction will not occur."
+msgstr ""
+
+#: /app/templates/system/status.html:250
+msgid "Restart Scheduler"
+msgstr ""
+
+#: /app/templates/system/status.html:264
+msgid "Detect Pipe-Separated Times"
+msgstr ""
+
+#: /app/templates/system/status.html:266
+msgid "Scan for corrupted medication schedule times"
+msgstr ""
+
+#: /app/templates/system/status.html:271
+msgid "This will permanently fix corrupted time data in the database. Continue?"
+msgstr ""
+
+#: /app/templates/system/status.html:272
+msgid "Fix Pipe-Separated Times"
+msgstr ""
+
+#: /app/templates/system/status.html:274
+msgid "Automatically repair corrupted medication schedule times"
+msgstr ""
+
+#: /app/templates/visits/edit.html:3 /app/templates/visits/edit.html:8
+msgid "Edit Physician Visit"
+msgstr ""
+
+#: /app/templates/visits/edit.html:22
+msgid "Edit Visit on"
+msgstr ""
+
+#: /app/templates/visits/edit.html:32 /app/templates/visits/new.html:27
+msgid "Enter the date of your upcoming physician visit"
+msgstr ""
+
+#: /app/templates/visits/edit.html:40 /app/templates/visits/new.html:35
+msgid "Select a physician (optional)"
+msgstr ""
+
+#: /app/templates/visits/edit.html:49 /app/templates/visits/new.html:41
+msgid "The physician you're visiting"
+msgstr ""
+
+#: /app/templates/visits/edit.html:57 /app/templates/visits/new.html:49
+msgid "Optional notes about this visit"
+msgstr ""
+
+#: /app/templates/visits/edit.html:70
+msgid "Update Visit"
+msgstr ""
+
+#: /app/templates/visits/edit.html:93
+msgid ""
+"You have selected a date in the past. This is allowed but may affect "
+"medication calculations."
+msgstr ""
+
+#: /app/templates/visits/edit.html:101
+msgid ""
+"Warning: This visit has associated orders. Changing the date may affect "
+"medication calculations."
+msgstr ""
+
+#: /app/templates/visits/index.html:11
+msgid "Schedule New Visit"
+msgstr ""
+
+#: /app/templates/visits/index.html:19
+msgid "Upcoming Visits"
+msgstr ""
+
+#: /app/templates/visits/index.html:30
+msgid "Days Away"
+msgstr ""
+
+#: /app/templates/visits/index.html:33
+msgid "Order Plan"
+msgstr ""
+
+#: /app/templates/visits/index.html:53 /app/templates/visits/index.html:149
+msgid "No physician assigned"
+msgstr ""
+
+#: /app/templates/visits/index.html:68 /app/templates/visits/index.html:159
+msgid "order"
+msgstr ""
+
+#: /app/templates/visits/index.html:68 /app/templates/visits/index.html:159
+#: /app/templates/visits/show.html:125
+msgid "s"
+msgstr ""
+
+#: /app/templates/visits/index.html:70 /app/templates/visits/index.html:161
+msgid "No orders"
+msgstr ""
+
+#: /app/templates/visits/index.html:75
+msgid ""
+"Orders for this visit will be calculated to last until the next-but-one "
+"visit"
+msgstr ""
+
+#: /app/templates/visits/index.html:76
+msgid "Next-But-One"
+msgstr ""
+
+#: /app/templates/visits/index.html:79
+msgid "Orders for this visit will be calculated to last until the next visit only"
+msgstr ""
+
+#: /app/templates/visits/index.html:80
+msgid "Standard"
+msgstr ""
+
+#: /app/templates/visits/index.html:89 /app/templates/visits/show.html:16
+msgid "Edit Visit"
+msgstr ""
+
+#: /app/templates/visits/index.html:117
+msgid "Past Visits"
+msgstr ""
+
+#: /app/templates/visits/index.html:178
+msgid "No past physician visits found."
+msgstr ""
+
+#: /app/templates/visits/index.html:189
+msgid "Visit Timeline"
+msgstr ""
+
+#: /app/templates/visits/index.html:217 /app/templates/visits/show.html:37
+msgid "days away"
+msgstr ""
+
+#: /app/templates/visits/new.html:17
+msgid "New Physician Visit"
+msgstr ""
+
+#: /app/templates/visits/new.html:55
+msgid "Create medication order after scheduling the visit"
+msgstr ""
+
+#: /app/templates/visits/show.html:8
+msgid "Physician Visit Details"
+msgstr ""
+
+#: /app/templates/visits/show.html:27
+msgid "Visit Information"
+msgstr ""
+
+#: /app/templates/visits/show.html:65
+msgid "No physician assigned to this visit."
+msgstr ""
+
+#: /app/templates/visits/show.html:81
+msgid "Updated"
+msgstr ""
+
+#: /app/templates/visits/show.html:86
+msgid "Are you sure you want to delete this visit? This cannot be undone."
+msgstr ""
+
+#: /app/templates/visits/show.html:88
+msgid "Delete Visit"
+msgstr ""
+
+#: /app/templates/visits/show.html:102
+msgid "Associated Orders"
+msgstr ""
+
+#: /app/templates/visits/show.html:116
+msgid "Order"
+msgstr ""
+
+#: /app/templates/visits/show.html:125
+msgid "medication"
+msgstr ""
+
+#: /app/templates/visits/show.html:132
+msgid "No orders associated with this visit yet."
+msgstr ""
+
+#: /app/templates/visits/show.html:149
+msgid "Medication Needs Calculation"
+msgstr ""
+
+#: /app/templates/visits/show.html:153
+msgid ""
+"Based on your current medication usage and inventory levels, here's what "
+"you'll need until this visit"
+msgstr ""
+
+#: /app/templates/visits/show.html:154
+msgid "plus a safety margin of additional days for each medication"
+msgstr ""
+
+#: /app/templates/visits/show.html:164
+msgid "Safety Margin"
+msgstr ""
+
+#: /app/templates/visits/show.html:165
+msgid "Units Needed"
+msgstr ""
+
+#: /app/templates/visits/show.html:230
+msgid "No medications found in the system or no inventory data available."
+msgstr ""
+
+#: /app/templates/visits/show.html:237
+msgid "Create Order Based on These Needs"
+msgstr ""
+
+#: /app/templates/visits/show.html:258
+#, python-format
+msgid "%(count)d medication will run out before this visit."
+msgid_plural "%(count)d medications will run out before this visit."
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/visits/show.html:261
+msgid "Additionally"
+msgstr ""
+
+#: /app/templates/visits/show.html:262
+#, python-format
+msgid "%(count)d medication is in the safety margin."
+msgid_plural "%(count)d medications are in the safety margin."
+msgstr[0] ""
+msgstr[1] ""
+
+#: /app/templates/visits/show.html:264
+msgid "Please consider creating a gap coverage order to bridge the supply gap."
+msgstr ""
+

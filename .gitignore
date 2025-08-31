@@ -67,3 +67,12 @@ repomix-output.*
 # Alembic
 migrations/__pycache__/
 migrations/versions/__pycache__/
+
+# Node.js / Frontend
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-error.log*
+
+# Webpack build output (tracked in git for Docker)
+app/static/dist/

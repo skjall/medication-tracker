@@ -1,34 +1,129 @@
-# Multi-stage build for smaller image size
-FROM python:3.13-slim@sha256:f2fdaec50160418e0c2867ba3e254755edd067171725886d5d303fd7057bbf81 AS builder
+# syntax=docker/dockerfile:1.17@sha256:38387523653efa0039f8e1c89bb74a30504e76ee9f565e25c9a09841f9427b05
+
+###############################
+# 1) Builder: Python dependencies
+###############################
+FROM python:3.13-slim@sha256:27f90d79cc85e9b7b2560063ef44fa0e9eaae7a7c3f5a9f74563065c5477cc24 AS builder
 
 WORKDIR /app
 
-# Install build dependencies
+# System build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential \
   gcc \
   python3-dev \
   && rm -rf /var/lib/apt/lists/*
 
-# Install pip tools
+# Tools for pip
 RUN pip install --no-cache-dir pip-tools wheel
 
-# Copy requirements file
-COPY requirements.txt .
+# Copy requirements
+COPY requirements.txt /app/requirements.txt
 
-# Create and use virtual environment
+# Create and activate virtual environment
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Final stage with minimal dependencies
-FROM python:3.13-slim@sha256:f2fdaec50160418e0c2867ba3e254755edd067171725886d5d303fd7057bbf81
 
-# Define VERSION as a build argument
+###############################
+# 2) Frontend builder: Node.js for webpack bundling
+###############################
+FROM node:22-slim@sha256:0ae9e80c8c7e7a8fea5bc8e8762e4fd09a7a68c251abf8cf44ea0863efda2bc5 AS frontend-builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json ./
+
+# Install dependencies (using npm install without lock file to avoid auth issues)
+RUN npm install --no-save
+
+# Copy webpack config and source files
+COPY webpack.config.js ./
+COPY app/static/ /app/app/static/
+
+# Build frontend assets
+RUN npm run build
+
+###############################
+# 3) Translator: Babel + Crowdin
+###############################
+FROM python:3.13-slim@sha256:27f90d79cc85e9b7b2560063ef44fa0e9eaae7a7c3f5a9f74563065c5477cc24 AS translator
+
+# Install tools for Crowdin CLI and Babel
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  curl \
+  unzip \
+  openjdk-21-jre-headless \
+  && rm -rf /var/lib/apt/lists/* \
+  && pip install --no-cache-dir babel flask-babel \
+  && curl -L https://github.com/crowdin/crowdin-cli/releases/download/4.10.0/crowdin-cli.zip -o /tmp/crowdin-cli.zip \
+  && unzip /tmp/crowdin-cli.zip -d /opt/ \
+  && rm /tmp/crowdin-cli.zip \
+  && CROWDIN_DIR=$(ls -d /opt/*/ | head -n1) \
+  && chmod +x ${CROWDIN_DIR}crowdin \
+  && ln -s ${CROWDIN_DIR}crowdin-cli.jar /opt/crowdin-cli.jar \
+  && ln -s ${CROWDIN_DIR}crowdin /opt/crowdin
+
+ENV PATH="/opt:${PATH}"
+
+# --- Cache bust (optional) ---
+ARG CACHE_BUST=1
+RUN echo "Cache bust: ${CACHE_BUST}"
+
+# Copy sources with absolute paths
+WORKDIR /
+COPY app/ /app/
+COPY babel.cfg /babel.cfg
+COPY translations/ /app/translations/
+COPY crowdin.yml /app/crowdin.yml
+
+WORKDIR /app
+
+# Crowdin credentials (ok for dev; use secrets in production)
+ARG CROWDIN_API_TOKEN
+ENV CROWDIN_API_TOKEN=${CROWDIN_API_TOKEN}
+ARG CROWDIN_PROJECT_ID
+ENV CROWDIN_PROJECT_ID=${CROWDIN_PROJECT_ID}
+
+# 2.1: Extract strings
+RUN pybabel extract \
+  -F /babel.cfg \
+  -k _l -k _ -k _n:1,2 \
+  -o /app/translations/messages.pot \
+  /app \
+  --add-comments="TRANSLATORS:" --sort-by-file
+
+# 2.1a: Normalize POT file to prevent false "new string" detections in Crowdin
+# Remove POT-Creation-Date which changes on every build
+RUN sed -i '/^"POT-Creation-Date:/d' /app/translations/messages.pot
+
+# 2.2: Sync with Crowdin
+RUN if [ -n "${CROWDIN_API_TOKEN}" ] && [ -n "${CROWDIN_PROJECT_ID}" ]; then \
+  crowdin upload sources --no-progress --config /app/crowdin.yml --base-path /app && \
+  crowdin download       --no-progress --config /app/crowdin.yml --base-path /app ; \
+  else \
+  echo "Crowdin sync skipped - missing credentials" ; \
+  fi
+
+# 2.3: Update and compile translations
+RUN pybabel update -i /app/translations/messages.pot -d /app/translations || true
+RUN pybabel compile -d /app/translations || echo "Translation compilation had errors but continuing"
+
+# 2.4: Assert we actually have something
+RUN ls -R /app/translations && \
+  find /app/translations -type f \( -name "*.po" -o -name "*.mo" -o -name "messages.pot" \) | head -n 20
+
+###############################
+# 4) Runtime: minimal image
+###############################
+FROM python:3.13-slim@sha256:27f90d79cc85e9b7b2560063ef44fa0e9eaae7a7c3f5a9f74563065c5477cc24 AS runtime
+
+# 4.1: Metadata
 ARG VERSION=0.0.0
-
 LABEL org.opencontainers.image.authors="Jan Großheim (medication-tracker@skjall.de)"
 LABEL org.opencontainers.image.title="Medication Tracker"
 LABEL org.opencontainers.image.description="A web application to track medications, inventory, and prepare for physician visits"
@@ -38,53 +133,53 @@ LABEL org.opencontainers.image.version="${VERSION}"
 
 WORKDIR /app
 
-# Copy virtual environment from builder stage
+# 4.2: Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
-
-# Make sure we use the virtualenv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Add minimal runtime dependencies if needed
+# 4.3: Minimal runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
   wget \
+  sqlite3 \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy the application code
-COPY app/ ./
+# 4.4: Application code and config
+COPY app/ /app/
+COPY migrations/ /app/migrations/
+COPY alembic.ini /app/alembic.ini
+COPY babel.cfg /app/babel.cfg
 
-# Copy migration files
-COPY migrations/ ../migrations/
-COPY alembic.ini ../
+# 4.5: Compiled translations from translator stage
+COPY --from=translator /app/translations/ /app/translations/
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV FLASK_ENV=production
-ENV LOG_LEVEL=INFO
+# 4.6: Built frontend assets from frontend-builder stage
+COPY --from=frontend-builder /app/app/static/dist/ /app/static/dist/
 
-# Make VERSION available in the final layer
-ARG VERSION
-ENV VERSION=${VERSION}
+# 4.7: Assert we have translations and assets
+RUN ls -R /app/translations || (echo "translations missing in runtime image" && exit 1)
+RUN ls /app/static/dist || (echo "frontend assets missing in runtime image" && exit 1)
 
-# Create entrypoint script to handle permissions
-RUN echo '#!/bin/bash\n\
-  mkdir -p /app/data /app/logs\n\
-  chmod -R 777 /app/data /app/logs\n\
-  echo "Starting application..."\n\
-  exec gunicorn --bind 0.0.0.0:8087 --workers 4 --threads 2 --timeout 120 "main:create_app()"\n'\
-  > /app/entrypoint.sh && \
-  chmod +x /app/entrypoint.sh
+# 4.8: Runtime environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+  PYTHONUNBUFFERED=1 \
+  FLASK_ENV=production \
+  LOG_LEVEL=INFO \
+  VERSION=${VERSION}
 
-# Create volumes for data and logs persistence
+# 3.8: Entrypoint
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# 3.9: Volumes
 VOLUME /app/data
 VOLUME /app/logs
 
-# Expose the port the app runs on
+# 3.10: Port
 EXPOSE 8087
 
-# Health check
+# 3.11: Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD wget -qO- http://localhost:8087/ || exit 1
 
-# Command to run the application
+# 3.12: Start command
 CMD ["/app/entrypoint.sh"]

@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Edit Package') }} - {{ package.product.brand_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-edit me-2"></i>{{ _('Edit Package Configuration') }}
+    </h1>
+    <a href="{{ url_for('ingredients.show_product', id=package.product_id) }}" class="btn btn-outline-secondary">
+        <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    {{ _('Edit Package') }}: {{ package.product.display_name }} {{ package.package_size }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="package_size" class="form-label">
+                                {{ _('Package Size') }} <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="package_size" name="package_size"
+                                   value="{{ package.package_size }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="quantity" class="form-label">
+                                {{ _('Quantity (units)') }} <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control" id="quantity" name="quantity"
+                                   min="1" value="{{ package.quantity }}" required>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-muted mb-3">{{ _('Identifiers') }}</h6>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="national_number" class="form-label">{{ _('National Drug Code') }}</label>
+                            <input type="text" class="form-control" id="national_number" name="national_number"
+                                   maxlength="20" value="{{ package.national_number or '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="national_number_type" class="form-label">{{ _('Code Type') }}</label>
+                            <select class="form-control" id="national_number_type" name="national_number_type">
+                                <option value="">{{ _('Select type...') }}</option>
+                                <option value="DE_PZN" {% if package.national_number_type == 'DE_PZN' %}selected{% endif %}>DE - PZN</option>
+                                <option value="FR_CIP13" {% if package.national_number_type == 'FR_CIP13' %}selected{% endif %}>FR - CIP13</option>
+                                <option value="BE_CNK" {% if package.national_number_type == 'BE_CNK' %}selected{% endif %}>BE - CNK</option>
+                                <option value="NL_ZI" {% if package.national_number_type == 'NL_ZI' %}selected{% endif %}>NL - Z-Index</option>
+                                <option value="AT_PZN" {% if package.national_number_type == 'AT_PZN' %}selected{% endif %}>AT - PZN</option>
+                                <option value="CH_GTIN" {% if package.national_number_type == 'CH_GTIN' %}selected{% endif %}>CH - GTIN</option>
+                                <option value="US_NDC" {% if package.national_number_type == 'US_NDC' %}selected{% endif %}>US - NDC</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="gtin" class="form-label">{{ _('GTIN (PC)') }}</label>
+                        <input type="text" class="form-control" id="gtin" name="gtin"
+                               maxlength="14" value="{{ package.gtin or '' }}">
+                        <div class="form-text">{{ _('Global Trade Item Number - also found as PC on the package') }}</div>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-muted mb-3">{{ _('Additional Information') }}</h6>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="manufacturer" class="form-label">{{ _('Package Manufacturer') }}</label>
+                            <input type="text" class="form-control" id="manufacturer" name="manufacturer"
+                                   value="{{ package.manufacturer or '' }}"
+                                   placeholder="{{ _('If different from product manufacturer') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="list_price" class="form-label">{{ _('List Price') }}</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="list_price" name="list_price"
+                                       step="0.01" min="0" value="{{ package.list_price or '' }}">
+                                <span class="input-group-text">€</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('ingredients.show_product', id=package.product_id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>{{ _('Save Changes') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from flask import (
     Blueprint,
     flash,
+    jsonify,
     make_response,
     redirect,
     render_template,
@@ -17,17 +18,19 @@ from flask import (
     send_file,
     url_for,
 )
+from flask_babel import gettext as _
 
 # Local application imports
 from models import (
     PhysicianVisit,
-    Medication,
+    ActiveIngredient,
+    MedicationProduct,
     Order,
     OrderItem,
     db,
 )
-from pdf_utils import generate_prescription_pdf
-from utils import to_local_timezone
+from pdf_utils import generate_order_pdf
+from utils import to_local_timezone, format_date, format_datetime
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -40,9 +43,9 @@ order_bp = Blueprint("orders", __name__, url_prefix="/orders")
 @order_bp.route("/")
 def index():
     """Display list of all medication orders."""
-    # Get planned/pending orders
+    # Get planned/pending orders (including printed orders that are not yet fulfilled)
     pending_orders = (
-        Order.query.filter(Order.status.in_(["planned", "printed"]))
+        Order.query.filter(Order.status.in_(["planned", "partial", "printed"]))
         .order_by(Order.created_date.desc())
         .all()
     )
@@ -86,7 +89,7 @@ def new():
 
     if not visit:
         flash(
-            "No upcoming physician visit found. Please schedule a visit first.",
+            _("No upcoming physician visit found. Please schedule a visit first."),
             "warning",
         )
         return redirect(url_for("visits.new"))
@@ -96,39 +99,45 @@ def new():
         order = Order(physician_visit_id=visit.id, status="planned")
         db.session.add(order)
 
-        # Filter medications based on the visit's physician
-        if visit.physician_id:
-            # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
-            medications = Medication.query.filter(
-                (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
-            ).all()
-        else:
-            # If visit has no physician, show no medications (can't create prescription orders without physician)
-            medications = []
-
-        # Process each medication
-        for med in medications:
-            if f"include_{med.id}" in request.form:
+        # Get active ingredients with products that need ordering (not OTC)
+        # For now, get all active ingredients that have products
+        ingredients = ActiveIngredient.query.all()
+        
+        # Process each ingredient
+        for ingredient in ingredients:
+            if f"include_{ingredient.id}" in request.form:
                 # Extract form data
-                quantity_needed = int(request.form.get(f"quantity_{med.id}", 0) or 0)
-                packages_n1 = int(request.form.get(f"packages_n1_{med.id}", 0) or 0)
-                packages_n2 = int(request.form.get(f"packages_n2_{med.id}", 0) or 0)
-                packages_n3 = int(request.form.get(f"packages_n3_{med.id}", 0) or 0)
+                quantity_needed = int(request.form.get(f"quantity_{ingredient.id}", 0) or 0)
+                
+                # Get selected product
+                product_id = request.form.get(f"product_{ingredient.id}")
+                if product_id:
+                    product_id = int(product_id)
+                else:
+                    # Default to the ingredient's default product if not specified
+                    product_id = ingredient.default_product_id
+                
+                packages_n1 = int(request.form.get(f"packages_n1_{ingredient.id}", 0) or 0)
+                packages_n2 = int(request.form.get(f"packages_n2_{ingredient.id}", 0) or 0)
+                packages_n3 = int(request.form.get(f"packages_n3_{ingredient.id}", 0) or 0)
 
-                # Create order item
-                order_item = OrderItem(
-                    medication_id=med.id,
-                    quantity_needed=quantity_needed,
-                    packages_n1=packages_n1,
-                    packages_n2=packages_n2,
-                    packages_n3=packages_n3,
-                )
+                # Only create order item if there's actually something to order
+                if quantity_needed > 0 or packages_n1 > 0 or packages_n2 > 0 or packages_n3 > 0:
+                    # Create order item
+                    order_item = OrderItem(
+                        active_ingredient_id=ingredient.id,
+                        product_id=product_id,
+                        quantity_needed=quantity_needed,
+                        packages_n1=packages_n1,
+                        packages_n2=packages_n2,
+                        packages_n3=packages_n3,
+                    )
 
-                order.order_items.append(order_item)
+                    order.order_items.append(order_item)
 
         db.session.commit()
 
-        flash("Order created successfully", "success")
+        flash(_("Order created successfully"), "success")
         return redirect(url_for("orders.show", id=order.id))
 
     # Get settings to check if next-but-one is enabled globally
@@ -141,130 +150,91 @@ def new():
         visit.order_for_next_but_one or settings.default_order_for_next_but_one
     )
 
-    # Filter medications based on the visit's physician
-    if visit.physician_id:
-        # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
-        medications = Medication.query.filter(
-            (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
-        ).all()
-    else:
-        # If visit has no physician, show no medications (can't create prescription orders without physician)
-        medications = []
+    # Get all active ingredients that have products
+    ingredients = ActiveIngredient.query.all()
 
-    def calculate_medication_needs(med, visit_date, gap_coverage=False, consider_next_but_one=False):
-        """Helper function to calculate medication needs for both gap coverage and normal orders."""
-        if not med.inventory:
-            return None
-
+    def calculate_ingredient_needs(ingredient, visit_date, gap_coverage=False, consider_next_but_one=False):
+        """Helper function to calculate ingredient needs."""
+        
+        result = {
+            'calculation_type': 'normal',
+            'days_calculated': 0,
+            'base_days': 0,
+            'safety_margin_days': ingredient.safety_margin_days if hasattr(ingredient, 'safety_margin_days') else 30,
+            'needed_units': 0,
+            'current_inventory': ingredient.total_inventory_count,
+            'additional_needed': 0,
+            'days_until_depletion': 0,
+            'gap_days': 0,
+            'packages': {'N1': 0, 'N2': 0, 'N3': 0}
+        }
+        
+        # Calculate days until visit
+        today = datetime.now(timezone.utc).date()
+        visit_date = visit_date.date() if hasattr(visit_date, 'date') else visit_date
+        days_until_visit = (visit_date - today).days
+        
+        # Calculate days until depletion if daily usage > 0
+        if ingredient.daily_usage > 0 and ingredient.total_inventory_count > 0:
+            result['days_until_depletion'] = int(ingredient.total_inventory_count / ingredient.daily_usage)
+        
+        # Determine calculation type and days needed
         if gap_coverage:
-            if med.daily_usage <= 0:
-                return None
-
-            depletion_date = med.depletion_date
-            if not depletion_date:
-                return None
-
-            # Ensure both dates are timezone-aware for comparison
-            from utils import ensure_timezone_utc
-            depletion_date = ensure_timezone_utc(depletion_date)
-            visit_date = ensure_timezone_utc(visit_date)
-
-            if depletion_date >= visit_date:
-                return None
-
-            # Calculate how much is needed from depletion date to visit date
-            gap_period_units = med.calculate_needed_for_period(
-                depletion_date,
-                visit_date,
-                include_safety_margin=True
-            )
-
-            if gap_period_units <= 0:
-                return None
-
-            # For gap coverage, the additional needed is the full gap period amount
-            # because we need to order enough to bridge the gap from depletion to visit
-            current = med.inventory.current_count
-            additional = gap_period_units  # Always order the full gap amount
-            packages = med.calculate_packages_needed(additional)
-            
-            logger.info(f"Gap coverage calculation for {med.name}: depletion_date={depletion_date}, visit_date={visit_date}, gap_period_units={gap_period_units}, current={current}, additional={additional}")
-            
-            # Calculate days until depletion for tooltip explanation
-            from models.base import utcnow
-            from utils import ensure_timezone_utc
-            depletion_date_utc = ensure_timezone_utc(depletion_date)
-            visit_date_utc = ensure_timezone_utc(visit_date)
-            days_until_depletion = (depletion_date_utc - utcnow()).days
-            
-            return {
-                "medication": med,
-                "needed_units": gap_period_units,
-                "current_inventory": current,
-                "additional_needed": additional,
-                "packages": packages,
-                "calculation_type": "gap_coverage",
-                "depletion_date": depletion_date,
-                "gap_days": (visit_date_utc - depletion_date_utc).days,
-                "days_until_depletion": days_until_depletion,
-                "safety_margin_days": med.safety_margin_days,
-            }
-        else:
-            # Normal order calculation
-            needed = med.calculate_needed_until_visit(
-                visit_date,
-                include_safety_margin=True,
-                consider_next_but_one=consider_next_but_one,
-            )
-            current = med.inventory.current_count
-            additional = max(0, needed - current)
-            packages = med.calculate_packages_needed(additional)
-
-            # Calculate breakdown for tooltip
-            from models.base import utcnow
-            from utils import ensure_timezone_utc
-            visit_date_utc = ensure_timezone_utc(visit_date)
-            days_until_visit = (visit_date_utc - utcnow()).days
-            if consider_next_but_one:
-                from models import Settings
-                settings = Settings.get_settings()
-                total_days = days_until_visit + settings.default_visit_interval
-                calculation_type = "next_but_one"
+            result['calculation_type'] = 'gap_coverage'
+            # Gap coverage: calculate days between depletion and visit
+            if result['days_until_depletion'] < days_until_visit:
+                result['gap_days'] = days_until_visit - result['days_until_depletion']
+                result['days_calculated'] = result['gap_days'] + result['safety_margin_days']
             else:
-                total_days = days_until_visit
-                calculation_type = "standard"
-
-            return {
-                "medication": med,
-                "needed_units": needed,
-                "current_inventory": current,
-                "additional_needed": additional,
-                "packages": packages,
-                "calculation_type": calculation_type,
-                "days_calculated": total_days,
-                "base_days": days_until_visit,
-                "safety_margin_days": med.safety_margin_days,
-            }
-
-    medication_needs = {}
-
-    # Calculate needs for all medications using the helper function
-    for med in medications:
-        needs = calculate_medication_needs(
-            med,
-            visit.visit_date,
+                result['days_calculated'] = result['safety_margin_days']
+        elif consider_next_but_one:
+            result['calculation_type'] = 'next_but_one'
+            # Calculate for next-but-one visit (double the period)
+            result['base_days'] = days_until_visit
+            result['days_calculated'] = days_until_visit * 2 + result['safety_margin_days']
+        else:
+            # Normal calculation: days until visit + safety margin
+            result['days_calculated'] = days_until_visit + result['safety_margin_days']
+        
+        # Calculate units needed
+        if ingredient.daily_usage > 0:
+            result['needed_units'] = int(ingredient.daily_usage * result['days_calculated'])
+        
+        # Calculate additional units needed (subtracting current inventory)
+        result['additional_needed'] = max(0, result['needed_units'] - result['current_inventory'])
+        
+        # Calculate packages needed for the additional units
+        if result['additional_needed'] > 0:
+            # Try to get packages from the first product for this ingredient
+            for product in ingredient.products:
+                if product.package_size_n1:
+                    # Simple calculation - just use N1 packages for now
+                    packages_needed = (result['additional_needed'] + product.package_size_n1 - 1) // product.package_size_n1
+                    result['packages']['N1'] = packages_needed
+                    break
+        
+        return result
+    
+    # Calculate ingredient needs for each ingredient
+    ingredient_needs = {}
+    for ingredient in ingredients:
+        # Skip OTC ingredients in orders
+        if not any(not product.is_otc for product in ingredient.products):
+            continue
+            
+        ingredient_needs[ingredient.id] = calculate_ingredient_needs(
+            ingredient, 
+            visit.visit_date, 
             gap_coverage=gap_coverage,
             consider_next_but_one=consider_next_but_one
         )
-        if needs:
-            medication_needs[med.id] = needs
 
     return render_template(
         "orders/new.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         visit=visit,
-        medications=medications,
-        medication_needs=medication_needs,
+        ingredients=ingredients,
+        ingredient_needs=ingredient_needs,
         consider_next_but_one=consider_next_but_one,
         gap_coverage=gap_coverage,
     )
@@ -291,89 +261,100 @@ def edit(id: int):
 
     # Don't allow editing fulfilled orders
     if order.status == "fulfilled":
-        flash("Cannot edit fulfilled orders", "error")
+        flash(_("Cannot edit fulfilled orders"), "error")
         return redirect(url_for("orders.show", id=order.id))
 
     if request.method == "POST":
         # Update order status if provided
         new_status = request.form.get("status")
-        if new_status in ["planned", "printed", "fulfilled"]:
+        if new_status in ["planned", "partial", "fulfilled"]:
             order.status = new_status
 
-        # Filter medications based on the visit's physician
+        # Filter ingredients based on the visit's physician
         visit = order.physician_visit
         if visit.physician_id:
-            # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
-            medications = Medication.query.filter(
-                (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
-            ).all()
+            # If visit has a physician, show all active ingredients
+            ingredients = ActiveIngredient.query.all()
         else:
-            # If visit has no physician, show no medications (can't create prescription orders without physician)
-            medications = []
+            # If visit has no physician, show no ingredients (can't create orders without physician)
+            ingredients = []
 
-        # Track which medications are included in the updated order
-        included_med_ids = set()
+        # Track which ingredients are included in the updated order
+        included_ingredient_ids = set()
 
-        # Process each medication
-        for med in medications:
-            if f"include_{med.id}" in request.form:
-                included_med_ids.add(med.id)
+        # Process each ingredient
+        for ingredient in ingredients:
+            if f"include_{ingredient.id}" in request.form:
+                included_ingredient_ids.add(ingredient.id)
 
                 # Extract form data
-                quantity_needed = int(request.form.get(f"quantity_{med.id}", 0) or 0)
-                packages_n1 = int(request.form.get(f"packages_n1_{med.id}", 0) or 0)
-                packages_n2 = int(request.form.get(f"packages_n2_{med.id}", 0) or 0)
-                packages_n3 = int(request.form.get(f"packages_n3_{med.id}", 0) or 0)
+                quantity_needed = int(request.form.get(f"quantity_{ingredient.id}", 0) or 0)
+                
+                # Get selected product
+                product_id = request.form.get(f"product_{ingredient.id}")
+                if product_id:
+                    product_id = int(product_id)
+                else:
+                    # Default to the ingredient's default product if not specified
+                    product_id = ingredient.default_product_id
+                
+                # Get package counts
+                packages_n1 = int(request.form.get(f"packages_n1_{ingredient.id}", 0) or 0)
+                packages_n2 = int(request.form.get(f"packages_n2_{ingredient.id}", 0) or 0)
+                packages_n3 = int(request.form.get(f"packages_n3_{ingredient.id}", 0) or 0)
 
                 # Find existing order item or create new one
                 order_item = None
                 for item in order.order_items:
-                    if item.medication_id == med.id:
+                    if item.active_ingredient_id == ingredient.id:
                         order_item = item
                         break
 
                 if order_item is None:
-                    order_item = OrderItem(order_id=order.id, medication_id=med.id)
+                    order_item = OrderItem(
+                        order_id=order.id, 
+                        active_ingredient_id=ingredient.id,
+                        product_id=product_id
+                    )
                     db.session.add(order_item)
                     order.order_items.append(order_item)
 
                 # Update order item
                 order_item.quantity_needed = quantity_needed
+                order_item.product_id = product_id  # Update the selected product
                 order_item.packages_n1 = packages_n1
                 order_item.packages_n2 = packages_n2
                 order_item.packages_n3 = packages_n3
 
         # Remove items that are no longer included
         for item in list(order.order_items):
-            if item.medication_id not in included_med_ids:
+            if item.active_ingredient_id not in included_ingredient_ids:
                 db.session.delete(item)
                 order.order_items.remove(item)
 
         db.session.commit()
 
-        flash("Order updated successfully", "success")
+        flash(_("Order updated successfully"), "success")
         return redirect(url_for("orders.show", id=order.id))
 
-    # Filter medications based on the visit's physician
+    # Filter ingredients based on the visit's physician
     visit = order.physician_visit
     if visit.physician_id:
-        # If visit has a physician, only show prescription medications assigned to that physician (no OTC)
-        medications = Medication.query.filter(
-            (Medication.physician_id == visit.physician_id) & (Medication.is_otc.is_(False))
-        ).all()
+        # If visit has a physician, show all active ingredients
+        ingredients = ActiveIngredient.query.all()
     else:
-        # If visit has no physician, show no medications (can't create prescription orders without physician)
-        medications = []
+        # If visit has no physician, show no ingredients (can't create orders without physician)
+        ingredients = []
 
     # Create a lookup map for existing order items
-    order_items_map = {item.medication_id: item for item in order.order_items}
+    order_items_map = {item.active_ingredient_id: item for item in order.order_items}
 
     return render_template(
         "orders/edit.html",
         local_time=to_local_timezone(datetime.now(timezone.utc)),
         order=order,
         visit=order.physician_visit,
-        medications=medications,
+        ingredients=ingredients,
         order_items_map=order_items_map,
     )
 
@@ -385,7 +366,7 @@ def delete(id: int):
 
     # Don't allow deleting fulfilled orders
     if order.status == "fulfilled":
-        flash("Cannot delete fulfilled orders", "error")
+        flash(_("Cannot delete fulfilled orders"), "error")
         return redirect(url_for("orders.show", id=order.id))
 
     # Delete all associated order items
@@ -395,7 +376,7 @@ def delete(id: int):
     db.session.delete(order)
     db.session.commit()
 
-    flash("Order deleted successfully", "success")
+    flash(_("Order deleted successfully"), "success")
     return redirect(url_for("orders.index"))
 
 
@@ -404,10 +385,8 @@ def printable(id: int):
     """Generate a printable view of the order."""
     order = Order.query.get_or_404(id)
 
-    # Mark as printed if not already
-    if order.status == "planned":
-        order.status = "printed"
-        db.session.commit()
+    # No need to update status when generating printable view
+    # The status is managed through the regular workflow
 
     # Render a printer-friendly template
     response = make_response(
@@ -427,67 +406,436 @@ def printable(id: int):
     return response
 
 
-@order_bp.route("/<int:id>/fulfill", methods=["POST"])
-def fulfill(id: int):
-    """Mark an order as fulfilled and update inventory."""
+@order_bp.route("/<int:id>/update_status", methods=["POST"])
+def update_status(id: int):
+    """Update order status from dropdown."""
     order = Order.query.get_or_404(id)
-
-    # Don't allow fulfilling already fulfilled orders
-    if order.status == "fulfilled":
-        flash("Order is already fulfilled", "warning")
-        return redirect(url_for("orders.show", id=order.id))
-
-    # Update inventory based on the order
-    for item in order.order_items:
-        if item.medication and item.medication.inventory:
-            # Calculate total pills from packages
-            total_units = 0
-            if item.medication.package_size_n1:
-                total_units += item.packages_n1 * item.medication.package_size_n1
-            if item.medication.package_size_n2:
-                total_units += item.packages_n2 * item.medication.package_size_n2
-            if item.medication.package_size_n3:
-                total_units += item.packages_n3 * item.medication.package_size_n3
-
-            # Update inventory
-            item.medication.inventory.update_count(
-                total_units, f"Added from order #{order.id}"
-            )
-
-    # Mark order as fulfilled
-    order.status = "fulfilled"
-    db.session.commit()
-
-    flash("Order fulfilled and inventory updated successfully", "success")
+    
+    new_status = request.form.get("status")
+    if new_status in ["planned", "partial", "fulfilled"]:
+        old_status = order.status
+        order.status = new_status
+        
+        # If manually setting to fulfilled, mark all pending items as fulfilled
+        if new_status == "fulfilled" and old_status != "fulfilled":
+            for item in order.order_items:
+                if item.fulfillment_status == "pending":
+                    item.fulfillment_status = "fulfilled"
+                    item.fulfilled_at = datetime.now(timezone.utc)
+                    item.fulfilled_quantity = item.total_units_ordered
+        
+        # If manually setting from fulfilled/partial to planned, reset fulfilled items
+        elif old_status in ["fulfilled", "partial"] and new_status == "planned":
+            for item in order.order_items:
+                if item.fulfillment_status in ["fulfilled", "modified"]:
+                    item.fulfillment_status = "pending"
+                    item.fulfilled_at = None
+                    item.fulfilled_quantity = None
+        
+        # Note: We don't change item status when manually setting to "partial"
+        # as this should reflect the actual state of individual items
+        
+        db.session.commit()
+        flash(_("Order status updated to {}").format(new_status.capitalize()), "success")
+    else:
+        flash(_("Invalid status"), "error")
+    
     return redirect(url_for("orders.show", id=order.id))
 
 
-@order_bp.route("/<int:id>/prescription", methods=["GET"])
-def prescription(id: int):
-    """Generate a prescription PDF for the order."""
+@order_bp.route("/<int:id>/toggle_fulfillment", methods=["POST"])
+def toggle_fulfillment(id: int):
+    """Toggle order fulfillment status with optional inventory update."""
+    order = Order.query.get_or_404(id)
+    
+    if order.status == "fulfilled":
+        # Unfulfill the order
+        order.status = "planned"
+        # Mark all items as pending
+        for item in order.order_items:
+            item.fulfillment_status = "pending"
+            item.fulfilled_at = None
+        flash(_("Order marked as unfulfilled"), "info")
+    else:
+        # Get fulfillment type from form
+        fulfillment_type = request.form.get("fulfillment_type", "mark_only")
+        update_inventory = fulfillment_type == "update_inventory"
+        
+        # Mark as fulfilled
+        order.status = "fulfilled"
+        fulfilled_count = 0
+        
+        # Mark all pending items as fulfilled
+        for item in order.order_items:
+            if item.fulfillment_status != "fulfilled":
+                item.fulfillment_status = "fulfilled"
+                item.fulfilled_at = datetime.now(timezone.utc)
+                item.fulfilled_quantity = item.total_units_ordered
+                fulfilled_count += 1
+                
+                # Update inventory if requested
+                # TODO: Implement inventory update for ingredient/product system
+                if update_inventory:
+                    # For now, skip inventory updates since we're using the new system
+                    pass
+        
+        if update_inventory:
+            flash(_("Order marked as fulfilled and {} items added to inventory").format(fulfilled_count), "success")
+        else:
+            flash(_("Order marked as fulfilled"), "success")
+    
+    db.session.commit()
+    
+    # Check if there's a specific redirect requested or use referrer
+    redirect_to = request.form.get("redirect_to")
+    if redirect_to == "index":
+        return redirect(url_for("orders.index"))
+    elif request.referrer and "/orders/" in request.referrer and request.referrer.endswith("/orders/"):
+        # Came from orders index page
+        return redirect(url_for("orders.index"))
+    else:
+        # Default to showing the order details
+        return redirect(url_for("orders.show", id=order.id))
+
+
+@order_bp.route("/<int:id>/item/<int:item_id>/fulfill", methods=["POST"])
+def fulfill_item(id: int, item_id: int):
+    """Mark individual order item as fulfilled and optionally update inventory."""
+    order = Order.query.get_or_404(id)
+    item = OrderItem.query.get_or_404(item_id)
+    
+    if item.order_id != order.id:
+        flash(_("Item does not belong to this order"), "error")
+        return redirect(url_for("orders.show", id=order.id))
+    
+    # Get form data
+    status = request.form.get("status", "fulfilled")
+    notes = request.form.get("notes", "")
+    # Note: add_to_inventory removed since we now use PackageInventory system
+    custom_quantity = request.form.get("custom_quantity", type=int)
+    
+    # Update item status
+    item.fulfillment_status = status
+    item.fulfillment_notes = notes if notes else None
+    item.fulfilled_at = datetime.now(timezone.utc) if status == "fulfilled" else None
+    
+    # Handle quantity and inventory update
+    # TODO: Update this to work with the new PackageInventory system
+    # For now, we skip inventory updates since ActiveIngredient doesn't have direct inventory
+    if status == "fulfilled":
+        # Use custom quantity or calculate from packages
+        if custom_quantity is not None:
+            item.fulfilled_quantity = custom_quantity
+        else:
+            item.fulfilled_quantity = item.total_units_ordered
+        
+        # Note: Inventory updates should be handled through PackageInventory scanning
+        # not through the old Inventory model
+    elif status == "modified" and custom_quantity is not None:
+        item.fulfilled_quantity = custom_quantity
+        # Note: Inventory updates should be handled through PackageInventory scanning
+    
+    # Update order status based on all items
+    order.update_status_from_items()
+    db.session.commit()
+    
+    ingredient_name = item.active_ingredient.name if item.active_ingredient else _("Unknown")
+    flash(_("Item {} marked as {}").format(ingredient_name, status), "success")
+    return redirect(url_for("orders.show", id=order.id))
+
+
+@order_bp.route("/<int:id>/bulk_fulfill", methods=["POST"])
+def bulk_fulfill(id: int):
+    """Process bulk fulfillment of multiple items."""
+    order = Order.query.get_or_404(id)
+    
+    # Get selected items from form
+    selected_items = request.form.getlist("items")
+    # Note: add_to_inventory removed since we now use PackageInventory system
+    
+    fulfilled_count = 0
+    for item_id in selected_items:
+        item = OrderItem.query.get(item_id)
+        if item and item.order_id == order.id and item.fulfillment_status != "fulfilled":
+            item.fulfillment_status = "fulfilled"
+            item.fulfilled_at = datetime.now(timezone.utc)
+            item.fulfilled_quantity = item.total_units_ordered
+            
+            # Note: Inventory updates should be handled through PackageInventory scanning
+            # not through the old Inventory model
+            fulfilled_count += 1
+    
+    # Update order status
+    order.update_status_from_items()
+    db.session.commit()
+    
+    flash(_("Successfully fulfilled {} items").format(fulfilled_count), "success")
+    return redirect(url_for("orders.show", id=order.id))
+
+
+@order_bp.route("/<int:order_id>/item/<int:item_id>/cancel", methods=["POST"])
+def cancel_item(order_id: int, item_id: int):
+    """Cancel an individual order item."""
+    order = Order.query.get_or_404(order_id)
+    item = OrderItem.query.get_or_404(item_id)
+    
+    # Verify item belongs to order
+    if item.order_id != order.id:
+        flash(_("Invalid order item"), "error")
+        return redirect(url_for("orders.show", id=order_id))
+    
+    # Only allow canceling pending items
+    if item.fulfillment_status != "pending":
+        flash(_("Can only cancel pending items"), "warning")
+        return redirect(url_for("orders.show", id=order_id))
+    
+    # Cancel the item
+    item.fulfillment_status = "cancelled"
+    
+    # Update order status
+    order.update_status_from_items()
+    db.session.commit()
+    
+    flash(_("Item cancelled successfully"), "success")
+    return redirect(url_for("orders.show", id=order_id))
+
+
+@order_bp.route("/<int:order_id>/item/<int:item_id>/undo_cancel", methods=["POST"])
+def undo_cancel_item(order_id: int, item_id: int):
+    """Undo cancellation of an order item."""
+    order = Order.query.get_or_404(order_id)
+    item = OrderItem.query.get_or_404(item_id)
+    
+    # Verify item belongs to order
+    if item.order_id != order.id:
+        flash(_("Invalid order item"), "error")
+        return redirect(url_for("orders.show", id=order_id))
+    
+    # Only allow undoing cancellation for cancelled items
+    if item.fulfillment_status != "cancelled":
+        flash(_("Can only undo cancellation for cancelled items"), "warning")
+        return redirect(url_for("orders.show", id=order_id))
+    
+    # Restore the item to pending status
+    item.fulfillment_status = "pending"
+    item.fulfillment_notes = None  # Clear any cancellation notes
+    item.fulfilled_quantity = None
+    item.fulfilled_at = None
+    
+    # Update order status
+    order.update_status_from_items()
+    db.session.commit()
+    
+    flash(_("Cancellation undone successfully"), "success")
+    return redirect(url_for("orders.show", id=order_id))
+
+
+@order_bp.route("/<int:id>/pdf", methods=["GET"])
+def order_pdf(id: int):
+    """Generate a PDF for the order."""
     order = Order.query.get_or_404(id)
 
-    # Check if there's an active prescription template
-    from models import PrescriptionTemplate
-
-    active_template = PrescriptionTemplate.get_active_template()
-
-    if not active_template:
-        flash(
-            "No active prescription template found. Please configure a template first.",
-            "warning",
-        )
-        return redirect(url_for("prescriptions.index"))
-
-    # Generate the PDF
-    pdf_path = generate_prescription_pdf(order.id)
+    # Generate the PDF (will use physician's PDF template or fallback to legacy template)
+    pdf_path = generate_order_pdf(order.id)
 
     if pdf_path:
         # Determine the filename for download
-        filename = f"prescription_order_{order.id}.pdf"
+        filename = f"order_{order.id}.pdf"
 
         # Return the file for download
         return send_file(pdf_path, download_name=filename, as_attachment=True)
     else:
-        flash("Error generating prescription PDF", "error")
+        if order.physician_visit and order.physician_visit.physician and order.physician_visit.physician.pdf_template:
+            flash(_("The PDF template file is missing. Please re-upload the template in PDF Forms."), "error")
+        else:
+            flash(_("No PDF template assigned to physician. Please assign a template in physician settings."), "error")
         return redirect(url_for("orders.show", id=id))
+
+
+@order_bp.route("/item/<int:item_id>/search_packages")
+def search_packages(item_id: int):
+    """Search for packages by serial number for linking to an order item."""
+    from models import PackageInventory
+    
+    order_item = OrderItem.query.get_or_404(item_id)
+    search_term = request.args.get('search', '').strip()
+    
+    if not search_term:
+        return {"packages": []}
+    
+    # Get the order date
+    order_date = order_item.order.created_date
+    
+    # Search for packages by serial number that:
+    # 1. Belong to the same medication OR have matching active ingredient
+    # 2. Are not yet linked to any order
+    # 3. Were scanned after the order was created
+    # 4. Match the search term
+    from models import ScannedItem, ProductPackage, ActiveIngredient
+    from sqlalchemy import or_
+    
+    # Build filter conditions for both old and new systems
+    conditions = [
+        PackageInventory.order_item_id.is_(None),
+        PackageInventory.status.in_(["sealed", "opened"]),
+        ScannedItem.scanned_at >= order_date,
+        ScannedItem.serial_number.ilike(f"%{search_term}%")
+    ]
+    
+    # Match by active ingredient
+    if order_item.active_ingredient_id:
+        ingredient = ActiveIngredient.query.get(order_item.active_ingredient_id)
+        if ingredient:
+            # Find all product packages with this ingredient
+            product_packages = ProductPackage.query.join(
+                ProductPackage.product
+            ).filter(
+                ProductPackage.product.has(active_ingredient_id=ingredient.id)
+            ).all()
+            
+            # Get GTINs and national numbers for matching
+            gtins = [p.gtin for p in product_packages if p.gtin]
+            national_numbers = [(p.national_number, p.national_number_type) 
+                              for p in product_packages 
+                              if p.national_number and p.national_number_type]
+            
+            # Add conditions for packages
+            if gtins or national_numbers:
+                match_conditions = []
+                
+                if gtins:
+                    match_conditions.append(ScannedItem.gtin.in_(gtins))
+                
+                for nat_num, nat_type in national_numbers:
+                    match_conditions.append(
+                        (ScannedItem.national_number == nat_num) & 
+                        (ScannedItem.national_number_type == nat_type)
+                    )
+                
+                if match_conditions:
+                    conditions.append(or_(*match_conditions))
+    
+    available = PackageInventory.query.join(PackageInventory.scanned_item).filter(
+        *conditions
+    ).limit(10).all()
+    
+    # Format for JSON response
+    packages_data = []
+    for pkg in available:
+        packages_data.append({
+            "id": pkg.id,
+            "serial_number": pkg.scanned_item.serial_number if pkg.scanned_item else "No S/N",
+            "status": pkg.status,
+            "units": pkg.current_units,
+            "scanned_date": pkg.scanned_item.scanned_at.strftime("%Y-%m-%d") if pkg.scanned_item and pkg.scanned_item.scanned_at else ""
+        })
+    
+    return {"packages": packages_data}
+
+
+@order_bp.route("/item/<int:item_id>/link_package/<int:package_id>", methods=["POST"])
+def link_package(item_id: int, package_id: int):
+    """Link a package to an order item."""
+    from models import PackageInventory
+    
+    order_item = OrderItem.query.get_or_404(item_id)
+    package = PackageInventory.query.get_or_404(package_id)
+    
+    # Package validation removed - orders system needs rewrite to work with ingredients/products instead of medications
+    # TODO: Rewrite entire orders system to use ActiveIngredient/MedicationProduct instead of Medication
+    
+    # Link the package to the order item
+    package.order_item_id = order_item.id
+    
+    # Flush to ensure the relationship is visible
+    db.session.flush()
+    
+    # Update order status if needed
+    order = order_item.order
+    # Always check status when linking packages (don't restrict to certain statuses)
+    if order.status != "fulfilled":
+        # Count total packages needed and linked
+        total_needed = 0
+        total_linked = 0
+        for item in order.order_items:
+            total_needed += item.packages_n1 + item.packages_n2 + item.packages_n3
+            # Refresh the item to get updated linked_packages
+            db.session.refresh(item)
+            total_linked += len(item.linked_packages) if item.linked_packages else 0
+        
+        print(f"DEBUG: Order {order.id} - Current status: {order.status}, Linked: {total_linked}, Needed: {total_needed}")
+        
+        if total_linked == 0:
+            # Keep current status if no packages linked
+            if order.status == "partial":
+                order.status = "planned"
+        elif total_linked < total_needed and total_linked > 0:
+            print(f"DEBUG: Setting order {order.id} to partial")
+            order.status = "partial"
+        elif total_linked == total_needed and total_needed > 0:
+            # All packages are linked - mark as fulfilled
+            print(f"DEBUG: Setting order {order.id} to fulfilled")
+            order.status = "fulfilled"
+            # Also update item fulfillment status
+            for item in order.order_items:
+                if item.fulfillment_status == "pending":
+                    item.fulfillment_status = "fulfilled"
+                    item.fulfilled_quantity = item.total_units_ordered
+                    item.fulfilled_at = datetime.now(timezone.utc)
+    
+    db.session.commit()
+    
+    flash(_("Package linked successfully"), "success")
+    return redirect(url_for("orders.show", id=order_item.order_id))
+
+
+@order_bp.route("/item/<int:item_id>/unlink_package/<int:package_id>", methods=["POST"])
+def unlink_package(item_id: int, package_id: int):
+    """Unlink a package from an order item."""
+    from models import PackageInventory
+    
+    order_item = OrderItem.query.get_or_404(item_id)
+    package = PackageInventory.query.get_or_404(package_id)
+    
+    # Verify the package is linked to this order item
+    if package.order_item_id != order_item.id:
+        flash(_("Package is not linked to this order item"), "error")
+        return redirect(url_for("orders.show", id=order_item.order_id))
+    
+    # Unlink the package from the order item
+    package.order_item_id = None
+    
+    # Update order status if needed
+    order = order_item.order
+    if order.status in ["partial", "fulfilled"]:
+        # Ensure the unlink is visible in the query
+        db.session.flush()
+        
+        # Count total packages needed and linked
+        total_needed = 0
+        total_linked = 0
+        for item in order.order_items:
+            total_needed += item.packages_n1 + item.packages_n2 + item.packages_n3
+            total_linked += len(item.linked_packages) if item.linked_packages else 0
+        
+        if total_linked == 0:
+            order.status = "planned"
+            # Reset fulfillment status if it was fulfilled
+            for item in order.order_items:
+                if item.fulfillment_status == "fulfilled":
+                    item.fulfillment_status = "pending"
+                    item.fulfilled_quantity = None
+                    item.fulfilled_at = None
+        elif total_linked < total_needed:
+            order.status = "partial"
+            # Reset fulfillment status if it was fulfilled
+            for item in order.order_items:
+                if item.fulfillment_status == "fulfilled":
+                    item.fulfillment_status = "pending"
+                    item.fulfilled_quantity = None
+                    item.fulfilled_at = None
+    
+    db.session.commit()
+    
+    flash(_("Package unlinked successfully"), "success")
+    return redirect(url_for("orders.show", id=order_item.order_id))

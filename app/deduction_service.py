@@ -10,20 +10,26 @@ This module provides improved medication deduction tracking, including:
 # Standard library imports
 import json
 import logging
-from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import List, Tuple
+import pytz
 
 # Local application imports
 from models import (
-    Medication,
+    ActiveIngredient,
     MedicationSchedule,
     ScheduleType,
     db,
     ensure_timezone_utc,
     utcnow,
 )
-from utils import from_local_timezone, get_application_timezone, to_local_timezone
+# Use the new centralized timezone manager
+from timezone_manager import (
+    timezone_manager,
+    utc_to_local,
+    local_to_utc,
+    parse_schedule_time
+)
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -203,7 +209,7 @@ def detect_pipe_separated_schedules() -> List[Tuple[int, str, str]]:
     Detect all medication schedules with pipe-separated times.
 
     Returns:
-        List of tuples (schedule_id, medication_name, problematic_times)
+        List of tuples (schedule_id, entity_name, problematic_times)
     """
     from models import MedicationSchedule
 
@@ -219,17 +225,28 @@ def detect_pipe_separated_schedules() -> List[Tuple[int, str, str]]:
 
             # Check for pipes in the raw data
             if isinstance(raw_times, str) and '|' in raw_times:
-                medication_name = schedule.medication.name if schedule.medication else "Unknown"
-                problematic_schedules.append((schedule.id, medication_name, raw_times))
-                logger.warning(f"Found pipe-separated times in schedule {schedule.id} for {medication_name}: {raw_times}")
+                # Get entity name from active ingredient
+                entity_name = "Unknown"
+                if schedule.active_ingredient:
+                    entity_name = schedule.active_ingredient.name
+                elif schedule.medication:
+                    entity_name = schedule.medication.name
+                    
+                problematic_schedules.append((schedule.id, entity_name, raw_times))
+                logger.warning(f"Found pipe-separated times in schedule {schedule.id} for {entity_name}: {raw_times}")
 
             # Also check parsed data for pipe-separated individual entries
             try:
                 times = schedule.formatted_times
                 for time_str in times:
                     if isinstance(time_str, str) and '|' in time_str:
-                        medication_name = schedule.medication.name if schedule.medication else "Unknown"
-                        problematic_schedules.append((schedule.id, medication_name, str(times)))
+                        entity_name = "Unknown"
+                        if schedule.active_ingredient:
+                            entity_name = schedule.active_ingredient.name
+                        elif schedule.medication:
+                            entity_name = schedule.medication.name
+                            
+                        problematic_schedules.append((schedule.id, entity_name, str(times)))
                         logger.warning(f"Found pipe in individual time for schedule {schedule.id}: {time_str}")
                         break
             except Exception:
@@ -249,74 +266,99 @@ def calculate_missed_deductions(
 ) -> List[datetime]:
     """
     Calculate missed deduction times since the last recorded deduction.
+    
+    All returned times are in UTC for database storage.
 
     Args:
         schedule: The medication schedule to check
-        current_time: Current datetime (timezone-aware)
+        current_time: Current datetime (will be converted to UTC if not already)
 
     Returns:
-        List of datetime objects representing missed deductions
+        List of datetime objects in UTC representing missed deductions
     """
     logger.debug(
         f"Calculating missed deductions for schedule {schedule.id} at {current_time.isoformat()}"
     )
 
-    # Ensure times are timezone-aware
-    current_time = ensure_timezone_utc(current_time)
+    # Ensure current_time is in UTC
+    if current_time.tzinfo is None:
+        current_time = timezone_manager.local_to_utc(current_time)
+    elif current_time.tzinfo != pytz.UTC:
+        current_time = current_time.astimezone(pytz.UTC)
 
-    logger.debug(f"Current time after timezone utc check: {current_time.isoformat()}")
-
-    # Convert to local time for schedule checking
-    local_current_time = to_local_timezone(current_time)
-
-    # Get the last deduction time or use a fallback
+    # Get the last deduction time (in UTC) or use a fallback
+    # IMPORTANT: Never go back before auto-deduction was enabled
+    
+    # First, check when auto-deduction was enabled
+    auto_deduction_enabled_at = None
+    if schedule.active_ingredient and schedule.active_ingredient.auto_deduction_enabled_at:
+        auto_deduction_enabled_at = ensure_timezone_utc(schedule.active_ingredient.auto_deduction_enabled_at)
+        logger.debug(f"Auto-deduction enabled at: {auto_deduction_enabled_at.isoformat()}")
+    elif schedule.medication and schedule.medication.auto_deduction_enabled_at:
+        # Legacy support - will be removed
+        auto_deduction_enabled_at = ensure_timezone_utc(schedule.medication.auto_deduction_enabled_at)
+        logger.debug(f"Auto-deduction enabled at (legacy): {auto_deduction_enabled_at.isoformat()}")
+    
     if schedule.last_deduction:
         logger.debug(
-            f"Last deduction time found: {schedule.last_deduction.isoformat()}"
+            f"Last deduction time found (UTC): {schedule.last_deduction.isoformat()}"
         )
-
-        last_deduction = ensure_timezone_utc(schedule.last_deduction)
-        local_last_deduction = to_local_timezone(last_deduction)
+        last_deduction_utc = ensure_timezone_utc(schedule.last_deduction)
+        
+        # If we have an enabled_at timestamp and last_deduction is before it,
+        # use enabled_at instead to prevent retroactive deductions
+        if auto_deduction_enabled_at and last_deduction_utc < auto_deduction_enabled_at:
+            logger.debug(f"Last deduction is before auto-deduction was enabled, using enabled_at instead")
+            last_deduction_utc = auto_deduction_enabled_at
     else:
-        # If no deduction has been recorded yet, use created_at or a day ago
-        if schedule.created_at:
-            last_deduction = ensure_timezone_utc(schedule.created_at)
-        else:
-            # Fallback: one day ago
-            last_deduction = current_time - timedelta(days=1)
-        local_last_deduction = to_local_timezone(last_deduction)
+        # If no deduction has been recorded yet, determine the starting point
+        fallback_time = auto_deduction_enabled_at
+        
+        # If no enabled_at or it's None, use schedule creation time
+        if fallback_time is None and schedule.created_at:
+            fallback_time = ensure_timezone_utc(schedule.created_at)
+            logger.debug(f"Using schedule creation time: {fallback_time.isoformat()}")
+        
+        # Final fallback: one day ago (but this should rarely happen)
+        if fallback_time is None:
+            fallback_time = current_time - timedelta(days=1)
+            logger.debug(f"Using final fallback (1 day ago): {fallback_time.isoformat()}")
+        
+        last_deduction_utc = fallback_time
+        logger.debug(f"No last deduction, using fallback: {last_deduction_utc.isoformat()}")
 
+    # Convert to local times for schedule calculation
+    local_current_time = utc_to_local(current_time)
+    local_last_deduction = utc_to_local(last_deduction_utc)
+    
     logger.info(
-        f"Current time after timezone conversion to local: {local_current_time.isoformat()}"
+        f"Time range - Last: {local_last_deduction.isoformat()} to Current: {local_current_time.isoformat()} (local)"
     )
 
     # Get scheduled times in HH:MM format, with automatic pipe-separator fix
     scheduled_times = get_and_fix_scheduled_times(schedule)
-
     logger.debug(f"Scheduled times: {scheduled_times}")
 
     # Calculate missed deductions based on schedule type
-    missed_deductions = []
+    # These functions will return times in UTC
+    missed_deductions_utc = []
 
     if str(schedule.schedule_type) == str(ScheduleType.DAILY):
         logger.debug("Calculating missed deductions for daily schedule")
-        # For daily schedules, check each day between last deduction and now
-        missed_deductions = _calculate_daily_missed_deductions(
-            schedule, local_last_deduction, local_current_time, scheduled_times
+        missed_deductions_utc = _calculate_daily_missed_deductions(
+            schedule, last_deduction_utc, current_time, scheduled_times
         )
 
     elif str(schedule.schedule_type) == str(ScheduleType.INTERVAL):
         logger.debug("Calculating missed deductions for interval schedule")
-        # For interval schedules (every X days)
-        missed_deductions = _calculate_interval_missed_deductions(
-            schedule, local_last_deduction, local_current_time, scheduled_times
+        missed_deductions_utc = _calculate_interval_missed_deductions(
+            schedule, last_deduction_utc, current_time, scheduled_times
         )
 
     elif str(schedule.schedule_type) == str(ScheduleType.WEEKDAYS):
         logger.debug("Calculating missed deductions for weekday schedule")
-        # For specific weekdays
-        missed_deductions = _calculate_weekdays_missed_deductions(
-            schedule, local_last_deduction, local_current_time, scheduled_times
+        missed_deductions_utc = _calculate_weekdays_missed_deductions(
+            schedule, last_deduction_utc, current_time, scheduled_times
         )
     else:
         logger.warning(
@@ -324,160 +366,127 @@ def calculate_missed_deductions(
         )
         return []
 
-    logger.info(f"Missed deductions calculated: {len(missed_deductions)} found")
+    logger.info(f"Found {len(missed_deductions_utc)} missed deductions")
 
-    # Convert missed deductions back to UTC for database storage
-    utc_missed_deductions = [from_local_timezone(dt) for dt in missed_deductions]
+    if missed_deductions_utc:
+        for dt in missed_deductions_utc[:5]:  # Log first 5 only
+            local_dt = utc_to_local(dt)
+            logger.debug(f"Missed deduction at: {local_dt.isoformat()} (local) / {dt.isoformat()} (UTC)")
+        if len(missed_deductions_utc) > 5:
+            logger.debug(f"... and {len(missed_deductions_utc) - 5} more")
 
-    logger.debug(f"Found {len(utc_missed_deductions)} missed deductions")
-
-    if utc_missed_deductions:
-        logger.info(
-            f"Found {len(utc_missed_deductions)} missed deductions for schedule {schedule.id}"
-        )
-        for dt in utc_missed_deductions[:5]:  # Log first 5 only to avoid spam
-            logger.debug(f"Missed deduction at: {dt.isoformat()}")
-        if len(utc_missed_deductions) > 5:
-            logger.debug(f"... and {len(utc_missed_deductions) - 5} more")
-
-    return utc_missed_deductions
+    return missed_deductions_utc
 
 
 def _calculate_daily_missed_deductions(
     schedule: MedicationSchedule,
-    local_last_deduction: datetime,
-    local_current_time: datetime,
+    last_deduction_utc: datetime,
+    current_time_utc: datetime,
     scheduled_times: List[str],
 ) -> List[datetime]:
     """
     Calculate missed deductions for daily schedules.
+    
+    IMPORTANT: This function now works entirely in UTC and returns UTC times.
+    Schedule times are interpreted as local time and converted to UTC.
 
     Args:
         schedule: The medication schedule
-        local_last_deduction: Last deduction time in local timezone
-        local_current_time: Current time in local timezone
-        scheduled_times: List of scheduled times (HH:MM format)
+        last_deduction_utc: Last deduction time in UTC
+        current_time_utc: Current time in UTC
+        scheduled_times: List of scheduled times in "HH:MM" format (local time)
 
     Returns:
-        List of missed deduction times in local timezone
+        List of missed deduction times in UTC
     """
-    # Ensure both times are timezone-aware in the application's timezone
-    app_timezone = get_application_timezone()
-
-    logger.debug(f"App timezone: {app_timezone}")
-
-    # Make sure local_last_deduction and local_current_time are timezone-aware
-    if local_last_deduction.tzinfo is None:
-        local_last_deduction = local_last_deduction.replace(tzinfo=app_timezone)
-    if local_current_time.tzinfo is None:
-        local_current_time = local_current_time.replace(tzinfo=app_timezone)
-
-    logger.debug(f"Local last deduction: {local_last_deduction.isoformat()}")
-
-    missed_deductions = []
-
-    # Get start and end dates (just the date part)
-    start_date = local_last_deduction.date()
-    end_date = local_current_time.date()
-
-    # Track which time slots have already been processed for each day
-    processed_slots = defaultdict(set)
-
-    # If the last deduction was today, mark its time slot as processed
-    if local_last_deduction.date() == local_current_time.date():
-        time_str = local_last_deduction.strftime("%H:%M")
-        # Find closest time slot
-        for scheduled_time in scheduled_times:
-            if (
-                abs(
-                    (
-                        datetime.strptime(time_str, "%H:%M")
-                        - datetime.strptime(scheduled_time, "%H:%M")
-                    ).total_seconds()
-                )
-                < 300
-            ):  # Within 5 minutes
-                processed_slots[local_last_deduction.date()].add(scheduled_time)
-                break
-
-    # Iterate through each day from last deduction to current time
+    missed_deductions_utc = []
+    
+    # Convert UTC times to local for date iteration
+    local_last = utc_to_local(last_deduction_utc)
+    local_current = utc_to_local(current_time_utc)
+    
+    # Start from the day after the last deduction
+    # (we don't want to double-deduct for the same day)
+    start_date = local_last.date()
+    
+    # If last deduction was before today's first scheduled time,
+    # we might need to check today as well
+    if scheduled_times:
+        first_time_today = parse_schedule_time(scheduled_times[0], start_date)
+        if local_last < first_time_today:
+            # Last deduction was before first scheduled time today
+            # So we should check from today
+            pass
+        else:
+            # Last deduction was after or at first scheduled time
+            # Start checking from tomorrow
+            start_date = start_date + timedelta(days=1)
+    
+    end_date = local_current.date()
+    
+    logger.debug(f"Checking dates from {start_date} to {end_date}")
+    
+    # Iterate through each day
     current_date = start_date
     while current_date <= end_date:
-        logger.debug(
-            f"Processing date: {current_date.isoformat()} until {end_date.isoformat()}"
-        )
+        logger.debug(f"Checking date: {current_date}")
+        
         for time_str in scheduled_times:
-            logger.debug(f"Checking time slot: {time_str}")
-
-            # Skip if this time slot was already processed for this day
-            if time_str in processed_slots[current_date]:
-                logger.debug(
-                    f"Time slot {time_str} already processed for {current_date}"
-                )
-                continue
-
-            # Parse the time and create a timezone-aware datetime
-            hour, minute = map(int, time_str.split(":"))
-            scheduled_datetime = datetime(
-                current_date.year,
-                current_date.month,
-                current_date.day,
-                hour,
-                minute,
-                0,
-                tzinfo=app_timezone,
-            )
-
-            # Only include times that are:
+            # Parse the scheduled time for this date (returns local time)
+            scheduled_local = parse_schedule_time(time_str, current_date)
+            
+            # Convert to UTC for comparison
+            scheduled_utc = local_to_utc(scheduled_local)
+            
+            logger.debug(f"  Time {time_str}: {scheduled_local} (local) -> {scheduled_utc} (UTC)")
+            
+            # Check if this scheduled time is:
             # 1. After the last deduction
-            # 2. Before the current time
-            if (
-                scheduled_datetime > local_last_deduction
-                and scheduled_datetime <= local_current_time
-            ):
-                missed_deductions.append(scheduled_datetime)
-            elif scheduled_datetime <= local_last_deduction:
-                logger.debug(
-                    f"Skipping time {scheduled_datetime.isoformat()} as it's before last deduction"
-                )
+            # 2. Before or at the current time
+            if last_deduction_utc < scheduled_utc <= current_time_utc:
+                missed_deductions_utc.append(scheduled_utc)
+                logger.debug(f"    -> MISSED")
+            elif scheduled_utc <= last_deduction_utc:
+                logger.debug(f"    -> Already deducted")
             else:
-                logger.debug(
-                    f"Skipping time {scheduled_datetime.isoformat()} as it's after current time"
-                )
-
+                logger.debug(f"    -> Future")
+        
         # Move to next day
         current_date += timedelta(days=1)
-
-    return missed_deductions
+    
+    return missed_deductions_utc
 
 
 def _calculate_interval_missed_deductions(
     schedule: MedicationSchedule,
-    local_last_deduction: datetime,
-    local_current_time: datetime,
+    last_deduction_utc: datetime,
+    current_time_utc: datetime,
     scheduled_times: List[str],
 ) -> List[datetime]:
     """
     Calculate missed deductions for interval schedules (every X days).
+    
+    Returns times in UTC.
 
     Args:
         schedule: The medication schedule
-        local_last_deduction: Last deduction time in local timezone
-        local_current_time: Current time in local timezone
-        scheduled_times: List of scheduled times (HH:MM format)
+        last_deduction_utc: Last deduction time in UTC
+        current_time_utc: Current time in UTC
+        scheduled_times: List of scheduled times in "HH:MM" format (local time)
 
     Returns:
-        List of missed deduction times in local timezone
+        List of missed deduction times in UTC
     """
-    missed_deductions = []
+    missed_deductions_utc = []
     interval_days = schedule.interval_days
 
-    # Ensure both times are timezone-aware in the application's timezone
-    app_timezone = get_application_timezone()
+    # Convert to local for date calculation
+    local_last = utc_to_local(last_deduction_utc)
+    local_current = utc_to_local(current_time_utc)
 
     # Calculate the first day in the interval after the last deduction
-    last_deduction_date = local_last_deduction.date()
-    current_date = local_current_time.date()
+    last_deduction_date = local_last.date()
+    current_date = local_current.date()
 
     # Calculate days since last deduction
     days_since_last = (current_date - last_deduction_date).days
@@ -499,113 +508,79 @@ def _calculate_interval_missed_deductions(
         interval_dates.append(interval_date)
 
     # For each interval date, check all scheduled times
-    for date in interval_dates:
+    for interval_date in interval_dates:
         for time_str in scheduled_times:
-            hour, minute = map(int, time_str.split(":"))
-            scheduled_datetime = datetime(
-                date.year,
-                date.month,
-                date.day,
-                hour,
-                minute,
-                0,
-                tzinfo=app_timezone,
-            )
+            # Parse the scheduled time for this date (returns local time)
+            scheduled_local = parse_schedule_time(time_str, interval_date)
+            
+            # Convert to UTC
+            scheduled_utc = local_to_utc(scheduled_local)
 
             # Only include times before current time
-            if scheduled_datetime <= local_current_time:
-                missed_deductions.append(scheduled_datetime)
+            if scheduled_utc <= current_time_utc:
+                missed_deductions_utc.append(scheduled_utc)
 
-    return missed_deductions
+    return missed_deductions_utc
 
 
 def _calculate_weekdays_missed_deductions(
     schedule: MedicationSchedule,
-    local_last_deduction: datetime,
-    local_current_time: datetime,
+    last_deduction_utc: datetime,
+    current_time_utc: datetime,
     scheduled_times: List[str],
 ) -> List[datetime]:
     """
     Calculate missed deductions for weekday schedules.
+    
+    Returns times in UTC.
 
     Args:
         schedule: The medication schedule
-        local_last_deduction: Last deduction time in local timezone
-        local_current_time: Current time in local timezone
-        scheduled_times: List of scheduled times (HH:MM format)
+        last_deduction_utc: Last deduction time in UTC
+        current_time_utc: Current time in UTC
+        scheduled_times: List of scheduled times in "HH:MM" format (local time)
 
     Returns:
-        List of missed deduction times in local timezone
+        List of missed deduction times in UTC
     """
-    missed_deductions = []
+    missed_deductions_utc = []
     selected_weekdays = schedule.formatted_weekdays
 
-    # Ensure both times are timezone-aware in the application's timezone
-    app_timezone = get_application_timezone()
+    # Convert to local for date iteration
+    local_last = utc_to_local(last_deduction_utc)
+    local_current = utc_to_local(current_time_utc)
 
     # Get start and end dates
-    start_date = local_last_deduction.date()
-    end_date = local_current_time.date()
+    start_date = local_last.date()
+    
+    # Start from the next day if we've already processed today
+    if scheduled_times and local_last.time() >= datetime.strptime(scheduled_times[-1], "%H:%M").time():
+        start_date = start_date + timedelta(days=1)
+    
+    end_date = local_current.date()
 
-    # Track which time slots have already been processed for each day
-    processed_slots = defaultdict(set)
-
-    # If the last deduction was today and today is a selected weekday,
-    # mark its time slot as processed
-    if (
-        local_last_deduction.date() == local_current_time.date()
-        and local_last_deduction.weekday() in selected_weekdays
-    ):
-        time_str = local_last_deduction.strftime("%H:%M")
-        # Find closest time slot
-        for scheduled_time in scheduled_times:
-            if (
-                abs(
-                    (
-                        datetime.strptime(time_str, "%H:%M")
-                        - datetime.strptime(scheduled_time, "%H:%M")
-                    ).total_seconds()
-                )
-                < 300
-            ):  # Within 5 minutes
-                processed_slots[local_last_deduction.date()].add(scheduled_time)
-                break
-
-    # Iterate through each day from last deduction to current time
+    # Iterate through each day from start to end
     current_date = start_date
     while current_date <= end_date:
         # Only process if this is a selected weekday
         if current_date.weekday() in selected_weekdays:
             for time_str in scheduled_times:
-                # Skip if this time slot was already processed for this day
-                if time_str in processed_slots[current_date]:
-                    continue
-
-                # Parse the time
-                hour, minute = map(int, time_str.split(":"))
-                scheduled_datetime = datetime(
-                    current_date.year,
-                    current_date.month,
-                    current_date.day,
-                    hour,
-                    minute,
-                    0,
-                    tzinfo=app_timezone,
-                )
+                # Parse the scheduled time for this date (returns local time)
+                scheduled_local = parse_schedule_time(time_str, current_date)
+                
+                # Convert to UTC
+                scheduled_utc = local_to_utc(scheduled_local)
 
                 # Only include times that are:
                 # 1. After the last deduction
-                # 2. Before the current time
-                if (
-                    scheduled_datetime > local_last_deduction
-                    and scheduled_datetime <= local_current_time
-                ):
-                    missed_deductions.append(scheduled_datetime)
+                # 2. Before or at the current time
+                if last_deduction_utc < scheduled_utc <= current_time_utc:
+                    missed_deductions_utc.append(scheduled_utc)
 
         # Move to next day
         current_date += timedelta(days=1)
 
-    return missed_deductions
+    return missed_deductions_utc
 
 
 def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
@@ -616,83 +591,93 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
         current_time: Optional override for current time (for testing)
 
     Returns:
-        Tuple of (number of medications deducted, number of deduction actions)
+        Tuple of (number of ingredients deducted, number of deduction actions)
     """
     if current_time is None:
         current_time = utcnow()
     else:
         current_time = ensure_timezone_utc(current_time)
 
-    logger.info(f"Running medication deduction service at {current_time.isoformat()}")
+    logger.info(f"Running deduction service at {current_time.isoformat()}")
+    
+    # Only process active ingredients - medications are deprecated
+    ingredients = ActiveIngredient.query.filter_by(auto_deduction_enabled=True).all()
 
-    # Get all medications with auto-deduction enabled
-    medications = Medication.query.filter_by(auto_deduction_enabled=True).all()
+    logger.info(f"Checking {len(ingredients)} active ingredients with auto-deduction enabled")
 
-    logger.info(f"Checking {len(medications)} medications with auto-deduction enabled")
-
-    med_count = 0  # Number of medications that had deductions
+    ingredient_count = 0  # Number of ingredients that had deductions
     action_count = 0  # Total number of deduction actions performed
 
-    for medication in medications:
-        if not medication.inventory:
-            logger.warning(f"Medication {medication.name} has no inventory record")
-            continue
-
-        med_deducted = False
-
-        # Check each schedule
-        for schedule in medication.schedules:
+    # REMOVED: Legacy medication processing - we only use ActiveIngredient now
+    
+    # Process active ingredients only
+    for ingredient in ingredients:
+        ingredient_deducted = False
+        
+        # Check each schedule for this ingredient
+        for schedule in ingredient.schedules:
             # First, calculate any missed deductions
             missed_deductions = calculate_missed_deductions(schedule, current_time)
 
             # If we have missed deductions, apply them
             if missed_deductions:
                 logger.info(
-                    f"Applying {len(missed_deductions)} missed deductions for {medication.name}"
+                    f"Applying {len(missed_deductions)} missed deductions for {ingredient.name}"
                 )
-
+                
                 # Sort by timestamp to apply them in chronological order
                 missed_deductions.sort()
-
+                
                 for deduction_time in missed_deductions:
-                    # Deduct the scheduled amount
+                    # Deduct the scheduled amount from products
                     amount = schedule.units_per_dose
-                    if amount > 0 and medication.inventory.current_count >= amount:
-                        medication.inventory.update_count(
-                            -amount,
-                            f"Automatic deduction (retroactive): {amount} units \
-                                for {deduction_time.strftime('%d.%m.%Y %H:%M')}",
-                        )
-                        action_count += 1
-                        med_deducted = True
-
-                        logger.info(
-                            f"Retroactively deducted {amount} units from {medication.name} for {deduction_time.isoformat()}"
-                        )
+                    if amount > 0 and ingredient.total_inventory_count >= amount:
+                        # Find the best product to deduct from
+                        deducted = False
+                        for product in ingredient.products:
+                            if product.total_inventory_count >= amount:
+                                # Use the product's legacy medication if available
+                                if product.legacy_medication:
+                                    result = product.legacy_medication.deduct_units(
+                                        amount,
+                                        f"Automatic deduction (retroactive): {amount} units for {deduction_time.strftime('%d.%m.%Y %H:%M')}"
+                                    )
+                                    if result['success']:
+                                        action_count += 1
+                                        ingredient_deducted = True
+                                        deducted = True
+                                        logger.info(
+                                            f"Retroactively deducted {amount} units from {ingredient.name} via {product.brand_name} for {deduction_time.isoformat()}"
+                                        )
+                                        break
+                        
+                        if not deducted:
+                            logger.warning(
+                                f"Failed to deduct {amount} units from {ingredient.name}: no suitable product found"
+                            )
                     else:
                         logger.warning(
-                            f"Not enough inventory to deduct {amount} units from \
-                                {medication.name}. Current count: {medication.inventory.current_count}"
+                            f"Not enough inventory to deduct {amount} units from {ingredient.name}. Current count: {ingredient.total_inventory_count}"
                         )
-
+                
                 # Update last deduction time to the most recent missed deduction
-                # only if we've actually deducted something
-                if med_deducted and missed_deductions:
+                if ingredient_deducted and missed_deductions:
                     schedule.last_deduction = missed_deductions[-1]
+                    logger.debug(f"Updated last_deduction to {schedule.last_deduction.isoformat()} UTC")
             else:
                 logger.debug(
-                    f"No missed deductions for {medication.name} on schedule {schedule.id}"
+                    f"No missed deductions for {ingredient.name} on schedule {schedule.id}"
                 )
-
-        # Count the medication if any of its schedules had deductions
-        if med_deducted:
-            med_count += 1
+        
+        # Count the ingredient if any of its schedules had deductions
+        if ingredient_deducted:
+            ingredient_count += 1
 
     # Commit all changes
     if action_count > 0:
         db.session.commit()
         logger.info(
-            f"Deduction service complete: {action_count} deductions across {med_count} medications"
+            f"Deduction service complete: {action_count} deductions across {ingredient_count} ingredients"
         )
     else:
         logger.info("No deductions needed at this time")
@@ -704,4 +689,4 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
     settings.last_deduction_check = current_time
     db.session.commit()
 
-    return med_count, action_count
+    return ingredient_count, action_count

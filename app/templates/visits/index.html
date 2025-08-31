@@ -1,14 +1,14 @@
 {% extends "layout.html" %}
 
-{% block title %}Physician Visits - Medication Tracker{% endblock %}
+{% block title %}{{ _('Physician Visits') }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-hospital me-2"></i>Physician Visits
+        <i class="fas fa-hospital me-2"></i>{{ _('Physician Visits') }}
     </h1>
-    <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
-        <i class="fas fa-calendar-plus me-1"></i>Schedule New Visit
+    <a href="{{ url_for('visits.new') }}" class="btn btn-outline-primary">
+        <i class="fas fa-calendar-plus me-1"></i>{{ _('Schedule New Visit') }}
     </a>
 </div>
 
@@ -16,7 +16,7 @@
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
         <h5 class="mb-0">
-            <i class="fas fa-calendar-alt me-2"></i>Upcoming Visits
+            <i class="fas fa-calendar-alt me-2"></i>{{ _('Upcoming Visits') }}
         </h5>
     </div>
     <div class="card-body">
@@ -25,13 +25,13 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Visit Date</th>
-                            <th>Physician</th>
-                            <th>Days Away</th>
-                            <th>Notes</th>
-                            <th>Orders</th>
-                            <th>Order Plan</th>
-                            <th>Actions</th>
+                            <th>{{ _('Visit Date') }}</th>
+                            <th>{{ _('Physician') }}</th>
+                            <th>{{ _('Days Away') }}</th>
+                            <th>{{ _('Notes') }}</th>
+                            <th>{{ _('Orders') }}</th>
+                            <th>{{ _('Order Plan') }}</th>
+                            <th class="text-end">{{ _('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,13 +50,13 @@
                                         {% endif %}
                                     {% else %}
                                         <span class="text-muted">
-                                            <i class="fas fa-user-question me-1"></i>No physician assigned
+                                            <i class="fas fa-user-question me-1"></i>{{ _('No physician assigned') }}
                                         </span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     <span class="badge {% if visit.days_until < 7 %}bg-danger{% elif visit.days_until < 14 %}bg-warning{% else %}bg-success{% endif %}">
-                                        {{ visit.days_until }} days
+                                        {{ visit.days_until }} {{ _('days') }}
                                     </span>
                                 </td>
                                 <td>
@@ -65,31 +65,31 @@
                                 <td>
                                     {% set order_count = visit.orders|length %}
                                     {% if order_count > 0 %}
-                                        <span class="badge bg-success">{{ order_count }} order{{ 's' if order_count != 1 }}</span>
+                                        <span class="badge bg-success">{{ order_count }} {{ _('order') }}{{ _('s') if order_count != 1 }}</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">No orders</span>
+                                        <span class="badge bg-secondary">{{ _('No orders') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if visit.order_for_next_but_one %}
-                                        <span class="badge bg-info" title="Orders for this visit will be calculated to last until the next-but-one visit">
-                                            Next-But-One
+                                        <span class="badge bg-info" title="{{ _('Orders for this visit will be calculated to last until the next-but-one visit') }}">
+                                            {{ _('Next-But-One') }}
                                         </span>
                                     {% else %}
-                                        <span class="badge bg-secondary" title="Orders for this visit will be calculated to last until the next visit only">
-                                            Standard
+                                        <span class="badge bg-secondary" title="{{ _('Orders for this visit will be calculated to last until the next visit only') }}">
+                                            {{ _('Standard') }}
                                         </span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary" title="View Details">
+                                        <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary" title="{{ _('View Details') }}">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ url_for('visits.edit', id=visit.id) }}" class="btn btn-outline-secondary" title="Edit Visit">
+                                        <a href="{{ url_for('visits.edit', id=visit.id) }}" class="btn btn-outline-primary" title="{{ _('Edit Visit') }}">
                                             <i class="fas fa-pen-to-square"></i>
                                         </a>
-                                        <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-outline-success" title="Create Order">
+                                        <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-outline-primary" title="{{ _('Create Order') }}">
                                             <i class="fas fa-clipboard-list"></i>
                                         </a>
                                     </div>
@@ -101,10 +101,10 @@
             </div>
         {% else %}
             <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>No upcoming physician visits scheduled.
+                <i class="fas fa-info-circle me-2"></i>{{ _('No upcoming physician visits scheduled.') }}
             </div>
             <a href="{{ url_for('visits.new') }}" class="btn btn-primary">
-                <i class="fas fa-calendar-plus me-1"></i>Schedule a Visit
+                <i class="fas fa-calendar-plus me-1"></i>{{ _('Schedule a Visit') }}
             </a>
         {% endif %}
     </div>
@@ -114,7 +114,7 @@
 <div class="card">
     <div class="card-header bg-secondary text-white">
         <h5 class="mb-0">
-            <i class="fas fa-history me-2"></i>Past Visits
+            <i class="fas fa-history me-2"></i>{{ _('Past Visits') }}
         </h5>
     </div>
     <div class="card-body">
@@ -123,11 +123,11 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Visit Date</th>
-                            <th>Physician</th>
-                            <th>Notes</th>
-                            <th>Orders</th>
-                            <th>Actions</th>
+                            <th>{{ _('Visit Date') }}</th>
+                            <th>{{ _('Physician') }}</th>
+                            <th>{{ _('Notes') }}</th>
+                            <th>{{ _('Orders') }}</th>
+                            <th class="text-end">{{ _('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -146,7 +146,7 @@
                                         {% endif %}
                                     {% else %}
                                         <span class="text-muted">
-                                            <i class="fas fa-user-question me-1"></i>No physician assigned
+                                            <i class="fas fa-user-question me-1"></i>{{ _('No physician assigned') }}
                                         </span>
                                     {% endif %}
                                 </td>
@@ -156,14 +156,14 @@
                                 <td>
                                     {% set order_count = visit.orders|length %}
                                     {% if order_count > 0 %}
-                                        <span class="badge bg-success">{{ order_count }} order{{ 's' if order_count != 1 }}</span>
+                                        <span class="badge bg-success">{{ order_count }} {{ _('order') }}{{ _('s') if order_count != 1 }}</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">No orders</span>
+                                        <span class="badge bg-secondary">{{ _('No orders') }}</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary" title="View Details">
+                                        <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary" title="{{ _('View Details') }}">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                     </div>
@@ -175,7 +175,7 @@
             </div>
         {% else %}
             <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>No past physician visits found.
+                <i class="fas fa-info-circle me-2"></i>{{ _('No past physician visits found.') }}
             </div>
         {% endif %}
     </div>
@@ -186,7 +186,7 @@
 <div class="card mt-4">
     <div class="card-header bg-primary text-white">
         <h5 class="mb-0">
-            <i class="fas fa-stream me-2"></i>Visit Timeline
+            <i class="fas fa-stream me-2"></i>{{ _('Visit Timeline') }}
         </h5>
     </div>
     <div class="card-body">
@@ -196,7 +196,7 @@
 
                 <!-- Today marker -->
                 <div class="timeline-marker" style="left: 0%">
-                    <div class="timeline-date">Today</div>
+                    <div class="timeline-date">{{ _('Today') }}</div>
                 </div>
 
                 <!-- Visit markers -->
@@ -210,11 +210,11 @@
                                         {% if visit.physician %}
                                             <i class="fas fa-user-md me-1"></i>{{ visit.physician.name }}
                                         {% else %}
-                                            <i class="fas fa-user-question me-1"></i>Physician Visit
+                                            <i class="fas fa-user-question me-1"></i>{{ _('Physician Visit') }}
                                         {% endif %}
                                     </div>
                                     <div class="timeline-item-date">{{ format_date(visit.visit_date) }}</div>
-                                    <div class="timeline-item-days">{{ visit.days_until }} days away</div>
+                                    <div class="timeline-item-days">{{ visit.days_until }} {{ _('days away') }}</div>
                                     {% if visit.physician and visit.physician.specialty %}
                                         <div class="timeline-item-specialty">{{ visit.physician.specialty }}</div>
                                     {% endif %}
@@ -226,7 +226,7 @@
 
                 <!-- End marker -->
                 <div class="timeline-marker" style="left: 100%">
-                    <div class="timeline-date">+120 days</div>
+                    <div class="timeline-date">+120 {{ _('days') }}</div>
                 </div>
             </div>
         </div>

@@ -58,6 +58,11 @@ screenshots/
 docker-compose.yml
 docker-compose.*.yml
 
+# Node.js / Frontend
+node_modules/
+package-lock.json
+app/static/dist/
+
 # Other
 renovate.json
 repomix-output.txt

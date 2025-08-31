@@ -1,33 +1,33 @@
 <!-- Template for physician visit settings -->
 {% extends "layout.html" %}
 
-{% block title %}Physician Visit Settings - Medication Tracker{% endblock %}
+{% block title %}{{ _('Physician Visit Settings') }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-hospital me-2"></i>Physician Visit Settings
+        <i class="fas fa-user-md me-2"></i>{{ _('Visit Planning Settings') }}
     </h1>
-    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+    <a href="{{ url_for('settings.system') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>{{ _('Back to System Settings') }}
     </a>
 </div>
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Visit Planning Settings</h5>
+        <h5 class="mb-0">{{ _('Visit Planning Settings') }}</h5>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('settings.physician_visits') }}">
             <div class="mb-4">
-                <label for="default_visit_interval" class="form-label">Default Physician Visit Interval</label>
+                <label for="default_visit_interval" class="form-label">{{ _('Default Physician Visit Interval') }}</label>
                 <div class="input-group">
                     <input type="number" class="form-control" id="default_visit_interval" name="default_visit_interval"
                            min="1" value="{{ settings.default_visit_interval }}" required>
-                    <span class="input-group-text">days</span>
+                    <span class="input-group-text">{{ _('days') }}</span>
                 </div>
                 <div class="form-text">
-                    This interval is used to predict future visits and calculate medication needs.
+                    {{ _('This interval is used to predict future visits and calculate medication needs.') }}
                     {% if actual_interval != settings.default_visit_interval %}
                         <br>
                         <span class="text-info">
@@ -102,7 +102,7 @@
                 <ul>
                     <li>Orders cover the period until your next scheduled visit</li>
                     <li>Plus the safety margin configured for each medication</li>
-                    <li>This is suitable when you receive prescriptions each visit</li>
+                    <li>This is suitable when you receive orders each visit</li>
                 </ul>
             </div>
             <div class="col-md-6">
@@ -111,7 +111,7 @@
                 <ul>
                     <li>Orders cover double the period (until your next-but-one visit)</li>
                     <li>Plus the safety margin configured for each medication</li>
-                    <li>This is suitable when you receive prescriptions that should last for two visit cycles</li>
+                    <li>This is suitable when you receive orders that should last for two visit cycles</li>
                 </ul>
             </div>
         </div>

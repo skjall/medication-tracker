@@ -10,7 +10,7 @@ import sys
 # Add the app directory to the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from datetime import datetime, timedelta, timezone  # noqa: E402
+from datetime import datetime, timezone  # noqa: E402
 from typing import Any, Dict, Optional  # noqa: E402
 
 # Third-party imports
@@ -24,11 +24,21 @@ from models import (  # noqa: E402
     ensure_timezone_utc,
     Medication,
     PhysicianVisit,
-    Order,
-    Inventory,
-    InventoryLog
+    Physician,  # noqa: F401 - needed for db.create_all()
+    OrderItem,  # noqa: F401 - needed for db.create_all()
+    ScheduleType,  # noqa: F401 - needed for db.create_all()
+    MedicationPackage,  # noqa: F401 - needed for db.create_all()
+    ScannedItem,  # noqa: F401 - needed for db.create_all()
+    PackageInventory  # noqa: F401 - needed for db.create_all()
 )
 from task_scheduler import TaskScheduler  # noqa: E402
+from utils import to_local_timezone  # noqa: E402
+
+# Import extracted modules
+from translation_config import setup_babel, register_translation_routes  # noqa: E402
+from database_init import initialize_database, fix_database_timezones, check_upcoming_visits  # noqa: E402
+from route_registration import register_blueprints  # noqa: E402
+from jinja_config import setup_jinja  # noqa: E402
 
 
 def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
@@ -42,19 +52,28 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         Configured Flask application
     """
     # Create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__)
 
+    # Determine the correct data directory path
+    # In Docker, use /app/data; locally use app.root_path/data
+    if os.path.exists('/app/data'):
+        # Running in Docker container
+        data_dir = '/app/data'
+    else:
+        # Running locally
+        data_dir = os.path.join(app.root_path, 'data')
+    
     # Ensure data directory exists
-    os.makedirs(os.path.join(app.root_path, "data"), exist_ok=True)
+    os.makedirs(data_dir, exist_ok=True)
     # Also create a backups directory
-    os.makedirs(os.path.join(app.root_path, "data", "backups"), exist_ok=True)
+    os.makedirs(os.path.join(data_dir, "backups"), exist_ok=True)
 
     # Default configuration
     app.config.update(
         SECRET_KEY=os.environ.get(
             "SECRET_KEY", "dev"
         ),  # Use a secure key in production
-        SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(app.root_path, 'data', 'medication_tracker.db')}",
+        SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(data_dir, 'medication_tracker.db')}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         DEBUG=os.environ.get("FLASK_ENV", "development") == "development",
         MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max upload size
@@ -69,99 +88,78 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
     # Configure logging
     logger = configure_logging(app)
 
+    # Initialize database
     db.init_app(app)
-
-    # Set up the database URI for SQLAlchemy
     app.db = db
+
+    # Setup Babel for internationalization
+    setup_babel(app)
+    register_translation_routes(app)
 
     # Initialize task scheduler
     scheduler = TaskScheduler(app)
 
     # Initialize database with migrations
     with app.app_context():
-        # Import here to avoid circular imports
-        from migration_utils import check_migrations_needed, check_and_fix_version_tracking, run_migrations_with_lock, initialize_migrations
-
-        # Initialize migrations environment if needed
-        if not os.path.exists(os.path.join(app.root_path, '..', 'migrations', 'versions')):
-            logger.info("Initializing migrations environment for the first time")
-            initialize_migrations(app)
-
-        # Check and fix version tracking if needed
-        if check_and_fix_version_tracking(app):
-            logger.info("Migration tracking fixed.")
-
-        # Check if migrations need to be run and run them with lock to prevent concurrent execution
-        if check_migrations_needed(app):
-            logger.info("Database migrations needed - attempting to run with lock")
-            success = run_migrations_with_lock(app)
-            if success:
-                logger.info("Database migrations completed successfully")
-            else:
-                logger.warning("Database migrations failed or timed out - application will continue with current schema")
-        else:
-            logger.info("Database schema is up to date")
+        initialize_database(app)
 
     # Register blueprints (routes)
-    from routes.medications import medication_bp
-    from routes.physicians import physician_bp
-    from routes.inventory import inventory_bp
-    from routes.visits import visit_bp
-    from routes.orders import order_bp
-    from routes.settings import settings_bp
-    from routes.schedule import schedule_bp
-    from routes.prescription_templates import prescription_bp
-    from routes.system import system_bp
+    register_blueprints(app)
 
-    app.register_blueprint(medication_bp)
-    app.register_blueprint(physician_bp)
-    app.register_blueprint(inventory_bp)
-    app.register_blueprint(visit_bp)
-    app.register_blueprint(order_bp)
-    app.register_blueprint(settings_bp)
-    app.register_blueprint(schedule_bp)
-    app.register_blueprint(prescription_bp)
-    app.register_blueprint(system_bp)
-
-    # Add utility functions to Jinja
-    from utils import min_value, make_aware, format_date, format_datetime, format_time, to_local_timezone
-
-    app.jinja_env.globals.update(min=min_value)
-    app.jinja_env.globals.update(make_aware=make_aware)
-    app.jinja_env.globals.update(format_date=format_date)
-    app.jinja_env.globals.update(format_datetime=format_datetime)
-    app.jinja_env.globals.update(format_time=format_time)
-    app.jinja_env.globals.update(to_local_timezone=to_local_timezone)
-
-    # Context processor to add date/time variables to all templates
-    @app.context_processor
-    def inject_now():
-        # Get UTC time first
-        utc_now = utcnow()
-
-        # Convert to local timezone
-        from utils import to_local_timezone
-
-        local_now = to_local_timezone(utc_now)
-
-        # Get settings for access in all templates
-        from models import Settings
-
-        settings = Settings.get_settings()
-
-        # Return both UTC and local time, plus settings
-        return {
-            "now": local_now,  # Local time for display
-            "utc_now": utc_now,  # UTC time for backend calculations
-            "settings": settings,  # Application settings for templates
-        }
+    # Setup Jinja configuration
+    setup_jinja(app)
+    
+    # Register timezone template filters
+    from template_filters import register_filters
+    register_filters(app)
 
     # Home route
+    @app.route("/test_translation")
+    def test_translation():
+        return render_template("test_translation.html")
+    
     @app.route("/")
     def index():
         """Render the dashboard/home page."""
-        logger.debug("Rendering dashboard page")
-        medications = Medication.query.all()
+        from flask_babel import get_locale, gettext
+        from models import ActiveIngredient, MedicationProduct
+        current_locale = get_locale()
+        logger.debug(f"Rendering dashboard page with locale: {current_locale}")
+        
+        # Test translation within request context
+        test_translation = gettext('Dashboard')
+        test_translation2 = gettext('No upcoming physician visits scheduled.')
+        logger.debug(f"Translation test - 'Dashboard': '{test_translation}'")
+        logger.debug(f"Translation test - 'No upcoming physician visits scheduled.': '{test_translation2}'")
+        
+        # Get all active ingredients instead of medications
+        ingredients = ActiveIngredient.query.order_by(ActiveIngredient.name).all()
+        
+        # Group ingredients by physician or OTC status for display
+        ingredients_by_physician = {}
+        otc_ingredients = []
+        
+        for ingredient in ingredients:
+            # Check if ingredient has any OTC products
+            has_otc = any(product.is_otc for product in ingredient.products)
+            if has_otc:
+                otc_ingredients.append(ingredient)
+            
+            # Group by physician for prescription products
+            for product in ingredient.products:
+                if not product.is_otc:
+                    physician_key = product.physician if product.physician else None
+                    if physician_key not in ingredients_by_physician:
+                        ingredients_by_physician[physician_key] = []
+                    if ingredient not in ingredients_by_physician[physician_key]:
+                        ingredients_by_physician[physician_key].append(ingredient)
+        
+        # Sort physicians by name, with unassigned at the end
+        sorted_physicians = sorted(
+            ingredients_by_physician.keys(),
+            key=lambda p: (p is None, p.name if p else "")
+        )
+        
         # Get ALL upcoming visits, not just the first one
         upcoming_visits = (
             PhysicianVisit.query.filter(PhysicianVisit.visit_date >= utcnow())
@@ -173,38 +171,45 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         upcoming_visit = upcoming_visits[0] if upcoming_visits else None
 
         low_inventory = []
-        gap_coverage_by_visit = []  # List of dicts: {visit: visit_obj, medications: [med1, med2]}
+        gap_coverage_by_visit = []  # List of dicts: {visit: visit_obj, ingredients: [ing1, ing2]}
         
-        for med in medications:
-            if med.inventory and med.inventory.is_low:
-                low_inventory.append(med)
+        # Check for low inventory
+        for ingredient in ingredients:
+            if ingredient.total_inventory_count < ingredient.min_threshold:
+                low_inventory.append(ingredient)
         
         # Check for gap coverage needs for each upcoming visit
         if upcoming_visits:
-            from utils import ensure_timezone_utc
-            
             for visit in upcoming_visits:
-                visit_gap_medications = []
+                visit_gap_ingredients = []
                 
-                for med in medications:
-                    if (med.inventory and med.depletion_date and 
-                        not med.is_otc and  # Exclude OTC medications
-                        med.physician_id == visit.physician_id):  # Only medications for this specific physician
-                        # Check if medication will run out before this visit
-                        if ensure_timezone_utc(med.depletion_date) < ensure_timezone_utc(visit.visit_date):
-                            visit_gap_medications.append(med)
+                for ingredient in ingredients:
+                    # Check if ingredient has products for this physician
+                    has_physician_product = any(
+                        product.physician_id == visit.physician_id 
+                        for product in ingredient.products 
+                        if not product.is_otc
+                    )
+                    
+                    if has_physician_product and ingredient.depletion_date:
+                        # Check if ingredient will run out before this visit
+                        if ensure_timezone_utc(ingredient.depletion_date) < ensure_timezone_utc(visit.visit_date):
+                            visit_gap_ingredients.append(ingredient)
                 
                 # Only add visits that have gap coverage needs
-                if visit_gap_medications:
+                if visit_gap_ingredients:
                     gap_coverage_by_visit.append({
                         'visit': visit,
-                        'medications': visit_gap_medications
+                        'ingredients': visit_gap_ingredients
                     })
 
         return render_template(
             "index.html",
             local_time=to_local_timezone(datetime.now(timezone.utc)),
-            medications=medications,
+            ingredients=ingredients,
+            ingredients_by_physician=ingredients_by_physician,
+            sorted_physicians=sorted_physicians,
+            otc_ingredients=otc_ingredients,
             upcoming_visit=upcoming_visit,
             low_inventory=low_inventory,
             gap_coverage_by_visit=gap_coverage_by_visit,
@@ -254,117 +259,28 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
 
         logger.info("Scheduled background tasks registered")
 
-    @app.template_filter("datetime")
-    def parse_datetime(value):
-        """Parse an ISO format datetime string into a datetime object."""
-        if isinstance(value, datetime):
-            return value
-        try:
-            return datetime.fromisoformat(value)
-        except (ValueError, TypeError):
-            # If the string doesn't match ISO format, return current time as fallback
-            return datetime.now(timezone.utc)
-
     return app
 
 
-# Simple function to check upcoming visits and perform any necessary actions
-def check_upcoming_visits():
-    """Check upcoming visits and perform any necessary actions."""
-    logger = logging.getLogger(__name__)
-    logger.info("Checking upcoming visits")
+# Create the application instance for Gunicorn (lazy initialization)
+app = None
 
-    from models import PhysicianVisit, utcnow
+def get_app():
+    """Get or create the application instance."""
+    global app
+    if app is None:
+        app = create_app()
+        # Fix existing data in the database if needed
+        fix_database_timezones(app)
+    return app
 
-    # Get visits in the next 7 days
-    now = utcnow()
-    one_week_later = now + timedelta(days=7)
-
-    upcoming = (
-        PhysicianVisit.query.filter(
-            PhysicianVisit.visit_date >= now,
-            PhysicianVisit.visit_date <= one_week_later,
-        )
-        .order_by(PhysicianVisit.visit_date)
-        .all()
-    )
-
-    logger.info(f"Found {len(upcoming)} visits in the next 7 days")
-
-    # This is where we could add code to send notifications
-    # or perform other actions based on upcoming visits
-
-    return len(upcoming)
-
-
-# After database initialization, ensure all existing datetimes have timezone info
-def fix_database_timezones(app):
-    """
-    Update existing database records to ensure all datetime fields have timezone info.
-    This is a one-time fix for existing data.
-    """
-    with app.app_context():
-        logger = logging.getLogger(__name__)
-        logger.info("Running timezone fix for database records")
-
-        try:
-            # Fix PhysicianVisit dates
-            visits = PhysicianVisit.query.all()
-            for visit in visits:
-                visit.visit_date = ensure_timezone_utc(visit.visit_date)
-                visit.created_at = ensure_timezone_utc(visit.created_at)
-                visit.updated_at = ensure_timezone_utc(visit.updated_at)
-
-            # Fix Order dates
-            orders = Order.query.all()
-            for order in orders:
-                order.created_date = ensure_timezone_utc(order.created_date)
-
-            # Fix Inventory dates
-            inventories = Inventory.query.all()
-            for inv in inventories:
-                inv.last_updated = ensure_timezone_utc(inv.last_updated)
-
-            # Fix InventoryLog dates
-            logs = InventoryLog.query.all()
-            for log in logs:
-                log.timestamp = ensure_timezone_utc(log.timestamp)
-
-            # Fix MedicationSchedule dates
-            from models import MedicationSchedule
-
-            schedules = MedicationSchedule.query.all()
-            for schedule in schedules:
-                if schedule.last_deduction:
-                    schedule.last_deduction = ensure_timezone_utc(
-                        schedule.last_deduction
-                    )
-                schedule.created_at = ensure_timezone_utc(schedule.created_at)
-                schedule.updated_at = ensure_timezone_utc(schedule.updated_at)
-
-            # Fix Medication dates
-            medications = Medication.query.all()
-            for med in medications:
-                med.created_at = ensure_timezone_utc(med.created_at)
-                med.updated_at = ensure_timezone_utc(med.updated_at)
-
-            # Commit all changes
-            db.session.commit()
-            logger.info("Successfully updated database with timezone information.")
-        except Exception as e:
-            logger.error(f"Error updating database timezones: {e}")
-            db.session.rollback()
-
-
-# Application entry point
+# Application entry point for development
 if __name__ == "__main__":
-    app = create_app()
-
     # Get logger
     logger = logging.getLogger(__name__)
-
-    # Fix existing data in the database if needed
-    fix_database_timezones(app)
+    
+    # Get the app instance
+    app = get_app()
 
     # Start the application
     port = int(os.environ.get("PORT", 8087))

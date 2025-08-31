@@ -27,7 +27,12 @@ class MigrationLock:
 
     def __init__(self, app: Flask):
         self.app = app
-        self.lock_file_path = os.path.join(app.root_path, "data", ".migration_lock")
+        # Check if running in Docker
+        if os.path.exists('/app/data'):
+            data_dir = '/app/data'
+        else:
+            data_dir = os.path.join(app.root_path, 'data')
+        self.lock_file_path = os.path.join(data_dir, ".migration_lock")
         self.acquired = False
 
     def __enter__(self):
@@ -118,12 +123,20 @@ def run_migrations_with_lock(app: Flask) -> bool:
         while time.time() - start_time < max_wait_time:
             try:
                 with MigrationLock(app):
-                    # Double-check if migrations are still needed (another process might have run them)
-                    # Use a fresh app context to avoid transaction conflicts
+                    # First verify schema integrity - this catches mismatches between version and actual schema
                     with app.app_context():
+                        if not verify_schema_integrity(app):
+                            logger.info("Schema integrity check failed - will force migration")
+                            # Schema check already reset the version if needed
+                        
+                        # Double-check if migrations are still needed (another process might have run them)
                         if not check_migrations_needed(app):
-                            logger.info("Migrations no longer needed (completed by another process)")
-                            return True
+                            # Even if alembic says no migrations needed, verify schema is actually correct
+                            if verify_schema_integrity(app):
+                                logger.info("Migrations no longer needed and schema is valid")
+                                return True
+                            else:
+                                logger.info("No migrations pending but schema is invalid - forcing migration")
 
                         # Run the actual migrations
                         logger.info(f"Process {os.getpid()} running database migrations")
@@ -164,7 +177,10 @@ def get_alembic_config(app: Flask) -> Config:
         Configured Alembic Config object
     """
     # Create Alembic config
-    config_path = os.path.join(app.root_path, "..", "alembic.ini")
+    # Check if we're in Docker (alembic.ini in same directory) or local dev (in parent)
+    config_path = os.path.join(app.root_path, "alembic.ini")
+    if not os.path.exists(config_path):
+        config_path = os.path.join(app.root_path, "..", "alembic.ini")
     alembic_cfg = Config(config_path)
 
     # Set SQLAlchemy URL from app config
@@ -182,11 +198,74 @@ def get_alembic_config(app: Flask) -> Config:
     alembic_cfg.set_section_option(section, "sqlalchemy.url", db_url)
 
     # Set script location
-    migrations_dir = os.path.join(app.root_path, "..", "migrations")
+    # Check if we're in Docker (migrations in same directory) or local dev (in parent)
+    migrations_dir = os.path.join(app.root_path, "migrations")
+    if not os.path.exists(migrations_dir):
+        migrations_dir = os.path.join(app.root_path, "..", "migrations")
     alembic_cfg.set_main_option("script_location", migrations_dir)
 
     return alembic_cfg
 
+
+def verify_schema_integrity(app: Flask) -> bool:
+    """
+    Verify that the actual database schema matches what the models expect.
+    This catches cases where the alembic version says it's up-to-date but columns are missing.
+    
+    Returns:
+        True if schema is valid, False if issues were found
+    """
+    try:
+        from sqlalchemy import create_engine, inspect
+        
+        db_url = app.config["SQLALCHEMY_DATABASE_URI"]
+        engine = create_engine(db_url)
+        inspector = inspect(engine)
+        
+        # Define expected columns for critical tables
+        expected_columns = {
+            "order_items": ["fulfillment_status", "fulfillment_notes", "fulfilled_quantity", "fulfilled_at"],
+            "package_inventory": ["id", "medication_id", "scanned_item_id", "order_item_id"],
+            # Add more tables/columns as needed
+        }
+        
+        schema_valid = True
+        
+        for table_name, required_columns in expected_columns.items():
+            if table_name not in inspector.get_table_names():
+                logger.warning(f"Table {table_name} is missing from database")
+                schema_valid = False
+                continue
+                
+            existing_columns = [col['name'] for col in inspector.get_columns(table_name)]
+            
+            for col in required_columns:
+                if col not in existing_columns:
+                    logger.warning(f"Column {col} is missing from table {table_name}")
+                    schema_valid = False
+        
+        if not schema_valid:
+            logger.info("Schema integrity check failed - forcing migration")
+            # Force alembic to re-run migrations by clearing version
+            with engine.connect() as conn:
+                from sqlalchemy import text
+                # Get the current version first
+                result = conn.execute(text("SELECT version_num FROM alembic_version"))
+                current_version = result.scalar()
+                logger.info(f"Current alembic version: {current_version}")
+                
+                # Clear the version to force re-migration
+                conn.execute(text("DELETE FROM alembic_version"))
+                # Set to a version before the problematic migration
+                conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('8b5d249f8899')"))
+                conn.commit()
+                logger.info("Reset alembic version to force re-migration")
+        
+        return schema_valid
+        
+    except Exception as e:
+        logger.error(f"Error verifying schema integrity: {e}")
+        return True  # Assume it's OK if we can't check
 
 def check_and_fix_version_tracking(app: Flask) -> bool:
     """
@@ -345,17 +424,27 @@ def run_migrations(app: Flask) -> bool:
     try:
         logger.info("Running database migrations...")
 
-        # Get Alembic config
-        config = get_alembic_config(app)
+        # Set environment variable to prevent double initialization
+        os.environ['MIGRATION_IN_PROGRESS'] = '1'
+        
+        try:
+            # Get Alembic config
+            config = get_alembic_config(app)
 
-        # Run the migration
-        with app.app_context():
-            command.upgrade(config, "head")
+            # Run the migration
+            with app.app_context():
+                command.upgrade(config, "head")
 
-        logger.info("Database migrations completed successfully.")
-        return True
+            logger.info("Database migrations completed successfully.")
+            return True
+        finally:
+            # Always clean up the environment variable
+            os.environ.pop('MIGRATION_IN_PROGRESS', None)
+            
     except Exception as e:
         logger.error(f"Migration failed: {e}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         return False
 
 
@@ -387,38 +476,149 @@ def create_migration(app: Flask, message: str) -> bool:
         return False
 
 
-def get_migration_history(app: Flask) -> List[Tuple[str, str, str]]:
+def get_migration_history(app: Flask) -> List[Tuple[str, str, str, bool]]:
     """
-    Get migration history.
+    Get migration history with applied status.
 
     Args:
         app: Flask application instance
 
     Returns:
-        List of tuples (revision_id, timestamp, description)
+        List of tuples (revision_id, timestamp, description, is_applied)
     """
     try:
         # Get Alembic config
         config = get_alembic_config(app)
 
+        # Get current database revision
+        from alembic.runtime.migration import MigrationContext
+        from sqlalchemy import create_engine
+        
+        engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+        with engine.begin() as connection:
+            context = MigrationContext.configure(connection)
+            current_rev = context.get_current_revision()
+
         # Get script directory
         from alembic.script import ScriptDirectory
         script_dir = ScriptDirectory.from_config(config)
 
-        # Get all revisions
+        # Build revision tree to determine which are applied
+        all_revisions = list(script_dir.walk_revisions())
+        applied_revisions = set()
+        
+        # If we have a current revision, find all its ancestors
+        if current_rev:
+            for script in all_revisions:
+                if script.revision == current_rev:
+                    # Add this and all ancestors
+                    applied_revisions.add(script.revision)
+                    for ancestor in script_dir.iterate_revisions(current_rev, 'base'):
+                        applied_revisions.add(ancestor.revision)
+                    break
+
+        # Get all revisions with status
         revisions = []
-        for script in script_dir.walk_revisions():
+        for script in all_revisions:
             # Extract info from each revision
             rev_id = script.revision
-            timestamp = script.doc.split("\n")[0] if script.doc else "Unknown"
-            description = script.doc.split("\n")[2] if script.doc and len(script.doc.split("\n")) > 2 else "No description"
+            is_applied = rev_id in applied_revisions
+            
+            # Parse the migration file for better info
+            import os
+            
+            timestamp = "Unknown"
+            description = "No description"
+            
+            # Try to read the actual migration file for better info
+            try:
+                # The versions directory is in script_dir.dir + '/versions'
+                versions_dir = os.path.join(script_dir.dir, 'versions')
+                
+                # Find the migration file - it starts with revision id
+                for filename in os.listdir(versions_dir):
+                    if filename.startswith(f"{rev_id}_") and filename.endswith('.py'):
+                        # Extract description from filename
+                        # Format: {rev_id}_{description}.py
+                        desc_from_filename = filename[len(rev_id)+1:-3]  # Remove rev_id_ and .py
+                        if desc_from_filename:
+                            description = desc_from_filename.replace('_', ' ')
+                        
+                        # Read file for timestamp
+                        filepath = os.path.join(versions_dir, filename)
+                        with open(filepath, 'r') as f:
+                            content = f.read()
+                            # Extract timestamp
+                            for line in content.split('\n'):
+                                if 'Create Date:' in line:
+                                    timestamp = line.split('Create Date:')[1].strip()
+                                    break
+                        break
+            except Exception as e:
+                logger.debug(f"Error reading migration file for {rev_id}: {e}")
 
-            revisions.append((rev_id, timestamp, description))
+            revisions.append((rev_id, timestamp, description, is_applied))
 
-        return list(reversed(revisions))  # Latest first
+        return revisions  # Keep in order from newest to oldest
     except Exception as e:
         logger.error(f"Failed to get migration history: {e}")
         return []
+
+
+def stamp_database_to_latest(app: Flask) -> bool:
+    """
+    Stamp the database to the latest migration version without running migrations.
+    This is useful for fresh databases that have all tables created directly.
+    
+    Args:
+        app: Flask application instance
+    
+    Returns:
+        True if stamping was successful, False otherwise
+    """
+    try:
+        from alembic.script import ScriptDirectory
+        from sqlalchemy import create_engine, text
+        
+        # Get the latest migration revision
+        config = get_alembic_config(app)
+        script_dir = ScriptDirectory.from_config(config)
+        head_rev = script_dir.get_current_head()
+        
+        if not head_rev:
+            logger.warning("No migration revisions found - cannot stamp database")
+            return False
+        
+        logger.info(f"Stamping database to latest migration revision: {head_rev}")
+        
+        # Get database URL
+        db_url = app.config["SQLALCHEMY_DATABASE_URI"]
+        engine = create_engine(db_url)
+        
+        with engine.connect() as conn:
+            # Create alembic_version table if it doesn't exist
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS alembic_version (
+                    version_num VARCHAR(32) NOT NULL PRIMARY KEY
+                )
+            """))
+            
+            # Clear any existing version (should be none for fresh database)
+            conn.execute(text("DELETE FROM alembic_version"))
+            
+            # Insert the latest revision
+            conn.execute(text(
+                f"INSERT INTO alembic_version (version_num) VALUES ('{head_rev}')"
+            ))
+            
+            conn.commit()
+        
+        logger.info(f"Successfully stamped database to revision {head_rev}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error stamping database to latest: {e}")
+        return False
 
 
 def initialize_migrations(app: Flask) -> bool:
@@ -439,7 +639,9 @@ def initialize_migrations(app: Flask) -> bool:
             return True
 
         # Check if migrations directory exists
-        migrations_dir = os.path.join(app.root_path, "..", "migrations", "versions")
+        migrations_dir = os.path.join(app.root_path, "migrations", "versions")
+        if not os.path.exists(migrations_dir):
+            migrations_dir = os.path.join(app.root_path, "..", "migrations", "versions")
         if not os.path.exists(migrations_dir):
             logger.info("Initializing migrations environment...")
             os.makedirs(migrations_dir, exist_ok=True)

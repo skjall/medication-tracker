@@ -8,7 +8,7 @@ set -euo pipefail
 # Configuration
 CONTAINER_NAME="medication-tracker-test"
 IMAGE_TAG="medication-tracker:test"
-PORT="8087"
+PORT="${TEST_PORT:-8088}"
 BASE_URL="http://localhost:${PORT}"
 MAX_WAIT_TIME=60
 
@@ -46,14 +46,15 @@ wait_for_container() {
     log_info "Waiting for container to start (max ${MAX_WAIT_TIME}s)..."
     
     for i in $(seq 1 $MAX_WAIT_TIME); do
-        if docker exec "$CONTAINER_NAME" wget -qO- "$BASE_URL/" > /dev/null 2>&1; then
+        # Test from the host, not inside the container
+        if curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/" | grep -q "200"; then
             log_info "Container is ready after ${i} seconds"
             return 0
         fi
         
         if [ "$i" -eq "$MAX_WAIT_TIME" ]; then
             log_error "Container failed to start within ${MAX_WAIT_TIME} seconds"
-            docker logs "$CONTAINER_NAME"
+            docker logs "$CONTAINER_NAME" | tail -20
             return 1
         fi
         
@@ -68,8 +69,8 @@ test_route() {
     
     echo -n "Testing $description ($route)... "
     
-    if timeout 10 docker exec "$CONTAINER_NAME" \
-        wget -qO- --tries=3 --timeout=5 "${BASE_URL}${route}" > /dev/null 2>&1; then
+    # Test from the host (accept 200, 302, 308 redirect codes)
+    if curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${BASE_URL}${route}" | grep -qE "^(200|302|308)$"; then
         echo -e "${GREEN}OK${NC}"
         return 0
     else
@@ -88,9 +89,9 @@ test_post_endpoint() {
     
     # Note: We expect some POST requests to fail due to validation or redirects
     # The important thing is that the server doesn't crash
-    docker exec "$CONTAINER_NAME" \
-        wget -qO- --post-data="$data" \
-        --header='Content-Type: application/x-www-form-urlencoded' \
+    curl -s -X POST \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "$data" \
         "${BASE_URL}${route}" > /dev/null 2>&1 || true
     
     echo -e "${GREEN}COMPLETED${NC}"
@@ -100,6 +101,9 @@ test_post_endpoint() {
 # Main test function
 main() {
     log_info "Starting Medication Tracker Integration Tests"
+    
+    # Clean up any existing test container first
+    cleanup 2>/dev/null || true
     
     # Check if Docker is available
     if ! command -v docker &> /dev/null; then
@@ -135,7 +139,7 @@ main() {
     # Start container
     log_info "Starting test container..."
     docker run -d --name "$CONTAINER_NAME" \
-        -p "$PORT:$PORT" \
+        -p "$PORT:8087" \
         -e FLASK_ENV=production \
         -e LOG_LEVEL=INFO \
         "$IMAGE_TAG"

@@ -1,40 +1,63 @@
 {% extends "layout.html" %}
 
-{% block title %}Inventory: {{ medication.name }} - Medication Tracker{% endblock %}
+{% block title %}{{ _('Inventory') }}: {{ medication.name }} - {{ _('Medication Tracker') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-boxes me-2"></i>Inventory: {{ medication.name }}
+        <i class="fas fa-boxes me-2"></i>{{ _('Inventory') }}: {{ medication.name }}
     </h1>
     <div>
         <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Inventory
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to List') }}
         </a>
+        {% if medication.migrated_product and medication.migrated_product[0].active_ingredient_id %}
+        <a href="{{ url_for('ingredients.show', id=medication.migrated_product[0].active_ingredient_id) }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-pills me-1"></i>{{ _('Medication Details') }}
+        </a>
+        {% else %}
         <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-primary ms-2">
-            <i class="fas fa-pills me-1"></i>Medication Details
+            <i class="fas fa-pills me-1"></i>{{ _('Medication Details') }}
         </a>
+        {% endif %}
     </div>
 </div>
 
 <!-- Summary Card -->
 <div class="row">
     <div class="col-12 mb-4">
-        <div class="card {% if inventory.is_low %}border-danger{% else %}border-success{% endif %}">
-            <div class="card-header {% if inventory.is_low %}bg-danger{% else %}bg-success{% endif %} text-white">
-                <h5 class="mb-0">Current Inventory Status</h5>
+        {% set is_low = total_units < medication.min_threshold %}
+        <div class="card {% if is_low %}border-danger{% else %}border-success{% endif %}">
+            <div class="card-header {% if is_low %}bg-danger{% else %}bg-success{% endif %} text-white">
+                <h5 class="mb-0">{{ _('Current Inventory Status') }}</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4">
                         <div class="text-center">
-                            <div class="display-4 mb-0 {% if inventory.is_low %}text-danger{% else %}text-success{% endif %}">
-                                {{ inventory.current_count }}
+                            <div class="display-4 mb-0 {% if is_low %}text-danger{% else %}text-success{% endif %}">
+                                {{ total_units }}
                             </div>
-                            <p class="lead">Current Units</p>
+                            <p class="lead">{{ _('Total Units') }}</p>
+                            {% if medication.uses_package_system %}
+                            <small class="text-success">
+                                <i class="fas fa-box me-1"></i>{{ _('Package-based inventory') }}
+                            </small>
+                            {% elif package_units > 0 %}
+                            <small class="text-muted">
+                                {% if inventory.current_count > 0 %}
+                                    <span class="text-warning">{{ _('Legacy') }}: {{ inventory.current_count }}</span> +
+                                {% endif %}
+                                {{ _('Packages') }}: {{ package_units }}
+                            </small>
+                            {% elif inventory.current_count > 0 %}
+                            <small class="text-muted">
+                                {{ _('Sum-based inventory') }}
+                            </small>
+                            {% endif %}
                             <div class="progress mt-2">
-                                {% set percent = 100 if not medication.min_threshold else (inventory.current_count / (medication.min_threshold * 2) * 100)|round %}
-                                <div class="progress-bar {% if inventory.is_low %}bg-danger{% elif percent < 50 %}bg-warning{% else %}bg-success{% endif %}"
+                                {% set percent = 100 if not medication.min_threshold else (total_units / (medication.min_threshold * 2) * 100)|round %}
+                                <div class="progress-bar {% if is_low %}bg-danger{% elif percent < 50 %}bg-warning{% else %}bg-success{% endif %}"
                                      role="progressbar"
                                      style="width: {{ min(100, percent) }}%"
                                      aria-valuenow="{{ inventory.current_count }}"
@@ -42,7 +65,7 @@
                                      aria-valuemax="{{ medication.min_threshold * 2 }}">
                                 </div>
                             </div>
-                            <small class="text-muted">Minimum threshold: {{ medication.min_threshold }} units</small>
+                            <small class="text-muted">{{ _('Minimum threshold') }}: {{ medication.min_threshold }} {{ _('units') }}</small>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -54,10 +77,10 @@
                                     -
                                 {% endif %}
                             </div>
-                            <p class="lead">Days Remaining</p>
+                            <p class="lead">{{ _('Days Remaining') }}</p>
                             {% if medication.depletion_date %}
                                 <p>
-                                    Will run out on
+                                    {{ _('Will run out on') }}
                                     <strong class="{% if medication.days_remaining and medication.days_remaining < 30 %}{% if medication.days_remaining < 14 %}text-danger{% else %}text-warning{% endif %}{% endif %}">
                                         {{ format_date(medication.depletion_date) }}
                                     </strong>
@@ -68,10 +91,10 @@
                     <div class="col-md-4">
                         <div class="text-center">
                             <div class="display-4 mb-0">{{ medication.daily_usage|round(1) }}</div>
-                            <p class="lead">Daily Usage</p>
+                            <p class="lead">{{ _('Daily Usage') }}</p>
                             <p>
-                                Dosage: <strong>{{ medication.dosage }} units</strong><br>
-                                Frequency: <strong>{{ medication.frequency }} per day</strong>
+                                {{ _('Dosage') }}: <strong>{{ medication.dosage }} {{ _('units') }}</strong><br>
+                                {{ _('Frequency') }}: <strong>{{ medication.frequency }} {{ _('per day') }}</strong>
                             </p>
                         </div>
                     </div>
@@ -81,90 +104,221 @@
     </div>
 </div>
 
-<div class="row">
+<!-- Manual Deduction Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-hand-holding-medical me-2"></i>{{ _('Quick Intake') }}
+                    </h5>
+                    <span class="badge bg-light text-dark">{{ _('Manual Entry') }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if total_units == 0 %}
+                <div class="alert alert-danger d-flex align-items-center mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <div>
+                        <strong>{{ _('Out of Stock') }}</strong><br>
+                        <small>{{ _('No inventory available for manual deduction.') }}</small>
+                    </div>
+                </div>
+                {% else %}
+                <form method="POST" action="{{ url_for('inventory.manual_deduct', id=medication.id) }}">
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-2">
+                            <label for="manual_amount" class="form-label small text-muted mb-1">{{ _('Amount') }}</label>
+                            <div class="input-group">
+                                <input type="number" 
+                                       class="form-control text-center" 
+                                       id="manual_amount" 
+                                       name="amount" 
+                                       min="1" 
+                                       max="{{ total_units }}"
+                                       value="{{ medication.dosage }}" 
+                                       required>
+                                <span class="input-group-text">{{ _('units') }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <label for="manual_notes" class="form-label small text-muted mb-1">{{ _('Reason') }} <span class="text-muted">({{ _('Optional') }})</span></label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="manual_notes" 
+                                   name="notes" 
+                                   placeholder="{{ _('e.g., Extra dose, pain relief, missed dose...') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-check-circle me-1"></i>{{ _('Record Intake') }}
+                            </button>
+                        </div>
+                    </div>
+                    {% if total_units < medication.dosage %}
+                    <div class="alert alert-warning d-flex align-items-center mt-3 mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <small>{{ _('Low inventory: Only {} units available.').format(total_units) }}</small>
+                    </div>
+                    {% endif %}
+                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ _('For on-demand medications or extra doses outside regular schedule') }}
+                            </small>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-box me-1"></i>{{ _('Available') }}: {{ total_units }} {{ _('units') }}
+                            </span>
+                        </div>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Legacy Inventory Management - Only show if NOT using package-only system -->
+{% if not medication.uses_package_system %}
+    {% if package_inventory %}
+    <!-- Orange warning card wrapper for legacy system when packages are being used -->
+    <div class="card border-warning mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ _('Legacy Inventory System') }}
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning mb-3">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>{{ _('Note:') }}</strong> {{ _('You are using the new package scanning system. The forms below should only be used to adjust existing legacy stock. Please use the barcode scanner for adding new inventory.') }}
+            </div>
+            <div class="row">
+    {% else %}
+    <div class="row">
+    {% endif %}
+
     <!-- Adjust Inventory Card -->
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-plus-minus me-2"></i>Adjust Inventory (Add/Subtract)</h5>
+                <h5 class="mb-0"><i class="fas fa-plus-minus me-2"></i>{{ _('Adjust Inventory (Relative)') }}</h5>
             </div>
             <div class="card-body">
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
-                    Use this form to <strong>add or subtract</strong> units from your current inventory.
+                    {{ _('Use this form to') }} <strong>{{ _('add or subtract') }}</strong> {{ _('units from your current inventory.') }}
                 </div>
+
                 <form method="POST" action="{{ url_for('inventory.adjust', id=inventory.id) }}">
+                    <!-- Direct Adjustment Input -->
                     <div class="mb-4">
-                        <label for="adjustment" class="form-label">Adjustment Amount</label>
+                        <label for="adjustment" class="form-label">{{ _('Adjustment Amount Directly') }}</label>
                         <div class="input-group">
-                            <button class="btn btn-lg btn-outline-danger" type="button" id="btn-minus">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="number" class="form-control form-control-lg text-center" id="adjustment" name="adjustment" value="0">
-                            <button class="btn btn-lg btn-outline-success" type="button" id="btn-plus">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                            <input type="number" class="form-control" id="adjustment" name="adjustment" value="0" placeholder="{{ _('Enter adjustment amount') }}">
+                            <span class="input-group-text">{{ _('units') }}</span>
                         </div>
                         <div class="form-text">
-                            Enter a positive number to add units, or a negative number to subtract units
+                            {{ _('Enter a positive number to add units, or a negative number to subtract units') }}
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-center mb-4">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-danger quick-adjust-btn" data-amount="-10">-10</button>
-                            <button type="button" class="btn btn-outline-danger quick-adjust-btn" data-amount="-5">-5</button>
-                            <button type="button" class="btn btn-outline-danger quick-adjust-btn" data-amount="-1">-1</button>
-                            <button type="button" class="btn btn-outline-success quick-adjust-btn" data-amount="1">+1</button>
-                            <button type="button" class="btn btn-outline-success quick-adjust-btn" data-amount="5">+5</button>
-                            <button type="button" class="btn btn-outline-success quick-adjust-btn" data-amount="10">+10</button>
+                    <!-- Package-based Adjustments -->
+                    <div class="mt-4 mb-4">
+                        <h6>{{ _('Or Adjust by Package Quantities') }}</h6>
+                        <div class="row">
+                            {% if medication.package_size_n1 %}
+                                <div class="col-md-4 mb-3">
+                                    <label for="adj_packages_n1" class="form-label">{{ _('N1 Packages') }}</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="adj_packages_n1" name="adj_packages_n1" value="0">
+                                        <span class="input-group-text">× {{ medication.package_size_n1 }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if medication.package_size_n2 %}
+                                <div class="col-md-4 mb-3">
+                                    <label for="adj_packages_n2" class="form-label">{{ _('N2 Packages') }}</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="adj_packages_n2" name="adj_packages_n2" value="0">
+                                        <span class="input-group-text">× {{ medication.package_size_n2 }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if medication.package_size_n3 %}
+                                <div class="col-md-4 mb-3">
+                                    <label for="adj_packages_n3" class="form-label">{{ _('N3 Packages') }}</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="adj_packages_n3" name="adj_packages_n3" value="0">
+                                        <span class="input-group-text">× {{ medication.package_size_n3 }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
 
+                    <!-- Notes Section -->
                     <div class="mb-4">
-                        <label for="notes" class="form-label">Notes</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Optional notes about this adjustment"></textarea>
+                        <label for="adj_notes" class="form-label">{{ _('Notes (Optional)') }}</label>
+                        <textarea class="form-control" id="adj_notes" name="notes" rows="2" placeholder="{{ _('Optional notes about this adjustment') }}"></textarea>
+                    </div>
+
+                    <!-- Result Preview -->
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-calculator me-2"></i>
+                            <div>
+                                {{ _('Current') }}: <strong>{{ inventory.current_count }} {{ _('units') }}</strong> →
+                                {{ _('New total') }}: <strong><span id="preview-total">{{ inventory.current_count }}</span> {{ _('units') }}</strong>
+                            </div>
+                        </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>Save Adjustment
+                        <i class="fas fa-plus-minus me-1"></i>{{ _('Apply Adjustment') }}
                     </button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Package Inventory Card -->
+    <!-- Set Inventory Card -->
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-pen-to-square me-2"></i>Set Inventory (Absolute Values)</h5>
+                <h5 class="mb-0"><i class="fas fa-pen-to-square me-2"></i>{{ _('Set Inventory (Absolute)') }}</h5>
             </div>
             <div class="card-body">
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
-                    Use this form to <strong>set absolute values</strong> for your inventory quantities.
+                    {{ _('Use this form to') }} <strong>{{ _('set absolute values') }}</strong> {{ _('for your inventory quantities.') }}
                 </div>
 
                 <form method="POST" action="{{ url_for('inventory.update_packages', id=inventory.id) }}">
                     <!-- Total units direct input -->
                     <div class="mb-4">
-                        <label for="direct_units" class="form-label">Set Total Units Directly</label>
+                        <label for="direct_units" class="form-label">{{ _('Set Total Units Directly') }}</label>
                         <div class="input-group">
                             <input type="number" class="form-control" id="direct_units" name="direct_units" min="0" value="{{ inventory.current_count }}">
-                            <span class="input-group-text">units</span>
+                            <span class="input-group-text">{{ _('units') }}</span>
                         </div>
                         <div class="form-text">
-                            Enter the total number of units you currently have
+                            {{ _('Enter the total number of units you currently have') }}
                         </div>
                     </div>
 
                     <div class="mt-4 mb-4">
-                        <h6>Or Set Package Quantities</h6>
+                        <h6>{{ _('Or Set Package Quantities') }}</h6>
                         <div class="row">
                             {% if medication.package_size_n1 %}
                                 <div class="col-md-4 mb-3">
-                                    <label for="packages_n1" class="form-label">N1 Packages</label>
+                                    <label for="packages_n1" class="form-label">{{ _('N1 Packages') }}</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="packages_n1" name="packages_n1" min="0" value="{{ inventory.packages_n1 }}">
                                         <span class="input-group-text">× {{ medication.package_size_n1 }}</span>
@@ -174,7 +328,7 @@
 
                             {% if medication.package_size_n2 %}
                                 <div class="col-md-4 mb-3">
-                                    <label for="packages_n2" class="form-label">N2 Packages</label>
+                                    <label for="packages_n2" class="form-label">{{ _('N2 Packages') }}</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="packages_n2" name="packages_n2" min="0" value="{{ inventory.packages_n2 }}">
                                         <span class="input-group-text">× {{ medication.package_size_n2 }}</span>
@@ -184,7 +338,7 @@
 
                             {% if medication.package_size_n3 %}
                                 <div class="col-md-4 mb-3">
-                                    <label for="packages_n3" class="form-label">N3 Packages</label>
+                                    <label for="packages_n3" class="form-label">{{ _('N3 Packages') }}</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="packages_n3" name="packages_n3" min="0" value="{{ inventory.packages_n3 }}">
                                         <span class="input-group-text">× {{ medication.package_size_n3 }}</span>
@@ -194,23 +348,167 @@
                         </div>
                     </div>
 
+                    <!-- Notes Section -->
+                    <div class="mb-4">
+                        <label for="set_notes" class="form-label">{{ _('Notes (Optional)') }}</label>
+                        <textarea class="form-control" id="set_notes" name="notes" rows="2" placeholder="{{ _('Optional notes about this inventory update') }}"></textarea>
+                    </div>
+
+                    <!-- Result Preview -->
                     <div class="alert alert-info">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-info-circle me-2"></i>
+                            <i class="fas fa-calculator me-2"></i>
                             <div>
-                                You can either set the total units directly <strong>or</strong> specify package quantities. The package quantities will be ignored if you enter a direct unit count.
+                                {{ _('Current') }}: <strong>{{ inventory.current_count }} {{ _('units') }}</strong> →
+                                {{ _('New total') }}: <strong><span id="set-preview-total">{{ inventory.current_count }}</span> {{ _('units') }}</strong>
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-rotate me-1"></i>Update Inventory
+                        <i class="fas fa-pen-to-square me-1"></i>{{ _('Update Inventory') }}
                     </button>
                 </form>
             </div>
         </div>
     </div>
+
+    {% if package_inventory %}
+        </div><!-- End of row inside warning card -->
+    </div><!-- End of warning card body -->
+</div><!-- End of warning card -->
+    {% else %}
+</div><!-- End of normal row -->
+    {% endif %}
+{% endif %}
+
+<!-- Package System Info Card -->
+{% if medication.packages and not package_inventory %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>{{ _('Package Scanning Available') }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>{{ _('You have configured package sizes for this medication. You can now use the barcode scanner to track individual packages with batch numbers and expiry dates.') }}</p>
+                <p class="mb-0"><strong>{{ _('Important:') }}</strong> {{ _('Once you start using the package scanning system, you should stop adding inventory through the legacy sum-based method to avoid confusion.') }}</p>
+                <div class="mt-3">
+                    <a href="{{ url_for('scanner.scan') }}" class="btn btn-info">
+                        <i class="fas fa-qrcode me-1"></i>{{ _('Start Scanning Packages') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+{% endif %}
+
+<!-- Scanned Packages Card -->
+{% if package_inventory %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-qrcode me-2"></i>{{ _('Scanned Packages') }}
+                        <span class="badge bg-light text-dark ms-2">{{ package_inventory|length }}</span>
+                    </h5>
+                    <div>
+                        <span class="badge bg-light text-dark me-2">
+                            {{ _('Total') }}: {{ package_units }} {{ _('units') }}
+                        </span>
+                        <a href="{{ url_for('scanner.scan') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-qrcode me-1"></i>{{ _('Scan More') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{{ _('Package') }}</th>
+                                <th>{{ _('Units') }}</th>
+                                <th>{{ _('Status') }}</th>
+                                <th>{{ _('Batch') }}</th>
+                                <th>{{ _('Expiry') }}</th>
+                                <th>{{ _('Serial') }}</th>
+                                <th>{{ _('Scanned') }}</th>
+                                <th>{{ _('Actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pkg, scan, med_package in package_inventory %}
+                            <tr class="{% if pkg.status == 'empty' %}table-secondary{% elif scan.expiry_date and scan.expiry_date < today %}table-danger{% endif %}">
+                                <td>
+                                    {% if med_package %}
+                                        <strong>{{ med_package.package_size }}</strong>
+                                    {% else %}
+                                        <span class="text-muted">{{ _('Unknown') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if pkg.status == 'empty' %}
+                                        <span class="text-muted"><s>0 / {{ pkg.original_units }}</s></span>
+                                    {% else %}
+                                        <strong>{{ pkg.current_units }}</strong> / {{ pkg.original_units }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if pkg.status == 'sealed' %}
+                                        <span class="badge bg-success">{{ _('Sealed') }}</span>
+                                    {% elif pkg.status == 'opened' %}
+                                        <span class="badge bg-warning">{{ _('Open') }}</span>
+                                    {% elif pkg.status == 'empty' %}
+                                        <span class="badge bg-secondary">{{ _('Empty') }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ pkg.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if scan.batch_number %}
+                                        <small><code>{{ scan.batch_number }}</code></small>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if scan.expiry_date %}
+                                        <span class="{% if scan.expiry_date < today %}text-danger fw-bold{% endif %}">
+                                            {{ scan.expiry_date.strftime('%Y-%m-%d') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ scan.serial_number }}</small>
+                                </td>
+                                <td>
+                                    <small>{{ scan.scanned_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('inventory.edit_package', package_id=pkg.id) }}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="{{ _('Edit') }}">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Inventory History Card -->
 <div class="row">
@@ -218,9 +516,9 @@
         <div class="card">
             <div class="card-header bg-primary text-white">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Inventory History</h5>
+                    <h5 class="mb-0">{{ _('Inventory History') }}</h5>
                     <a href="{{ url_for('inventory.logs', id=inventory.id) }}" class="btn btn-sm btn-light">
-                        <i class="fas fa-history me-1"></i>View Full History
+                        <i class="fas fa-history me-1"></i>{{ _('View Full History') }}
                     </a>
                 </div>
             </div>
@@ -230,11 +528,11 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Date & Time</th>
-                                    <th>Previous Count</th>
-                                    <th>Adjustment</th>
-                                    <th>New Count</th>
-                                    <th>Notes</th>
+                                    <th>{{ _('Date & Time') }}</th>
+                                    <th>{{ _('Previous Count') }}</th>
+                                    <th>{{ _('Adjustment') }}</th>
+                                    <th>{{ _('New Count') }}</th>
+                                    <th>{{ _('Notes') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -253,7 +551,7 @@
                         </table>
                     </div>
                 {% else %}
-                    <p class="card-text">No inventory adjustments recorded yet.</p>
+                    <p class="card-text">{{ _('No inventory adjustments recorded yet.') }}</p>
                 {% endif %}
             </div>
         </div>
@@ -264,63 +562,235 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // setupInventoryAdjustment(); // DISABLED because it was called twice
+        // === ADJUSTMENT CARD FUNCTIONALITY ===
+        const adjustmentInput = document.getElementById('adjustment');
+        const adjPackagesN1Input = document.getElementById('adj_packages_n1');
+        const adjPackagesN2Input = document.getElementById('adj_packages_n2');
+        const adjPackagesN3Input = document.getElementById('adj_packages_n3');
+        const previewTotal = document.getElementById('preview-total');
+        const currentCount = {{ inventory.current_count }};
 
+        // Package sizes
+        const packageSizeN1 = {{ medication.package_size_n1 or 0 }};
+        const packageSizeN2 = {{ medication.package_size_n2 or 0 }};
+        const packageSizeN3 = {{ medication.package_size_n3 or 0 }};
+
+        // Function to calculate total adjustment from packages
+        const calculatePackageAdjustment = function() {
+            const n1 = (parseInt(adjPackagesN1Input?.value) || 0) * packageSizeN1;
+            const n2 = (parseInt(adjPackagesN2Input?.value) || 0) * packageSizeN2;
+            const n3 = (parseInt(adjPackagesN3Input?.value) || 0) * packageSizeN3;
+            return n1 + n2 + n3;
+        };
+
+        // Function to update the preview total
+        const updateAdjustmentPreview = function() {
+            if (!previewTotal) return;
+
+            let adjustment = 0;
+
+            // Check if direct adjustment is being used
+            if (adjustmentInput && adjustmentInput.value.trim() !== '') {
+                adjustment = parseInt(adjustmentInput.value) || 0;
+            } else {
+                // Use package-based calculation
+                adjustment = calculatePackageAdjustment();
+            }
+
+            const newTotal = Math.max(0, currentCount + adjustment);
+            previewTotal.textContent = newTotal;
+
+            // Add visual feedback for the preview
+            if (adjustment > 0) {
+                previewTotal.className = 'text-success fw-bold';
+            } else if (adjustment < 0) {
+                previewTotal.className = 'text-danger fw-bold';
+            } else {
+                previewTotal.className = 'fw-bold';
+            }
+        };
+
+        // Function to disable/enable package adjustment inputs
+        const togglePackageAdjustments = function(disabled) {
+            if (adjPackagesN1Input) adjPackagesN1Input.disabled = disabled;
+            if (adjPackagesN2Input) adjPackagesN2Input.disabled = disabled;
+            if (adjPackagesN3Input) adjPackagesN3Input.disabled = disabled;
+        };
+
+        // Function to clear and disable direct adjustment input
+        const toggleDirectAdjustment = function(disabled) {
+            if (adjustmentInput) adjustmentInput.disabled = disabled;
+        };
+
+        // Update preview when adjustment input changes
+        if (adjustmentInput) {
+            adjustmentInput.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    // Clear and disable package inputs
+                    if (adjPackagesN1Input) adjPackagesN1Input.value = '0';
+                    if (adjPackagesN2Input) adjPackagesN2Input.value = '0';
+                    if (adjPackagesN3Input) adjPackagesN3Input.value = '0';
+                    togglePackageAdjustments(true);
+                } else {
+                    // Re-enable package inputs
+                    togglePackageAdjustments(false);
+                }
+                updateAdjustmentPreview();
+            });
+        }
+
+        // When package inputs change, disable direct adjustment
+        if (adjPackagesN1Input) adjPackagesN1Input.addEventListener('input', function() {
+            const hasPackageValue = (adjPackagesN1Input?.value && adjPackagesN1Input.value !== '0') ||
+                                  (adjPackagesN2Input?.value && adjPackagesN2Input.value !== '0') ||
+                                  (adjPackagesN3Input?.value && adjPackagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (adjustmentInput) adjustmentInput.value = '';
+                toggleDirectAdjustment(true);
+            } else {
+                toggleDirectAdjustment(false);
+            }
+            updateAdjustmentPreview();
+        });
+        if (adjPackagesN2Input) adjPackagesN2Input.addEventListener('input', function() {
+            const hasPackageValue = (adjPackagesN1Input?.value && adjPackagesN1Input.value !== '0') ||
+                                  (adjPackagesN2Input?.value && adjPackagesN2Input.value !== '0') ||
+                                  (adjPackagesN3Input?.value && adjPackagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (adjustmentInput) adjustmentInput.value = '';
+                toggleDirectAdjustment(true);
+            } else {
+                toggleDirectAdjustment(false);
+            }
+            updateAdjustmentPreview();
+        });
+        if (adjPackagesN3Input) adjPackagesN3Input.addEventListener('input', function() {
+            const hasPackageValue = (adjPackagesN1Input?.value && adjPackagesN1Input.value !== '0') ||
+                                  (adjPackagesN2Input?.value && adjPackagesN2Input.value !== '0') ||
+                                  (adjPackagesN3Input?.value && adjPackagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (adjustmentInput) adjustmentInput.value = '';
+                toggleDirectAdjustment(true);
+            } else {
+                toggleDirectAdjustment(false);
+            }
+            updateAdjustmentPreview();
+        });
+
+        // Initial preview update
+        updateAdjustmentPreview();
+
+        // === SET INVENTORY FUNCTIONALITY ===
         // Setup direct unit input and package fields
         const directUnitsInput = document.getElementById('direct_units');
         const packagesN1Input = document.getElementById('packages_n1');
         const packagesN2Input = document.getElementById('packages_n2');
         const packagesN3Input = document.getElementById('packages_n3');
+        const setPreviewTotal = document.getElementById('set-preview-total');
 
-        // Function to update visual state based on whether direct units has a value
-        const updateVisualState = function() {
-            if (!directUnitsInput) return;
-
-            const hasValue = directUnitsInput.value.trim() !== '';
-            const packageInputs = [packagesN1Input, packagesN2Input, packagesN3Input];
-
-            // Update visual state of package inputs
-            packageInputs.forEach(input => {
-                if (!input) return;
-
-                if (hasValue) {
-                    input.classList.add('text-muted');
-                } else {
-                    input.classList.remove('text-muted');
-                }
-            });
+        // Function to calculate total units from packages
+        const calculatePackageTotal = function() {
+            const n1 = (parseInt(packagesN1Input?.value) || 0) * packageSizeN1;
+            const n2 = (parseInt(packagesN2Input?.value) || 0) * packageSizeN2;
+            const n3 = (parseInt(packagesN3Input?.value) || 0) * packageSizeN3;
+            return n1 + n2 + n3;
         };
 
-        // Function to clear package input fields
-        const clearPackageInputs = function() {
-            if (packagesN1Input) packagesN1Input.value = '0';
-            if (packagesN2Input) packagesN2Input.value = '0';
-            if (packagesN3Input) packagesN3Input.value = '0';
+        // Function to update the set inventory preview
+        const updateSetPreview = function() {
+            if (!setPreviewTotal) return;
+
+            let newTotal = 0;
+
+            // Check if direct units is being used
+            if (directUnitsInput && directUnitsInput.value.trim() !== '') {
+                newTotal = Math.max(0, parseInt(directUnitsInput.value) || 0);
+            } else {
+                // Use package-based calculation
+                newTotal = calculatePackageTotal();
+            }
+
+            setPreviewTotal.textContent = newTotal;
+
+            // Add visual feedback for the preview
+            if (newTotal > currentCount) {
+                setPreviewTotal.className = 'text-success fw-bold';
+            } else if (newTotal < currentCount) {
+                setPreviewTotal.className = 'text-danger fw-bold';
+            } else {
+                setPreviewTotal.className = 'fw-bold';
+            }
         };
 
-        // Function to clear direct units input
-        const clearDirectUnits = function() {
-            if (directUnitsInput) directUnitsInput.value = '';
-            updateVisualState();
+        // Function to disable/enable package inputs
+        const togglePackageInputs = function(disabled) {
+            if (packagesN1Input) packagesN1Input.disabled = disabled;
+            if (packagesN2Input) packagesN2Input.disabled = disabled;
+            if (packagesN3Input) packagesN3Input.disabled = disabled;
         };
 
-        // When direct units changes, clear package inputs and update visual state
+        // Function to disable/enable direct units input
+        const toggleDirectUnits = function(disabled) {
+            if (directUnitsInput) directUnitsInput.disabled = disabled;
+        };
+
+        // When direct units changes, disable package inputs and update preview
         if (directUnitsInput) {
             directUnitsInput.addEventListener('input', function() {
                 if (this.value.trim() !== '') {
-                    clearPackageInputs();
+                    // Clear and disable package inputs
+                    if (packagesN1Input) packagesN1Input.value = '0';
+                    if (packagesN2Input) packagesN2Input.value = '0';
+                    if (packagesN3Input) packagesN3Input.value = '0';
+                    togglePackageInputs(true);
+                } else {
+                    // Re-enable package inputs
+                    togglePackageInputs(false);
                 }
-                updateVisualState();
+                updateSetPreview();
             });
         }
 
-        // When package inputs change, clear direct units
-        if (packagesN1Input) packagesN1Input.addEventListener('input', clearDirectUnits);
-        if (packagesN2Input) packagesN2Input.addEventListener('input', clearDirectUnits);
-        if (packagesN3Input) packagesN3Input.addEventListener('input', clearDirectUnits);
+        // When package inputs change, disable direct units
+        if (packagesN1Input) packagesN1Input.addEventListener('input', function() {
+            const hasPackageValue = (packagesN1Input?.value && packagesN1Input.value !== '0') ||
+                                  (packagesN2Input?.value && packagesN2Input.value !== '0') ||
+                                  (packagesN3Input?.value && packagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (directUnitsInput) directUnitsInput.value = '';
+                toggleDirectUnits(true);
+            } else {
+                toggleDirectUnits(false);
+            }
+            updateSetPreview();
+        });
+        if (packagesN2Input) packagesN2Input.addEventListener('input', function() {
+            const hasPackageValue = (packagesN1Input?.value && packagesN1Input.value !== '0') ||
+                                  (packagesN2Input?.value && packagesN2Input.value !== '0') ||
+                                  (packagesN3Input?.value && packagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (directUnitsInput) directUnitsInput.value = '';
+                toggleDirectUnits(true);
+            } else {
+                toggleDirectUnits(false);
+            }
+            updateSetPreview();
+        });
+        if (packagesN3Input) packagesN3Input.addEventListener('input', function() {
+            const hasPackageValue = (packagesN1Input?.value && packagesN1Input.value !== '0') ||
+                                  (packagesN2Input?.value && packagesN2Input.value !== '0') ||
+                                  (packagesN3Input?.value && packagesN3Input.value !== '0');
+            if (hasPackageValue) {
+                if (directUnitsInput) directUnitsInput.value = '';
+                toggleDirectUnits(true);
+            } else {
+                toggleDirectUnits(false);
+            }
+            updateSetPreview();
+        });
 
-        // Initial update of visual state
-        updateVisualState();
+        // Initial preview update
+        updateSetPreview();
     });
 </script>
 {% endblock %}

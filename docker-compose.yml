@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   medication-tracker:
     image: skjall/medication-tracker:latest

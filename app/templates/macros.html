@@ -1,0 +1,11 @@
+{% macro _l(string) -%}
+  {{ babel.gettext(string) }}
+{%- endmacro %}
+
+{% macro _(string) -%}
+  {{ babel.gettext(string) }}
+{%- endmacro %}
+
+{% macro _n(singular, plural, count) -%}
+  {{ babel.ngettext(singular, plural, count) }}
+{%- endmacro %}

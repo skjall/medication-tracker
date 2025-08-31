@@ -1,0 +1,884 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Structure Mapping') }} - {{ template.name }}{% endblock %}
+
+{% block head_extra %}
+<style>
+    .structure-container {
+        padding: 20px;
+    }
+    
+    .detected-fields-wrapper {
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .detected-fields-placeholder {
+        display: none;
+        height: 0;
+        transition: height 0.3s ease;
+    }
+    
+    .detected-fields-placeholder.active {
+        display: block;
+    }
+    
+    .detected-fields-box {
+        background: white;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        transition: box-shadow 0.3s ease, border 0.3s ease;
+        max-height: 200px;
+    }
+    
+    .detected-fields-box.sticky {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 1200px;
+        z-index: 100;  /* Reduced from 1000 to allow drag events to pass through */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        pointer-events: auto;  /* Ensure the box itself can receive events */
+    }
+    
+    #detected-fields {
+        max-height: 120px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .detected-fields-box h5 {
+        margin-bottom: 15px;
+    }
+    
+    #detected-fields {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-right: 5px;
+        max-height: 120px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    #detected-fields::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    #detected-fields::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    #detected-fields::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    #detected-fields::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    .table-container {
+        margin-right: 0;
+    }
+    
+    @media (max-width: 768px) {
+        .detected-fields-box.sticky {
+            width: 95%;
+            padding: 10px;
+        }
+    }
+    
+    .field-chip {
+        display: inline-block;
+        padding: 6px 12px;
+        margin: 4px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 20px;
+        cursor: move;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+    
+    .field-chip:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .field-chip.dragging {
+        opacity: 0.5;
+    }
+    
+    .field-chip.used {
+        background: #e7f5ff;
+        border-color: #339af0;
+        opacity: 0.6;
+    }
+    
+    .structure-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .structure-table th {
+        background: #495057;
+        color: white;
+        padding: 12px;
+        text-align: center;
+        font-weight: 500;
+        border-right: 1px solid #6c757d;
+    }
+    
+    .structure-table th:last-child {
+        border-right: none;
+    }
+    
+    .structure-table td {
+        padding: 8px;
+        border-right: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+        background: white;
+        vertical-align: top;
+    }
+    
+    .structure-table td:last-child {
+        border-right: none;
+    }
+    
+    .structure-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .drop-cell {
+        min-height: 40px;
+        border: 2px dashed #dee2e6;
+        border-radius: 4px;
+        padding: 8px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    
+    .drop-cell.drag-over {
+        background: #e7f5ff;
+        border-color: #339af0;
+    }
+    
+    .drop-cell .placeholder {
+        color: #adb5bd;
+        font-size: 0.85rem;
+    }
+    
+    .mapped-field {
+        background: #339af0;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        font-size: 0.85rem;
+        cursor: default;
+        transition: all 0.2s;
+        user-select: none;
+    }
+    
+    .mapped-field:hover {
+        background: #228be6;
+    }
+    
+    .mapped-field .remove-btn {
+        margin-left: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        padding: 0 4px;
+        border-radius: 2px;
+        transition: background 0.2s;
+    }
+    
+    .mapped-field .remove-btn:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    
+    /* Disable pointer events on children during drag to prevent interference */
+    body.dragging-active .drop-cell * {
+        pointer-events: none !important;
+    }
+    
+    .row-label {
+        background: #f8f9fa;
+        padding: 8px;
+        text-align: center;
+        font-weight: 500;
+        color: #495057;
+        border-right: 2px solid #dee2e6;
+    }
+    
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+    
+    .action-buttons {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    
+    .status-indicator.complete {
+        background: #51cf66;
+    }
+    
+    .status-indicator.pending {
+        background: #ffd43b;
+    }
+    
+    /* Progress Steps Styling */
+    .mapping-progress {
+        background: linear-gradient(to right, #f8f9fa, #fff);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .step-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .step-indicator.active .step-circle {
+        background: #339af0;
+        color: white;
+        box-shadow: 0 0 0 4px rgba(51, 154, 240, 0.2);
+    }
+    
+    .step-indicator.completed .step-circle {
+        background: #51cf66;
+        color: white;
+    }
+    
+    .step-indicator.pending .step-circle {
+        background: #e9ecef;
+        color: #adb5bd;
+    }
+    
+    .step-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        transition: all 0.3s ease;
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .step-label {
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .step-indicator.active .step-label {
+        color: #339af0;
+        font-weight: 600;
+    }
+    
+    .step-indicator.completed .step-label {
+        color: #51cf66;
+    }
+    
+    .step-connector {
+        width: 100px;
+        height: 2px;
+        background: #dee2e6;
+        margin: 0 10px;
+        margin-bottom: 28px;
+        transition: all 0.3s ease;
+    }
+    
+    .step-connector.completed {
+        background: #51cf66;
+    }
+    
+    .step-link {
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .step-link:hover .step-circle {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Progress Steps -->
+    <div class="mapping-progress mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('pdf_mapper.index') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Templates') }}
+            </a>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator {% if template.structure_mapping %}completed{% else %}active{% endif %}">
+                    <div class="step-circle">
+                        <i class="fas fa-table"></i>
+                    </div>
+                    <div class="step-label">{{ _('Structure') }}</div>
+                </div>
+                
+                <div class="step-connector {% if template.structure_mapping %}completed{% endif %}"></div>
+                
+                <div class="step-indicator {% if template.column_formulas %}completed{% elif template.structure_mapping %}active{% else %}pending{% endif %}">
+                    {% if template.structure_mapping %}
+                    <a href="{{ url_for('pdf_mapper.content_view', id=template.id) }}" class="step-link">
+                    {% endif %}
+                        <div class="step-circle">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="step-label">{{ _('Content') }}</div>
+                    {% if template.structure_mapping %}
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <div class="step-connector {% if template.column_formulas %}completed{% endif %}"></div>
+                
+                <div class="step-indicator {% if template.column_formulas %}completed{% else %}pending{% endif %}">
+                    <div class="step-circle">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="step-label">{{ _('Ready') }}</div>
+                </div>
+            </div>
+            <div style="width: 150px;"></div> <!-- Spacer for balance -->
+        </div>
+    </div>
+    
+    <h1 class="mb-4">
+        <i class="fas fa-table me-2"></i>{{ _('Structure Mapping') }}
+        <small class="text-muted">{{ template.name }}</small>
+    </h1>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        {{ _('Drag the detected PDF form fields to their corresponding positions in the table below.') }}
+    </div>
+    
+    <div class="structure-container">
+        <!-- Detected Fields (above table) -->
+        <div class="detected-fields-wrapper">
+            <div class="detected-fields-placeholder"></div>
+            <div class="detected-fields-box" id="fieldsBox">
+                <h5>
+                    <i class="fas fa-file-pdf me-2"></i>{{ _('PDF Fields') }}
+                    <button class="btn btn-sm btn-outline-primary float-end" onclick="detectFields()">
+                        <i class="fas fa-sync"></i>
+                    </button>
+                </h5>
+                <div id="detected-fields">
+                    {% if detected_fields %}
+                        {% for field in detected_fields %}
+                        <div class="field-chip" draggable="true" data-field="{{ field.name }}">
+                            {{ field.name }}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted no-fields-message">{{ _('No fields detected yet.') }} 
+                            <a href="javascript:detectFields()">{{ _('Click here to detect fields') }}</a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Table Container -->
+        <div class="table-container">
+            <h5 class="mb-3">
+                <i class="fas fa-grip-horizontal me-2"></i>{{ _('Table Structure') }}
+            </h5>
+            
+            <div class="table-responsive">
+            <table class="structure-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">{{ _('Row') }}</th>
+                        {% for header in column_headers %}
+                        <th>{{ header.label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in range(1, template.rows_per_page + 1) %}
+                    <tr>
+                        <td class="row-label">{{ _('Row') }} {{ row }}</td>
+                        {% for header in column_headers %}
+                        <td>
+                            <div class="drop-cell" data-row="{{ row }}" data-col="{{ loop.index }}" data-col-type="{{ header.id }}">
+                                <span class="placeholder">{{ _('Drop here') }}</span>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{{ url_for('pdf_mapper.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Templates') }}
+                </a>
+                
+                <div>
+                    <button class="btn btn-outline-warning" onclick="clearAllMappings()">
+                        <i class="fas fa-redo me-1"></i>{{ _('Clear All') }}
+                    </button>
+                    <button class="btn btn-success" onclick="saveStructure()">
+                        <i class="fas fa-save me-1"></i>{{ _('Save & Continue') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 11"></div>
+
+<script>
+let draggedElement = null;
+let structureMapping = {};
+
+// Helper function to add all necessary event handlers to a mapped field
+function addMappedFieldHandlers(mappedField) {
+    // Mapped fields are no longer draggable - removed drag functionality
+}
+
+// Initialize structure mapping from template if exists
+{% if template.structure_mapping %}
+structureMapping = {{ template.structure_mapping | tojson }};
+// Apply existing mappings to the table
+applyExistingMappings();
+{% endif %}
+
+function initializeDragDrop() {
+    // Make field chips draggable
+    const chips = document.querySelectorAll('.field-chip');
+    chips.forEach(chip => {
+        chip.addEventListener('dragstart', handleDragStart);
+        chip.addEventListener('dragend', handleDragEnd);
+    });
+    
+    // Make drop cells droppable
+    const cells = document.querySelectorAll('.drop-cell');
+    cells.forEach(cell => {
+        cell.addEventListener('dragenter', handleDragEnter);
+        cell.addEventListener('dragover', handleDragOver);
+        cell.addEventListener('dragleave', handleDragLeave);
+        cell.addEventListener('drop', handleDrop);
+    });
+    
+    // Only prevent default dragover to enable drops
+    document.addEventListener('dragover', function(e) {
+        e.preventDefault();
+    });
+}
+
+function handleDragStart(e) {
+    draggedElement = e.target;
+    e.target.classList.add('dragging');
+    document.body.classList.add('dragging-active');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', e.target.dataset.field);
+    e.dataTransfer.setData('source', 'chip');
+}
+
+// Removed mapped field drag functionality
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+    document.body.classList.remove('dragging-active');
+    
+    // Clean up
+    if (draggedElement) {
+        draggedElement.classList.remove('dragging');
+    }
+    
+    draggedElement = null;
+}
+
+function handleDragEnter(e) {
+    if (e.preventDefault) {
+        e.preventDefault(); // MUST prevent default on dragenter for drop to work
+    }
+    e.currentTarget.classList.add('drag-over');
+    return false;
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault(); // MUST prevent default on dragover for drop to work
+    }
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('drag-over');
+    
+    const cell = e.currentTarget;
+    const fieldName = e.dataTransfer.getData('text/plain');
+    const source = e.dataTransfer.getData('source');
+    const row = cell.dataset.row;
+    const col = cell.dataset.col;
+    const colType = cell.dataset.colType;
+    
+    // Validate we have a field name
+    if (!fieldName) {
+        return;
+    }
+    
+    // Check if this cell already has a field
+    const existingField = cell.querySelector('.mapped-field');
+    if (existingField) {
+        const existingFieldText = existingField.querySelector('.field-text');
+        const existingFieldName = existingFieldText ? existingFieldText.textContent : '';
+        
+        if (source === 'chip') {
+            // If dragging from chip list, restore existing field to list
+            restoreFieldToList(existingFieldName);
+        }
+    }
+    
+    // Create mapped field element
+    const mappedField = document.createElement('div');
+    mappedField.className = 'mapped-field';
+    mappedField.dataset.field = fieldName;
+    
+    // Create child elements to prevent event issues
+    const fieldText = document.createElement('span');
+    fieldText.className = 'field-text';
+    fieldText.textContent = fieldName;
+    fieldText.style.pointerEvents = 'none'; // Prevent text from interfering with drag
+    
+    const removeBtn = document.createElement('span');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '×';
+    removeBtn.onclick = function() { removeMapping(this, row, col); };
+    
+    mappedField.appendChild(fieldText);
+    mappedField.appendChild(removeBtn);
+    
+    // Add all event handlers to the mapped field
+    addMappedFieldHandlers(mappedField);
+    
+    // Clear cell and add mapped field
+    cell.innerHTML = '';
+    cell.appendChild(mappedField);
+    
+    // If from chip list, hide the chip
+    if (source === 'chip' && draggedElement) {
+        draggedElement.style.display = 'none';
+        draggedElement.classList.add('assigned');
+    }
+    
+    // Store mapping
+    const key = `${row}_${col}`;
+    structureMapping[key] = {
+        field: fieldName,
+        row: parseInt(row),
+        col: parseInt(col),
+        colType: colType
+    };
+    
+    // Clean up dragged element state
+    if (draggedElement) {
+        draggedElement.classList.remove('dragging');
+    }
+    
+    // Clear the draggedElement since drop was successful
+    draggedElement = null;
+    document.body.classList.remove('dragging-active');
+}
+
+function removeMapping(btn, row, col) {
+    const cell = btn.closest('.drop-cell');
+    
+    // Get the field name before clearing
+    const key = `${row}_${col}`;
+    const fieldName = structureMapping[key]?.field;
+    
+    // Clear the cell
+    cell.innerHTML = '<span class="placeholder">{{ _("Drop here") }}</span>';
+    
+    // Remove from mapping
+    delete structureMapping[key];
+    
+    // Restore the field to available list
+    if (fieldName) {
+        restoreFieldToList(fieldName);
+    }
+}
+
+function restoreFieldToList(fieldName) {
+    const chip = document.querySelector(`.field-chip[data-field="${fieldName}"]`);
+    if (chip) {
+        chip.style.display = 'inline-block';
+        chip.classList.remove('assigned');
+        chip.classList.remove('used');
+    }
+}
+
+function clearAllMappings() {
+    if (!confirm('{{ _("Are you sure you want to clear all mappings?") }}')) {
+        return;
+    }
+    
+    // Clear all cells
+    document.querySelectorAll('.drop-cell').forEach(cell => {
+        cell.innerHTML = '<span class="placeholder">{{ _("Drop here") }}</span>';
+    });
+    
+    // Restore all field chips to visible
+    document.querySelectorAll('.field-chip').forEach(chip => {
+        chip.style.display = 'inline-block';
+        chip.classList.remove('used');
+        chip.classList.remove('assigned');
+    });
+    
+    // Clear mapping object
+    structureMapping = {};
+}
+
+function applyExistingMappings() {
+    Object.entries(structureMapping).forEach(([key, mapping]) => {
+        const cell = document.querySelector(`.drop-cell[data-row="${mapping.row}"][data-col="${mapping.col}"]`);
+        if (cell) {
+            const mappedField = document.createElement('div');
+            mappedField.className = 'mapped-field';
+            mappedField.dataset.field = mapping.field;
+            
+            const fieldText = document.createElement('span');
+            fieldText.className = 'field-text';
+            fieldText.textContent = mapping.field;
+            fieldText.style.pointerEvents = 'none';
+            
+            const removeBtn = document.createElement('span');
+            removeBtn.className = 'remove-btn';
+            removeBtn.textContent = '×';
+            removeBtn.onclick = function() { removeMapping(this, mapping.row, mapping.col); };
+            
+            mappedField.appendChild(fieldText);
+            mappedField.appendChild(removeBtn);
+            
+            // Add all event handlers to the mapped field
+            addMappedFieldHandlers(mappedField);
+            
+            cell.innerHTML = '';
+            cell.appendChild(mappedField);
+            
+            // Hide the chip from available list
+            const chip = document.querySelector(`.field-chip[data-field="${mapping.field}"]`);
+            if (chip) {
+                chip.style.display = 'none';
+                chip.classList.add('assigned');
+            }
+        }
+    });
+}
+
+function detectFields() {
+    showToast('{{ _("Detecting PDF form fields...") }}', 'info');
+    
+    fetch(`/pdf-mapper/template/{{ template.id }}/detect-fields`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.fields) {
+            showToast(`{{ _("Found %(count)s fields")|replace('%(count)s', '${data.fields.length}') }}`, 'success');
+            
+            // Update detected fields display
+            const container = document.getElementById('detected-fields');
+            container.innerHTML = '';
+            
+            // Sort fields by name
+            const sortedFields = data.fields.sort((a, b) => 
+                (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
+            );
+            
+            sortedFields.forEach(field => {
+                const chip = document.createElement('div');
+                chip.className = 'field-chip';
+                chip.draggable = true;
+                chip.dataset.field = field.name;
+                chip.textContent = field.name;
+                container.appendChild(chip);
+            });
+            
+            // Reinitialize drag and drop
+            initializeDragDrop();
+        } else {
+            showToast(data.message || '{{ _("Failed to detect fields") }}', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('{{ _("Error detecting fields") }}', 'error');
+        console.error(error);
+    });
+}
+
+function saveStructure() {
+    // Validate that at least some mappings exist
+    if (Object.keys(structureMapping).length === 0) {
+        showToast('{{ _("Please map at least one field before saving") }}', 'warning');
+        return;
+    }
+    
+    showToast('{{ _("Saving structure mapping...") }}', 'info');
+    
+    fetch(`/pdf-mapper/template/{{ template.id }}/save-structure`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            structure_mapping: structureMapping
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            // Redirect to content mapping after a short delay
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 1000);
+        } else {
+            showToast(data.error || '{{ _("Failed to save structure") }}', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('{{ _("Error saving structure") }}', 'error');
+        console.error(error);
+    });
+}
+
+function showToast(message, type = 'info') {
+    const toastHtml = `
+        <div class="toast show align-items-center text-white bg-${type === 'error' ? 'danger' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'primary'} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    const container = document.getElementById('toast-container');
+    const toastElement = document.createElement('div');
+    toastElement.innerHTML = toastHtml;
+    container.appendChild(toastElement);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        toastElement.remove();
+    }, 5000);
+}
+
+// Sticky fields box functionality
+function initStickyFields() {
+    const fieldsBox = document.getElementById('fieldsBox');
+    const wrapper = fieldsBox.parentElement;
+    const placeholder = wrapper.querySelector('.detected-fields-placeholder');
+    
+    let originalTop = 0;
+    let isSticky = false;
+    
+    // Calculate original position
+    function updateOriginalPosition() {
+        if (!isSticky) {
+            const rect = wrapper.getBoundingClientRect();
+            originalTop = window.pageYOffset + rect.top;
+        }
+    }
+    
+    function handleScroll() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const triggerPoint = originalTop - 80; // 80px from top when sticky
+        
+        if (scrollTop > triggerPoint && !isSticky) {
+            // Make sticky
+            isSticky = true;
+            const boxHeight = fieldsBox.offsetHeight;
+            placeholder.style.height = boxHeight + 'px';
+            placeholder.classList.add('active');
+            fieldsBox.classList.add('sticky');
+        } else if (scrollTop <= triggerPoint && isSticky) {
+            // Remove sticky
+            isSticky = false;
+            placeholder.style.height = '0';
+            placeholder.classList.remove('active');
+            fieldsBox.classList.remove('sticky');
+        }
+    }
+    
+    // Initial position calculation
+    updateOriginalPosition();
+    
+    // Add scroll listener
+    window.addEventListener('scroll', handleScroll);
+    
+    // Recalculate on resize
+    window.addEventListener('resize', () => {
+        if (!isSticky) {
+            updateOriginalPosition();
+        }
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initializeDragDrop();
+    initStickyFields();
+    
+    // Auto-detect fields if none are present
+    {% if not detected_fields %}
+    detectFields();
+    {% endif %}
+});
+</script>
+{% endblock %}

@@ -9,21 +9,35 @@ import importlib
 # Add the project root and app directories to the Python path
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, base_dir)
-sys.path.insert(0, os.path.join(base_dir, "app"))
 
-# Import Flask app to ensure proper initialization
-from app import create_app
-from app.models.base import db
+# Check if we're in Docker (main.py in base_dir) or local dev (main.py in app subdir)
+if os.path.exists(os.path.join(base_dir, "main.py")):
+    # Docker: app files are directly in base_dir
+    from main import create_app
+    from models.base import db
+    import models
+else:
+    # Local dev: app files are in app subdirectory
+    sys.path.insert(0, os.path.join(base_dir, "app"))
+    from app import create_app
+    from app.models.base import db
+    import app.models as models
 
-# Create Flask app to ensure all models are loaded
-app = create_app()
-# Use app context to load models
-with app.app_context():
-    # Dynamically import all modules in the models package
-    import app.models
+# Only create Flask app if we're not already in a migration context
+# This prevents double initialization when migrations are run from within the app
+if not os.environ.get('MIGRATION_IN_PROGRESS'):
+    # Create Flask app to ensure all models are loaded
+    app = create_app()
+    # Use app context to load models
+    with app.app_context():
+        # Models are already imported above
+        pass
 
-    # Remove reload of models to avoid re-defining tables
-    # Simply import to ensure they are loaded
+        # Remove reload of models to avoid re-defining tables
+        # Simply import to ensure they are loaded
+else:
+    # We're already in a migration context, models should be loaded
+    pass
 
 # This is the Alembic Config object
 config = context.config
@@ -41,8 +55,13 @@ def get_database_path():
     Determine the absolute path for the SQLite database file.
     Creates the necessary directories if they don't exist.
     """
-    # Construct the SQLite database path
-    db_path = os.path.join(base_dir, 'app', 'data', 'medication_tracker.db')
+    # Check if running in Docker
+    if os.path.exists('/app/data'):
+        # Running in Docker container
+        db_path = '/app/data/medication_tracker.db'
+    else:
+        # Running locally
+        db_path = os.path.join(base_dir, 'app', 'data', 'medication_tracker.db')
 
     # Ensure the directory exists
     os.makedirs(os.path.dirname(db_path), exist_ok=True)

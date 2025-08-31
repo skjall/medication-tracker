@@ -1,149 +1,307 @@
 {% extends "layout.html" %}
 
-{% block title %}Order #{{ order.id }} - Medication Tracker{% endblock %}
+{% block title %}{{ _('Order #%(order_id)s', order_id=order.id) }} - {{ _('Medication Tracker') }}{% endblock %}
+
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="fas fa-clipboard-list me-2"></i>Order #{{ order.id }}
+        <i class="fas fa-clipboard-list me-2"></i>{{ _('Order #%(order_id)s', order_id=order.id) }}
     </h1>
     <div>
         <a href="{{ url_for('orders.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Orders
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to List') }}
         </a>
         <a href="{{ url_for('visits.show', id=visit.id) }}" class="btn btn-outline-primary ms-2">
-            <i class="fas fa-hospital me-1"></i>Visit Details
+            <i class="fas fa-hospital me-1"></i>{{ _('Visit Details') }}
         </a>
     </div>
 </div>
 
 <!-- Order Summary Card -->
-<div class="row">
-    <div class="col-md-5 mb-4">
-        <div class="card h-100">
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Order Information</h5>
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>{{ _('Order Information') }}
+                </h5>
             </div>
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3>Order #{{ order.id }}</h3>
-                    <span class="badge {% if order.status == 'planned' %}bg-primary{% elif order.status == 'printed' %}bg-info{% elif order.status == 'fulfilled' %}bg-success{% endif %} fs-6">
-                        {{ order.status|capitalize }}
-                    </span>
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">{{ _('Order ID') }}:</dt>
+                            <dd class="col-sm-8">#{{ order.id }}</dd>
+                            
+                            <dt class="col-sm-4">{{ _('Visit') }}:</dt>
+                            <dd class="col-sm-8">
+                                <a href="{{ url_for('visits.show', id=visit.id) }}">
+                                    {{ format_date(visit.visit_date) }}
+                                </a>
+                                {% if make_aware(visit.visit_date) >= now %}
+                                    <span class="badge bg-warning text-dark ms-2">{{ _('%(days)s days', days=visit.days_until) }}</span>
+                                {% endif %}
+                            </dd>
+                            
+                            <dt class="col-sm-4">{{ _('Created') }}:</dt>
+                            <dd class="col-sm-8">{{ format_datetime(order.created_date) }}</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">{{ _('Items') }}:</dt>
+                            <dd class="col-sm-8">{{ ngettext('%(num)s medication', '%(num)s medications', order_items|length, num=order_items|length) }}</dd>
+                            
+                            {% if visit.physician %}
+                                <dt class="col-sm-4">{{ _('Physician') }}:</dt>
+                                <dd class="col-sm-8">{{ visit.physician.display_name }}</dd>
+                            {% else %}
+                                <dt class="col-sm-4">{{ _('Type') }}:</dt>
+                                <dd class="col-sm-8"><span class="badge bg-info">{{ _('OTC') }}</span></dd>
+                            {% endif %}
+                            
+                            <dt class="col-sm-4">{{ _('Status') }}:</dt>
+                            <dd class="col-sm-8">
+                                <div class="btn-group" role="group" aria-label="{{ _('Order Status') }}">
+                                    <input type="radio" class="btn-check" name="status-options" id="status-open" autocomplete="off" 
+                                           {% if order.status == 'planned' %}checked{% endif %}
+                                           onchange="updateOrderStatus('planned')">
+                                    <label class="btn btn-outline-secondary btn-sm" for="status-open">
+                                        <i class="fas fa-folder-open me-1"></i>{{ _('Open') }}
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="status-options" id="status-partial" autocomplete="off"
+                                           {% if order.status == 'partial' %}checked{% endif %}
+                                           onchange="updateOrderStatus('partial')">
+                                    <label class="btn btn-outline-warning btn-sm" for="status-partial">
+                                        <i class="fas fa-hourglass-half me-1"></i>{{ _('Partial') }}
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="status-options" id="status-fulfilled" autocomplete="off"
+                                           {% if order.status == 'fulfilled' %}checked{% endif %}
+                                           onchange="updateOrderStatus('fulfilled')">
+                                    <label class="btn btn-outline-success btn-sm" for="status-fulfilled">
+                                        <i class="fas fa-check-circle me-1"></i>{{ _('Fulfilled') }}
+                                    </label>
+                                </div>
+                                <form id="statusUpdateForm" method="POST" action="{{ url_for('orders.update_status', id=order.id) }}" style="display: none;">
+                                    <input type="hidden" name="status" id="statusInput">
+                                </form>
+                            </dd>
+                        </dl>
+                    </div>
                 </div>
 
-                <p>
-                    <strong>Associated Visit:</strong>
-                    <a href="{{ url_for('visits.show', id=visit.id) }}">
-                        {{ format_date(visit.visit_date) }}
-                    </a>
-                    {% if make_aware(visit.visit_date) >= now %}
-                        <span class="badge bg-warning text-dark ms-2">{{ visit.days_until }} days away</span>
-                    {% else %}
-                        <span class="badge bg-secondary ms-2">Past visit</span>
-                    {% endif %}
-                </p>
-
-                <p>
-                    <strong>Created:</strong> {{ format_datetime(order.created_date) }}
-                </p>
-
-                <p>
-                    <strong>Medications:</strong> {{ order_items|length }} item{% if order_items|length != 1 %}s{% endif %}
-                </p>
+                <hr class="my-3">
                 
-                {% if visit.physician %}
-                    <p>
-                        <strong>Physician:</strong> {{ visit.physician.display_name }}
-                    </p>
-                {% else %}
-                    <p>
-                        <strong>Type:</strong> <span class="badge bg-info">OTC/Supplements</span>
-                    </p>
-                {% endif %}
-
-                {% if order.status != 'fulfilled' %}
-                    <div class="btn-group w-100 mt-4">
-                        <a href="{{ url_for('orders.edit', id=order.id) }}" class="btn btn-outline-primary">
-                            <i class="fas fa-pen-to-square me-1"></i>Edit Order
-                        </a>
-                        <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-outline-primary" target="_blank">
-                            <i class="fas fa-print me-1"></i>Printable Version
-                        </a>
-                        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#fulfillModal">
-                            <i class="fas fa-check me-1"></i>Fulfill Order
-                        </button>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                        {% if order.status != 'fulfilled' %}
+                            <a href="{{ url_for('orders.edit', id=order.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-pen-to-square me-1"></i>{{ _('Edit') }}
+                            </a>
+                        {% endif %}
+                        {% if visit.physician and visit.physician.pdf_template %}
+                            <a href="{{ url_for('orders.order_pdf', id=order.id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-file-pdf me-1"></i>{{ _('Print PDF') }}
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-print me-1"></i>{{ _('Print') }}
+                            </a>
+                        {% endif %}
+                        {% if order.status != 'fulfilled' %}
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#fulfillModal">
+                                <i class="fas fa-check me-1"></i>{{ _('Fulfill') }}
+                            </button>
+                        {% else %}
+                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                    onclick="var form = document.createElement('form'); form.method = 'POST'; form.action = '{{ url_for('orders.toggle_fulfillment', id=order.id) }}'; document.body.appendChild(form); form.submit(); return false;">
+                                <i class="fas fa-undo me-1"></i>{{ _('Unfulfill') }}
+                            </button>
+                        {% endif %}
                     </div>
-
-                    <form method="POST" action="{{ url_for('orders.delete', id=order.id) }}" onsubmit="return confirm('Are you sure you want to delete this order? This cannot be undone.');" class="mt-3">
-                        <button type="submit" class="btn btn-outline-danger w-100">
-                            <i class="fas fa-trash-alt me-1"></i>Delete Order
-                        </button>
-                    </form>
-                {% else %}
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle me-2"></i>
-                        This order has been fulfilled and added to your inventory.
-                    </div>
-
-                    <a href="{{ url_for('orders.printable', id=order.id) }}" class="btn btn-outline-info w-100" target="_blank">
-                        <i class="fas fa-print me-1"></i>Printable Version
-                    </a>
-                {% endif %}
+                    
+                    {% if order.status != 'fulfilled' %}
+                        <form method="POST" action="{{ url_for('orders.delete', id=order.id) }}" onsubmit="return confirm('{{ _('Are you sure you want to delete this order? This cannot be undone.') }}');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash-alt me-1"></i>{{ _('Delete') }}
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="col-md-7 mb-4">
-        <div class="card h-100">
+<!-- Order Contents Card -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Order Contents</h5>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>{{ _('Order Contents') }}
+                    </h5>
+                    <span class="badge bg-light text-dark">
+                        {{ ngettext('%(num)s item', '%(num)s items', order_items|length, num=order_items|length) }}
+                    </span>
+                </div>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 {% if order_items %}
                     <div class="table-responsive">
-                        <table class="table">
-                            <thead>
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Medication</th>
-                                    <th>Amount Needed</th>
-                                    <th>Packages</th>
-                                    <th>Total Units</th>
+                                    <th style="width: 30%">{{ _('Ingredient') }}</th>
+                                    <th style="width: 15%">{{ _('Required') }}</th>
+                                    <th style="width: 20%">{{ _('Order Details') }}</th>
+                                    <th style="width: 15%">{{ _('Fulfillment') }}</th>
+                                    <th style="width: 10%">{{ _('Status') }}</th>
+                                    <th style="width: 10%" class="text-end">{{ _('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for item in order_items %}
-                                    <tr>
+                                    <tr class="{% if item.fulfillment_status == 'cancelled' %}table-danger{% elif item.fulfillment_status == 'fulfilled' %}table-success{% endif %}">
                                         <td>
-                                            <strong>{{ item.medication.name }}</strong>
-                                            <div class="small text-muted">{{ item.medication.daily_usage|round(1) }} units/day</div>
+                                            {% if item.active_ingredient %}
+                                                <div class="fw-bold">{{ item.active_ingredient.name }}</div>
+                                                {% if item.product %}
+                                                    <div class="text-muted small">→ {{ item.product.display_name }}</div>
+                                                {% elif item.active_ingredient.default_product %}
+                                                    <div class="text-muted small">→ {{ item.active_ingredient.default_product.display_name }}</div>
+                                                {% endif %}
+                                            {% else %}
+                                                <div class="fw-bold">{{ _('Unknown') }}</div>
+                                            {% endif %}
+                                            {% if item.active_ingredient %}
+                                                <small class="text-muted">
+                                                    <i class="fas fa-chart-line me-1"></i>{{ item.active_ingredient.daily_usage|round(1) }} {{ _('units/day') }}
+                                                </small>
+                                            {% endif %}
+                                            {% if item.fulfillment_notes %}
+                                                <div class="small mt-1">
+                                                    <i class="fas fa-info-circle me-1"></i>{{ item.fulfillment_notes }}
+                                                </div>
+                                            {% endif %}
                                         </td>
-                                        <td>{{ item.quantity_needed }} units</td>
                                         <td>
-                                            <small>
-                                                {% if item.packages_n1 > 0 %}
-                                                    N1: {{ item.packages_n1 }}{% if item.packages_n2 > 0 or item.packages_n3 > 0 %}<br>{% endif %}
-                                                {% endif %}
-                                                {% if item.packages_n2 > 0 %}
-                                                    N2: {{ item.packages_n2 }}{% if item.packages_n3 > 0 %}<br>{% endif %}
-                                                {% endif %}
-                                                {% if item.packages_n3 > 0 %}
-                                                    N3: {{ item.packages_n3 }}
-                                                {% endif %}
-                                            </small>
+                                            {{ item.quantity_needed }} {{ _('units') }}
                                         </td>
                                         <td>
-                                            {% set total_units = 0 %}
-                                            {% if item.medication.package_size_n1 %}
-                                                {% set total_units = total_units + (item.packages_n1 * item.medication.package_size_n1) %}
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    {% if item.packages_n1 > 0 %}
+                                                        <span class="badge bg-light text-dark">N1: {{ item.packages_n1 }}</span>
+                                                    {% endif %}
+                                                    {% if item.packages_n2 > 0 %}
+                                                        <span class="badge bg-light text-dark">N2: {{ item.packages_n2 }}</span>
+                                                    {% endif %}
+                                                    {% if item.packages_n3 > 0 %}
+                                                        <span class="badge bg-light text-dark">N3: {{ item.packages_n3 }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="text-end">
+                                                    <strong>{{ item.total_units_ordered }}</strong> {{ _('units') }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="mb-1">
+                                                <strong>{{ item.units_received }}/{{ item.quantity_needed }}</strong> {{ _('units') }}
+                                                {% if item.units_received > 0 %}
+                                                    <div class="progress mt-1" style="height: 5px;">
+                                                        <div class="progress-bar {% if item.units_received >= item.quantity_needed %}bg-success{% else %}bg-warning{% endif %}" 
+                                                             role="progressbar" 
+                                                             style="width: {{ [item.fulfillment_percentage, 100]|min }}%"
+                                                             aria-valuenow="{{ item.units_received }}" 
+                                                             aria-valuemin="0" 
+                                                             aria-valuemax="{{ item.quantity_needed }}">
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            {% if item.linked_packages %}
+                                                <div class="small text-muted">
+                                                    <i class="fas fa-box me-1"></i>{{ ngettext('%(num)s package linked', '%(num)s packages linked', item.linked_packages|length, num=item.linked_packages|length) }}
+                                                </div>
                                             {% endif %}
-                                            {% if item.medication.package_size_n2 %}
-                                                {% set total_units = total_units + (item.packages_n2 * item.medication.package_size_n2) %}
+                                            {% if item.fulfilled_at %}
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar-check me-1"></i>{{ format_date(item.fulfilled_at) }}
+                                                </small>
                                             {% endif %}
-                                            {% if item.medication.package_size_n3 %}
-                                                {% set total_units = total_units + (item.packages_n3 * item.medication.package_size_n3) %}
+                                        </td>
+                                        <td>
+                                            {% if item.fulfillment_status == 'pending' %}
+                                                <span class="badge bg-secondary">{{ _('Pending') }}</span>
+                                            {% elif item.fulfillment_status == 'partial' %}
+                                                <span class="badge bg-warning">{{ _('Partial') }}</span>
+                                            {% elif item.fulfillment_status == 'fulfilled' %}
+                                                <span class="badge bg-success">{{ _('Done') }}</span>
+                                            {% elif item.fulfillment_status == 'modified' %}
+                                                <span class="badge bg-info">{{ _('Modified') }}</span>
+                                            {% elif item.fulfillment_status == 'cancelled' %}
+                                                <span class="badge bg-danger">{{ _('Cancelled') }}</span>
                                             {% endif %}
-                                            {{ total_units }} units
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('ingredients.show', id=item.active_ingredient.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary" 
+                                                   title="{{ _('View Ingredient') }}">
+                                                    <i class="fas fa-pills"></i>
+                                                </a>
+                                                <a href="{{ url_for('inventory.index') }}#ingredient-{{ item.active_ingredient.id }}" 
+                                                   class="btn btn-sm btn-outline-primary" 
+                                                   title="{{ _('View Inventory') }}">
+                                                    <i class="fas fa-boxes"></i>
+                                                </a>
+                                                {% if order.status != 'fulfilled' %}
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#linkPackageModal"
+                                                            data-item-id="{{ item.id }}"
+                                                            data-item-name="{{ item.active_ingredient.name }}"
+                                                            title="{{ _('Manage Package Links') }}">
+                                                        <i class="fas fa-link"></i>
+                                                    </button>
+                                                {% endif %}
+                                                {% if item.fulfillment_status == 'pending' %}
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#fulfillItemModal"
+                                                            data-item-id="{{ item.id }}"
+                                                            data-item-name="{{ item.active_ingredient.name }}"
+                                                            data-item-quantity="{{ item.total_units_ordered }}"
+                                                            title="{{ _('Mark Fulfilled') }}">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                            title="{{ _('Cancel Item') }}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#cancelItemModal"
+                                                            data-item-id="{{ item.id }}"
+                                                            data-item-name="{{ item.active_ingredient.name }}"
+                                                            data-order-id="{{ order.id }}">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                {% elif item.fulfillment_status == 'cancelled' %}
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                            title="{{ _('Undo Cancel') }}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#undoCancelModal"
+                                                            data-item-id="{{ item.id }}"
+                                                            data-item-name="{{ item.active_ingredient.name }}"
+                                                            data-order-id="{{ order.id }}">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -151,47 +309,436 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        No medications in this order.
+                    <div class="p-4 text-center">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-inbox fa-3x"></i>
+                            <p class="mt-3">{{ _('No medications in this order yet.') }}</p>
+                        </div>
+                        {% if order.status != 'fulfilled' %}
+                            <a href="{{ url_for('orders.edit', id=order.id) }}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-1"></i>{{ _('Add Medications') }}
+                            </a>
+                        {% endif %}
                     </div>
-
-                    {% if order.status != 'fulfilled' %}
-                        <a href="{{ url_for('orders.edit', id=order.id) }}" class="btn btn-primary">
-                            <i class="fas fa-pen-to-square me-1"></i>Edit Order to Add Medications
-                        </a>
-                    {% endif %}
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Fulfill Order Modal -->
-<div class="modal fade" id="fulfillModal" tabindex="-1" aria-labelledby="fulfillModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Include Shared Fulfill Order Modal -->
+{% include 'orders/_fulfill_modal.html' %}
+
+<!-- Link Package Modal -->
+<div class="modal fade" id="linkPackageModal" tabindex="-1" aria-labelledby="linkPackageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="fulfillModalLabel">Fulfill Order</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="linkPackageModalLabel">{{ _('Manage Package Links') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
             </div>
             <div class="modal-body">
-                <p>Fulfilling this order will:</p>
-                <ul>
-                    <li>Mark the order as "fulfilled"</li>
-                    <li>Add the ordered medications to your inventory</li>
-                </ul>
-                <p>Are you sure you want to continue?</p>
+                <h6 id="linkItemName" class="mb-3">{{ _('Medication Name') }}</h6>
+                <div id="packageLinkContent">
+                    <!-- Content will be loaded dynamically -->
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="POST" action="{{ url_for('orders.fulfill', id=order.id) }}">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check me-1"></i>Fulfill Order
-                    </button>
-                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Close') }}</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Fulfill Item Modal -->
+<div class="modal fade" id="fulfillItemModal" tabindex="-1" aria-labelledby="fulfillItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="fulfillItemModalLabel">{{ _('Fulfill Medication') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
+            </div>
+            <form id="fulfillItemForm" method="POST" action="">
+                <div class="modal-body">
+                    <h6 id="itemName" class="mb-3">{{ _('Medication Name') }}</h6>
+
+                    <div class="mb-3">
+                        <label for="itemStatus" class="form-label">{{ _('Fulfillment Status') }}</label>
+                        <select class="form-select" id="itemStatus" name="status" required>
+                            <option value="fulfilled">{{ _('Fulfilled - Delivered as ordered') }}</option>
+                            <option value="modified">{{ _('Modified - Different quantity received') }}</option>
+                            <option value="cancelled">{{ _('Cancelled - Not available') }}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="quantitySection" style="display: none;">
+                        <label for="customQuantity" class="form-label">{{ _('Actual Quantity Received') }}</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="customQuantity" name="custom_quantity" min="0">
+                            <span class="input-group-text">{{ _('units') }}</span>
+                        </div>
+                        <div class="form-text">{{ _('Original order: %(quantity)s units', quantity='<span id="originalQuantity"></span>'|safe) }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="itemNotes" class="form-label">{{ _('Notes (optional)') }}</label>
+                        <textarea class="form-control" id="itemNotes" name="notes" rows="2" placeholder="{{ _('e.g., Doctor modified order, pharmacy substitution, etc.') }}"></textarea>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="addToInventory" name="add_to_inventory" value="true" checked>
+                        <label class="form-check-label" for="addToInventory">
+                            {{ _('Add to inventory') }}
+                        </label>
+                        <div class="form-text">{{ _('Check this to automatically update your inventory with the received medication') }}</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check me-1"></i>{{ _('Update Status') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Item Modal -->
+<div class="modal fade" id="cancelItemModal" tabindex="-1" aria-labelledby="cancelItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelItemModalLabel">{{ _('Cancel Item') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
+            </div>
+            <form id="cancelItemForm" method="POST">
+                <div class="modal-body">
+                    <p>{{ _('Are you sure you want to cancel this item?') }}</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong id="cancelItemName"></strong>
+                    </div>
+                    <p>{{ _('This action will mark the item as cancelled in the order.') }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Close') }}</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i>{{ _('Cancel Item') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Undo Cancel Modal -->
+<div class="modal fade" id="undoCancelModal" tabindex="-1" aria-labelledby="undoCancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="undoCancelModalLabel">{{ _('Undo Cancel') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
+            </div>
+            <form id="undoCancelForm" method="POST">
+                <div class="modal-body">
+                    <p>{{ _('Do you want to restore this cancelled item?') }}</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong id="undoCancelItemName"></strong>
+                    </div>
+                    <p>{{ _('This will restore the item to pending status.') }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Close') }}</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-undo me-1"></i>{{ _('Restore Item') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+/* Fix text color for all buttons when selected */
+.btn-check:checked + .btn-outline-secondary,
+.btn-check:checked + .btn-outline-warning,
+.btn-check:checked + .btn-outline-success {
+    color: white !important;
+}
+
+/* Ensure white text for warning button specifically (using custom warning color) */
+.btn-check:checked + .btn-outline-warning,
+.btn-check:checked + .btn-outline-warning:hover {
+    color: white !important;
+    background-color: #ff8000 !important;
+    border-color: #ff8000 !important;
+}
+
+/* Also fix hover state for consistency */
+.btn-outline-warning:hover {
+    color: white !important;
+}
+
+/* Make sure the active state is properly styled */
+.btn-outline-warning:active,
+.btn-outline-warning.active {
+    color: white !important;
+    background-color: var(--bs-warning) !important;
+    border-color: var(--bs-warning) !important;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Function to update order status
+function updateOrderStatus(newStatus) {
+    const form = document.getElementById('statusUpdateForm');
+    const statusInput = document.getElementById('statusInput');
+    statusInput.value = newStatus;
+    form.submit();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle item fulfillment modal
+    const fulfillItemModal = document.getElementById('fulfillItemModal');
+    if (fulfillItemModal) {
+        fulfillItemModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const itemId = button.getAttribute('data-item-id');
+            const itemName = button.getAttribute('data-item-name');
+            const itemQuantity = button.getAttribute('data-item-quantity');
+
+            // Update form action
+            const form = document.getElementById('fulfillItemForm');
+            form.action = "{{ url_for('orders.fulfill_item', id=order.id, item_id=0) }}".replace('/0/', '/' + itemId + '/');
+
+            // Update medication name
+            document.getElementById('itemName').textContent = itemName;
+            document.getElementById('originalQuantity').textContent = itemQuantity;
+
+            // Handle status change
+            const statusSelect = document.getElementById('itemStatus');
+            const quantitySection = document.getElementById('quantitySection');
+            const customQuantityInput = document.getElementById('customQuantity');
+
+            statusSelect.addEventListener('change', function() {
+                if (this.value === 'modified') {
+                    quantitySection.style.display = 'block';
+                    customQuantityInput.required = true;
+                } else {
+                    quantitySection.style.display = 'none';
+                    customQuantityInput.required = false;
+                    customQuantityInput.value = '';
+                }
+            });
+
+            // Reset form when modal is shown
+            statusSelect.value = 'fulfilled';
+            quantitySection.style.display = 'none';
+            customQuantityInput.value = '';
+            document.getElementById('itemNotes').value = '';
+            document.getElementById('addToInventory').checked = true;
+        });
+    }
+
+    // Handle package link modal
+    const linkPackageModal = document.getElementById('linkPackageModal');
+    if (linkPackageModal) {
+        // Store the trigger button to restore focus later
+        let triggerButton = null;
+        
+        linkPackageModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            triggerButton = button; // Store for later
+            const itemId = button.getAttribute('data-item-id');
+            const itemName = button.getAttribute('data-item-name');
+            
+            // Update medication name
+            document.getElementById('linkItemName').textContent = itemName;
+            
+            // Load available packages and current links
+            const contentDiv = document.getElementById('packageLinkContent');
+            contentDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> {{ _("Loading...") }}</div>';
+            
+            // Get item data from the page - create a simplified structure
+            const orderItems = [
+                {% for item in order_items %}
+                {
+                    id: {{ item.id }},
+                    medication_name: "{{ item.active_ingredient.name }}",
+                    linked_packages: [
+                        {% if item.linked_packages %}
+                            {% for pkg in item.linked_packages %}
+                            {
+                                id: {{ pkg.id }},
+                                serial_number: "{{ pkg.scanned_item.serial_number if pkg.scanned_item else '' }}"
+                            }{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    ]
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+            const currentItem = orderItems.find(item => item.id == itemId);
+            
+            if (currentItem) {
+                // Store itemId for search function
+                linkPackageModal.dataset.itemId = itemId;
+                
+                let html = '';
+                
+                // Show currently linked packages
+                if (currentItem.linked_packages && currentItem.linked_packages.length > 0) {
+                    html += '<h6>{{ _("Currently Linked Packages") }}</h6>';
+                    html += '<div class="list-group mb-3">';
+                    currentItem.linked_packages.forEach(pkg => {
+                        html += `<div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-box me-2"></i>${pkg.serial_number || '{{ _("No S/N") }}'}</span>
+                            <form method="POST" action="/orders/item/${itemId}/unlink_package/${pkg.id}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-unlink"></i> {{ _("Unlink") }}
+                                </button>
+                            </form>
+                        </div>`;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<div class="alert alert-info mb-3"><i class="fas fa-info-circle me-2"></i>{{ _("No packages currently linked") }}</div>';
+                }
+                
+                // Add search field
+                html += '<h6>{{ _("Search Available Packages") }}</h6>';
+                html += '<div class="mb-3">';
+                html += '<div class="input-group">';
+                html += '<input type="text" class="form-control" id="packageSearchInput" placeholder="{{ _("Enter serial number...") }}">';
+                html += '<button class="btn btn-outline-secondary" type="button" id="packageSearchBtn">';
+                html += '<i class="fas fa-search"></i> {{ _("Search") }}';
+                html += '</button>';
+                html += '</div>';
+                html += '<small class="text-muted">{{ _("Search for packages scanned after the order date") }}</small>';
+                html += '</div>';
+                
+                // Search results container
+                html += '<div id="packageSearchResults"></div>';
+                
+                contentDiv.innerHTML = html;
+                
+                // Set up search functionality
+                const searchBtn = document.getElementById('packageSearchBtn');
+                const searchInput = document.getElementById('packageSearchInput');
+                const resultsDiv = document.getElementById('packageSearchResults');
+                
+                function performSearch() {
+                    const searchTerm = searchInput.value.trim();
+                    if (!searchTerm) {
+                        resultsDiv.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>{{ _("Please enter a serial number to search") }}</div>';
+                        return;
+                    }
+                    
+                    resultsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> {{ _("Searching...") }}</div>';
+                    
+                    fetch(`/orders/item/${itemId}/search_packages?search=${encodeURIComponent(searchTerm)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.packages && data.packages.length > 0) {
+                                let searchHtml = '<h6>{{ _("Search Results") }}</h6>';
+                                searchHtml += '<div class="list-group mb-3">';
+                                data.packages.forEach(pkg => {
+                                    searchHtml += `<div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="fas fa-box me-2"></i>${pkg.serial_number}
+                                            <span class="badge bg-${pkg.status === 'sealed' ? 'success' : 'warning'} ms-2">${pkg.status}</span>
+                                            <span class="badge bg-secondary ms-1">{{ _("%(count)s units")|replace('%(count)s', '${pkg.units}') }}</span>
+                                            <small class="text-muted ms-2">{{ _("Scanned") }}: ${pkg.scanned_date}</small>
+                                        </span>
+                                        <form method="POST" action="/orders/item/${itemId}/link_package/${pkg.id}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-link"></i> {{ _("Link") }}
+                                            </button>
+                                        </form>
+                                    </div>`;
+                                });
+                                searchHtml += '</div>';
+                                resultsDiv.innerHTML = searchHtml;
+                            } else {
+                                resultsDiv.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>{{ _("No packages found matching your search") }}</div>';
+                            }
+                        })
+                        .catch(error => {
+                            resultsDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>{{ _("Error searching packages") }}</div>';
+                            console.error('Error:', error);
+                        });
+                }
+                
+                searchBtn.addEventListener('click', performSearch);
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+            }
+        });
+        
+        // Handle modal hidden event to restore focus properly
+        linkPackageModal.addEventListener('hidden.bs.modal', function(event) {
+            // Restore focus to the trigger button if it exists
+            if (triggerButton) {
+                triggerButton.focus();
+                triggerButton = null;
+            }
+        });
+        
+        // Handle form submissions within modal to prevent focus issues
+        linkPackageModal.addEventListener('submit', function(event) {
+            // Let the form submit naturally but close modal properly
+            const modal = bootstrap.Modal.getInstance(linkPackageModal);
+            if (modal) {
+                // Allow form to submit then close modal
+                setTimeout(() => modal.hide(), 100);
+            }
+        });
+    }
+});
+
+// Handle Cancel Item Modal
+const cancelItemModal = document.getElementById('cancelItemModal');
+if (cancelItemModal) {
+    cancelItemModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const itemId = button.getAttribute('data-item-id');
+        const itemName = button.getAttribute('data-item-name');
+        const orderId = button.getAttribute('data-order-id');
+        
+        // Update modal content
+        document.getElementById('cancelItemName').textContent = itemName;
+        
+        // Set form action
+        const form = document.getElementById('cancelItemForm');
+        form.action = `/orders/${orderId}/item/${itemId}/cancel`;
+    });
+}
+
+// Handle Undo Cancel Modal
+const undoCancelModal = document.getElementById('undoCancelModal');
+if (undoCancelModal) {
+    undoCancelModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const itemId = button.getAttribute('data-item-id');
+        const itemName = button.getAttribute('data-item-name');
+        const orderId = button.getAttribute('data-order-id');
+        
+        // Update modal content
+        document.getElementById('undoCancelItemName').textContent = itemName;
+        
+        // Set form action
+        const form = document.getElementById('undoCancelForm');
+        form.action = `/orders/${orderId}/item/${itemId}/undo_cancel`;
+    });
+}
+</script>
 {% endblock %}

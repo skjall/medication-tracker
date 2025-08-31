@@ -14,7 +14,7 @@ import logging
 import os
 import sys
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add app directory to Python path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
@@ -87,8 +87,8 @@ class BaseTestCase(unittest.TestCase):
         """Set up test fixtures for each test."""
         self.db.session.begin_nested()  # Create a savepoint
 
-        # Set current date to now
-        self.now = datetime.now()
+        # Set current date to now (UTC for consistency in tests)
+        self.now = datetime.now(timezone.utc)
 
         # Import models after app context is created
         from app.models import (
@@ -100,17 +100,21 @@ class BaseTestCase(unittest.TestCase):
             Order,
             OrderItem,
             Physician,
+            ActiveIngredient,
+            MedicationProduct,
         )
 
         # Clean up any existing data to prevent test interference - using db session directly
         try:
             self.db.session.execute(self.db.delete(MedicationSchedule))
+            self.db.session.execute(self.db.delete(OrderItem))
+            self.db.session.execute(self.db.delete(Order))
+            self.db.session.execute(self.db.delete(PhysicianVisit))
             self.db.session.execute(self.db.delete(Inventory))
+            self.db.session.execute(self.db.delete(MedicationProduct))
+            self.db.session.execute(self.db.delete(ActiveIngredient))
             self.db.session.execute(self.db.delete(Medication))
             self.db.session.execute(self.db.delete(Settings))
-            self.db.session.execute(self.db.delete(PhysicianVisit))
-            self.db.session.execute(self.db.delete(Order))
-            self.db.session.execute(self.db.delete(OrderItem))
             self.db.session.execute(self.db.delete(Physician))
             self.db.session.commit()
         except Exception as e:

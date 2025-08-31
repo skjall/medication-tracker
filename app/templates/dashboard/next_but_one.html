@@ -10,7 +10,7 @@
     </h1>
     <div>
         <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Dashboard') }}
         </a>
     </div>
 </div>
@@ -123,14 +123,14 @@
                             <th>Needed for Next-But-One</th>
                             <th>Additional Needed</th>
                             <th>Packages</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for med in medications %}
                             {% set days_needed = interval_days * 2 + med.safety_margin_days %}
                             {% set units_needed = (med.daily_usage * days_needed)|round(0)|int %}
-                            {% set units_current = med.inventory.current_count if med.inventory else 0 %}
+                            {% set units_current = med.total_inventory_count if med.inventory else 0 %}
                             {% set units_additional = max(0, units_needed - units_current) %}
                             {% set packages = med.calculate_packages_needed(units_additional) %}
 
@@ -165,7 +165,7 @@
                                         <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ url_for('medications.show', id=med.id) }}" class="btn btn-outline-secondary" title="View Medication">
                                             <i class="fas fa-pills"></i>

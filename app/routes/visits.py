@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 
 # Third-party imports
 from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_babel import gettext as _
 
 # Local application imports
 from models import PhysicianVisit, Medication, Order, Physician, db, utcnow
@@ -96,7 +97,7 @@ def new():
                 f"New physician visit created: ID={visit.id}, date={visit_date_str}"
             )
 
-            flash(f"Physician visit scheduled for {visit_date_str}", "success")
+            flash(_("Physician visit scheduled for {}").format(visit_date_str), "success")
 
             # Check if we should create an order automatically
             create_order = request.form.get("create_order", "no")
@@ -109,7 +110,7 @@ def new():
 
         except ValueError as e:
             logger.error(f"Date parsing error: {e} for input '{visit_date_str}'")
-            flash("Invalid date format. Please use DD.MM.YYYY format.", "error")
+            flash(_("Invalid date format. Please use DD.MM.YYYY format."), "error")
 
     physicians = Physician.query.order_by(Physician.name).all()
     return render_template(
@@ -150,7 +151,7 @@ def show(id: int):
     for med in medications:
         if med.inventory:
             needed = med.calculate_needed_until_visit(visit.visit_date)
-            current = med.inventory.current_count
+            current = med.total_inventory_count  # Use total including packages
             additional = max(0, needed - current)
             packages = med.calculate_packages_needed(additional)
 
@@ -239,12 +240,12 @@ def edit(id: int):
                 f"Updated physician visit: ID={visit.id}, new date={visit_date_str}"
             )
 
-            flash(f"Physician visit updated to {visit_date_str}", "success")
+            flash(_("Physician visit updated to {}").format(visit_date_str), "success")
             return redirect(url_for("visits.show", id=visit.id))
 
         except ValueError as e:
             logger.error(f"Date parsing error: {e} for input '{visit_date_str}'")
-            flash("Invalid date format. Please use DD.MM.YYYY format.", "error")
+            flash(_("Invalid date format. Please use DD.MM.YYYY format."), "error")
 
     # Format date for the form - use local timezone
     from utils import to_local_timezone
@@ -278,7 +279,7 @@ def delete(id: int):
             f"Cannot delete visit ID={id} with {len(orders)} associated orders"
         )
         flash(
-            "Cannot delete visit with associated orders. Delete the orders first.",
+            _("Cannot delete visit with associated orders. Delete the orders first."),
             "error",
         )
         return redirect(url_for("visits.show", id=visit.id))
@@ -288,7 +289,7 @@ def delete(id: int):
 
     logger.info(f"Deleted physician visit: ID={id}")
 
-    flash("Physician visit deleted successfully", "success")
+    flash(_("Physician visit deleted successfully"), "success")
     return redirect(url_for("visits.index"))
 
 
@@ -305,7 +306,7 @@ def next_visit():
 
     if not next_visit:
         logger.info("No upcoming physician visits found")
-        flash("No upcoming physician visits scheduled", "warning")
+        flash(_("No upcoming physician visits scheduled"), "warning")
         return redirect(url_for("visits.new"))
 
     logger.debug(f"Redirecting to next visit ID={next_visit.id}")

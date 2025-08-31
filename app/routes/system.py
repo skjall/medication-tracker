@@ -16,6 +16,7 @@ from flask import (
     render_template,
     url_for,
 )
+from flask_babel import gettext as _
 
 # Local application imports
 from utils import format_date, format_datetime, format_time, to_local_timezone
@@ -34,7 +35,9 @@ def status():
     Render a system status page with scheduler information.
     Displays the status of background tasks and system health.
     """
-    from models import Settings
+    from models import Settings, Medication, Inventory, PhysicianVisit, Order, MedicationSchedule, db
+    import os
+    from sqlalchemy import inspect, text
 
     settings = Settings.get_settings()
 
@@ -71,12 +74,85 @@ def status():
     python_version = platform.python_version()
     flask_version = flask.__version__
 
+    # Collect database statistics
+    db_stats = {
+        "medications_count": Medication.query.count(),
+        "inventories_count": Inventory.query.count(),
+        "visits_count": PhysicianVisit.query.count(),
+        "orders_count": Order.query.count(),
+        "schedules_count": MedicationSchedule.query.count(),
+        "low_stock_count": 0,  # Will calculate below
+    }
+    
+    # Calculate low stock count properly
+    low_stock_count = 0
+    for inventory in Inventory.query.all():
+        if inventory.medication and inventory.is_low:
+            low_stock_count += 1
+    db_stats["low_stock_count"] = low_stock_count
+    
+    # Get database file information
+    db_path = current_app.config.get('SQLALCHEMY_DATABASE_URI', '').replace('sqlite:///', '')
+    db_info = {}
+    if db_path and os.path.exists(db_path):
+        db_size = os.path.getsize(db_path)
+        db_info = {
+            "path": db_path,
+            "size_mb": round(db_size / (1024 * 1024), 2),
+            "exists": True
+        }
+    else:
+        db_info = {
+            "path": db_path or "Not configured",
+            "size_mb": 0,
+            "exists": False
+        }
+    
+    # Check migration status
+    migration_info = {}
+    try:
+        # Check if migrations are needed
+        migrations_needed = check_migrations_needed(current_app)
+        
+        # Get current migration version from database
+        current_version = None
+        try:
+            with db.engine.connect() as conn:
+                # text is already imported at the top
+                result = conn.execute(text("SELECT version_num FROM alembic_version LIMIT 1"))
+                row = result.fetchone()
+                if row:
+                    current_version = row[0]
+                logger.info(f"Current migration version: {current_version}")
+        except Exception as e:
+            logger.warning(f"Could not get migration version from DB: {e}")
+            current_version = None
+        
+        migration_info = {
+            "migrations_needed": migrations_needed,
+            "current_version": current_version,
+        }
+    except Exception as e:
+        logger.warning(f"Could not get complete migration info: {e}")
+        migration_info = {
+            "migrations_needed": False,
+            "current_version": None,
+        }
+    
+    # Get table information
+    inspector = inspect(db.engine)
+    tables = inspector.get_table_names()
+    
     status = {
         "scheduler_running": scheduler_running,
         "tasks": tasks,
         "last_deduction_check": (
             settings.last_deduction_check if settings.last_deduction_check else None
         ),
+        "db_stats": db_stats,
+        "db_info": db_info,
+        "migration_info": migration_info,
+        "table_count": len(tables),
     }
 
     local_timezone = tzlocal.get_localzone()
@@ -103,9 +179,9 @@ def restart_scheduler():
     """
     if hasattr(current_app, "scheduler"):
         current_app.scheduler.restart()
-        flash("Task scheduler has been restarted", "success")
+        flash(_("Task scheduler has been restarted"), "success")
     else:
-        flash("Task scheduler not available", "error")
+        flash(_("Task scheduler not available"), "error")
 
 
 @system_bp.route("/detect_pipe_times")
@@ -120,15 +196,15 @@ def detect_pipe_times():
         problematic_schedules = detect_pipe_separated_schedules()
 
         if problematic_schedules:
-            flash(f"Found {len(problematic_schedules)} schedules with pipe-separated times. Check logs for details.", "warning")
+            flash(_("Found {} schedules with pipe-separated times. Check logs for details.").format(len(problematic_schedules)), "warning")
             for schedule_id, med_name, times_data in problematic_schedules:
                 logger.warning(f"Schedule {schedule_id} ({med_name}): {times_data}")
         else:
-            flash("No pipe-separated times detected in medication schedules.", "success")
+            flash(_("No pipe-separated times detected in medication schedules."), "success")
 
     except Exception as e:
         logger.error(f"Error detecting pipe-separated times: {e}")
-        flash(f"Error running detection: {e}", "error")
+        flash(_("Error running detection: {}").format(e), "error")
 
     return redirect(url_for("system.status"))
 
@@ -147,7 +223,7 @@ def fix_pipe_times():
         problematic_schedules = detect_pipe_separated_schedules()
 
         if not problematic_schedules:
-            flash("No pipe-separated times detected in medication schedules.", "info")
+            flash(_("No pipe-separated times detected in medication schedules."), "info")
             return redirect(url_for("system.status"))
 
         fixed_count = 0
@@ -169,13 +245,13 @@ def fix_pipe_times():
                 failed_count += 1
 
         if fixed_count > 0:
-            flash(f"Successfully fixed {fixed_count} schedules with pipe-separated times.", "success")
+            flash(_("Successfully fixed {} schedules with pipe-separated times.").format(fixed_count), "success")
         if failed_count > 0:
-            flash(f"Failed to fix {failed_count} schedules. Check logs for details.", "warning")
+            flash(_("Failed to fix {} schedules. Check logs for details.").format(failed_count), "warning")
 
     except Exception as e:
         logger.error(f"Error fixing pipe-separated times: {e}")
-        flash(f"Error running fix: {e}", "error")
+        flash(_("Error running fix: {}").format(e), "error")
 
     return redirect(url_for("system.status"))
 
@@ -213,8 +289,8 @@ def run_db_migrations():
     success = run_migrations(current_app)
 
     if success:
-        flash("Database migrations completed successfully", "success")
+        flash(_("Database migrations completed successfully"), "success")
     else:
-        flash("Error running database migrations", "error")
+        flash(_("Error running database migrations"), "error")
 
     return redirect(url_for("system.migrations"))

@@ -1,0 +1,993 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Onboard New Package') }} - {{ _('Medication Tracker') }}{% endblock %}
+
+{% block head_extra %}
+<style>
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .step-indicator::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #dee2e6;
+        z-index: 0;
+    }
+
+    .step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid #dee2e6;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+
+    .step.active .step-circle {
+        background: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: white;
+    }
+
+    .step.completed .step-circle {
+        background: var(--bs-success);
+        border-color: var(--bs-success);
+        color: white;
+    }
+
+    .step-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .step.active .step-label {
+        color: var(--bs-primary);
+        font-weight: 500;
+    }
+
+    .step.completed .step-label {
+        color: var(--bs-success);
+    }
+
+    .scanned-data-card {
+        background: #f8f9fa;
+        border-left: 4px solid var(--bs-info);
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .option-card {
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+
+    .option-card:hover {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    }
+
+    .option-card.selected {
+        border-color: var(--bs-primary);
+        background: #f0f8ff;
+    }
+
+    .autocomplete-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+    }
+
+    .autocomplete-suggestions.show {
+        display: block;
+    }
+
+    .autocomplete-item {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+    }
+
+    .autocomplete-item:hover {
+        background: #f8f9fa;
+    }
+
+    .autocomplete-item.selected {
+        background: var(--bs-primary);
+        color: white;
+    }
+    
+    .autocomplete-item.create-new {
+        background: #e8f4fd;
+        border-top: 1px solid #dee2e6;
+        font-style: italic;
+    }
+    
+    .autocomplete-item.create-new:hover {
+        background: #cfe2ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header with Back Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-box-open me-2"></i>{{ _('Onboard New Package') }}
+        </h1>
+        <a href="{{ url_for('scanner.scan') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-camera me-1"></i>{{ _('Back to Scanner') }}
+        </a>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+        <div class="step active" id="step-1">
+            <div class="step-circle">1</div>
+            <div class="step-label">{{ _('Active Ingredient') }}</div>
+        </div>
+        <div class="step" id="step-2">
+            <div class="step-circle">2</div>
+            <div class="step-label">{{ _('Product') }}</div>
+        </div>
+        <div class="step" id="step-3">
+            <div class="step-circle">3</div>
+            <div class="step-label">{{ _('Package') }}</div>
+        </div>
+        <div class="step" id="step-4">
+            <div class="step-circle">4</div>
+            <div class="step-label">{{ _('Review & Save') }}</div>
+        </div>
+    </div>
+
+    <!-- Scanned Data Display -->
+    {% if scanned_data.gtin or scanned_data.national_number %}
+    <div class="card scanned-data-card mb-4">
+        <div class="card-body">
+            <h6 class="card-subtitle mb-2 text-muted">
+                <i class="fas fa-barcode me-2"></i>{{ _('Scanned Package Information') }}
+            </h6>
+            <div class="row">
+                {% if scanned_data.gtin %}
+                <div class="col-md-3">
+                    <small class="text-muted">{{ _('GTIN') }}</small>
+                    <div class="fw-bold">{{ scanned_data.gtin }}</div>
+                </div>
+                {% endif %}
+                {% if scanned_data.national_number %}
+                <div class="col-md-3">
+                    <small class="text-muted">{{ scanned_data.national_number_type or _('National Number') }}</small>
+                    <div class="fw-bold">{{ scanned_data.national_number }}</div>
+                </div>
+                {% endif %}
+                {% if scanned_data.batch %}
+                <div class="col-md-3">
+                    <small class="text-muted">{{ _('Batch') }}</small>
+                    <div class="fw-bold">{{ scanned_data.batch }}</div>
+                </div>
+                {% endif %}
+                {% if scanned_data.expiry %}
+                <div class="col-md-3">
+                    <small class="text-muted">{{ _('Expiry') }}</small>
+                    <div class="fw-bold">
+                        {% if scanned_data.expiry %}
+                            {{ scanned_data.expiry[:10] }}  {# Extract just the date part YYYY-MM-DD #}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Multi-Step Form -->
+    <form method="POST" id="onboardingForm">
+        <!-- Step 1: Active Ingredient -->
+        <div class="form-section" id="section-1">
+            <h4 class="mb-3">{{ _('Step 1: Select or Create Active Ingredient') }}</h4>
+
+            <div class="position-relative">
+                <input type="text" class="form-control form-control-lg"
+                       id="ingredient_search" placeholder="{{ _('Type to search or enter a new ingredient name...') }}">
+                <div class="autocomplete-suggestions" id="ingredient_suggestions"></div>
+            </div>
+            <input type="hidden" name="ingredient_id" id="ingredient_id">
+            
+            <!-- New ingredient details (shown when creating new) -->
+            <div id="inline_new_ingredient_fields" style="display: none;" class="mt-3 p-3 bg-light rounded">
+                <h6 class="text-muted mb-2">{{ _('Creating new ingredient:') }} <span id="new_ingredient_display"></span></h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" name="inline_ingredient_strength"
+                               pattern="^[0-9]+([\.\,][0-9]+)?$"
+                               placeholder="{{ _('Strength (e.g., 400)') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-control" name="inline_ingredient_unit">
+                            <option value="">{{ _('Unit') }}</option>
+                            <option value="mg">mg</option>
+                            <option value="µg">µg (mcg)</option>
+                            <option value="g">g</option>
+                            <option value="ml">ml</option>
+                            <option value="IE">IE</option>
+                            <option value="%">%</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" name="inline_ingredient_form"
+                               placeholder="{{ _('Form (e.g., tablet)') }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Ingredients -->
+            <div class="mt-3">
+                <small class="text-muted">{{ _('Popular ingredients:') }}</small>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    {% for ing in ingredients[:8] %}
+                    <button type="button" class="btn btn-sm btn-outline-primary ingredient-quick-select"
+                            data-id="{{ ing.id }}" data-name="{{ ing.name }}">
+                        {{ ing.name }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Product -->
+        <div class="form-section" id="section-2" style="display: none;">
+            <h4 class="mb-3">{{ _('Step 2: Select or Create Product') }}</h4>
+
+            <!-- Product Search/Selection -->
+            <div class="position-relative">
+                <input type="text" class="form-control form-control-lg"
+                       id="product_search" placeholder="{{ _('Type to search or enter a new product name...') }}">
+                <div class="autocomplete-suggestions" id="product_suggestions"></div>
+            </div>
+            <input type="hidden" name="product_id" id="product_id">
+            
+            <!-- New product details (shown when creating new) -->
+            <div id="inline_new_product_fields" style="display: none;" class="mt-3 p-3 bg-light rounded">
+                <h6 class="text-muted mb-2">{{ _('Creating new product:') }} <span id="new_product_display"></span></h6>
+                <div class="mb-3">
+                    <input type="text" class="form-control" name="inline_manufacturer"
+                           placeholder="{{ _('Manufacturer (e.g., 1A Pharma)') }}">
+                </div>
+                
+                <!-- Product Settings -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">{{ _('Product Settings') }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="inline_is_otc" name="inline_is_otc">
+                            <label class="form-check-label" for="inline_is_otc">
+                                {{ _('Over-the-counter (OTC) - No order required') }}
+                            </label>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="inline_aut_idem"
+                                   name="inline_aut_idem" checked>
+                            <label class="form-check-label" for="inline_aut_idem">
+                                {{ _('Allow generic substitution (Aut idem)') }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Products (dynamically loaded based on ingredient) -->
+            <div id="popular_products_section" class="mt-3" style="display: none;">
+                <small class="text-muted">{{ _('Available products:') }}</small>
+                <div class="d-flex flex-wrap gap-2 mt-2" id="popular_products_list">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Package -->
+        <div class="form-section" id="section-3" style="display: none;">
+            <h4 class="mb-3">{{ _('Step 3: Package Configuration') }}</h4>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="package_size" class="form-label">{{ _('Package Size') }} *</label>
+                    <select class="form-select" id="package_size" name="package_size">
+                        <option value="N1">N1 - {{ _('Small Package') }}</option>
+                        <option value="N2">N2 - {{ _('Medium Package') }}</option>
+                        <option value="N3">N3 - {{ _('Large Package') }}</option>
+                        <option value="custom">{{ _('Custom Size') }}</option>
+                    </select>
+                    <input type="text" class="form-control mt-2" id="custom_package_size"
+                           name="custom_package_size" placeholder="{{ _('Enter custom size...') }}"
+                           style="display: none;">
+                </div>
+                <div class="col-md-4">
+                    <label for="quantity" class="form-label">{{ _('Units per Package') }} *</label>
+                    <input type="number" class="form-control" id="quantity" name="quantity"
+                           min="1" placeholder="{{ _('e.g., 100') }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="list_price" class="form-label">{{ _('List Price') }}</label>
+                    <div class="input-group">
+                        <span class="input-group-text">€</span>
+                        <input type="number" class="form-control" id="list_price"
+                               name="list_price" step="0.01" min="0" placeholder="{{ _('0.00') }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label for="package_manufacturer" class="form-label">{{ _('Package Manufacturer') }}</label>
+                    <input type="text" class="form-control" id="package_manufacturer"
+                           name="package_manufacturer" placeholder="{{ _('If different from product') }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="package_pzn" class="form-label">{{ _('PZN/National Code') }}</label>
+                    <input type="text" class="form-control" id="package_pzn"
+                           name="package_pzn" placeholder="{{ _('e.g., PZN-12345678') }}"
+                           value="{{ scanned_data.national_number if scanned_data.national_number and scanned_data.national_number_type != 'ASIN' and scanned_data.national_number_type != 'VENDOR_CODE' else '' }}">
+                    <small class="text-muted">{{ _('Package-specific pharmaceutical code') }}</small>
+                </div>
+                <div class="col-md-4">
+                    <label for="package_gtin" class="form-label">{{ _('GTIN/EAN') }}</label>
+                    <input type="text" class="form-control" id="package_gtin"
+                           name="package_gtin" placeholder="{{ _('e.g., 4012345678901') }}"
+                           value="{{ scanned_data.gtin or '' }}">
+                    <small class="text-muted">{{ _('Global Trade Item Number') }}</small>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Step 4: Review -->
+        <div class="form-section" id="section-4" style="display: none;">
+            <h4 class="mb-3">{{ _('Step 4: Review and Save') }}</h4>
+
+            <!-- Inventory Tracking -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">{{ _('Package Action') }}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="add_to_inventory"
+                               name="add_to_inventory" checked>
+                        <label class="form-check-label" for="add_to_inventory">
+                            <strong>{{ _('Add this package to inventory') }}</strong>
+                            <div class="form-text">{{ _('Track this package in your inventory for stock levels and depletion monitoring') }}</div>
+                        </label>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ _('Uncheck if you only want to register the product information without adding this specific package to your stock') }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Review Information -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">{{ _('Review Information') }}</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">{{ _('Active Ingredient') }}</dt>
+                        <dd class="col-sm-9" id="review_ingredient">-</dd>
+
+                        <dt class="col-sm-3">{{ _('Product') }}</dt>
+                        <dd class="col-sm-9" id="review_product">-</dd>
+
+                        <dt class="col-sm-3">{{ _('Package Size') }}</dt>
+                        <dd class="col-sm-9" id="review_package">-</dd>
+
+                        <dt class="col-sm-3">{{ _('Order Required') }}</dt>
+                        <dd class="col-sm-9" id="review_order">-</dd>
+
+                        <dt class="col-sm-3">{{ _('Barcode Data') }}</dt>
+                        <dd class="col-sm-9">
+                            {% if scanned_data.gtin %}
+                                GTIN: {{ scanned_data.gtin }}<br>
+                            {% endif %}
+                            {% if scanned_data.national_number %}
+                                {{ scanned_data.national_number_type }}: {{ scanned_data.national_number }}
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between mt-4">
+            <div>
+                <a href="{{ url_for('scanner.scan') }}" class="btn btn-outline-secondary" id="cancelBtn">
+                    <i class="fas fa-times me-1"></i>{{ _('Cancel') }}
+                </a>
+                <button type="button" class="btn btn-outline-secondary" id="prevBtn" style="display: none;">
+                    <i class="fas fa-arrow-left me-1"></i>{{ _('Previous') }}
+                </button>
+            </div>
+            <div>
+                <button type="button" class="btn btn-primary" id="nextBtn">
+                    {{ _('Next') }}<i class="fas fa-arrow-right ms-1"></i>
+                </button>
+                <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">
+                    <i class="fas fa-save me-1"></i>{{ _('Save Package') }}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentStep = 1;
+    const totalSteps = 4;
+
+    // Form data storage
+    let formData = {
+        ingredient: null,
+        product: null,
+        package: null
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Step navigation
+        document.getElementById('nextBtn').addEventListener('click', nextStep);
+        document.getElementById('prevBtn').addEventListener('click', prevStep);
+        
+        // Prevent Enter key from submitting form, make it advance to next step instead
+        document.getElementById('onboardingForm').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.type !== 'textarea') {
+                e.preventDefault();
+                // Only advance if we're not on the last step
+                if (currentStep < totalSteps) {
+                    nextStep();
+                } else {
+                    // On last step, submit the form
+                    this.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+        
+        // Form submission
+        document.getElementById('onboardingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate all steps
+            for (let i = 1; i <= totalSteps - 1; i++) {
+                if (!validateStep(i)) {
+                    // Go to the invalid step
+                    while (currentStep !== i) {
+                        if (currentStep > i) {
+                            prevStep();
+                        } else {
+                            nextStep();
+                        }
+                    }
+                    return false;
+                }
+            }
+            
+            // Prepare form data for submission
+            const form = this;
+            
+            // Add hidden fields for the collected data
+            // Ingredient fields
+            if (formData.ingredient) {
+                if (formData.ingredient.id && !formData.ingredient.isNew) {
+                    addHiddenField(form, 'ingredient_option', 'existing');
+                    addHiddenField(form, 'ingredient_id', formData.ingredient.id);
+                } else {
+                    addHiddenField(form, 'ingredient_option', 'new');
+                    addHiddenField(form, 'ingredient_name', formData.ingredient.name);
+                    addHiddenField(form, 'ingredient_strength', formData.ingredient.strength);
+                    addHiddenField(form, 'ingredient_unit', formData.ingredient.unit);
+                    addHiddenField(form, 'ingredient_form', formData.ingredient.form);
+                }
+            }
+            
+            // Product fields
+            if (formData.product) {
+                if (formData.product.id && !formData.product.isNew) {
+                    addHiddenField(form, 'product_option', 'existing');
+                    addHiddenField(form, 'product_id', formData.product.id);
+                } else {
+                    addHiddenField(form, 'product_option', 'new');
+                    addHiddenField(form, 'brand_name', formData.product.name);
+                    addHiddenField(form, 'manufacturer', formData.product.manufacturer);
+                    addHiddenField(form, 'is_otc', formData.product.is_otc ? 'on' : '');
+                    addHiddenField(form, 'aut_idem', formData.product.aut_idem ? 'on' : '');
+                }
+            }
+            
+            // Package fields
+            if (formData.package) {
+                addHiddenField(form, 'package_size', formData.package.size);
+                addHiddenField(form, 'quantity', formData.package.quantity);
+                // Add PZN field if present
+                if (formData.package.pzn) {
+                    addHiddenField(form, 'package_pzn', formData.package.pzn);
+                }
+            }
+            
+            // Add inventory checkbox value
+            const addToInventoryCheckbox = document.getElementById('add_to_inventory');
+            if (addToInventoryCheckbox && addToInventoryCheckbox.checked) {
+                addHiddenField(form, 'add_to_inventory', 'on');
+            }
+            
+            // Submit the form
+            form.submit();
+        });
+        
+        function addHiddenField(form, name, value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value || '';
+            form.appendChild(input);
+        }
+
+        // Product search
+        setupProductSearch();
+
+        // OTC checkbox - no longer needs to toggle physician section since it's removed
+
+        // Package size selector
+        document.getElementById('package_size').addEventListener('change', function() {
+            const customInput = document.getElementById('custom_package_size');
+            if (this.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.required = true;
+            } else {
+                customInput.style.display = 'none';
+                customInput.required = false;
+            }
+        });
+
+        // No longer needed - removed legacy medication linking
+
+        // Ingredient search
+        setupIngredientSearch();
+
+        // Quick select buttons
+        document.querySelectorAll('.ingredient-quick-select').forEach(btn => {
+            btn.addEventListener('click', function() {
+                selectIngredient(this.dataset.id, this.dataset.name);
+            });
+        });
+    });
+
+
+
+    function setupIngredientSearch() {
+        const searchInput = document.getElementById('ingredient_search');
+        const suggestions = document.getElementById('ingredient_suggestions');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                suggestions.classList.remove('show');
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`{{ url_for('package_onboarding.search_ingredients') }}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        suggestions.innerHTML = '';
+                        
+                        // Check if we have an exact match (case-insensitive)
+                        const hasExactMatch = data.ingredients.some(ing => 
+                            ing.name.toLowerCase() === query.toLowerCase()
+                        );
+                        
+                        // Add existing ingredients
+                        if (data.ingredients.length > 0) {
+                            data.ingredients.forEach(ing => {
+                                const item = document.createElement('div');
+                                item.className = 'autocomplete-item';
+                                item.textContent = ing.display;
+                                item.dataset.id = ing.id;
+                                item.dataset.name = ing.name;
+                                item.dataset.isNew = 'false';
+                                item.addEventListener('click', function() {
+                                    selectIngredient(this.dataset.id, this.dataset.name, false);
+                                });
+                                suggestions.appendChild(item);
+                            });
+                        }
+                        
+                        // Only add "Create new" option if there's no exact match
+                        if (!hasExactMatch) {
+                            const createNewItem = document.createElement('div');
+                            createNewItem.className = 'autocomplete-item create-new';
+                            createNewItem.innerHTML = `<i class="fas fa-plus me-2"></i>${query} ({{ _("Create new") }})`;
+                            createNewItem.dataset.id = 'new';
+                            createNewItem.dataset.name = query;
+                            createNewItem.dataset.isNew = 'true';
+                            createNewItem.addEventListener('click', function() {
+                                selectIngredient(this.dataset.id, this.dataset.name, true);
+                            });
+                            suggestions.appendChild(createNewItem);
+                        }
+                        
+                        suggestions.classList.add('show');
+                    });
+            }, 300);
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !suggestions.contains(e.target)) {
+                suggestions.classList.remove('show');
+            }
+        });
+    }
+
+    function selectIngredient(id, name, isNew = false) {
+        const inlineNewFields = document.getElementById('inline_new_ingredient_fields');
+        const newIngredientDisplay = document.getElementById('new_ingredient_display');
+        
+        if (isNew) {
+            // Creating a new ingredient
+            document.getElementById('ingredient_id').value = '';
+            document.getElementById('ingredient_search').value = name;
+            inlineNewFields.style.display = 'block';
+            newIngredientDisplay.textContent = name;
+            formData.ingredient = { name: name, isNew: true };
+            
+            // Clear product search and show create new hint
+            document.getElementById('product_search').value = '';
+            document.getElementById('product_id').value = '';
+            document.getElementById('inline_new_product_fields').style.display = 'none';
+            document.getElementById('popular_products_section').style.display = 'none';
+        } else {
+            // Existing ingredient
+            document.getElementById('ingredient_id').value = id;
+            document.getElementById('ingredient_search').value = name;
+            inlineNewFields.style.display = 'none';
+            formData.ingredient = { id: id, name: name, isNew: false };
+            
+            // Load products for this ingredient
+            loadProductsForIngredient(id);
+        }
+        
+        document.getElementById('ingredient_suggestions').classList.remove('show');
+    }
+
+    function setupProductSearch() {
+        const searchInput = document.getElementById('product_search');
+        const suggestions = document.getElementById('product_suggestions');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                suggestions.classList.remove('show');
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                suggestions.innerHTML = '';
+                
+                // Filter current ingredient products
+                const products = window.currentIngredientProducts || [];
+                const filteredProducts = products.filter(p => 
+                    p.name.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                // Check if we have an exact match
+                const hasExactMatch = filteredProducts.some(p => 
+                    p.name.toLowerCase() === query.toLowerCase()
+                );
+                
+                // Add existing products
+                if (filteredProducts.length > 0) {
+                    filteredProducts.forEach(product => {
+                        const item = document.createElement('div');
+                        item.className = 'autocomplete-item';
+                        item.textContent = product.name;
+                        if (product.is_default) {
+                            item.textContent += ' ⭐';
+                        }
+                        item.dataset.id = product.id;
+                        item.dataset.name = product.name;
+                        item.addEventListener('click', function() {
+                            selectProduct(this.dataset.id, this.dataset.name, false);
+                        });
+                        suggestions.appendChild(item);
+                    });
+                }
+                
+                // Only add "Create new" if no exact match
+                if (!hasExactMatch) {
+                    const createNewItem = document.createElement('div');
+                    createNewItem.className = 'autocomplete-item create-new';
+                    createNewItem.innerHTML = `<i class="fas fa-plus me-2"></i>${query} ({{ _("Create new") }})`;
+                    createNewItem.dataset.id = 'new';
+                    createNewItem.dataset.name = query;
+                    createNewItem.addEventListener('click', function() {
+                        selectProduct(this.dataset.id, this.dataset.name, true);
+                    });
+                    suggestions.appendChild(createNewItem);
+                }
+                
+                suggestions.classList.add('show');
+            }, 300);
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#product_search') && !e.target.closest('#product_suggestions')) {
+                suggestions.classList.remove('show');
+            }
+        });
+    }
+
+    function selectProduct(id, name, isNew = false) {
+        const inlineNewFields = document.getElementById('inline_new_product_fields');
+        const newProductDisplay = document.getElementById('new_product_display');
+        
+        if (isNew) {
+            // Creating a new product
+            document.getElementById('product_id').value = '';
+            document.getElementById('product_search').value = name;
+            inlineNewFields.style.display = 'block';
+            newProductDisplay.textContent = name;
+            formData.product = { name: name, isNew: true };
+        } else {
+            // Existing product
+            document.getElementById('product_id').value = id;
+            document.getElementById('product_search').value = name;
+            inlineNewFields.style.display = 'none';
+            formData.product = { id: id, name: name, isNew: false };
+        }
+        
+        document.getElementById('product_suggestions').classList.remove('show');
+    }
+
+    function loadProductsForIngredient(ingredientId) {
+        fetch(`{{ url_for('package_onboarding.get_ingredient_products', ingredient_id=0) }}`.replace('0', ingredientId))
+            .then(response => response.json())
+            .then(data => {
+                const popularSection = document.getElementById('popular_products_section');
+                const popularList = document.getElementById('popular_products_list');
+                
+                // Store products globally for search
+                window.currentIngredientProducts = data.products || [];
+                
+                // Clear product search
+                document.getElementById('product_search').value = '';
+                document.getElementById('product_id').value = '';
+                document.getElementById('inline_new_product_fields').style.display = 'none';
+
+                if (data.products && data.products.length > 0) {
+                    popularList.innerHTML = '';
+                    data.products.forEach(product => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'btn btn-sm btn-outline-primary product-quick-select';
+                        btn.dataset.id = product.id;
+                        btn.dataset.name = product.name;
+                        btn.textContent = product.name;
+                        if (product.is_default) {
+                            btn.textContent += ' ⭐';
+                            // Auto-select default product
+                            setTimeout(() => selectProduct(product.id, product.name, false), 100);
+                        }
+                        btn.addEventListener('click', function() {
+                            selectProduct(this.dataset.id, this.dataset.name, false);
+                        });
+                        popularList.appendChild(btn);
+                    });
+                    popularSection.style.display = 'block';
+                } else {
+                    popularSection.style.display = 'none';
+                }
+            });
+    }
+
+    function validateStep(step) {
+        switch(step) {
+            case 1:
+                // Validate ingredient selection
+                const ingredientSearch = document.getElementById('ingredient_search').value.trim();
+                const ingredientId = document.getElementById('ingredient_id').value;
+                
+                if (!ingredientSearch) {
+                    alert('{{ _("Please select or enter an active ingredient") }}');
+                    return false;
+                }
+                
+                // Check if creating new ingredient inline
+                if (!ingredientId || formData.ingredient?.isNew) {
+                    // Get inline new ingredient fields
+                    const strength = document.querySelector('input[name="inline_ingredient_strength"]')?.value || '';
+                    const unit = document.querySelector('select[name="inline_ingredient_unit"]')?.value || '';
+                    const form = document.querySelector('input[name="inline_ingredient_form"]')?.value || '';
+                    
+                    formData.ingredient = { 
+                        name: ingredientSearch,
+                        strength: strength.replace(',', '.'),
+                        unit: unit,
+                        form: form,
+                        isNew: true 
+                    };
+                }
+                return true;
+
+            case 2:
+                // Validate product selection
+                const productSearch = document.getElementById('product_search').value.trim();
+                const productId = document.getElementById('product_id').value;
+                
+                if (!productSearch) {
+                    alert('{{ _("Please select or enter a product") }}');
+                    return false;
+                }
+                
+                // Check if creating new product inline
+                if (!productId || formData.product?.isNew) {
+                    // Get inline new product fields
+                    const manufacturer = document.querySelector('input[name="inline_manufacturer"]')?.value || '';
+                    const isOtc = document.getElementById('inline_is_otc')?.checked || false;
+                    const autIdem = document.getElementById('inline_aut_idem')?.checked || true;
+                    
+                    formData.product = { 
+                        name: productSearch,
+                        manufacturer: manufacturer,
+                        is_otc: isOtc,
+                        aut_idem: autIdem,
+                        isNew: true 
+                    };
+                }
+                return true;
+
+            case 3:
+                // Validate package configuration
+                const packageSize = document.getElementById('package_size').value;
+                const quantity = document.getElementById('quantity').value;
+                const packagePzn = document.getElementById('package_pzn').value.trim();
+                const packageGtin = document.getElementById('package_gtin').value.trim();
+
+                if (packageSize === 'custom') {
+                    const customSize = document.getElementById('custom_package_size').value.trim();
+                    if (!customSize) {
+                        alert('{{ _("Please enter a custom package size") }}');
+                        return false;
+                    }
+                }
+
+                if (!quantity || quantity < 1) {
+                    alert('{{ _("Please enter the number of units per package") }}');
+                    return false;
+                }
+
+                formData.package = {
+                    size: packageSize === 'custom' ? document.getElementById('custom_package_size').value : packageSize,
+                    quantity: quantity,
+                    pzn: packagePzn,
+                    gtin: packageGtin
+                };
+                return true;
+
+            default:
+                return true;
+        }
+    }
+
+    function updateReviewSection() {
+        // Update review display
+        document.getElementById('review_ingredient').textContent = formData.ingredient?.name || '-';
+        document.getElementById('review_product').textContent = formData.product?.name || '-';
+        document.getElementById('review_package').textContent =
+            `${formData.package?.size || '-'} (${formData.package?.quantity || '-'} units)`;
+
+        const isOtc = formData.product?.is_otc || false;
+        document.getElementById('review_order').textContent =
+            isOtc ? '{{ _("No (OTC)") }}' : '{{ _("Yes") }}';
+    }
+
+    function nextStep() {
+        if (!validateStep(currentStep)) {
+            return;
+        }
+
+        if (currentStep < totalSteps) {
+            // Hide current section
+            document.getElementById(`section-${currentStep}`).style.display = 'none';
+            document.getElementById(`step-${currentStep}`).classList.remove('active');
+            document.getElementById(`step-${currentStep}`).classList.add('completed');
+
+            // Show next section
+            currentStep++;
+            document.getElementById(`section-${currentStep}`).style.display = 'block';
+            document.getElementById(`step-${currentStep}`).classList.add('active');
+
+            // Update buttons
+            document.getElementById('cancelBtn').style.display = 'none';
+            document.getElementById('prevBtn').style.display = 'inline-block';
+
+            if (currentStep === totalSteps) {
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('submitBtn').style.display = 'inline-block';
+                updateReviewSection();
+            }
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 1) {
+            // Hide current section
+            document.getElementById(`section-${currentStep}`).style.display = 'none';
+            document.getElementById(`step-${currentStep}`).classList.remove('active');
+
+            // Show previous section
+            currentStep--;
+            document.getElementById(`section-${currentStep}`).style.display = 'block';
+            document.getElementById(`step-${currentStep}`).classList.remove('completed');
+            document.getElementById(`step-${currentStep}`).classList.add('active');
+
+            // Update buttons
+            if (currentStep === 1) {
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+                document.getElementById('prevBtn').style.display = 'none';
+            } else {
+                document.getElementById('cancelBtn').style.display = 'none';
+                document.getElementById('prevBtn').style.display = 'inline-block';
+            }
+
+            document.getElementById('nextBtn').style.display = 'inline-block';
+            document.getElementById('submitBtn').style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,368 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('System Settings') }} - {{ _('Medication Tracker') }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-cogs me-2"></i>{{ _('System Settings') }}
+    </h1>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+        <i class="fas fa-home me-1"></i>{{ _('Dashboard') }}
+    </a>
+</div>
+
+
+
+<!-- Main Settings Sections -->
+<div class="row">
+    <!-- Settings Column -->
+    <div class="col-md-8">
+        <!-- Timezone Settings Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-globe me-2"></i>{{ _('Timezone Settings') }}</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ _('Current timezone') }}: <strong>{{ settings.timezone_name }}</strong></p>
+                <p>{{ _('Local time') }}: <strong>{{ format_datetime(now, show_seconds=true) }}</strong></p>
+
+                <form action="{{ url_for('settings.update_timezone') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="timezone_search" class="form-label">{{ _('Search Timezone') }}</label>
+                        <input type="text" class="form-control" id="timezone_search" placeholder="{{ _('Start typing to search (e.g. \'Berlin\', \'New York\')') }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="timezone_name" class="form-label">{{ _('Select Timezone') }}</label>
+                        <select class="form-select" id="timezone_name" name="timezone_name" size="10">
+                            <option value="{{ settings.timezone_name }}" selected>
+                                {{ settings.timezone_name }} ({{ _('Current') }})
+                            </option>
+
+                            {% set regions = timezone_info | groupby('region') %}
+                            {% for region, timezones in regions %}
+                                {% if region %}
+                                    <optgroup label="{{ region }}">
+                                        {% for tz in timezones %}
+                                            {% if tz.name != settings.timezone_name %}
+                                                <option value="{{ tz.name }}">{{ tz.display_name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endif %}
+                            {% endfor %}
+
+                            <optgroup label="Other">
+                                {% for tz in timezone_info %}
+                                    {% if not tz.region and tz.name != settings.timezone_name %}
+                                        <option value="{{ tz.name }}">{{ tz.display_name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>{{ _('Update Timezone') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Automatic Deduction Settings Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>{{ _('Automatic Inventory Deduction') }}</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ _('The system automatically deducts medication from your inventory based on your defined schedules.') }}</p>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    {{ _('Automatic deduction runs hourly to check if any medications are due to be taken.') }}
+                </div>
+
+                <p>{{ _('You can manually trigger the deduction check for testing:') }}</p>
+                <a href="{{ url_for('schedules.check_deductions') }}" class="btn btn-primary">
+                    <i class="fas fa-check-double me-1"></i>{{ _('Run Deduction Check Now') }}
+                </a>
+            </div>
+        </div>
+
+        <!-- Related Settings Links Card -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-link me-2"></i>{{ _('Related Settings') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{{ url_for('settings.physician_visits') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-user-md me-2 text-primary"></i>
+                                <strong>{{ _('Visit Planning Settings') }}</strong>
+                                <p class="mb-0 small text-muted">{{ _('Configure visit intervals and order planning') }}</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('settings.data_management') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-database me-2 text-success"></i>
+                                <strong>{{ _('Data Management') }}</strong>
+                                <p class="mb-0 small text-muted">{{ _('Backup, restore, import and export data') }}</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('system.migrations') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-code-branch me-2 text-info"></i>
+                                <strong>{{ _('Database Migrations') }}</strong>
+                                <p class="mb-0 small text-muted">{{ _('View and manage database updates') }}</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Column -->
+    <div class="col-md-4">
+        <!-- System Status Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>{{ _('System Status') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-check-circle fa-3x text-success"></i>
+                    <h6 class="mt-2">{{ _('Operating Normally') }}</h6>
+                </div>
+
+                <dl class="row mb-0">
+                    <dt class="col-7">{{ _('Last Deduction:') }}</dt>
+                    <dd class="col-5 text-end">
+                        {% if settings.last_deduction_check %}
+                            {{ format_datetime(settings.last_deduction_check) }}
+                        {% else %}
+                            <span class="text-muted">{{ _('Never') }}</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-7">{{ _('Active Schedules:') }}</dt>
+                    <dd class="col-5 text-end">{{ schedule_count }}</dd>
+
+                    <dt class="col-7">{{ _('Upcoming Visits:') }}</dt>
+                    <dd class="col-5 text-end">{{ upcoming_visits_count }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>{{ _('Quick Actions') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('settings.backup_database') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-download me-1"></i>{{ _('Download Backup') }}
+                    </a>
+                    <a href="{{ url_for('settings.data_management') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-database me-1"></i>{{ _('Manage Data') }}
+                    </a>
+                    <button type="button" class="btn btn-outline-primary" onclick="checkForUpdates()">
+                        <i class="fas fa-sync me-1"></i>{{ _('Check Updates') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Version Info Card -->
+        <div class="card mt-3" id="versionCard" style="display: none;">
+            <div class="card-header" id="versionHeader">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>{{ _('Version Information') }}</h5>
+            </div>
+            <div class="card-body" id="versionBody">
+                <!-- Version info will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Check for updates function
+    function checkForUpdates() {
+        const button = event.target.closest('button');
+        const originalContent = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Checking...';
+
+        fetch('{{ url_for("settings.check_updates") }}')
+            .then(response => response.json())
+            .then(data => {
+                const versionCard = document.getElementById('versionCard');
+                const versionHeader = document.getElementById('versionHeader');
+                const versionBody = document.getElementById('versionBody');
+
+                versionCard.style.display = 'block';
+
+                if (data.success) {
+                    if (data.update_available) {
+                        versionHeader.className = 'card-header bg-warning text-dark';
+                        versionBody.innerHTML = `
+                            <div class="text-center">
+                                <i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                                <h6>Update Available!</h6>
+                                <p class="mb-2">Current version: <strong>v${data.current_version}</strong></p>
+                                <p class="mb-3">Latest version: <strong>v${data.latest_version}</strong></p>
+                                <a href="${data.release_url}" target="_blank" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-external-link-alt me-1"></i>View Release
+                                </a>
+                            </div>
+                        `;
+                    } else {
+                        versionHeader.className = 'card-header bg-success text-white';
+                        versionBody.innerHTML = `
+                            <div class="text-center">
+                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                <h6>You're Up to Date!</h6>
+                                <p class="mb-0">Current version: <strong>v${data.current_version}</strong></p>
+                                <p class="text-muted small">This is the latest version</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    versionHeader.className = 'card-header bg-secondary text-white';
+                    versionBody.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-question-circle fa-3x text-secondary mb-3"></i>
+                            <h6>Unable to Check</h6>
+                            <p class="mb-2">Current version: <strong>v${data.current_version}</strong></p>
+                            <p class="text-muted small">${data.error || 'Could not connect to update server'}</p>
+                            <a href="https://github.com/skjall/medication-tracker/releases" target="_blank" class="btn btn-outline-primary btn-sm mt-2">
+                                <i class="fas fa-external-link-alt me-1"></i>Check Manually
+                            </a>
+                        </div>
+                    `;
+                }
+
+                // Show a toast with the result
+                if (data.success && data.update_available) {
+                    showToast('Update available! Version ' + data.latest_version + ' is now available.', 'warning');
+                } else if (data.success && !data.update_available) {
+                    showToast('You are running the latest version!', 'success');
+                } else {
+                    showToast('Unable to check for updates', 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Error checking for updates:', error);
+                const versionCard = document.getElementById('versionCard');
+                const versionHeader = document.getElementById('versionHeader');
+                const versionBody = document.getElementById('versionBody');
+
+                versionCard.style.display = 'block';
+                versionHeader.className = 'card-header bg-danger text-white';
+                versionBody.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                        <h6>Error</h6>
+                        <p class="mb-0">Failed to check for updates</p>
+                        <p class="text-muted small">Please try again later</p>
+                    </div>
+                `;
+
+                showToast('Error checking for updates', 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerHTML = originalContent;
+            });
+    }
+
+    // Original timezone search code
+    document.addEventListener('DOMContentLoaded', function() {
+        // Display current version in the system status card
+        const currentVersionElement = document.querySelector('.card-body .text-center:first-child');
+        if (currentVersionElement && '{{ current_version }}') {
+            const versionInfo = document.createElement('small');
+            versionInfo.className = 'd-block text-muted mt-1';
+            versionInfo.innerHTML = 'Version {{ current_version }}';
+            currentVersionElement.querySelector('h6').after(versionInfo);
+        }
+
+        // Timezone search functionality
+        const searchInput = document.getElementById('timezone_search');
+        const timezoneSelect = document.getElementById('timezone_name');
+
+        if (searchInput && timezoneSelect) {
+            const originalOptions = Array.from(timezoneSelect.options);
+            const originalOptgroups = Array.from(timezoneSelect.getElementsByTagName('optgroup'));
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+
+                // Reset select to original state
+                while (timezoneSelect.firstChild) {
+                    timezoneSelect.removeChild(timezoneSelect.firstChild);
+                }
+
+                if (searchTerm.length === 0) {
+                    // Restore original options and groups
+                    originalOptgroups.forEach(group => {
+                        timezoneSelect.appendChild(group.cloneNode(true));
+                    });
+
+                    // Make sure current timezone is still selected
+                    for (let i = 0; i < timezoneSelect.options.length; i++) {
+                        if (timezoneSelect.options[i].value === "{{ settings.timezone_name }}") {
+                            timezoneSelect.options[i].selected = true;
+                            break;
+                        }
+                    }
+                } else {
+                    // Filter options based on search term
+                    const matchingOptions = originalOptions.filter(option =>
+                        option.text.toLowerCase().includes(searchTerm)
+                    );
+
+                    // Add filtered options directly to select without optgroups
+                    matchingOptions.forEach(option => {
+                        const newOption = option.cloneNode(true);
+                        timezoneSelect.appendChild(newOption);
+
+                        // Keep current timezone selected
+                        if (newOption.value === "{{ settings.timezone_name }}") {
+                            newOption.selected = true;
+                        }
+                    });
+
+                    // If no matches found, add a placeholder option
+                    if (matchingOptions.length === 0) {
+                        const noMatchOption = document.createElement('option');
+                        noMatchOption.text = 'No matches found';
+                        noMatchOption.disabled = true;
+                        timezoneSelect.appendChild(noMatchOption);
+                    }
+                }
+            });
+
+            // Select the timezone when clicking on an option
+            timezoneSelect.addEventListener('change', function() {
+                const selectedOption = timezoneSelect.options[timezoneSelect.selectedIndex];
+                searchInput.value = selectedOption.text;
+            });
+        }
+    });
+</script>
+{% endblock %}
