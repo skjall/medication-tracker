@@ -23,20 +23,73 @@ bp = Blueprint('migration_scanner', __name__, url_prefix='/migration')
 
 @bp.route('/select')
 def select_medication():
-    """Show medications eligible for migration (have old inventory)."""
+    """Show products eligible for migration (have old inventory via medications)."""
     
     # Get medications with old inventory > 0
-    medications = Medication.query.join(Inventory).filter(
+    medications_with_inventory = Medication.query.join(Inventory).filter(
         Inventory.current_count > 0
-    ).order_by(Medication.name).all()
+    ).all()
     
-    if not medications:
+    if not medications_with_inventory:
         flash(_('No medications need migration. All inventory is already package-based.'), 'info')
         return redirect(url_for('scanner.scan'))
     
+    # Build a list of products to migrate
+    products_to_migrate = []
+    
+    for medication in medications_with_inventory:
+        product = None
+        
+        app.logger.info(f"Processing medication: {medication.name} (ID: {medication.id})")
+        
+        # First check if medication has a default product
+        if medication.default_product_id:
+            product = MedicationProduct.query.get(medication.default_product_id)
+            app.logger.info(f"Found default product: {product.display_name if product else 'None'}")
+        
+        if not product:
+            # Try to find product by exact medication name match
+            product = MedicationProduct.query.filter_by(
+                brand_name=medication.name
+            ).first()
+            if product:
+                app.logger.info(f"Found product by exact name match: {product.display_name}")
+        
+        if not product:
+            # Try to find product through ingredient
+            ingredient = ActiveIngredient.query.filter_by(
+                name=medication.name
+            ).first()
+            
+            if ingredient:
+                app.logger.info(f"Found ingredient: {ingredient.name} (ID: {ingredient.id})")
+                # Get the first product for this ingredient
+                product = MedicationProduct.query.filter_by(
+                    active_ingredient_id=ingredient.id
+                ).first()
+                if product:
+                    app.logger.info(f"Found product through ingredient: {product.display_name}")
+            else:
+                app.logger.info(f"No ingredient found for medication: {medication.name}")
+        
+        # Create a product data object for display
+        product_data = {
+            'medication_id': medication.id,
+            'medication_name': medication.name,
+            'product_name': product.display_name if product else medication.name,
+            'product_id': product.id if product else None,
+            'inventory_count': medication.inventory.current_count,
+            'has_product': product is not None
+        }
+        
+        products_to_migrate.append(product_data)
+    
+    # Sort by product name
+    products_to_migrate.sort(key=lambda x: x['product_name'])
+    
     return render_template(
         'migration/select.html',
-        medications=medications
+        products=products_to_migrate
     )
 
 
@@ -55,16 +108,24 @@ def migration_scanner(medication_id):
     app.logger.info(f"Migration scanner: Medication {medication.name} (ID: {medication_id})")
     app.logger.info(f"Inventory count: {medication.inventory.current_count if medication.inventory else 'No inventory'}")
     
-    # Get any existing packages for this medication's ingredient
-    # Try to find the corresponding active ingredient
-    ingredient = ActiveIngredient.query.filter_by(
-        name=medication.name
-    ).first()
+    # Get the product associated with this medication
+    product = None
+    if medication.default_product_id:
+        product = MedicationProduct.query.get(medication.default_product_id)
     
+    # Get any existing packages for this medication's product or ingredient
     known_packages = []
-    if ingredient:
-        for product in ingredient.products:
-            known_packages.extend(product.packages)
+    if product:
+        # Get packages for the specific product
+        known_packages.extend(product.packages)
+    else:
+        # Fallback: Try to find packages through the ingredient
+        ingredient = ActiveIngredient.query.filter_by(
+            name=medication.name
+        ).first()
+        if ingredient:
+            for prod in ingredient.products:
+                known_packages.extend(prod.packages)
     
     # Get scanned packages from session
     session_key = f'migration_{medication_id}_packages'
@@ -80,6 +141,7 @@ def migration_scanner(medication_id):
     return render_template(
         'migration/scanner.html',
         medication=medication,
+        product=product,
         remaining_units=remaining_units,
         scanned_packages=scanned_packages,
         known_packages=known_packages
@@ -251,38 +313,69 @@ def onboard_migration_package():
             'remaining_units': 0
         }), 400
     
-    # Find or create the active ingredient
-    ingredient = ActiveIngredient.query.filter_by(
-        name=medication.name
-    ).first()
+    # IMPORTANT: During migration, we must use the existing product linked to the medication
+    # The old inventory is tied to medications, which may have a default_product
+    product = None
     
-    if not ingredient:
-        ingredient = ActiveIngredient(
-            name=medication.name,
-            strength=medication.dosage.split()[0] if medication.dosage else None,
-            strength_unit=medication.dosage.split()[1] if medication.dosage and len(medication.dosage.split()) > 1 else 'mg'
-        )
-        db.session.add(ingredient)
-        db.session.flush()
-    
-    # Create or find product
-    product_name = data.get('product_name', medication.name)
-    manufacturer = ''  # No manufacturer override in quick onboarding
-    
-    product = MedicationProduct.query.filter_by(
-        active_ingredient_id=ingredient.id,
-        brand_name=product_name
-    ).first()
+    # First, check if the medication already has a default product
+    if medication.default_product_id:
+        product = MedicationProduct.query.get(medication.default_product_id)
+        app.logger.info(f"Using medication's default product: {product.id} - {product.brand_name}")
     
     if not product:
-        product = MedicationProduct(
+        # Find or create the active ingredient
+        ingredient = ActiveIngredient.query.filter_by(
+            name=medication.name
+        ).first()
+        
+        if not ingredient:
+            ingredient = ActiveIngredient(
+                name=medication.name,
+                strength=medication.dosage.split()[0] if medication.dosage else None,
+                strength_unit=medication.dosage.split()[1] if medication.dosage and len(medication.dosage.split()) > 1 else 'mg'
+            )
+            db.session.add(ingredient)
+            db.session.flush()
+        
+        # Try to find an existing product for this ingredient
+        # First try with medication name (for existing products linked to old inventory)
+        product = MedicationProduct.query.filter_by(
             active_ingredient_id=ingredient.id,
-            brand_name=product_name,
-            manufacturer=manufacturer,
-            is_otc=medication.is_otc if hasattr(medication, 'is_otc') else False
-        )
-        db.session.add(product)
-        db.session.flush()
+            brand_name=medication.name  # Use medication name to find existing product
+        ).first()
+        
+        # If not found, try with the provided product name
+        if not product:
+            product_name = data.get('product_name', medication.name)
+            product = MedicationProduct.query.filter_by(
+                active_ingredient_id=ingredient.id,
+                brand_name=product_name
+            ).first()
+        
+        # If still not found, get ANY product for this ingredient (during migration we use existing products)
+        if not product:
+            product = MedicationProduct.query.filter_by(
+                active_ingredient_id=ingredient.id
+            ).first()
+            app.logger.info(f"Using first available product for ingredient: {product.brand_name if product else 'None'}")
+        
+        if not product:
+            # Only create new product if absolutely no product exists for this ingredient
+            # This should be rare during migration
+            app.logger.warning(f"No product found for ingredient {ingredient.name}, creating new one")
+            product = MedicationProduct(
+                active_ingredient_id=ingredient.id,
+                brand_name=medication.name,  # Use medication name for new product
+                manufacturer=data.get('manufacturer', ''),
+                is_otc=medication.is_otc if hasattr(medication, 'is_otc') else False
+            )
+            db.session.add(product)
+            db.session.flush()
+        
+        # Set this as the default product for the medication
+        if not medication.default_product_id:
+            medication.default_product_id = product.id
+            db.session.flush()
     
     # Check if a package with this size already exists for the product
     package_size = data.get('package_size')
@@ -301,7 +394,7 @@ def onboard_migration_package():
         existing_package.gtin = data.get('gtin') or existing_package.gtin
         existing_package.national_number = data.get('national_number') or existing_package.national_number
         existing_package.national_number_type = data.get('national_number_type') or existing_package.national_number_type
-        existing_package.manufacturer = manufacturer or existing_package.manufacturer
+        existing_package.manufacturer = data.get('manufacturer', '') or existing_package.manufacturer
         existing_package.is_active = True
         package = existing_package
         
@@ -317,7 +410,7 @@ def onboard_migration_package():
             gtin=data.get('gtin'),
             national_number=data.get('national_number'),
             national_number_type=data.get('national_number_type'),
-            manufacturer=manufacturer,
+            manufacturer=data.get('manufacturer', ''),
             is_active=True
         )
         db.session.add(package)

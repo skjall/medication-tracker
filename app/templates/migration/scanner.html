@@ -46,6 +46,16 @@
                     </div>
                 </div>
                 <div class="card-footer">
+                    <!-- Camera controls -->
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <button type="button" id="toggle-torch-btn" class="btn btn-outline-secondary camera-control-btn" aria-label="Toggle Light" title="{{ _('Toggle Light') }}">
+                            <i class="fas fa-lightbulb"></i>
+                        </button>
+                        <button type="button" id="switch-camera-btn" onclick="switchCamera()" class="btn btn-outline-secondary camera-control-btn" aria-label="Switch Camera" title="{{ _('Switch Camera') }}">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    
                     <div class="row g-2">
                         <div class="col-12">
                             <button type="button" class="btn btn-primary w-100" id="completeBtn">
@@ -281,10 +291,18 @@
     height: auto;
     max-height: 400px;
     object-fit: cover;
+    position: relative;
+    z-index: 1;
 }
 
 .scanner-container {
     position: relative;
+    overflow: visible !important;
+}
+
+/* Ensure card doesn't clip buttons */
+.card-body.p-0 {
+    overflow: visible !important;
 }
 
 .scanner-overlay {
@@ -298,6 +316,7 @@
     justify-content: center;
     pointer-events: none;
 }
+
 
 .scanner-frame {
     position: relative;
@@ -366,6 +385,36 @@
         max-height: 300px;
     }
 }
+
+/* Camera control buttons - simple style below scanner */
+.camera-control-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.camera-control-btn.available {
+    display: inline-flex;
+}
+
+.camera-control-btn i {
+    font-size: 18px;
+}
+
+#toggle-torch-btn.active {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: white;
+}
+
+#toggle-torch-btn.active:hover {
+    background-color: #ffb300;
+    border-color: #ffb300;
+}
 </style>
 {% endblock %}
 
@@ -376,6 +425,10 @@ const medicationId = {{ medication.id }};
 let codeReader = null;
 let onboardingData = null;
 let isModalOpen = false;
+let selectedDeviceId = null;
+let availableCameras = [];
+let currentStream = null;
+let torchCapability = false;
 
 // Update status display
 function updateStatus(message, type = 'info') {
@@ -393,13 +446,26 @@ function initScanner() {
     codeReader = new ZXing.BrowserMultiFormatReader(hints);
 
     codeReader.listVideoInputDevices().then(videoInputDevices => {
+        availableCameras = videoInputDevices;
         if (videoInputDevices.length > 0) {
+            // Show camera switch button if multiple cameras
+            const switchBtn = document.getElementById('switch-camera-btn');
+            const torchBtn = document.getElementById('toggle-torch-btn');
+            
+            if (switchBtn && videoInputDevices.length > 1) {
+                switchBtn.classList.add('available');
+                // Initially center it (will be adjusted if torch is detected)
+                switchBtn.classList.add('centered');
+            }
+            
             // Prefer back camera
             const selectedDevice = videoInputDevices.find(device =>
-                device.label.toLowerCase().includes('back')
+                device.label.toLowerCase().includes('back') ||
+                device.label.toLowerCase().includes('environment')
             ) || videoInputDevices[0];
-
-            startScanning(selectedDevice.deviceId);
+            
+            selectedDeviceId = selectedDevice.deviceId;
+            startScanning(selectedDeviceId);
         }
     }).catch(err => {
         console.error('Error accessing camera:', err);
@@ -511,11 +577,41 @@ function restartScanner() {
 // Make restartScanner globally available
 window.restartScanner = restartScanner;
 
-function startScanning(deviceId) {
+async function startScanning(deviceId) {
     isScanning = true;
     updateStatus('{{ _("Ready to scan") }}', 'success');
+    selectedDeviceId = deviceId;
     
-    codeReader.decodeFromVideoDevice(deviceId, 'scanner-container', (result, err) => {
+    // Get the video element to check torch capability
+    const videoElement = document.getElementById('scanner-container');
+    
+    codeReader.decodeFromVideoDevice(deviceId, 'scanner-container', async (result, err) => {
+        // Check for torch capability after stream starts
+        if (!torchCapability && videoElement && videoElement.srcObject) {
+            currentStream = videoElement.srcObject;
+            const tracks = currentStream.getVideoTracks();
+            if (tracks.length > 0) {
+                const track = tracks[0];
+                const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+                torchCapability = 'torch' in capabilities;
+                
+                // Show/hide torch button based on capability
+                const torchBtn = document.getElementById('toggle-torch-btn');
+                const switchBtn = document.getElementById('switch-camera-btn');
+                
+                if (torchBtn && torchCapability) {
+                    torchBtn.classList.add('available');
+                    // If torch is available and switch button exists, remove centered class
+                    if (switchBtn && switchBtn.classList.contains('available')) {
+                        switchBtn.classList.remove('centered');
+                    }
+                } else if (switchBtn && switchBtn.classList.contains('available')) {
+                    // Only switch button is available, center it
+                    switchBtn.classList.add('centered');
+                }
+            }
+        }
+        
         if (result) {
             const now = Date.now();
             const code = result.text;
@@ -1190,7 +1286,72 @@ document.getElementById('saveEditBtn').addEventListener('click', function() {
 });
 
 // Initialize on load
-document.addEventListener('DOMContentLoaded', initScanner);
+// Switch camera function (global for onclick)
+window.switchCamera = async function() {
+    if (availableCameras.length <= 1) return;
+    
+    // Find current camera index
+    const currentIndex = availableCameras.findIndex(cam => cam.deviceId === selectedDeviceId);
+    const nextIndex = (currentIndex + 1) % availableCameras.length;
+    const nextDevice = availableCameras[nextIndex];
+    
+    // Reset current scanner
+    if (codeReader) {
+        codeReader.reset();
+    }
+    
+    // Clear torch state
+    torchCapability = false;
+    const torchBtn = document.getElementById('toggle-torch-btn');
+    if (torchBtn) {
+        torchBtn.classList.remove('active', 'available');
+    }
+    
+    // Start with new camera
+    setTimeout(() => {
+        startScanning(nextDevice.deviceId);
+    }, 500);
+}
+
+// Toggle torch/flashlight
+async function toggleTorch() {
+    if (!torchCapability || !currentStream) return;
+    
+    const tracks = currentStream.getVideoTracks();
+    if (tracks.length > 0) {
+        const track = tracks[0];
+        const torchBtn = document.getElementById('toggle-torch-btn');
+        const isActive = torchBtn.classList.contains('active');
+        
+        try {
+            await track.applyConstraints({
+                advanced: [{ torch: !isActive }]
+            });
+            
+            if (torchBtn) {
+                torchBtn.classList.toggle('active');
+            }
+        } catch (err) {
+            console.error('Error toggling torch:', err);
+        }
+    }
+}
+
+// Attach event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    initScanner();
+    
+    // Camera control buttons
+    const switchBtn = document.getElementById('switch-camera-btn');
+    if (switchBtn) {
+        switchBtn.addEventListener('click', switchCamera);
+    }
+    
+    const torchBtn = document.getElementById('toggle-torch-btn');
+    if (torchBtn) {
+        torchBtn.addEventListener('click', toggleTorch);
+    }
+});
 
 // Cleanup on unload
 window.addEventListener('beforeunload', () => {
