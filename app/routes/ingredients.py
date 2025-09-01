@@ -149,14 +149,27 @@ def show_product(id: int):
     
     # Get legacy inventory if exists
     legacy_inventory = None
-    if product.active_ingredient:
-        # Try to find legacy medication by matching name
+    
+    # First try to find medications that point to this product
+    legacy_medication = Medication.query.filter_by(
+        default_product_id=product.id
+    ).first()
+    
+    if not legacy_medication:
+        # Try to find by exact brand name match
+        legacy_medication = Medication.query.filter_by(
+            name=product.brand_name
+        ).first()
+    
+    if not legacy_medication and product.active_ingredient:
+        # Try to find by ingredient name
         legacy_medication = Medication.query.filter_by(
             name=product.active_ingredient.name
         ).first()
-        if legacy_medication and legacy_medication.inventory:
-            if legacy_medication.inventory.current_count > 0:
-                legacy_inventory = legacy_medication.inventory
+    
+    if legacy_medication and legacy_medication.inventory:
+        if legacy_medication.inventory.current_count > 0:
+            legacy_inventory = legacy_medication.inventory
     
     # Get all packages for this product
     packages = ProductPackage.query.filter_by(product_id=product.id).all()
@@ -601,6 +614,7 @@ def new_package(id: int):
             or None,
             manufacturer=request.form.get("manufacturer", "").strip() or None,
             list_price=float(request.form.get("list_price") or 0) or None,
+            exclude_from_ordering="exclude_from_ordering" in request.form,
         )
 
         db.session.add(package)
@@ -635,6 +649,7 @@ def edit_package(id: int):
             request.form.get("manufacturer", "").strip() or None
         )
         package.list_price = float(request.form.get("list_price") or 0) or None
+        package.exclude_from_ordering = "exclude_from_ordering" in request.form
 
         db.session.commit()
         flash(_("Package updated successfully"), "success")

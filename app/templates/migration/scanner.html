@@ -55,7 +55,7 @@
                             <i class="fas fa-sync-alt"></i>
                         </button>
                     </div>
-                    
+
                     <div class="row g-2">
                         <div class="col-12">
                             <button type="button" class="btn btn-primary w-100" id="completeBtn">
@@ -442,7 +442,7 @@ function updateStatus(message, type = 'info') {
 // Initialize scanner
 function initScanner() {
     const hints = new Map();
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, false);  // Reduce phantom detection
+    // hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
     codeReader = new ZXing.BrowserMultiFormatReader(hints);
 
     codeReader.listVideoInputDevices().then(videoInputDevices => {
@@ -451,19 +451,19 @@ function initScanner() {
             // Show camera switch button if multiple cameras
             const switchBtn = document.getElementById('switch-camera-btn');
             const torchBtn = document.getElementById('toggle-torch-btn');
-            
+
             if (switchBtn && videoInputDevices.length > 1) {
                 switchBtn.classList.add('available');
                 // Initially center it (will be adjusted if torch is detected)
                 switchBtn.classList.add('centered');
             }
-            
+
             // Prefer back camera
             const selectedDevice = videoInputDevices.find(device =>
                 device.label.toLowerCase().includes('back') ||
                 device.label.toLowerCase().includes('environment')
             ) || videoInputDevices[0];
-            
+
             selectedDeviceId = selectedDevice.deviceId;
             startScanning(selectedDeviceId);
         }
@@ -538,11 +538,17 @@ const SCAN_COOLDOWN = 2000; // 2 seconds between same code
 let scanActivityTracker = [];  // Track scan attempts for phantom detection
 const PHANTOM_THRESHOLD = 5;  // Number of rapid scans to trigger phantom detection
 const PHANTOM_TIME_WINDOW = 3000; // Time window in ms to check for rapid scans
+let scanMode = 'linear'; // Default to linear mode for migration scanner
+
+// Two-step scanning support
+let pendingScan = null; // Store incomplete scan data
+let pendingScanTimeout = null; // Timeout for auto-accepting partial data
+const PENDING_SCAN_TIMEOUT = 15000; // 15 seconds to complete second scan
 
 
 function restartScanner() {
     console.log('Restarting scanner to clear phantom state...');
-    
+
     // First, fully stop and cleanup existing scanner
     if (codeReader) {
         try {
@@ -552,12 +558,12 @@ function restartScanner() {
             console.error('Error resetting scanner:', e);
         }
     }
-    
+
     // Clear all tracking variables
     lastScannedCode = null;
     lastScanTime = 0;
     scanActivityTracker = [];  // Clear activity tracker
-    
+
     // Wait a moment for cleanup to complete
     setTimeout(() => {
         // Recreate video element
@@ -565,7 +571,7 @@ function restartScanner() {
         if (scannerContainer) {
             scannerContainer.innerHTML = '<video id="scanner-video" width="100%" height="400"></video>';
         }
-        
+
         // Reinitialize scanner after a delay
         setTimeout(() => {
             console.log('Reinitializing scanner...');
@@ -581,10 +587,10 @@ async function startScanning(deviceId) {
     isScanning = true;
     updateStatus('{{ _("Ready to scan") }}', 'success');
     selectedDeviceId = deviceId;
-    
+
     // Get the video element to check torch capability
     const videoElement = document.getElementById('scanner-container');
-    
+
     codeReader.decodeFromVideoDevice(deviceId, 'scanner-container', async (result, err) => {
         // Check for torch capability after stream starts
         if (!torchCapability && videoElement && videoElement.srcObject) {
@@ -594,11 +600,11 @@ async function startScanning(deviceId) {
                 const track = tracks[0];
                 const capabilities = track.getCapabilities ? track.getCapabilities() : {};
                 torchCapability = 'torch' in capabilities;
-                
+
                 // Show/hide torch button based on capability
                 const torchBtn = document.getElementById('toggle-torch-btn');
                 const switchBtn = document.getElementById('switch-camera-btn');
-                
+
                 if (torchBtn && torchCapability) {
                     torchBtn.classList.add('available');
                     // If torch is available and switch button exists, remove centered class
@@ -611,9 +617,10 @@ async function startScanning(deviceId) {
                 }
             }
         }
-        
+
         if (result) {
             const now = Date.now();
+
             const code = result.text;
             const format = result.format;
 
@@ -621,13 +628,13 @@ async function startScanning(deviceId) {
             scanActivityTracker.push({time: now, code: code});
             // Remove old entries outside the time window
             scanActivityTracker = scanActivityTracker.filter(scan => now - scan.time < PHANTOM_TIME_WINDOW);
-            
+
             // Check for phantom reading pattern (same code scanned many times rapidly)
             const sameCodeScans = scanActivityTracker.filter(scan => scan.code === code).length;
             if (sameCodeScans >= PHANTOM_THRESHOLD) {
                 console.warn(`Phantom reading detected: same code '${code}' scanned ${sameCodeScans} times in ${PHANTOM_TIME_WINDOW}ms`);
                 scanActivityTracker = []; // Clear tracker
-                
+
                 // Auto-restart scanner to clear phantom state
                 updateStatus('{{ _("Resetting scanner...") }}', 'warning');
                 setTimeout(() => {
@@ -668,11 +675,179 @@ async function startScanning(deviceId) {
     });
 }
 
+// Parse DataMatrix locally to detect incomplete scans
+function parseDataMatrixLocal(code) {
+    const data = {
+        scan_source: 'datamatrix'
+    };
+    
+    // Pattern like "1725100010047AB" - expiry date and batch only
+    if (/^17\d{6}10/.test(code)) {
+        // AI 17: Expiry date (YYMMDD)
+        data.expiry = code.substr(2, 6);
+        // AI 10: Batch number (after position 8)
+        const batchStart = code.indexOf('10') + 2;
+        data.batch = code.substr(batchStart);
+        
+        // This is incomplete - no product ID
+        return data;
+    }
+    
+    // Standard GS1 DataMatrix parsing for complete codes
+    // Pattern: 01 (GTIN) + 17 (Expiry) + 21 (Serial) + 10 (Batch)
+    if (code.startsWith('01')) {
+        // AI 01: GTIN (14 digits)
+        data.gtin = code.substr(2, 14);
+        
+        // Look for other AIs
+        let pos = 16;
+        while (pos < code.length) {
+            const ai = code.substr(pos, 2);
+            if (ai === '17' && pos + 8 <= code.length) {
+                // Expiry date
+                data.expiry = code.substr(pos + 2, 6);
+                pos += 8;
+            } else if (ai === '21') {
+                // Serial number (variable length, look for next AI or end)
+                let serialEnd = code.length;
+                for (let i = pos + 2; i < code.length - 1; i++) {
+                    if (/^\d{2}$/.test(code.substr(i, 2))) {
+                        serialEnd = i;
+                        break;
+                    }
+                }
+                data.serial = code.substr(pos + 2, serialEnd - pos - 2);
+                pos = serialEnd;
+            } else if (ai === '10') {
+                // Batch number (variable length)
+                let batchEnd = code.length;
+                for (let i = pos + 2; i < code.length - 1; i++) {
+                    if (/^\d{2}$/.test(code.substr(i, 2))) {
+                        batchEnd = i;
+                        break;
+                    }
+                }
+                data.batch = code.substr(pos + 2, batchEnd - pos - 2);
+                pos = batchEnd;
+            } else {
+                pos++;
+            }
+        }
+    }
+    
+    return data;
+}
+
+// Check if scan data is incomplete
+function isIncompleteScan(data) {
+    const hasProductId = data.gtin || data.national_number;
+    const hasBatchInfo = data.batch || data.expiry;
+
+    // If we have batch/expiry but no product ID, it's incomplete
+    if (hasBatchInfo && !hasProductId) {
+        return 'missing_product';
+    }
+    
+    // For migration scanner, we don't prompt for DataMatrix after linear scan
+    // We just accept the package with whatever info we have
+    
+    return false;
+}
+
+// Show pending scan prompt
+function showPendingScanPrompt(type, data) {
+    let message = '';
+
+    if (type === 'missing_product') {
+        message = '{{ _("Incomplete data: Product ID missing. Please scan the EAN/PZN barcode.") }}';
+        showToast(message, 'warning', PENDING_SCAN_TIMEOUT);
+    }
+
+    // Set timeout to auto-accept partial data
+    if (pendingScanTimeout) {
+        clearTimeout(pendingScanTimeout);
+    }
+
+    pendingScanTimeout = setTimeout(() => {
+        if (pendingScan) {
+            console.log('Auto-accepting partial scan data');
+            processFinalScan(pendingScan);
+            pendingScan = null;
+        }
+    }, PENDING_SCAN_TIMEOUT);
+}
+
+// Merge two scans together
+function mergeScanData(scan1, scan2) {
+    // Merge the data, preferring non-null values
+    return {
+        gtin: scan1.gtin || scan2.gtin,
+        serial: scan1.serial || scan2.serial || `MERGED_${Date.now()}`,
+        batch: scan1.batch || scan2.batch,
+        expiry: scan1.expiry || scan2.expiry,
+        national_number: scan1.national_number || scan2.national_number,
+        national_number_type: scan1.national_number_type || scan2.national_number_type,
+        merged: true
+    };
+}
+
+// Process the final scan (either single complete or merged)
+function processFinalScan(scanData) {
+    // Clear any pending scan state
+    if (pendingScanTimeout) {
+        clearTimeout(pendingScanTimeout);
+        pendingScanTimeout = null;
+    }
+
+    // Send to server
+    fetch('{{ url_for("migration_scanner.scan_package") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            medication_id: medicationId,
+            barcode_data: scanData
+        })
+    })
+    .then(response => response.json())
+    .then(handleScanResponse);
+}
+
 function handleScan(barcodeText) {
     // Parse 2D barcode data
     const barcodeData = parseBarcodeData(barcodeText);
 
-    // Send to server
+    // Check if we have a pending scan to merge with
+    if (pendingScan) {
+        // Clear timeout
+        if (pendingScanTimeout) {
+            clearTimeout(pendingScanTimeout);
+            pendingScanTimeout = null;
+        }
+
+        // Merge the scans
+        const mergedData = mergeScanData(pendingScan, barcodeData);
+        pendingScan = null;
+
+        console.log('Merged scan data:', mergedData);
+        showToast('{{ _("Scans merged successfully") }}', 'success');
+
+        // Process the merged data
+        processFinalScan(mergedData);
+        return;
+    }
+
+    // Check if this scan is incomplete
+    const incompleteType = isIncompleteScan(barcodeData);
+    if (incompleteType) {
+        // Store as pending and prompt for second scan
+        pendingScan = barcodeData;
+        showPendingScanPrompt(incompleteType, barcodeData);
+        return;
+    }
+
+    // Complete scan - send to server
     fetch('{{ url_for("migration_scanner.scan_package") }}', {
         method: 'POST',
         headers: {
@@ -684,7 +859,10 @@ function handleScan(barcodeText) {
         })
     })
     .then(response => response.json())
-    .then(data => {
+    .then(handleScanResponse);
+}
+
+function handleScanResponse(data) {
         if (data.silent) {
             // Silently ignore - user hasn't moved package away yet
             return;
@@ -714,7 +892,7 @@ function handleScan(barcodeText) {
         } else if (data.success) {
             // Package added successfully
             updateUI(data);
-            
+
             // Check if this was auto-adjusted to an open package
             if (data.package && data.package.status === 'opened' && data.remaining_units === 0) {
                 showToast('{{ _("Final package added as open package with remaining units") }}', 'info');
@@ -723,12 +901,22 @@ function handleScan(barcodeText) {
                 showToast('{{ _("Package added") }}', 'success');
             }
         }
-    });
 }
 
 function parseBarcodeData(text) {
+    // First try local DataMatrix parsing for better incomplete scan detection
+    // Migration scanner always tries to parse DataMatrix patterns
+    const localParsed = parseDataMatrixLocal(text);
+    if (localParsed && (localParsed.gtin || localParsed.batch || localParsed.expiry)) {
+        // Use local parsing result
+        Object.assign(localParsed, { scan_source: 'datamatrix' });
+        return localParsed;
+    }
+    
     // Parse GS1 DataMatrix format
-    const data = {};
+    const data = {
+        scan_source: text.length > 20 ? 'datamatrix' : 'linear' // Guess based on length
+    };
 
     // Common patterns
     const patterns = {
@@ -884,7 +1072,7 @@ function updateUI(data) {
 function addPackageToList(package) {
     // Get last 6 characters of serial if available
     const serialSuffix = package.serial ? '...' + package.serial.slice(-6) : '';
-    
+
     // Generate a consistent serial identifier (same logic as server template)
     const packageSerial = package.serial || `TEMP_${document.getElementById('packagesList').children.length}`;
 
@@ -932,27 +1120,27 @@ function undoPackage(serial) {
     .then(data => {
         if (data.success) {
             console.log('Package removed successfully, remaining:', data.remaining_units);
-            
+
             // Remove from UI
             const packageElement = document.querySelector(`[data-serial="${serial}"]`);
             if (packageElement) {
                 packageElement.remove();
             }
-            
+
             // Update UI with new data
             updateUI(data);
-            
+
             // If packages were returned, rebuild the list to show correct statuses
             if (data.packages && data.packages.length > 0) {
                 // Clear and rebuild the packages list
                 const packagesList = document.getElementById('packagesList');
                 packagesList.innerHTML = '';
-                
+
                 data.packages.forEach(pkg => {
                     addPackageToList(pkg);
                 });
             }
-            
+
             showToast('{{ _("Package removed") }}', 'info');
 
             // Check if list is now empty
@@ -1289,24 +1477,24 @@ document.getElementById('saveEditBtn').addEventListener('click', function() {
 // Switch camera function (global for onclick)
 window.switchCamera = async function() {
     if (availableCameras.length <= 1) return;
-    
+
     // Find current camera index
     const currentIndex = availableCameras.findIndex(cam => cam.deviceId === selectedDeviceId);
     const nextIndex = (currentIndex + 1) % availableCameras.length;
     const nextDevice = availableCameras[nextIndex];
-    
+
     // Reset current scanner
     if (codeReader) {
         codeReader.reset();
     }
-    
+
     // Clear torch state
     torchCapability = false;
     const torchBtn = document.getElementById('toggle-torch-btn');
     if (torchBtn) {
         torchBtn.classList.remove('active', 'available');
     }
-    
+
     // Start with new camera
     setTimeout(() => {
         startScanning(nextDevice.deviceId);
@@ -1316,18 +1504,18 @@ window.switchCamera = async function() {
 // Toggle torch/flashlight
 async function toggleTorch() {
     if (!torchCapability || !currentStream) return;
-    
+
     const tracks = currentStream.getVideoTracks();
     if (tracks.length > 0) {
         const track = tracks[0];
         const torchBtn = document.getElementById('toggle-torch-btn');
         const isActive = torchBtn.classList.contains('active');
-        
+
         try {
             await track.applyConstraints({
                 advanced: [{ torch: !isActive }]
             });
-            
+
             if (torchBtn) {
                 torchBtn.classList.toggle('active');
             }
@@ -1340,13 +1528,13 @@ async function toggleTorch() {
 // Attach event listeners
 document.addEventListener('DOMContentLoaded', () => {
     initScanner();
-    
+
     // Camera control buttons
     const switchBtn = document.getElementById('switch-camera-btn');
     if (switchBtn) {
         switchBtn.addEventListener('click', switchCamera);
     }
-    
+
     const torchBtn = document.getElementById('toggle-torch-btn');
     if (torchBtn) {
         torchBtn.addEventListener('click', toggleTorch);

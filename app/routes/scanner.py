@@ -59,34 +59,41 @@ def scan():
     # Process scanned data
     data = request.json
     barcode_data = data.get("barcode")
+    parsed_data = data.get("parsed_data")  # Pre-parsed data from frontend (for merged scans)
 
-    if not barcode_data:
+    if not barcode_data and not parsed_data:
         return jsonify({"error": _("No barcode data provided")}), 400
 
-    # Clean up barcode data - remove leading minus sign (standard for Code 39 PZN barcodes)
-    # All German PZN barcodes are printed with "-" prefix in Code 39 format
-    barcode_data = str(barcode_data).lstrip("-")
-
-    # Try to identify standalone barcode format (PZN, CIP, CNK, etc.)
-    barcode_info = identify_barcode_format(barcode_data)
-
-    if barcode_info:
-        # This is a recognized standalone pharmaceutical barcode
-        national_number, number_type = barcode_info
-        app.logger.info(
-            f"Identified as pharmaceutical code: {number_type} - {national_number}"
-        )
-        parsed = {
-            "gtin": None,
-            "serial": f"{number_type}_{national_number}_{datetime.now().timestamp()}",  # Generate unique serial
-            "expiry": None,
-            "batch": None,
-            "national_number": national_number,
-            "national_number_type": number_type,
-        }
+    # If we have pre-parsed data from frontend (merged scans), use it directly
+    if parsed_data and parsed_data.get("merged"):
+        app.logger.info("Using pre-parsed merged scan data")
+        parsed = parsed_data
     else:
-        # Parse as DataMatrix or other GS1 format
-        parsed = parse_datamatrix(barcode_data)
+        # Clean up barcode data - remove leading minus sign (standard for Code 39 PZN barcodes)
+        # All German PZN barcodes are printed with "-" prefix in Code 39 format
+        if barcode_data:
+            barcode_data = str(barcode_data).lstrip("-")
+
+        # Try to identify standalone barcode format (PZN, CIP, CNK, etc.)
+        barcode_info = identify_barcode_format(barcode_data) if barcode_data else None
+
+        if barcode_info:
+            # This is a recognized standalone pharmaceutical barcode
+            national_number, number_type = barcode_info
+            app.logger.info(
+                f"Identified as pharmaceutical code: {number_type} - {national_number}"
+            )
+            parsed = {
+                "gtin": None,
+                "serial": f"{number_type}_{national_number}_{datetime.now().timestamp()}",  # Generate unique serial
+                "expiry": None,
+                "batch": None,
+                "national_number": national_number,
+                "national_number_type": number_type,
+            }
+        else:
+            # Parse as DataMatrix or other GS1 format
+            parsed = parse_datamatrix(barcode_data)
         if parsed and parsed.get("serial"):
             app.logger.info(
                 f"Identified as DataMatrix/GS1 code with GTIN: {parsed.get('gtin', 'N/A')}, Serial: {parsed.get('serial', 'N/A')[:20]}..."

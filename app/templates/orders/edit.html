@@ -154,9 +154,9 @@
 
                                                     <div class="row">
                                                         {% set product = ingredient.default_product or (ingredient.products[0] if ingredient.products else None) %}
-                                                        {% if product and product.packages %}
+                                                        {% if product and product.orderable_packages %}
                                                             {# Use ProductPackage configurations #}
-                                                            {% for package in product.packages %}
+                                                            {% for package in product.orderable_packages %}
                                                                 {% if package.quantity > 0 %}
                                                                     <div class="col-md-4">
                                                                         <div class="input-group mb-2">

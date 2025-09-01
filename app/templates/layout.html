@@ -175,7 +175,7 @@
             });
 
             // Function to show a toast programmatically
-            window.showToast = function(message, category = 'info') {
+            window.showToast = function(message, category = 'info', duration = 5000) {
                 const toastContainer = document.querySelector('.toast-container');
 
                 // Determine toast styling based on category
@@ -195,7 +195,7 @@
 
                 // Create toast HTML
                 const toastHtml = `
-                    <div class="toast align-items-center ${toastClass} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                    <div class="toast align-items-center ${toastClass} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="${duration}">
                         <div class="d-flex">
                             <div class="toast-body">
                                 <i class="fas ${icon} me-2"></i>
