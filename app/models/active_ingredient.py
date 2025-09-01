@@ -266,8 +266,7 @@ class ActiveIngredient(db.Model):
                     PackageInventory.query
                     .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
                     .filter(
-                        PackageInventory.status.in_(['sealed', 'opened']),
-                        PackageInventory.medication_id.is_(None)  # Only new packages
+                        PackageInventory.status.in_(['sealed', 'opened'])
                     )
                 )
                 
@@ -334,17 +333,9 @@ class ActiveIngredient(db.Model):
     @property
     def has_legacy_inventory(self) -> bool:
         """Check if this ingredient has any legacy inventory (non-package based)."""
-        for product in self.products:
-            if product.legacy_medication and product.legacy_medication.inventory:
-                if product.legacy_medication.inventory.current_count > 0:
-                    return True
         return False
     
     @property
     def legacy_inventory_count(self) -> int:
         """Get total legacy inventory count across all products."""
-        total = 0
-        for product in self.products:
-            if product.legacy_medication and product.legacy_medication.inventory:
-                total += product.legacy_medication.inventory.current_count
-        return total
+        return 0

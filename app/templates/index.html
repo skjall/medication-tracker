@@ -77,8 +77,8 @@
                         {% endfor %}
                     </ul>
                     <div class="mt-4">
-                        <a href="{{ url_for('inventory.low') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-search me-1"></i>{{ _('View All Low Stock') }}
+                        <a href="{{ url_for('ingredients.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-1"></i>{{ _('View All Ingredients') }}
                         </a>
                     </div>
                 {% else %}
@@ -455,8 +455,8 @@
                     <a href="{{ url_for('ingredients.index') }}" class="btn btn-outline-primary">
                         <i class="fas fa-pills me-1"></i>{{ _('Manage Ingredients') }}
                     </a>
-                    <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-primary ms-2">
-                        <i class="fas fa-boxes me-1"></i>{{ _('Inventory Detail') }}
+                    <a href="{{ url_for('scanner.scan') }}" class="btn btn-outline-primary ms-2">
+                        <i class="fas fa-barcode me-1"></i>{{ _('Scan Package') }}
                     </a>
                 </div>
             {% endif %}

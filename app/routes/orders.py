@@ -150,8 +150,23 @@ def new():
         visit.order_for_next_but_one or settings.default_order_for_next_but_one
     )
 
-    # Get all active ingredients that have products
-    ingredients = ActiveIngredient.query.all()
+    # Get active ingredients based on visit physician
+    if visit.physician_id:
+        # Get ingredients that have products prescribed by this physician
+        ingredients = ActiveIngredient.query.join(
+            MedicationProduct,
+            ActiveIngredient.id == MedicationProduct.active_ingredient_id
+        ).filter(
+            MedicationProduct.physician_id == visit.physician_id
+        ).order_by(ActiveIngredient.name).distinct().all()
+    else:
+        # For visits without physician, show OTC ingredients only
+        ingredients = ActiveIngredient.query.join(
+            MedicationProduct,
+            ActiveIngredient.id == MedicationProduct.active_ingredient_id
+        ).filter(
+            MedicationProduct.is_otc == True
+        ).order_by(ActiveIngredient.name).distinct().all()
 
     def calculate_ingredient_needs(ingredient, visit_date, gap_coverage=False, consider_next_but_one=False):
         """Helper function to calculate ingredient needs."""
@@ -166,6 +181,7 @@ def new():
             'additional_needed': 0,
             'days_until_depletion': 0,
             'gap_days': 0,
+            'will_deplete_before_visit': False,
             'packages': {'N1': 0, 'N2': 0, 'N3': 0}
         }
         
@@ -178,15 +194,21 @@ def new():
         if ingredient.daily_usage > 0 and ingredient.total_inventory_count > 0:
             result['days_until_depletion'] = int(ingredient.total_inventory_count / ingredient.daily_usage)
         
+        # Check if it will deplete before visit
+        if ingredient.daily_usage > 0:
+            result['will_deplete_before_visit'] = result['days_until_depletion'] < days_until_visit
+        
         # Determine calculation type and days needed
         if gap_coverage:
             result['calculation_type'] = 'gap_coverage'
             # Gap coverage: calculate days between depletion and visit
-            if result['days_until_depletion'] < days_until_visit:
+            if result['will_deplete_before_visit']:
                 result['gap_days'] = days_until_visit - result['days_until_depletion']
                 result['days_calculated'] = result['gap_days'] + result['safety_margin_days']
             else:
-                result['days_calculated'] = result['safety_margin_days']
+                # For gap coverage, if it won't deplete, we don't need to order anything
+                result['days_calculated'] = 0
+                result['gap_days'] = 0
         elif consider_next_but_one:
             result['calculation_type'] = 'next_but_one'
             # Calculate for next-but-one visit (double the period)

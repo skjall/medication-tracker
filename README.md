@@ -119,6 +119,39 @@ crowdin upload sources
 
 ⚠️ **This software has no access protection. Users are advised to not expose any sensitive information and to only deploy it on local networks or behind appropriate security measures. The application is intended for personal use and should not be publicly accessible.**
 
+## ⚠️ Important Upgrade Notice: Version 2.x Breaking Changes
+
+### **WARNING: Upgrading from version 1.x to 2.x will DELETE all existing inventory data**
+
+Version 2.0 introduces a completely redesigned inventory system that is **incompatible** with version 1.x:
+
+#### What Changed:
+- **Old System (1.x)**: Simple sum-based inventory tracking tied to medications
+  - Single inventory count per medication
+  - Manual adjustments only
+  - No package tracking
+  
+- **New System (2.x)**: Advanced package-based inventory with barcode scanning
+  - Individual package tracking with serial numbers
+  - GS1 DataMatrix barcode scanning support
+  - Batch and expiry date tracking
+  - Automatic FIFO (First In, First Out) deduction
+  - Active ingredient-based system allowing generic substitution
+
+#### Why This Change Was Necessary:
+- **Regulatory Compliance**: Support for EU FMD (Falsified Medicines Directive) requirements
+- **Better Traceability**: Track individual packages with batch numbers and expiry dates
+- **Generic Substitution**: Medications are now organized by active ingredient, allowing pharmacies to substitute brands
+- **Improved Accuracy**: Barcode scanning eliminates manual entry errors
+
+#### Before Upgrading:
+1. **Export your data** using the Settings → Data Management → Export feature in version 1.x
+2. **Document your current inventory** levels manually or via screenshots
+3. **Backup your database** file (`medication_tracker.db`)
+4. After upgrading, you'll need to **re-scan all medication packages** to rebuild inventory
+
+If you need to maintain your existing inventory data, **do not upgrade to version 2.x**. Continue using the latest 1.x release.
+
 ## Screenshots
 
 ### Dashboard

@@ -154,7 +154,7 @@
             ({{ _('plus a safety margin of additional days for each medication') }}).
         </p>
 
-        {% if medication_needs %}
+        {% if product_needs %}
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
@@ -170,13 +170,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for med_id, data in medication_needs.items() %}
+                        {% for product_id, data in product_needs.items() %}
                             <tr>
                                 <td>
-                                    <strong>{{ data.medication.name }}</strong>
+                                    <strong>{{ data.product.display_name }}</strong>
                                 </td>
-                                <td>{{ data.medication.daily_usage|round(1) }} {{ _('units') }}</td>
-                                <td>{{ data.medication.safety_margin_days }} {{ _('days') }}</td>
+                                <td>{{ data.daily_usage|round(1) }} {{ _('units') }}</td>
+                                <td>{{ data.safety_margin_days }} {{ _('days') }}</td>
                                 <td>{{ data.needed_units }}</td>
                                 <td>
                                     <span class="{% if data.current_inventory < data.needed_units %}text-danger{% endif %}">
@@ -191,17 +191,13 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if data.additional_needed > 0 %}
+                                    {% if data.additional_needed > 0 and data.packages %}
                                         <small>
-                                            {% if data.packages and data.packages.get('N1', 0) > 0 %}
-                                                N1: {{ data.packages.N1 }}<br>
-                                            {% endif %}
-                                            {% if data.packages and data.packages.get('N2', 0) > 0 %}
-                                                N2: {{ data.packages.N2 }}<br>
-                                            {% endif %}
-                                            {% if data.packages and data.packages.get('N3', 0) > 0 %}
-                                                N3: {{ data.packages.N3 }}
-                                            {% endif %}
+                                            {% for size in ['N1', 'N2', 'N3'] %}
+                                                {% if size in data.packages %}
+                                                    {{ size }}: {{ data.packages[size] }}<br>
+                                                {% endif %}
+                                            {% endfor %}
                                         </small>
                                     {% else %}
                                         <span class="text-muted">-</span>
@@ -209,11 +205,11 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ url_for('medications.show', id=data.medication.id) }}" class="btn btn-outline-secondary" title="{{ _('View Medication') }}">
-                                            <i class="fas fa-pills"></i>
+                                        <a href="{{ url_for('ingredients.show', id=data.ingredient.id) }}" class="btn btn-outline-secondary" title="{{ _('View Ingredient') }}">
+                                            <i class="fas fa-flask"></i>
                                         </a>
-                                        {% if data.medication.inventory %}
-                                            <a href="{{ url_for('inventory.show', id=data.medication.inventory.id) }}" class="btn btn-outline-primary" title="{{ _('Manage Inventory') }}">
+                                        {% if data.product.packages %}
+                                            <a href="{{ url_for('package_onboarding.onboard_package', gtin=data.product.packages[0].gtin if data.product.packages else '') }}" class="btn btn-outline-primary" title="{{ _('View Packages') }}">
                                                 <i class="fas fa-boxes"></i>
                                             </a>
                                         {% endif %}
@@ -231,35 +227,28 @@
             </div>
         {% endif %}
 
-        {% if medication_needs and make_aware(visit.visit_date) >= make_aware(now) %}
+        {% if product_needs and make_aware(visit.visit_date) >= make_aware(now) %}
             <div class="mt-4">
                 <a href="{{ url_for('orders.new', visit_id=visit.id) }}" class="btn btn-primary">
                     <i class="fas fa-clipboard-list me-1"></i>{{ _('Create Order Based on These Needs') }}
                 </a>
 
-                {% set medications_will_deplete = [] %}
-                {% set medications_in_safety_margin = [] %}
-                {% for med_id, data in medication_needs.items() %}
-                    {% if data.is_truly_running_out %}
-                        {% set _ = medications_will_deplete.append(data.medication) %}
-                    {% elif data.is_in_safety_margin %}
-                        {% set _ = medications_in_safety_margin.append(data.medication) %}
+                {% set products_will_deplete = [] %}
+                {% for product_id, data in product_needs.items() %}
+                    {% if data.will_deplete_before_visit %}
+                        {% set _ = products_will_deplete.append(data.product) %}
                     {% endif %}
                 {% endfor %}
 
-                {% if medications_will_deplete or medications_in_safety_margin %}
+                {% if products_will_deplete %}
                     <a href="{{ url_for('orders.new', visit_id=visit.id, gap_coverage='true') }}" class="btn btn-warning ms-2">
                         <i class="fas fa-exclamation-triangle me-1"></i>{{ _('Create Gap Coverage Order') }}
                     </a>
                     <div class="alert alert-warning mt-3">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         <strong>{{ _('Warning') }}:</strong>
-                        {% if medications_will_deplete|length > 0 %}
-                            {{ _n('%(count)d medication will run out before this visit.', '%(count)d medications will run out before this visit.', medications_will_deplete|length, count=medications_will_deplete|length) }}
-                        {% endif %}
-                        {% if medications_in_safety_margin|length > 0 %}
-                            {% if medications_will_deplete|length > 0 %} {{ _('Additionally') }}, {% endif %}
-                            {{ _n('%(count)d medication is in the safety margin.', '%(count)d medications are in the safety margin.', medications_in_safety_margin|length, count=medications_in_safety_margin|length) }}
+                        {% if products_will_deplete|length > 0 %}
+                            {{ _n('%(count)d product will run out before this visit.', '%(count)d products will run out before this visit.', products_will_deplete|length, count=products_will_deplete|length) }}
                         {% endif %}
                         {{ _('Please consider creating a gap coverage order to bridge the supply gap.') }}
                     </div>

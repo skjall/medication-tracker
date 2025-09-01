@@ -110,7 +110,7 @@
                                                 <input class="form-check-input ingredient-checkbox" type="checkbox"
                                                        id="include_{{ ingredient.id }}" name="include_{{ ingredient.id }}"
                                                        data-ingredient-id="{{ ingredient.id }}"
-                                                       {% if gap_coverage or ingredient_need.additional_needed > 0 %}checked{% endif %}>
+                                                       {% if (gap_coverage and ingredient_need.will_deplete_before_visit and ingredient_need.additional_needed > 0) or (not gap_coverage and ingredient_need.additional_needed > 0) %}checked{% endif %}>
                                             </div>
                                         </td>
                                         <td>

@@ -42,15 +42,8 @@ def index():
 def scan():
     """Handle barcode scanning."""
     if request.method == "GET":
-        # Check if there are medications eligible for migration
-        from models import Medication, Inventory
-
-        has_migration_eligible = (
-            Medication.query.join(Inventory)
-            .filter(Inventory.current_count > 0)
-            .count()
-            > 0
-        )
+        # Migration check removed - old medication/inventory system deleted
+        has_migration_eligible = False
 
         return render_template(
             "scanner/scan.html", has_migration_eligible=has_migration_eligible
@@ -432,37 +425,6 @@ def scan():
         )
         db.session.add(inventory_item)
 
-        # Create inventory log for tracking (only if legacy system is linked)
-        from models import Inventory, InventoryLog
-
-        # Try to find legacy inventory for logging purposes only
-        inventory = None
-        if product_package.product.legacy_medication_id:
-            inventory = Inventory.query.filter_by(
-                medication_id=product_package.product.legacy_medication_id
-            ).first()
-
-            if inventory:
-                # Get current total before adding this package
-                medication = product_package.product.legacy_medication
-                old_total = (
-                    medication.total_inventory_count - product_package.quantity
-                )
-
-                # Create log entry
-                log_entry = InventoryLog(
-                    inventory_id=inventory.id,
-                    previous_count=old_total,
-                    adjustment=product_package.quantity,
-                    new_count=medication.total_inventory_count,
-                    notes=_(
-                        "Package scanned: %(package_size)s (%(quantity)d units) - Batch: %(batch)s",
-                        package_size=product_package.package_size,
-                        quantity=product_package.quantity,
-                        batch=parsed.get("batch", _("N/A")),
-                    ),
-                )
-                db.session.add(log_entry)
 
         # Commit the database changes
         db.session.commit()

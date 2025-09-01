@@ -636,20 +636,9 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                         deducted = False
                         for product in ingredient.products:
                             if product.total_inventory_count >= amount:
-                                # Use the product's legacy medication if available
-                                if product.legacy_medication:
-                                    result = product.legacy_medication.deduct_units(
-                                        amount,
-                                        f"Automatic deduction (retroactive): {amount} units for {deduction_time.strftime('%d.%m.%Y %H:%M')}"
-                                    )
-                                    if result['success']:
-                                        action_count += 1
-                                        ingredient_deducted = True
-                                        deducted = True
-                                        logger.info(
-                                            f"Retroactively deducted {amount} units from {ingredient.name} via {product.brand_name} for {deduction_time.isoformat()}"
-                                        )
-                                        break
+                                # Package-based deduction only - legacy system removed
+                                deducted = False
+                                break
                         
                         if not deducted:
                             logger.warning(

@@ -26,7 +26,6 @@ from pypdf.generic import NameObject
 from models import (
     db,
     PDFTemplate,
-    Medication,
 )
 from pdf_form_utils import (
     detect_table_in_pdf,
@@ -584,7 +583,8 @@ def preview_template(id):
 
     # Get sample medications
     sample_medications = []
-    medications = Medication.query.limit(5).all()
+    # Medications removed - using products now
+    medications = []
 
     for med in medications:
         # Get product and ingredient information
@@ -745,9 +745,8 @@ def generate_pdf(id):
     if not medication_ids:
         return jsonify({"error": _("No medications selected")}), 400
 
-    medications = Medication.query.filter(
-        Medication.id.in_(medication_ids)
-    ).all()
+    # Medications removed - using products now
+    medications = []
 
     try:
         # Generate the PDF

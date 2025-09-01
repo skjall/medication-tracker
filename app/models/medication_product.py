@@ -14,8 +14,6 @@ from .base import db, utcnow
 if TYPE_CHECKING:
     from .active_ingredient import ActiveIngredient
     from .physician import Physician
-    from .medication import Medication
-    from .inventory import Inventory
     from .schedule import MedicationSchedule
     from .visit import OrderItem
     from .product_package import ProductPackage
@@ -87,13 +85,13 @@ class MedicationProduct(db.Model):
         comment="True if over-the-counter (no order needed)"
     )
     
-    # Legacy reference for migration
-    legacy_medication_id: Mapped[Optional[int]] = mapped_column(
-        Integer,
-        ForeignKey("medications.id"),
-        nullable=True,
-        comment="Reference to original medication record during migration"
-    )
+    # Legacy reference for migration - removed as medications table no longer exists
+    # legacy_medication_id: Mapped[Optional[int]] = mapped_column(
+    #     Integer,
+    #     ForeignKey("medications.id"),
+    #     nullable=True,
+    #     comment="Reference to original medication record during migration"
+    # )
     
     # Package size definitions - DEPRECATED (moved to ProductPackage)
     # Keep for backwards compatibility during migration
@@ -159,12 +157,12 @@ class MedicationProduct(db.Model):
         order_by="ProductPackage.id"  # We'll sort in property
     )
     
-    # Legacy medication relationship
-    legacy_medication: Mapped[Optional["Medication"]] = relationship(
-        "Medication",
-        foreign_keys=[legacy_medication_id],
-        backref="migrated_product"
-    )
+    # Legacy medication relationship - removed as medications table no longer exists
+    # legacy_medication: Mapped[Optional["Medication"]] = relationship(
+    #     "Medication",
+    #     foreign_keys=[legacy_medication_id],
+    #     backref="migrated_product"
+    # )
     
     def __repr__(self):
         return f"<MedicationProduct {self.brand_name} ({self.manufacturer})>"
@@ -213,9 +211,6 @@ class MedicationProduct(db.Model):
         """
         total = 0
         
-        # If this product is linked to a legacy medication, include its sum-based inventory
-        if self.legacy_medication and self.legacy_medication.inventory:
-            total += self.legacy_medication.inventory.current_count
         
         # Add all package-based inventory
         from models import PackageInventory, ScannedItem, ProductPackage
@@ -239,9 +234,9 @@ class MedicationProduct(db.Model):
         # Build conditions to match packages
         conditions = []
         
-        # Include packages linked to our legacy medication
-        if self.legacy_medication_id:
-            conditions.append(PackageInventory.medication_id == self.legacy_medication_id)
+        # Legacy medication link removed - no longer relevant
+        # if self.legacy_medication_id:
+        #     conditions.append(PackageInventory.medication_id == self.legacy_medication_id)
         
         # Include packages that match our product packages by GTIN or national number
         if package_gtins:
@@ -264,10 +259,7 @@ class MedicationProduct(db.Model):
     def daily_usage(self) -> float:
         """
         Calculate daily usage based on schedules.
-        During migration, this delegates to legacy medication if linked.
         """
-        if self.legacy_medication:
-            return self.legacy_medication.daily_usage
         
         # TODO: Implement direct schedule relationship for new products
         return 0.0

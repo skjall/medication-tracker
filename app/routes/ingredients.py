@@ -20,7 +20,6 @@ from models import (
     ActiveIngredient,
     MedicationProduct,
     ProductPackage,
-    Medication,
 )
 from utils import to_local_timezone
 from datetime import datetime, timezone
@@ -144,32 +143,8 @@ def show_product(id: int):
     substitutes = product.find_substitutes() if product.can_substitute else []
 
     # Get package inventory for this product
-    from models import PackageInventory, ScannedItem, ProductPackage, Medication, Inventory
+    from models import PackageInventory, ScannedItem, ProductPackage
     from sqlalchemy import or_
-    
-    # Get legacy inventory if exists
-    legacy_inventory = None
-    
-    # First try to find medications that point to this product
-    legacy_medication = Medication.query.filter_by(
-        default_product_id=product.id
-    ).first()
-    
-    if not legacy_medication:
-        # Try to find by exact brand name match
-        legacy_medication = Medication.query.filter_by(
-            name=product.brand_name
-        ).first()
-    
-    if not legacy_medication and product.active_ingredient:
-        # Try to find by ingredient name
-        legacy_medication = Medication.query.filter_by(
-            name=product.active_ingredient.name
-        ).first()
-    
-    if legacy_medication and legacy_medication.inventory:
-        if legacy_medication.inventory.current_count > 0:
-            legacy_inventory = legacy_medication.inventory
     
     # Get all packages for this product
     packages = ProductPackage.query.filter_by(product_id=product.id).all()
@@ -224,7 +199,6 @@ def show_product(id: int):
         product=product,
         substitutes=substitutes,
         package_inventory=package_inventory,
-        legacy_inventory=legacy_inventory,
         local_time=to_local_timezone(datetime.now(timezone.utc)),
     )
 
@@ -357,25 +331,6 @@ def delete_product(id: int):
     ingredient_id = product.active_ingredient_id
     ingredient = ActiveIngredient.query.get(ingredient_id)
 
-    # Check if product is linked to legacy medication with inventory
-    if product.legacy_medication_id:
-        from models import PackageInventory
-
-        inventory_count = (
-            PackageInventory.query.filter_by(
-                medication_id=product.legacy_medication_id
-            )
-            .filter(PackageInventory.status.in_(["sealed", "opened"]))
-            .count()
-        )
-        if inventory_count > 0:
-            flash(
-                _(
-                    "Cannot delete product with existing inventory. Please deplete inventory first."
-                ),
-                "error",
-            )
-            return redirect(url_for("ingredients.show_product", id=id))
 
     # Check if this is the default product
     was_default = ingredient.default_product_id == id
@@ -711,70 +666,6 @@ def clear_default_product(ingredient_id: int):
 
     flash(_("Default product cleared"), "success")
     return redirect(url_for("ingredients.show", id=ingredient_id))
-
-
-@ingredients_bp.route("/migrate/<int:medication_id>", methods=["POST"])
-def migrate_medication(medication_id: int):
-    """Migrate a legacy medication to the new product structure."""
-    medication = Medication.query.get_or_404(medication_id)
-
-    # Check if already migrated
-    existing = MedicationProduct.query.filter_by(
-        legacy_medication_id=medication_id
-    ).first()
-    if existing:
-        flash(_("This medication has already been migrated"), "warning")
-        return redirect(url_for("ingredients.show_product", id=existing.id))
-
-    # Get form data
-    ingredient_name = request.form.get("ingredient_name", "").strip()
-    manufacturer = request.form.get("manufacturer", "").strip() or "Unknown"
-    pzn = request.form.get("pzn", "").strip() or None
-
-    # Create or find ingredient
-    ingredient = ActiveIngredient.query.filter_by(name=ingredient_name).first()
-    if not ingredient:
-        ingredient = ActiveIngredient(
-            name=ingredient_name,
-            form=medication.form,
-            notes=f"Created from migration of: {medication.name}",
-        )
-        db.session.add(ingredient)
-        db.session.flush()
-
-    # Create product
-    product = MedicationProduct(
-        active_ingredient_id=ingredient.id,
-        brand_name=medication.name,
-        manufacturer=manufacturer,
-        pzn=pzn,
-        aut_idem=medication.aut_idem,
-        physician_id=medication.physician_id,
-        is_otc=medication.is_otc,
-        legacy_medication_id=medication.id,
-        package_size_n1=medication.package_size_n1,
-        package_size_n2=medication.package_size_n2,
-        package_size_n3=medication.package_size_n3,
-        min_threshold=medication.min_threshold,
-        safety_margin_days=medication.safety_margin_days,
-        auto_deduction_enabled=medication.auto_deduction_enabled,
-        notes=medication.notes,
-    )
-
-    db.session.add(product)
-    db.session.flush()
-
-    # Set this product as the default for the medication
-    medication.default_product_id = product.id
-
-    # Also set as default for the ingredient if it's the first product
-    if not ingredient.default_product_id:
-        ingredient.default_product_id = product.id
-
-    db.session.commit()
-
-    flash(_("Medication migrated successfully"), "success")
-    return redirect(url_for("ingredients.show_product", id=product.id))
 
 
 @ingredients_bp.route("/<int:id>/calculate", methods=["POST"])

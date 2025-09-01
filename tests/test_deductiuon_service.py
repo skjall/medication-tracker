@@ -45,7 +45,9 @@ class TestDeductionService(BaseTestCase):
 
         # Save references to the functions for testing
         self.calculate_missed_deductions = calculate_missed_deductions
-        self.calculate_daily_missed_deductions = _calculate_daily_missed_deductions
+        self.calculate_daily_missed_deductions = (
+            _calculate_daily_missed_deductions
+        )
         self.calculate_interval_missed_deductions = (
             _calculate_interval_missed_deductions
         )
@@ -59,10 +61,10 @@ class TestDeductionService(BaseTestCase):
 
         # Create a medication with inventory
         self.medication = Medication(
-            name="Test Med", 
-            dosage=2.0, 
-            frequency=2.0, 
-            auto_deduction_enabled=True
+            name="Test Med",
+            dosage=2.0,
+            frequency=2.0,
+            auto_deduction_enabled=True,
         )
 
         # Add to database
@@ -70,7 +72,9 @@ class TestDeductionService(BaseTestCase):
         self.db.session.flush()
 
         # Create inventory
-        self.inventory = Inventory(medication=self.medication, current_count=100)
+        self.inventory = Inventory(
+            medication=self.medication, current_count=100
+        )
         self.db.session.add(self.inventory)
 
         # Create a schedule
@@ -85,7 +89,9 @@ class TestDeductionService(BaseTestCase):
         self.db.session.add(self.schedule)
 
         # Create settings
-        self.settings = Settings(default_visit_interval=90, timezone_name="UTC")
+        self.settings = Settings(
+            default_visit_interval=90, timezone_name="UTC"
+        )
         self.db.session.add(self.settings)
         self.db.session.commit()
 
@@ -95,19 +101,35 @@ class TestDeductionService(BaseTestCase):
         self.utils_patcher = patch("app.deduction_service.utc_to_local")
         self.mock_to_local_timezone = self.utils_patcher.start()
         # Add timezone info if missing to ensure datetime comparisons work
-        self.mock_to_local_timezone.side_effect = lambda dt: dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
+        self.mock_to_local_timezone.side_effect = lambda dt: (
+            dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
+        )
 
         self.from_local_patcher = patch("app.deduction_service.local_to_utc")
         self.mock_from_local_timezone = self.from_local_patcher.start()
         # Add timezone info if missing to ensure datetime comparisons work
-        self.mock_from_local_timezone.side_effect = lambda dt: dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
-        
+        self.mock_from_local_timezone.side_effect = lambda dt: (
+            dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
+        )
+
         # Mock parse_schedule_time to return UTC times directly
-        self.parse_time_patcher = patch("app.deduction_service.parse_schedule_time")
+        self.parse_time_patcher = patch(
+            "app.deduction_service.parse_schedule_time"
+        )
         self.mock_parse_time = self.parse_time_patcher.start()
+
         def mock_parse(time_str, date):
-            hour, minute = map(int, time_str.split(':'))
-            return datetime(date.year, date.month, date.day, hour, minute, 0, tzinfo=timezone.utc)
+            hour, minute = map(int, time_str.split(":"))
+            return datetime(
+                date.year,
+                date.month,
+                date.day,
+                hour,
+                minute,
+                0,
+                tzinfo=timezone.utc,
+            )
+
         self.mock_parse_time.side_effect = mock_parse
 
     def tearDown(self):
@@ -139,12 +161,21 @@ class TestDeductionService(BaseTestCase):
 
         # Current time is today afternoon
         today_2pm = datetime(
-            self.now.year, self.now.month, self.now.day, 14, 0, 0, tzinfo=timezone.utc
+            self.now.year,
+            self.now.month,
+            self.now.day,
+            14,
+            0,
+            0,
+            tzinfo=timezone.utc,
         )
 
         # We should have missed yesterday 8am, yesterday 18:00, and today 08:00
         missed = self.calculate_daily_missed_deductions(
-            self.schedule, yesterday_7am, today_2pm, self.schedule.formatted_times
+            self.schedule,
+            yesterday_7am,
+            today_2pm,
+            self.schedule.formatted_times,
         )
 
         # Expected: yesterday 08:00, yesterday 18:00, and today 08:00
@@ -208,12 +239,21 @@ class TestDeductionService(BaseTestCase):
 
         # Current time is today noon
         current_time = datetime(
-            self.now.year, self.now.month, self.now.day, 12, 0, 0, tzinfo=timezone.utc
+            self.now.year,
+            self.now.month,
+            self.now.day,
+            12,
+            0,
+            0,
+            tzinfo=timezone.utc,
         )
 
         # Should have doses on day 3 and day 5 (today) at 8am
         missed = self.calculate_interval_missed_deductions(
-            self.schedule, last_deduction, current_time, self.schedule.formatted_times
+            self.schedule,
+            last_deduction,
+            current_time,
+            self.schedule.formatted_times,
         )
 
         # Expected: 2 days of doses, with 2 doses each day (8am, 6pm)
@@ -242,7 +282,13 @@ class TestDeductionService(BaseTestCase):
 
         # Current time is today noon
         current_time = datetime(
-            self.now.year, self.now.month, self.now.day, 12, 0, 0, tzinfo=timezone.utc
+            self.now.year,
+            self.now.month,
+            self.now.day,
+            12,
+            0,
+            0,
+            tzinfo=timezone.utc,
         )
 
         # Mock weekday determination
@@ -254,7 +300,10 @@ class TestDeductionService(BaseTestCase):
                 for i in range(-10, 1):
                     test_date = current_time + timedelta(days=i)
                     # Weekday 0 = Monday, etc
-                    date_map[test_date.date()] = (test_date.weekday(), test_date)
+                    date_map[test_date.date()] = (
+                        test_date.weekday(),
+                        test_date,
+                    )
 
                 # Return the mock datetime with the right weekday
                 if dt in date_map:
@@ -281,14 +330,18 @@ class TestDeductionService(BaseTestCase):
             self.assertGreater(len(missed), 0)
             self.assertLessEqual(len(missed), 30)  # Sanity check
 
-    @unittest.skip("Skipping - requires refactoring for new ActiveIngredient-based system")
+    @unittest.skip(
+        "Skipping - requires refactoring for new ActiveIngredient-based system"
+    )
     def test_perform_deductions(self):
         """Test the main deduction function that performs all deductions."""
         # TODO: This test needs to be rewritten to work with the new ActiveIngredient-based
         # deduction system instead of the old Medication-based system
-        
+
         # Use patch at the correct module level with an isolation strategy
-        with patch("app.deduction_service.calculate_missed_deductions") as mock_calc:
+        with patch(
+            "app.deduction_service.calculate_missed_deductions"
+        ) as mock_calc:
             # Configure the mock
             mock_calc.return_value = [
                 self.yesterday + timedelta(hours=18),  # Yesterday evening
@@ -372,12 +425,13 @@ class TestDeductionService(BaseTestCase):
 
     def test_no_inventory_no_deduction(self):
         """Test that no deduction occurs when there's no inventory."""
-        # Delete the inventory directly - avoid using Medication.query.get()
         self.db.session.delete(self.inventory)
         self.db.session.commit()
 
         # Mock the calculate_missed_deductions function
-        with patch("app.deduction_service.calculate_missed_deductions") as mock_calc:
+        with patch(
+            "app.deduction_service.calculate_missed_deductions"
+        ) as mock_calc:
             mock_calc.return_value = [self.now - timedelta(hours=2)]
 
             # Run the deduction process
@@ -394,7 +448,9 @@ class TestDeductionService(BaseTestCase):
         self.db.session.commit()
 
         # Mock missed deductions using the correct patch path
-        with patch("app.deduction_service.calculate_missed_deductions") as mock_calc:
+        with patch(
+            "app.deduction_service.calculate_missed_deductions"
+        ) as mock_calc:
             mock_calc.return_value = [
                 self.now - timedelta(hours=2)  # One recent missed dose
             ]

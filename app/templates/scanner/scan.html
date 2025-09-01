@@ -151,112 +151,17 @@
         display: none !important;
     }
 
-    /* Blur overlays for scanning area */
-    .blur-top {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: calc(50% - 100px); /* Increased focus area to 200px height */
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        pointer-events: none;
-        z-index: 10;
-        opacity: 0;
-        transition: height 0.3s ease, opacity 0.5s ease;
-    }
-
-    /* Wider focus area for barcode mode */
-    .scanner-container.barcode-mode .blur-top {
-        height: calc(50% - 60px); /* Wider focus area: 120px height */
-    }
-
-    .blur-bottom {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: calc(50% - 100px); /* Increased focus area to 200px height */
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        pointer-events: none;
-        z-index: 10;
-        opacity: 0;
-        transition: height 0.3s ease, opacity 0.5s ease;
-    }
-
-    /* Wider focus area for barcode mode */
-    .scanner-container.barcode-mode .blur-bottom {
-        height: calc(50% - 60px); /* Wider focus area: 120px height */
-    }
-
-    .blur-left {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        left: 0;
-        width: calc(50% - 100px); /* Increased focus area to 200px width */
-        height: 200px;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        pointer-events: none;
-        z-index: 10;
-        opacity: 0;
-        transition: width 0.3s ease, opacity 0.5s ease;
-    }
-
-    /* Much wider focus area for barcode mode */
-    .scanner-container.barcode-mode .blur-left {
-        width: calc(50% - 200px); /* Much wider focus area: 400px width */
-        height: 120px; /* Shorter height for barcode */
-    }
-
+    /* Blur overlays removed - no focus area */
+    .blur-top,
+    .blur-bottom,
+    .blur-left,
     .blur-right {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        right: 0;
-        width: calc(50% - 100px); /* Increased focus area to 200px width */
-        height: 200px;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        pointer-events: none;
-        z-index: 10;
-        opacity: 0;
-        transition: width 0.3s ease, opacity 0.5s ease;
+        display: none !important;
     }
 
-    /* Much wider focus area for barcode mode */
-    .scanner-container.barcode-mode .blur-right {
-        width: calc(50% - 200px); /* Much wider focus area: 400px width */
-        height: 120px; /* Shorter height for barcode */
-    }
-
-    /* Focus area border - visible frame around scanning area */
+    /* Focus area border removed */
     .scanner-container.scanning::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 200px;
-        height: 200px;
-        border: 2px solid rgba(0, 255, 0, 0.5);
-        border-radius: 8px;
-        pointer-events: none;
-        z-index: 11;
-        box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.3); /* Additional darkening outside focus */
-    }
-
-    .scanner-container.scanning .blur-top,
-    .scanner-container.scanning .blur-bottom,
-    .scanner-container.scanning .blur-left,
-    .scanner-container.scanning .blur-right {
-        opacity: 1;
+        display: none !important;
     }
 
     /* Scan indicator animation */
@@ -511,11 +416,6 @@
                                 <i class="fas fa-spinner"></i>
                             </div>
                             <video id="scanner-video-desktop" autoplay muted playsinline></video>
-                            <!-- Blur overlays -->
-                            <div class="blur-top"></div>
-                            <div class="blur-bottom"></div>
-                            <div class="blur-left"></div>
-                            <div class="blur-right"></div>
                             <!-- Scanning indicator -->
                             <div class="scan-indicator">
                                 <div class="scan-line"></div>
@@ -569,10 +469,6 @@
             </div>
             <video id="scanner-video" autoplay muted playsinline></video>
             <!-- Blur overlays -->
-            <div class="blur-top"></div>
-            <div class="blur-bottom"></div>
-            <div class="blur-left"></div>
-            <div class="blur-right"></div>
             <!-- Scanning indicator -->
             <div class="scan-indicator">
                 <div class="scan-line"></div>

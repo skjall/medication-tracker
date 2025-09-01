@@ -35,7 +35,7 @@ def status():
     Render a system status page with scheduler information.
     Displays the status of background tasks and system health.
     """
-    from models import Settings, Medication, Inventory, PhysicianVisit, Order, MedicationSchedule, db
+    from models import Settings, PhysicianVisit, Order, MedicationSchedule, db
     import os
     from sqlalchemy import inspect, text
 
@@ -75,21 +75,17 @@ def status():
     flask_version = flask.__version__
 
     # Collect database statistics
+    from models import ActiveIngredient, MedicationProduct, PackageInventory
+    
     db_stats = {
-        "medications_count": Medication.query.count(),
-        "inventories_count": Inventory.query.count(),
+        "ingredients_count": ActiveIngredient.query.count(),
+        "products_count": MedicationProduct.query.count(),
+        "packages_count": PackageInventory.query.count(),
         "visits_count": PhysicianVisit.query.count(),
         "orders_count": Order.query.count(),
         "schedules_count": MedicationSchedule.query.count(),
-        "low_stock_count": 0,  # Will calculate below
+        "low_stock_count": 0,  # Package-based low stock calculation needed
     }
-    
-    # Calculate low stock count properly
-    low_stock_count = 0
-    for inventory in Inventory.query.all():
-        if inventory.medication and inventory.is_low:
-            low_stock_count += 1
-    db_stats["low_stock_count"] = low_stock_count
     
     # Get database file information
     db_path = current_app.config.get('SQLALCHEMY_DATABASE_URI', '').replace('sqlite:///', '')

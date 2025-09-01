@@ -18,7 +18,6 @@ from .base import db, utcnow
 from utils import ensure_timezone_utc
 
 if TYPE_CHECKING:
-    from .medication import Medication
     from .active_ingredient import ActiveIngredient
 
 # Create a logger for this module
@@ -43,10 +42,6 @@ class MedicationSchedule(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     
-    # Legacy medication link (will be phased out)
-    medication_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("medications.id"), nullable=True
-    )
     
     # New active ingredient link (preferred)
     active_ingredient_id: Mapped[Optional[int]] = mapped_column(
@@ -75,9 +70,6 @@ class MedicationSchedule(db.Model):
     last_deduction: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # Relationships
-    medication: Mapped[Optional["Medication"]] = relationship(
-        "Medication", back_populates="schedules"
-    )
     
     active_ingredient: Mapped[Optional["ActiveIngredient"]] = relationship(
         "ActiveIngredient", back_populates="schedules"
@@ -91,7 +83,7 @@ class MedicationSchedule(db.Model):
     )
 
     def __repr__(self) -> str:
-        return f"<MedicationSchedule {self.id} for medication {self.medication_id}>"
+        return f"<MedicationSchedule {self.id} for ingredient {self.active_ingredient_id}>"
 
     @property
     def formatted_times(self) -> List[str]:

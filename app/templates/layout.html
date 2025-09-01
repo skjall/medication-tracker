@@ -30,28 +30,15 @@
                         </a>
                     </li>
 
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="medicationsDropdown" role="button" data-bs-toggle="dropdown">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('ingredients.index') }}">
                             <i class="fas fa-pills me-1"></i>{{ _('Medications') }}
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('ingredients.index') }}">{{ _('All Medications') }}</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('inventory.depletion') }}">{{ _('Depletion Forecast') }}</a></li>
-                        </ul>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="inventoryDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-boxes me-1"></i>{{ _('Inventory') }}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('scanner.index') }}">
+                            <i class="fas fa-barcode me-1"></i>{{ _('Scanner') }}
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('inventory.index') }}">{{ _('Inventory Overview') }}</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('inventory.low') }}">{{ _('Low Stock') }}</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('inventory.depletion') }}">{{ _('Depletion Forecast') }}</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('scanner.index') }}">{{ _('Scanner') }}</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('migration_scanner.select_medication') }}">{{ _('Migration Scanner') }}</a></li>
-                        </ul>
                     </li>
 
                     <li class="nav-item dropdown">

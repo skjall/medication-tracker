@@ -22,7 +22,6 @@ from models import (  # noqa: E402
     db,
     utcnow,
     ensure_timezone_utc,
-    Medication,
     PhysicianVisit,
     Physician,  # noqa: F401 - needed for db.create_all()
     OrderItem,  # noqa: F401 - needed for db.create_all()

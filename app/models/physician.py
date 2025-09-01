@@ -14,7 +14,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import db, utcnow
 
 if TYPE_CHECKING:
-    from .medication import Medication
     from .visit import PhysicianVisit
     from .pdf_template import PDFTemplate
 
@@ -47,9 +46,10 @@ class Physician(db.Model):
     )
 
     # Relationships
-    medications: Mapped[List["Medication"]] = relationship(
-        "Medication", back_populates="physician", cascade="save-update"
-    )
+    # medications relationship removed - using products now
+    # medications: Mapped[List["Medication"]] = relationship(
+    #     "Medication", back_populates="physician", cascade="save-update"
+    # )
     visits: Mapped[List["PhysicianVisit"]] = relationship(
         "PhysicianVisit", back_populates="physician", cascade="save-update"
     )

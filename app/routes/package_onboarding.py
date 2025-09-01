@@ -22,15 +22,16 @@ bp = Blueprint('package_onboarding', __name__, url_prefix='/onboarding')
 def onboard_package():
     """Onboard an unknown package by creating ingredient, product, and package."""
     
-    # Get scanned data from session or query params
+    # Get scanned data from query params ONLY
     # Note: Use None for empty values to avoid storing empty strings in the database
+    # Do not fall back to session for missing parameters - only use what's explicitly provided
     scanned_data = {
-        'gtin': request.args.get('gtin') if request.args.get('gtin') else (session.get('scanned_gtin') if 'gtin' not in request.args else None),
-        'national_number': request.args.get('national_number') if request.args.get('national_number') else (session.get('scanned_national_number') if 'national_number' not in request.args else None),
-        'national_number_type': request.args.get('national_number_type') if request.args.get('national_number_type') else (session.get('scanned_national_number_type') if 'national_number_type' not in request.args else None),
-        'batch': request.args.get('batch') if request.args.get('batch') else (session.get('scanned_batch') if 'batch' not in request.args else None),
-        'expiry': request.args.get('expiry') if request.args.get('expiry') else (session.get('scanned_expiry') if 'expiry' not in request.args else None),
-        'serial': request.args.get('serial') if request.args.get('serial') else (session.get('scanned_serial') if 'serial' not in request.args else None),
+        'gtin': request.args.get('gtin') or None,
+        'national_number': request.args.get('national_number') or None,
+        'national_number_type': request.args.get('national_number_type') or None,
+        'batch': request.args.get('batch') or None,
+        'expiry': request.args.get('expiry') or None,
+        'serial': request.args.get('serial') or None,
     }
     
     # Store in session for form resubmission
@@ -206,7 +207,7 @@ def onboard_package():
                 db.session.flush()
             
             # Create inventory entry for the new package-based system
-            from models import PackageInventory, InventoryLog, Medication
+            from models import PackageInventory
             
             inventory_item = PackageInventory(
                 scanned_item_id=scanned_item.id,
@@ -218,30 +219,7 @@ def onboard_package():
             db.session.add(inventory_item)
             db.session.flush()
             
-            # Create inventory log entry for tracking
-            # Try to find a medication with the same name as the active ingredient for logging purposes
-            medication = Medication.query.filter_by(name=ingredient.name).first()
-            if medication and medication.inventory:
-                # Log the package addition to the medication's inventory history
-                previous_count = medication.inventory.current_count
-                new_count = previous_count + package.quantity
-                
-                log_entry = InventoryLog(
-                    inventory_id=medication.inventory.id,
-                    previous_count=previous_count,
-                    adjustment=package.quantity,
-                    new_count=new_count,
-                    notes=_('Package added via scanner onboarding: %(size)s (%(units)s units), Batch: %(batch)s, Expiry: %(expiry)s',
-                           size=package.package_size,
-                           units=package.quantity,
-                           batch=scanned_data.get('batch', 'N/A'),
-                           expiry=scanned_data.get('expiry', 'N/A')[:10] if scanned_data.get('expiry') else 'N/A')
-                )
-                db.session.add(log_entry)
-                
-                # Update the inventory count
-                medication.inventory.current_count = new_count
-                medication.inventory.last_updated = datetime.now(timezone.utc)
+            # Legacy inventory logging removed - medications and inventory tables no longer exist
         
         db.session.commit()
         

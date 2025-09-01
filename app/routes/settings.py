@@ -30,26 +30,11 @@ from flask_babel import gettext as _
 from werkzeug.utils import secure_filename
 
 # Local application imports
-from data_utils import (
-    clear_old_inventory_logs,
-    create_database_backup,
-    export_inventory_to_csv,
-    export_medications_to_csv,
-    export_orders_to_csv,
-    export_physicians_to_csv,
-    export_schedules_to_csv,
-    export_visits_to_csv,
-    import_medications_from_csv,
-    import_physicians_from_csv,
-    optimize_database,
-)
+# Data utilities removed - old system has been migrated
 from version import get_version
 from models import (
-    Inventory,
-    InventoryLog,
     PhysicianVisit,
     Physician,
-    Medication,
     MedicationSchedule,
     Order,
     OrderItem,
@@ -637,55 +622,32 @@ def import_data_type(data_type: str):
     try:
         # Import based on data type
         if data_type == "medications":
-            success_count, errors = import_medications_from_csv(
-                file_path, override
-            )
+            # Medications import removed - old system deleted
+            flash(_("Medication import not available - old system removed"), "error")
+            return redirect(url_for("settings.data_management"))
         elif data_type == "inventory":
-            from data_utils import import_inventory_from_csv
-
-            success_count, errors = import_inventory_from_csv(
-                file_path, override
-            )
+            # Inventory import removed - old system deleted
+            flash(_("Inventory import not available - old system removed"), "error")
+            return redirect(url_for("settings.data_management"))
         elif data_type == "orders":
-            from data_utils import import_orders_from_csv
-
-            success_count, errors = import_orders_from_csv(file_path, override)
+            # Orders import needs to be rewritten for new system
+            flash(_("Orders import not yet updated for new system"), "error")
+            return redirect(url_for("settings.data_management"))
         elif data_type == "visits":
-            from data_utils import import_visits_from_csv
-
-            success_count, errors = import_visits_from_csv(file_path, override)
+            # Visits import needs to be rewritten
+            flash(_("Visits import not yet updated for new system"), "error")
+            return redirect(url_for("settings.data_management"))
         elif data_type == "schedules":
-            from data_utils import import_schedules_from_csv
-
-            success_count, errors = import_schedules_from_csv(
-                file_path, override
-            )
+            # Schedules import needs to be rewritten
+            flash(_("Schedules import not yet updated for new system"), "error")
+            return redirect(url_for("settings.data_management"))
         elif data_type == "physicians":
-            success_count, errors = import_physicians_from_csv(
-                file_path, override
-            )
+            # Physicians import needs to be rewritten
+            flash(_("Physicians import not yet updated"), "error")
+            return redirect(url_for("settings.data_management"))
         else:
             flash(_("Unknown import type: {}").format(data_type), "error")
             return redirect(url_for("settings.data_management"))
-
-        if errors:
-            for error in errors[:5]:  # Show first 5 errors
-                flash(error, "warning")
-            if len(errors) > 5:
-                flash(
-                    _("... and {} more errors").format(len(errors) - 5),
-                    "warning",
-                )
-
-        if success_count > 0:
-            flash(
-                _("Successfully imported {} {} records").format(
-                    success_count, data_type
-                ),
-                "success",
-            )
-        else:
-            flash(_("No {} were imported").format(data_type), "warning")
     except Exception as e:
         logger.error(f"Error during import: {str(e)}")
         flash(_("Error during import: {}").format(str(e)), "error")
@@ -801,68 +763,38 @@ def reset_data_type(data_type: str):
 
     try:
         if data_type == "medications":
-            # For medications we first need to delete related data
-            from data_utils import reset_inventory_data, reset_orders_data
-
-            reset_orders_data()  # Delete orders first
-            reset_inventory_data()  # Then inventory
-
-            # Then delete medications and recreate empty db
-            Medication.query.delete()
-            db.session.commit()
-
-            flash(_("All medication data has been reset"), "success")
+            # Medications reset - old system removed
+            flash(_("Medication reset not available - old system removed"), "error")
+            return redirect(url_for("settings.data_management"))
 
         elif data_type == "inventory":
-            from data_utils import reset_inventory_data
-
-            count = reset_inventory_data()
-            flash(
-                _("All inventory data has been reset ({} records)").format(
-                    count
-                ),
-                "success",
-            )
+            # Inventory reset - old system removed
+            flash(_("Inventory reset not available - old system removed"), "error")
+            return redirect(url_for("settings.data_management"))
 
         elif data_type == "orders":
-            from data_utils import reset_orders_data
-
-            count = reset_orders_data()
-            flash(
-                _("All order data has been reset ({} records)").format(count),
-                "success",
-            )
+            # Reset orders
+            Order.query.delete()
+            db.session.commit()
+            flash(_("All order data has been reset"), "success")
 
         elif data_type == "visits":
-            from data_utils import reset_visits_data
-
-            count = reset_visits_data()
-            flash(
-                _("All visit data has been reset ({} records)").format(count),
-                "success",
-            )
+            # Reset visits
+            PhysicianVisit.query.delete()
+            db.session.commit()
+            flash(_("All visit data has been reset"), "success")
 
         elif data_type == "schedules":
-            from data_utils import reset_schedules_data
-
-            count = reset_schedules_data()
-            flash(
-                _("All schedule data has been reset ({} records)").format(
-                    count
-                ),
-                "success",
-            )
+            # Reset schedules
+            MedicationSchedule.query.delete()
+            db.session.commit()
+            flash(_("All schedule data has been reset"), "success")
 
         elif data_type == "physicians":
-            from data_utils import reset_physicians_data
-
-            count = reset_physicians_data()
-            flash(
-                _("All physician data has been reset ({} records)").format(
-                    count
-                ),
-                "success",
-            )
+            # Reset physicians
+            Physician.query.delete()
+            db.session.commit()
+            flash(_("All physician data has been reset"), "success")
 
         else:
             flash(_("Unknown data type: {}").format(data_type), "error")

@@ -11,7 +11,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import db, utcnow
 
 if TYPE_CHECKING:
-    from .medication import Medication
     from .medication_product import MedicationProduct
     from .visit import OrderItem
 
@@ -25,7 +24,8 @@ class MedicationPackage(db.Model):
     __tablename__ = "medication_packages"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    medication_id: Mapped[int] = mapped_column(Integer, ForeignKey("medications.id"), nullable=False)
+    # Legacy medication_id - removed as medications table no longer exists
+    # medication_id: Mapped[int] = mapped_column(Integer, ForeignKey("medications.id"), nullable=False)
     
     # New link to product (will be migrated from medication_id)
     product_id: Mapped[Optional[int]] = mapped_column(
@@ -47,7 +47,7 @@ class MedicationPackage(db.Model):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
     
     # Relationships
-    medication: Mapped["Medication"] = relationship("Medication", back_populates="packages")
+    # medication: Mapped["Medication"] = relationship("Medication", back_populates="packages")
     product: Mapped[Optional["MedicationProduct"]] = relationship(
         "MedicationProduct", 
         foreign_keys=[product_id],
@@ -163,7 +163,8 @@ class PackageInventory(db.Model):
     __tablename__ = "package_inventory"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    medication_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("medications.id"), nullable=True)
+    # Legacy medication_id - removed as medications table no longer exists
+    # medication_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("medications.id"), nullable=True)
     scanned_item_id: Mapped[int] = mapped_column(Integer, ForeignKey("scanned_items.id"), nullable=False)
     
     # Order linking (optional)
@@ -186,7 +187,7 @@ class PackageInventory(db.Model):
     consumed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Relationships
-    medication: Mapped[Optional["Medication"]] = relationship("Medication", backref="package_inventories")
+    # medication relationship removed - old system deleted
     scanned_item: Mapped["ScannedItem"] = relationship("ScannedItem", back_populates="package_inventory")
     order_item: Mapped[Optional["OrderItem"]] = relationship("OrderItem", backref="linked_packages")
     

@@ -41,14 +41,8 @@ def index(medication_id: int):
     """
     Redirect medication schedules to ingredient schedules.
     """
-    # Find the product linked to this legacy medication
-    product = MedicationProduct.query.filter_by(legacy_medication_id=medication_id).first()
-    
-    if product and product.active_ingredient_id:
-        return redirect(url_for("schedules.index_ingredient", ingredient_id=product.active_ingredient_id))
-    else:
-        flash(_("This medication has not been migrated to the new system yet."), "warning")
-        return redirect(url_for("ingredients.index"))
+    flash(_("The old medication system has been removed. Please use the ingredients page."), "warning")
+    return redirect(url_for("ingredients.index"))
 
 
 @schedule_bp.route("/medication/<int:medication_id>/new", methods=["GET", "POST"])
@@ -56,14 +50,8 @@ def new(medication_id: int):
     """
     Redirect to ingredient schedule creation.
     """
-    # Find the product linked to this legacy medication
-    product = MedicationProduct.query.filter_by(legacy_medication_id=medication_id).first()
-    
-    if product and product.active_ingredient_id:
-        return redirect(url_for("schedules.new_ingredient", ingredient_id=product.active_ingredient_id))
-    else:
-        flash(_("This medication has not been migrated to the new system yet."), "warning")
-        return redirect(url_for("ingredients.index"))
+    flash(_("The old medication system has been removed. Please use the ingredients page."), "warning")
+    return redirect(url_for("ingredients.index"))
 
 
 @schedule_bp.route("/<int:id>/edit", methods=["GET", "POST"])
@@ -146,10 +134,6 @@ def delete(id: int):
     redirect_url = url_for("ingredients.index")
     if schedule.active_ingredient_id:
         redirect_url = url_for("schedules.index_ingredient", ingredient_id=schedule.active_ingredient_id)
-    elif schedule.medication_id:
-        product = MedicationProduct.query.filter_by(legacy_medication_id=schedule.medication_id).first()
-        if product and product.active_ingredient_id:
-            redirect_url = url_for("schedules.index_ingredient", ingredient_id=product.active_ingredient_id)
 
     db.session.delete(schedule)
     db.session.commit()
@@ -165,14 +149,8 @@ def toggle_auto_deduction(medication_id: int):
     """
     Redirect medication auto-deduction to ingredient.
     """
-    # Find the product linked to this legacy medication
-    product = MedicationProduct.query.filter_by(legacy_medication_id=medication_id).first()
-    
-    if product and product.active_ingredient_id:
-        return redirect(url_for("schedules.toggle_auto_deduction_ingredient", ingredient_id=product.active_ingredient_id))
-    else:
-        flash(_("This medication has not been migrated to the new system yet."), "warning")
-        return redirect(url_for("ingredients.index"))
+    flash(_("The old medication system has been removed. Please use the ingredients page."), "warning")
+    return redirect(url_for("ingredients.index"))
 
 
 @schedule_bp.route("/check_deductions", methods=["GET"])

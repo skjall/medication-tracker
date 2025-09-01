@@ -9,11 +9,8 @@ from models import (
     db,
     utcnow,
     ensure_timezone_utc,
-    Medication,
     PhysicianVisit,
     Order,
-    Inventory,
-    InventoryLog,
     MedicationSchedule,
     Settings
 )
@@ -91,15 +88,6 @@ def fix_database_timezones(app):
             for order in orders:
                 order.created_date = ensure_timezone_utc(order.created_date)
 
-            # Fix Inventory dates
-            inventories = Inventory.query.all()
-            for inv in inventories:
-                inv.last_updated = ensure_timezone_utc(inv.last_updated)
-
-            # Fix InventoryLog dates
-            logs = InventoryLog.query.all()
-            for log in logs:
-                log.timestamp = ensure_timezone_utc(log.timestamp)
 
             # Fix MedicationSchedule dates
             schedules = MedicationSchedule.query.all()
@@ -111,11 +99,6 @@ def fix_database_timezones(app):
                 schedule.created_at = ensure_timezone_utc(schedule.created_at)
                 schedule.updated_at = ensure_timezone_utc(schedule.updated_at)
 
-            # Fix Medication dates
-            medications = Medication.query.all()
-            for med in medications:
-                med.created_at = ensure_timezone_utc(med.created_at)
-                med.updated_at = ensure_timezone_utc(med.updated_at)
 
             # Commit all changes
             db.session.commit()

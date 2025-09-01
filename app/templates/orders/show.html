@@ -256,7 +256,7 @@
                                                    title="{{ _('View Ingredient') }}">
                                                     <i class="fas fa-pills"></i>
                                                 </a>
-                                                <a href="{{ url_for('inventory.index') }}#ingredient-{{ item.active_ingredient.id }}" 
+                                                <a href="{{ url_for('ingredients.show', id=item.active_ingredient.id) }}" 
                                                    class="btn btn-sm btn-outline-primary" 
                                                    title="{{ _('View Inventory') }}">
                                                     <i class="fas fa-boxes"></i>
