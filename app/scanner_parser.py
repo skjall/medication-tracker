@@ -187,6 +187,16 @@ def parse_datamatrix(data: str) -> Dict[str, Optional[str]]:
                     # Not a recognized AI, skip
                     pos += 1
     
+    # Handle incomplete DataMatrix patterns (expiry + batch only, no product ID)
+    # Pattern like "1725100010047AB" - starts with 17 (expiry) followed by 10 (batch)
+    if not result['gtin'] and not result['expiry'] and data.startswith('17'):
+        # Check if this matches the pattern: 17YYMMDD10[batch]
+        if len(data) >= 10 and data[8:10] == '10':
+            # Extract expiry date (positions 2-7)
+            result['expiry'] = data[2:8]
+            # Extract batch (position 10 onwards)
+            result['batch'] = data[10:]
+    
     # Handle PZN if extracted from AI 710/711
     if 'pzn' in result and result['pzn']:
         # PZN found via AI 710 or 711

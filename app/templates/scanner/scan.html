@@ -475,57 +475,12 @@
         color: white;
         text-decoration: none;
     }
-
-    /* Migration FAB button for both desktop and mobile */
-    .migration-fab {
-        position: fixed;
-        bottom: 80px;
-        right: 20px;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: #ffc107;
-        color: white;
-        border: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 1030; /* Below toasts (1050) but above other content */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-
-    .migration-fab:hover {
-        background: #ffb300;
-        color: white;
-        transform: scale(1.05);
-        text-decoration: none;
-    }
-
-    .migration-fab i {
-        font-size: 1.5rem;
-    }
-
-    /* Adjust position on desktop for better visibility */
-    @media (min-width: 769px) {
-        .migration-fab {
-            bottom: 30px;
-            right: 30px;
-        }
-    }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Mobile full-screen wrapper -->
 <div class="scanner-wrapper">
-    {% if has_migration_eligible %}
-    <!-- Migration Scanner FAB (appears on both desktop and mobile) -->
-    <a href="{{ url_for('migration_scanner.select_medication') }}" class="migration-fab" title="{{ _('Migration Scanner') }}">
-        <i class="fas fa-exchange-alt"></i>
-    </a>
-    {% endif %}
 
     <!-- Desktop card container -->
     <div class="container desktop-only">
@@ -640,11 +595,6 @@
                 <!-- Dynamic content will be inserted here -->
             </div>
             {% if has_migration_eligible %}
-            <div class="text-center mt-3">
-                <a href="{{ url_for('migration_scanner.select_medication') }}" class="btn btn-warning">
-                    <i class="fas fa-exchange-alt me-2"></i>{{ _('Switch to Migration Scanner') }}
-                </a>
-            </div>
             {% endif %}
         </div>
     </div>
@@ -1053,66 +1003,46 @@
     }
 
     // Parse DataMatrix locally to detect incomplete scans
-    function parseDataMatrixLocal(code) {
-        const data = {
-            scan_source: scanMode,
-            barcode: code
-        };
-
-        // Check for GS1 DataMatrix pattern
-        if (code.includes(String.fromCharCode(29)) || /^01\d{14}/.test(code)) {
-            // Parse GS1 Application Identifiers
-            const aiPatterns = {
-                '01': { name: 'gtin', length: 14 },
-                '17': { name: 'expiry', length: 6 },
-                '10': { name: 'batch', variable: true },
-                '21': { name: 'serial', variable: true }
-            };
-
-            let pos = 0;
-            while (pos < code.length) {
-                const ai = code.substr(pos, 2);
-                if (aiPatterns[ai]) {
-                    const pattern = aiPatterns[ai];
-                    pos += 2;
-                    if (pattern.variable) {
-                        // Variable length - read until FNC1 or end
-                        let end = code.indexOf(String.fromCharCode(29), pos);
-                        if (end === -1) end = code.length;
-                        data[pattern.name] = code.substring(pos, end);
-                        pos = end + 1;
-                    } else {
-                        data[pattern.name] = code.substr(pos, pattern.length);
-                        pos += pattern.length;
-                    }
-                }
-                else {
-                    pos++;
-                }
+    async function parseDataMatrixLocal(code) {
+        try {
+            // Use server-side parser for consistency
+            const response = await fetch('/scanner/parse', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    scan_source: scanMode
+                })
+            });
+            
+            if (!response.ok) {
+                console.error('Failed to parse code on server');
+                // Fallback to basic parsing
+                return {
+                    scan_source: scanMode,
+                    barcode: code
+                };
             }
-        } else if (/^\d{6,8}$/.test(code.replace('-', ''))) {
-            // Looks like a PZN
-            data.national_number = code.replace('-', '');
-            data.national_number_type = 'DE_PZN';
-        } else if (/^\d{13}$/.test(code)) {
-            // EAN-13
-            data.gtin = code;
-        } else if (/^\d{8}$/.test(code)) {
-            // EAN-8
-            data.gtin = code;
-        } else if (/^17\d{6}10/.test(code)) {
-            // Your example: expiry + batch only
-            data.expiry = code.substr(2, 6);
-            const batchStart = code.indexOf('10') + 2;
-            data.batch = code.substr(batchStart);
+            
+            const data = await response.json();
+            data.scan_source = scanMode;  // Ensure scan source is set
+            return data;
+            
+        } catch (error) {
+            console.error('Error parsing code:', error);
+            // Fallback to basic parsing
+            return {
+                scan_source: scanMode,
+                barcode: code
+            };
         }
-
-        return data;
     }
 
-    function handleScan(barcode) {
+    async function handleScan(barcode) {
         // Parse locally first to check for incomplete data
-        const parsedData = parseDataMatrixLocal(barcode);
+        const parsedData = await parseDataMatrixLocal(barcode);
 
         // Check if we have a pending scan to merge with
         if (pendingScan) {

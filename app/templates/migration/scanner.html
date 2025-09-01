@@ -676,66 +676,41 @@ async function startScanning(deviceId) {
 }
 
 // Parse DataMatrix locally to detect incomplete scans
-function parseDataMatrixLocal(code) {
-    const data = {
-        scan_source: 'datamatrix'
-    };
-    
-    // Pattern like "1725100010047AB" - expiry date and batch only
-    if (/^17\d{6}10/.test(code)) {
-        // AI 17: Expiry date (YYMMDD)
-        data.expiry = code.substr(2, 6);
-        // AI 10: Batch number (after position 8)
-        const batchStart = code.indexOf('10') + 2;
-        data.batch = code.substr(batchStart);
+async function parseDataMatrixLocal(code) {
+    try {
+        // Use server-side parser for consistency
+        const response = await fetch('/scanner/parse', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: code,
+                scan_source: 'datamatrix'
+            })
+        });
         
-        // This is incomplete - no product ID
-        return data;
-    }
-    
-    // Standard GS1 DataMatrix parsing for complete codes
-    // Pattern: 01 (GTIN) + 17 (Expiry) + 21 (Serial) + 10 (Batch)
-    if (code.startsWith('01')) {
-        // AI 01: GTIN (14 digits)
-        data.gtin = code.substr(2, 14);
-        
-        // Look for other AIs
-        let pos = 16;
-        while (pos < code.length) {
-            const ai = code.substr(pos, 2);
-            if (ai === '17' && pos + 8 <= code.length) {
-                // Expiry date
-                data.expiry = code.substr(pos + 2, 6);
-                pos += 8;
-            } else if (ai === '21') {
-                // Serial number (variable length, look for next AI or end)
-                let serialEnd = code.length;
-                for (let i = pos + 2; i < code.length - 1; i++) {
-                    if (/^\d{2}$/.test(code.substr(i, 2))) {
-                        serialEnd = i;
-                        break;
-                    }
-                }
-                data.serial = code.substr(pos + 2, serialEnd - pos - 2);
-                pos = serialEnd;
-            } else if (ai === '10') {
-                // Batch number (variable length)
-                let batchEnd = code.length;
-                for (let i = pos + 2; i < code.length - 1; i++) {
-                    if (/^\d{2}$/.test(code.substr(i, 2))) {
-                        batchEnd = i;
-                        break;
-                    }
-                }
-                data.batch = code.substr(pos + 2, batchEnd - pos - 2);
-                pos = batchEnd;
-            } else {
-                pos++;
-            }
+        if (!response.ok) {
+            console.error('Failed to parse code on server');
+            // Fallback to basic parsing
+            return {
+                scan_source: 'datamatrix',
+                barcode: code
+            };
         }
+        
+        const data = await response.json();
+        data.scan_source = 'datamatrix';  // Ensure scan source is set
+        return data;
+        
+    } catch (error) {
+        console.error('Error parsing code:', error);
+        // Fallback to basic parsing
+        return {
+            scan_source: 'datamatrix',
+            barcode: code
+        };
     }
-    
-    return data;
 }
 
 // Check if scan data is incomplete
@@ -814,9 +789,9 @@ function processFinalScan(scanData) {
     .then(handleScanResponse);
 }
 
-function handleScan(barcodeText) {
+async function handleScan(barcodeText) {
     // Parse 2D barcode data
-    const barcodeData = parseBarcodeData(barcodeText);
+    const barcodeData = await parseBarcodeData(barcodeText);
 
     // Check if we have a pending scan to merge with
     if (pendingScan) {
@@ -903,10 +878,10 @@ function handleScanResponse(data) {
         }
 }
 
-function parseBarcodeData(text) {
+async function parseBarcodeData(text) {
     // First try local DataMatrix parsing for better incomplete scan detection
     // Migration scanner always tries to parse DataMatrix patterns
-    const localParsed = parseDataMatrixLocal(text);
+    const localParsed = await parseDataMatrixLocal(text);
     if (localParsed && (localParsed.gtin || localParsed.batch || localParsed.expiry)) {
         // Use local parsing result
         Object.assign(localParsed, { scan_source: 'datamatrix' });
