@@ -3,6 +3,7 @@ Migration scanner routes for transitioning from sum-based to package-based inven
 """
 
 from datetime import datetime, timezone
+from calendar import monthrange
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session, flash, current_app as app
 from flask_babel import gettext as _
 
@@ -19,6 +20,40 @@ from models import (
 )
 
 bp = Blueprint('migration_scanner', __name__, url_prefix='/migration')
+
+
+def parse_expiry_date(expiry_str):
+    """Parse expiry date string, handling day 00 as last day of month.
+    
+    Args:
+        expiry_str: Date string in format YYYY-MM-DD or with day 00
+        
+    Returns:
+        datetime object or None
+    """
+    if not expiry_str:
+        return None
+    
+    try:
+        # Check if day is 00 (last day of month)
+        if expiry_str.endswith('-00'):
+            # Extract year and month
+            year_month = expiry_str[:-3]  # Remove '-00'
+            year, month = year_month.split('-')
+            year = int(year)
+            month = int(month)
+            
+            # Get last day of the month
+            last_day = monthrange(year, month)[1]
+            
+            # Create date with last day of month
+            return datetime(year, month, last_day, tzinfo=timezone.utc)
+        else:
+            # Normal date parsing
+            return datetime.fromisoformat(expiry_str).replace(tzinfo=timezone.utc)
+    except (ValueError, AttributeError) as e:
+        app.logger.warning(f"Failed to parse expiry date '{expiry_str}': {e}")
+        return None
 
 
 @bp.route('/select')
@@ -158,13 +193,24 @@ def scan_package():
     
     medication = Medication.query.get_or_404(medication_id)
     
-    # Parse barcode data
-    gtin = barcode_data.get('gtin')
-    serial = barcode_data.get('serial')
-    batch = barcode_data.get('batch')
-    expiry = barcode_data.get('expiry')
-    national_number = barcode_data.get('national_number')
-    national_number_type = barcode_data.get('national_number_type')
+    # Check if this is merged data from frontend (two-step scanning)
+    if barcode_data.get('merged'):
+        app.logger.info("Using pre-merged scan data from two-step scanning")
+        # Data was already merged in frontend, use it directly
+        gtin = barcode_data.get('gtin')
+        serial = barcode_data.get('serial')
+        batch = barcode_data.get('batch')
+        expiry = barcode_data.get('expiry')
+        national_number = barcode_data.get('national_number')
+        national_number_type = barcode_data.get('national_number_type')
+    else:
+        # Parse barcode data normally
+        gtin = barcode_data.get('gtin')
+        serial = barcode_data.get('serial')
+        batch = barcode_data.get('batch')
+        expiry = barcode_data.get('expiry')
+        national_number = barcode_data.get('national_number')
+        national_number_type = barcode_data.get('national_number_type')
     
     app.logger.info(f"Migration scan received: gtin={gtin}, national_number={national_number}, "
                    f"national_number_type={national_number_type}, serial={serial[:20] if serial else None}")
@@ -233,6 +279,8 @@ def scan_package():
             'gtin': gtin,
             'batch': batch,
             'expiry': expiry,
+            'national_number': national_number,
+            'national_number_type': national_number_type,
             'package_id': package.id,
             'package_size': package.package_size,
             'units': package_units,
@@ -314,7 +362,7 @@ def onboard_migration_package():
         }), 400
     
     # IMPORTANT: During migration, we must use the existing product linked to the medication
-    # The old inventory is tied to medications, which may have a default_product
+    # The old inventory is tied to medications, which should already have an associated product
     product = None
     
     # First, check if the medication already has a default product
@@ -323,54 +371,53 @@ def onboard_migration_package():
         app.logger.info(f"Using medication's default product: {product.id} - {product.brand_name}")
     
     if not product:
-        # Find or create the active ingredient
+        # Try to find product by exact medication name match
+        product = MedicationProduct.query.filter_by(
+            brand_name=medication.name
+        ).first()
+        
+        if product:
+            app.logger.info(f"Found product by exact name match: {product.display_name}")
+            # Link this product to the medication for future use
+            medication.default_product_id = product.id
+            db.session.flush()
+    
+    if not product:
+        # Find the EXISTING ingredient - don't create new ones during migration
+        # First try exact match
         ingredient = ActiveIngredient.query.filter_by(
             name=medication.name
         ).first()
         
         if not ingredient:
-            ingredient = ActiveIngredient(
-                name=medication.name,
-                strength=medication.dosage.split()[0] if medication.dosage else None,
-                strength_unit=medication.dosage.split()[1] if medication.dosage and len(medication.dosage.split()) > 1 else 'mg'
-            )
-            db.session.add(ingredient)
-            db.session.flush()
+            # Try partial match (medication might be "MucoClear 6% 4ml" but ingredient is "MucoClear")
+            ingredient = ActiveIngredient.query.filter(
+                ActiveIngredient.name.like(f"%{medication.name.split()[0]}%")
+            ).first()
+        
+        if not ingredient:
+            # During migration, we should NOT create new ingredients
+            # This is a data issue that needs to be resolved
+            app.logger.error(f"No ingredient found for medication {medication.name} during migration")
+            return jsonify({
+                'error': _('Product configuration error. Please ensure the medication has an associated product.'),
+                'unknown_package': False
+            }), 400
         
         # Try to find an existing product for this ingredient
-        # First try with medication name (for existing products linked to old inventory)
+        # Get ANY product for this ingredient (during migration we use existing products)
         product = MedicationProduct.query.filter_by(
-            active_ingredient_id=ingredient.id,
-            brand_name=medication.name  # Use medication name to find existing product
+            active_ingredient_id=ingredient.id
         ).first()
         
-        # If not found, try with the provided product name
         if not product:
-            product_name = data.get('product_name', medication.name)
-            product = MedicationProduct.query.filter_by(
-                active_ingredient_id=ingredient.id,
-                brand_name=product_name
-            ).first()
+            app.logger.error(f"No product found for ingredient {ingredient.name} during migration")
+            return jsonify({
+                'error': _('No product found for this medication. Please configure the product first.'),
+                'unknown_package': False
+            }), 400
         
-        # If still not found, get ANY product for this ingredient (during migration we use existing products)
-        if not product:
-            product = MedicationProduct.query.filter_by(
-                active_ingredient_id=ingredient.id
-            ).first()
-            app.logger.info(f"Using first available product for ingredient: {product.brand_name if product else 'None'}")
-        
-        if not product:
-            # Only create new product if absolutely no product exists for this ingredient
-            # This should be rare during migration
-            app.logger.warning(f"No product found for ingredient {ingredient.name}, creating new one")
-            product = MedicationProduct(
-                active_ingredient_id=ingredient.id,
-                brand_name=medication.name,  # Use medication name for new product
-                manufacturer=data.get('manufacturer', ''),
-                is_otc=medication.is_otc if hasattr(medication, 'is_otc') else False
-            )
-            db.session.add(product)
-            db.session.flush()
+        app.logger.info(f"Using product: {product.id} - {product.brand_name} for ingredient: {ingredient.name}")
         
         # Set this as the default product for the medication
         if not medication.default_product_id:
@@ -602,7 +649,7 @@ def save_migration_progress(medication_id):
             serial_number=pkg_data['serial'] or f'MIGRATION_{datetime.now(timezone.utc).timestamp()}',
             gtin=pkg_data.get('gtin'),
             batch_number=pkg_data.get('batch'),
-            expiry_date=datetime.fromisoformat(pkg_data['expiry']) if pkg_data.get('expiry') else None,
+            expiry_date=parse_expiry_date(pkg_data.get('expiry')),
             national_number=pkg_data.get('national_number'),
             national_number_type=pkg_data.get('national_number_type'),
             scanned_at=datetime.now(timezone.utc),
@@ -677,7 +724,7 @@ def complete_migration(medication_id):
             serial_number=pkg_data['serial'] or f'MIGRATION_{datetime.now(timezone.utc).timestamp()}',
             gtin=pkg_data.get('gtin'),
             batch_number=pkg_data.get('batch'),
-            expiry_date=datetime.fromisoformat(pkg_data['expiry']) if pkg_data.get('expiry') else None,
+            expiry_date=parse_expiry_date(pkg_data.get('expiry')),
             national_number=pkg_data.get('national_number'),
             national_number_type=pkg_data.get('national_number_type'),
             scanned_at=datetime.now(timezone.utc),

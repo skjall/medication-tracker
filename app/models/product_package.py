@@ -4,7 +4,7 @@ Product package model for tracking different package configurations.
 
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
-from sqlalchemy import String, Integer, ForeignKey, DateTime, UniqueConstraint, Float
+from sqlalchemy import String, Integer, ForeignKey, DateTime, UniqueConstraint, Float, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from . import db
@@ -89,6 +89,13 @@ class ProductPackage(db.Model):
         comment="Whether this package is currently available"
     )
     
+    exclude_from_ordering: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        comment="If true, this package size won't appear in ordering lists (e.g., individual units in a bundle)"
+    )
+    
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime, 
@@ -107,6 +114,19 @@ class ProductPackage(db.Model):
         "MedicationProduct", 
         back_populates="packages"
     )
+    
+    @property
+    def sort_key(self) -> tuple:
+        """Get sort key for ordering packages (N1, N2, N3, then custom)."""
+        if self.package_size == 'N1':
+            return (0, self.package_size)
+        elif self.package_size == 'N2':
+            return (1, self.package_size)
+        elif self.package_size == 'N3':
+            return (2, self.package_size)
+        else:
+            # Custom packages come after standard ones, sorted alphabetically
+            return (3, self.package_size)
     
     @property
     def display_name(self) -> str:

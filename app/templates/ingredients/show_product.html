@@ -12,8 +12,8 @@
             <i class="fas fa-edit me-1"></i>{{ _('Edit') }}
         </a>
         {% if not product.total_inventory_count or product.total_inventory_count == 0 %}
-        <form method="POST" action="{{ url_for('ingredients.delete_product', id=product.id) }}" 
-              onsubmit="return confirm('{{ _('Are you sure you want to delete this product?') }}');" 
+        <form method="POST" action="{{ url_for('ingredients.delete_product', id=product.id) }}"
+              onsubmit="return confirm('{{ _('Are you sure you want to delete this product?') }}');"
               class="d-inline">
             <button type="submit" class="btn btn-danger">
                 <i class="fas fa-trash me-1"></i>{{ _('Delete') }}
@@ -43,15 +43,15 @@
                                 <a href="{{ url_for('ingredients.show', id=product.active_ingredient.id) }}">
                                     {{ product.active_ingredient.full_name }}
                                 </a>
-                                <a href="{{ url_for('ingredients.edit', id=product.active_ingredient.id, return_url=request.url) }}" 
+                                <a href="{{ url_for('ingredients.edit', id=product.active_ingredient.id, return_url=request.url) }}"
                                    class="text-primary ms-2" title="{{ _('Edit ingredient') }}">
                                     <i class="fas fa-edit"></i>
                                 </a>
                             </dd>
-                            
+
                             <dt>{{ _('Brand Name') }}</dt>
                             <dd>{{ product.brand_name }}</dd>
-                            
+
                             <dt>{{ _('Manufacturer') }}</dt>
                             <dd>{{ product.manufacturer or _('Unknown') }}</dd>
                         </dl>
@@ -71,7 +71,7 @@
                                     </span>
                                 {% endif %}
                             </dd>
-                            
+
                             <dt>{{ _('Type') }}</dt>
                             <dd>
                                 {% if product.is_otc %}
@@ -80,7 +80,7 @@
                                     <span class="badge bg-primary">{{ _('Order required') }}</span>
                                 {% endif %}
                             </dd>
-                            
+
                             {% if product.physician %}
                             <dt>{{ _('Physician') }}</dt>
                             <dd>{{ product.physician.name }}</dd>
@@ -88,41 +88,7 @@
                         </dl>
                     </div>
                 </div>
-                
-                {% if product.package_size_n1 or product.package_size_n2 or product.package_size_n3 %}
-                <hr>
-                <h6 class="text-muted">{{ _('Package Sizes') }}</h6>
-                <div class="row">
-                    {% if product.package_size_n1 %}
-                    <div class="col-md-4">
-                        <div class="text-center p-3 bg-light rounded">
-                            <div class="h5 mb-0">N1</div>
-                            <div class="h3 text-primary">{{ product.package_size_n1 }}</div>
-                            <small class="text-muted">{{ _('units') }}</small>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if product.package_size_n2 %}
-                    <div class="col-md-4">
-                        <div class="text-center p-3 bg-light rounded">
-                            <div class="h5 mb-0">N2</div>
-                            <div class="h3 text-primary">{{ product.package_size_n2 }}</div>
-                            <small class="text-muted">{{ _('units') }}</small>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if product.package_size_n3 %}
-                    <div class="col-md-4">
-                        <div class="text-center p-3 bg-light rounded">
-                            <div class="h5 mb-0">N3</div>
-                            <div class="h3 text-primary">{{ product.package_size_n3 }}</div>
-                            <small class="text-muted">{{ _('units') }}</small>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-                
+
                 {% if product.notes %}
                 <hr>
                 <h6 class="text-muted">{{ _('Notes') }}</h6>
@@ -130,7 +96,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <!-- Package Configurations -->
         <div class="card mb-4">
             <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
@@ -153,7 +119,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for package in product.packages %}
+                        {% for package in product.sorted_packages %}
                         <tr>
                             <td><strong>{{ package.package_size }}</strong></td>
                             <td>{{ package.quantity }} {{ _('units') }}</td>
@@ -183,12 +149,12 @@
                             </td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ url_for('ingredients.edit_package', id=package.id) }}" 
+                                    <a href="{{ url_for('ingredients.edit_package', id=package.id) }}"
                                        class="btn btn-sm btn-outline-secondary" title="{{ _('Edit') }}">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form method="POST" action="{{ url_for('ingredients.delete_package', id=package.id) }}" 
-                                          onsubmit="return confirm('{{ _('Are you sure you want to delete this package configuration?') }}');" 
+                                    <form method="POST" action="{{ url_for('ingredients.delete_package', id=package.id) }}"
+                                          onsubmit="return confirm('{{ _('Are you sure you want to delete this package configuration?') }}');"
                                           class="d-inline">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ _('Delete') }}">
                                             <i class="fas fa-trash"></i>
@@ -210,7 +176,7 @@
             </div>
             {% endif %}
         </div>
-        
+
         <!-- Current Inventory -->
         <div class="card">
             <div class="card-header bg-secondary text-white">
@@ -237,7 +203,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 {% if package_inventory %}
                 <h6 class="text-muted">{{ _('Packages in Stock') }}</h6>
                 <div class="table-responsive">
@@ -279,7 +245,7 @@
                 {% else %}
                 <p class="text-muted">{{ _('No packages in stock') }}</p>
                 {% endif %}
-                
+
                 {% if legacy_inventory and legacy_inventory.current_count > 0 %}
                 <hr>
                 <h6 class="text-muted">{{ _('Legacy Inventory') }}</h6>
@@ -302,7 +268,7 @@
             </div>
         </div>
     </div>
-    
+
     {% if substitutes %}
     <div class="col-lg-4">
         <!-- Substitutes -->
@@ -314,7 +280,7 @@
             </div>
             <div class="list-group list-group-flush">
                 {% for substitute in substitutes %}
-                <a href="{{ url_for('ingredients.show_product', id=substitute.id) }}" 
+                <a href="{{ url_for('ingredients.show_product', id=substitute.id) }}"
                    class="list-group-item list-group-item-action">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>

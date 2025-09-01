@@ -495,18 +495,18 @@
         text-decoration: none;
         transition: all 0.3s ease;
     }
-    
+
     .migration-fab:hover {
         background: #ffb300;
         color: white;
         transform: scale(1.05);
         text-decoration: none;
     }
-    
+
     .migration-fab i {
         font-size: 1.5rem;
     }
-    
+
     /* Adjust position on desktop for better visibility */
     @media (min-width: 769px) {
         .migration-fab {
@@ -526,7 +526,7 @@
         <i class="fas fa-exchange-alt"></i>
     </a>
     {% endif %}
-    
+
     <!-- Desktop card container -->
     <div class="container desktop-only">
         <div class="row justify-content-center">
@@ -591,7 +591,7 @@
 
     <!-- Mobile full-screen scanner -->
     <div class="scanner-mobile mobile-only">
-        
+
         <!-- Top controls overlay -->
         <div class="scanner-controls">
             <div class="mode-toggle">
@@ -662,6 +662,112 @@
     let scanActivityTracker = [];  // Track scan attempts for phantom detection
     const PHANTOM_THRESHOLD = 5;  // Number of rapid scans to trigger phantom detection
     const PHANTOM_TIME_WINDOW = 3000; // Time window in ms to check for rapid scans
+
+    // Two-step scanning support
+    let pendingScan = null; // Store incomplete scan data
+    let pendingScanTimeout = null; // Timeout for auto-accepting partial data
+    const PENDING_SCAN_TIMEOUT = 15000; // 15 seconds to complete second scan
+
+    // Check if scan data is incomplete
+    function isIncompleteScan(data) {
+        const hasProductId = data.gtin || data.national_number;
+        const hasBatchInfo = data.batch || data.expiry;
+
+        // If we have batch/expiry but no product ID, it's incomplete
+        if (hasBatchInfo && !hasProductId) {
+            return 'missing_product';
+        }
+
+        // If we have product ID but no batch/expiry (and it's from linear scan), suggest DataMatrix
+        if (hasProductId && !hasBatchInfo && data.scan_source === 'linear') {
+            return 'missing_batch';
+        }
+
+        return false;
+    }
+
+    // Show pending scan UI
+    function showPendingScanPrompt(type, data) {
+        let message = '';
+        let suggestedMode = '';
+
+        if (type === 'missing_product') {
+            message = '{{ _("Incomplete data: Product ID missing. Please scan the EAN/PZN barcode.") }}';
+            suggestedMode = 'linear';
+        } else if (type === 'missing_batch') {
+            message = '{{ _("Product identified. Scan DataMatrix for batch/expiry info (optional).") }}';
+            suggestedMode = 'datamatrix';
+        }
+
+        // Show toast with instructions
+        showToast(message, 'warning', PENDING_SCAN_TIMEOUT);
+
+        // Auto-switch scanner mode if needed
+        if (suggestedMode && scanMode !== suggestedMode) {
+            // Find and click the appropriate mode button
+            const modeSelector = isMobile ?
+                `#mode-${suggestedMode}-mobile` :
+                `#mode-${suggestedMode}-desktop`;
+            const modeInput = document.querySelector(modeSelector);
+            if (modeInput) {
+                modeInput.checked = true;
+                scanMode = suggestedMode;
+                switchScanMode();
+            }
+        }
+
+        // Set timeout to auto-accept partial data
+        if (pendingScanTimeout) {
+            clearTimeout(pendingScanTimeout);
+        }
+
+        pendingScanTimeout = setTimeout(() => {
+            if (pendingScan) {
+                console.log('Auto-accepting partial scan data');
+                processFinalScan(pendingScan);
+                pendingScan = null;
+            }
+        }, PENDING_SCAN_TIMEOUT);
+    }
+
+    // Merge two scans together
+    function mergeScanData(scan1, scan2) {
+        // Merge the data, preferring non-null values
+        return {
+            gtin: scan1.gtin || scan2.gtin,
+            serial: scan1.serial || scan2.serial || `MERGED_${Date.now()}`,
+            batch: scan1.batch || scan2.batch,
+            expiry: scan1.expiry || scan2.expiry,
+            national_number: scan1.national_number || scan2.national_number,
+            national_number_type: scan1.national_number_type || scan2.national_number_type,
+            merged: true
+        };
+    }
+
+    // Process the final scan (either single complete or merged)
+    function processFinalScan(scanData) {
+        // Clear any pending scan state
+        if (pendingScanTimeout) {
+            clearTimeout(pendingScanTimeout);
+            pendingScanTimeout = null;
+        }
+
+        // Continue with normal processing
+        updateStatus('{{ _("Processing...") }}', 'info');
+
+        fetch("{{ url_for('scanner.scan') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                barcode: scanData.barcode || scanData.gtin || scanData.national_number,
+                parsed_data: scanData // Send pre-parsed data if available
+            })
+        })
+        .then(response => response.json())
+        .then(handleScanResponse);
+    }
 
     // Validation function to filter out false positives
     function isValidBarcode(code, format) {
@@ -791,7 +897,7 @@
         // Initialize new code reader with current mode
         if (scanMode === 'datamatrix') {
             const hints = new Map();
-            hints.set(ZXing.DecodeHintType.TRY_HARDER, false);  // Reduce phantom detection
+            // hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
             codeReader = new ZXing.BrowserMultiFormatReader(hints);
         } else {
             // For linear codes (EAN, Code39/PZN, etc.)
@@ -802,7 +908,7 @@
                 ZXing.BarcodeFormat.EAN_8,
                 ZXing.BarcodeFormat.CODE_128
             ]);
-            hints.set(ZXing.DecodeHintType.TRY_HARDER, false);  // Reduce phantom detection
+            // hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
             codeReader = new ZXing.BrowserMultiFormatReader(hints);
         }
 
@@ -815,7 +921,7 @@
             // Initialize the appropriate code reader based on mode
             if (scanMode === 'datamatrix') {
                 const hints = new Map();
-                hints.set(ZXing.DecodeHintType.TRY_HARDER, false);  // Reduce phantom detection
+                // hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
                 codeReader = new ZXing.BrowserMultiFormatReader(hints);
             } else {
                 // For linear codes (EAN, Code39/PZN, etc.)
@@ -826,7 +932,7 @@
                     ZXing.BarcodeFormat.EAN_8,
                     ZXing.BarcodeFormat.CODE_128
                 ]);
-                hints.set(ZXing.DecodeHintType.TRY_HARDER, false);  // Reduce phantom detection
+                // hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
                 codeReader = new ZXing.BrowserMultiFormatReader(hints);
             }
 
@@ -880,11 +986,11 @@
     window.restartScanner = restartScanner;
 
     async function startScanning() {
-
         try {
             await codeReader.decodeFromVideoDevice(selectedDeviceId, videoEl, (result, err) => {
                 if (result) {
                     const now = Date.now();
+
                     const code = result.getText();
                     const format = result.getBarcodeFormat();
 
@@ -892,19 +998,22 @@
                     scanActivityTracker.push({time: now, code: code});
                     // Remove old entries outside the time window
                     scanActivityTracker = scanActivityTracker.filter(scan => now - scan.time < PHANTOM_TIME_WINDOW);
-                    
+
                     // Check for phantom reading pattern (same code scanned many times rapidly)
                     const sameCodeScans = scanActivityTracker.filter(scan => scan.code === code).length;
                     if (sameCodeScans >= PHANTOM_THRESHOLD) {
                         console.warn(`Phantom reading detected: same code '${code}' scanned ${sameCodeScans} times in ${PHANTOM_TIME_WINDOW}ms`);
                         scanActivityTracker = []; // Clear tracker
-                        
+
                         // Auto-restart scanner to clear phantom state
                         updateStatus('{{ _("Resetting scanner...") }}', 'warning');
-                        setTimeout(() => {
-                            console.log('Auto-restarting scanner due to phantom readings');
-                            restartScanner();
-                        }, 500);
+                        // Use requestAnimationFrame for smoother restart
+                        requestAnimationFrame(() => {
+                            setTimeout(() => {
+                                console.log('Auto-restarting scanner due to phantom readings');
+                                restartScanner();
+                            }, 500);
+                        });
                         return;
                     }
 
@@ -943,7 +1052,98 @@
         }
     }
 
+    // Parse DataMatrix locally to detect incomplete scans
+    function parseDataMatrixLocal(code) {
+        const data = {
+            scan_source: scanMode,
+            barcode: code
+        };
+
+        // Check for GS1 DataMatrix pattern
+        if (code.includes(String.fromCharCode(29)) || /^01\d{14}/.test(code)) {
+            // Parse GS1 Application Identifiers
+            const aiPatterns = {
+                '01': { name: 'gtin', length: 14 },
+                '17': { name: 'expiry', length: 6 },
+                '10': { name: 'batch', variable: true },
+                '21': { name: 'serial', variable: true }
+            };
+
+            let pos = 0;
+            while (pos < code.length) {
+                const ai = code.substr(pos, 2);
+                if (aiPatterns[ai]) {
+                    const pattern = aiPatterns[ai];
+                    pos += 2;
+                    if (pattern.variable) {
+                        // Variable length - read until FNC1 or end
+                        let end = code.indexOf(String.fromCharCode(29), pos);
+                        if (end === -1) end = code.length;
+                        data[pattern.name] = code.substring(pos, end);
+                        pos = end + 1;
+                    } else {
+                        data[pattern.name] = code.substr(pos, pattern.length);
+                        pos += pattern.length;
+                    }
+                }
+                else {
+                    pos++;
+                }
+            }
+        } else if (/^\d{6,8}$/.test(code.replace('-', ''))) {
+            // Looks like a PZN
+            data.national_number = code.replace('-', '');
+            data.national_number_type = 'DE_PZN';
+        } else if (/^\d{13}$/.test(code)) {
+            // EAN-13
+            data.gtin = code;
+        } else if (/^\d{8}$/.test(code)) {
+            // EAN-8
+            data.gtin = code;
+        } else if (/^17\d{6}10/.test(code)) {
+            // Your example: expiry + batch only
+            data.expiry = code.substr(2, 6);
+            const batchStart = code.indexOf('10') + 2;
+            data.batch = code.substr(batchStart);
+        }
+
+        return data;
+    }
+
     function handleScan(barcode) {
+        // Parse locally first to check for incomplete data
+        const parsedData = parseDataMatrixLocal(barcode);
+
+        // Check if we have a pending scan to merge with
+        if (pendingScan) {
+            // Clear timeout
+            if (pendingScanTimeout) {
+                clearTimeout(pendingScanTimeout);
+                pendingScanTimeout = null;
+            }
+
+            // Merge the scans
+            const mergedData = mergeScanData(pendingScan, parsedData);
+            pendingScan = null;
+
+            console.log('Merged scan data:', mergedData);
+            showToast('{{ _("Scans merged successfully") }}', 'success');
+
+            // Process the merged data
+            processFinalScan(mergedData);
+            return;
+        }
+
+        // Check if this scan is incomplete
+        const incompleteType = isIncompleteScan(parsedData);
+        if (incompleteType) {
+            // Store as pending and prompt for second scan
+            pendingScan = parsedData;
+            showPendingScanPrompt(incompleteType, parsedData);
+            return;
+        }
+
+        // Complete scan - process normally
         updateStatus('{{ _("Processing...") }}', 'info');
 
         fetch("{{ url_for('scanner.scan') }}", {
@@ -954,7 +1154,21 @@
             body: JSON.stringify({ barcode: barcode })
         })
         .then(response => response.json())
-        .then(data => {
+        .then(handleScanResponse)
+        .catch(error => {
+            console.error('Scan processing error:', error);
+            showResult(`
+                <div class="text-center">
+                    <i class="fas fa-times-circle fa-3x mb-3" style="color: #dc3545;"></i>
+                    <h5>{{ _('Error') }}</h5>
+                    <p>${error.message}</p>
+                </div>
+            `, 'error');
+            updateStatus('{{ _("Error") }}', 'danger');
+        });
+    }
+
+    function handleScanResponse(data) {
             if (data.error) {
                 // Package not found - show onboarding option
                 let html = `
@@ -1021,18 +1235,6 @@
                 showResult(html, 'success');
                 updateStatus('{{ _("Scan successful") }}', 'success');
             }
-        })
-        .catch(error => {
-            console.error('Scan processing error:', error);
-            showResult(`
-                <div class="text-center">
-                    <i class="fas fa-times-circle fa-3x mb-3" style="color: #dc3545;"></i>
-                    <h5>{{ _('Error') }}</h5>
-                    <p>${error.message}</p>
-                </div>
-            `, 'error');
-            updateStatus('{{ _("Error") }}', 'danger');
-        });
     }
 
     function updateStatus(message, type = 'secondary') {

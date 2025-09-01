@@ -155,7 +155,8 @@ class MedicationProduct(db.Model):
     packages: Mapped[list["ProductPackage"]] = relationship(
         "ProductPackage",
         back_populates="product",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        order_by="ProductPackage.id"  # We'll sort in property
     )
     
     # Legacy medication relationship
@@ -181,9 +182,14 @@ class MedicationProduct(db.Model):
         return self.aut_idem
     
     @property
+    def sorted_packages(self):
+        """Get packages sorted by N1, N2, N3, then custom."""
+        return sorted(self.packages, key=lambda p: p.sort_key)
+    
+    @property
     def packages_as_dict(self) -> list:
         """Get packages as list of dictionaries for JSON serialization."""
-        return [pkg.to_dict() for pkg in self.packages]
+        return [pkg.to_dict() for pkg in self.sorted_packages]
     
     def find_substitutes(self):
         """Find other products that can substitute for this one."""
@@ -193,6 +199,11 @@ class MedicationProduct(db.Model):
         return self.active_ingredient.find_substitutable_products(
             exclude_product_id=self.id
         )
+    
+    @property
+    def orderable_packages(self):
+        """Get packages that should be shown for ordering (not excluded), sorted."""
+        return [p for p in self.sorted_packages if not p.exclude_from_ordering]
     
     @property
     def total_inventory_count(self) -> int:
