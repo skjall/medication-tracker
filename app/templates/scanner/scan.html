@@ -628,10 +628,8 @@
             return 'missing_product';
         }
 
-        // If we have product ID but no batch/expiry (and it's from linear scan), suggest DataMatrix
-        if (hasProductId && !hasBatchInfo && data.scan_source === 'linear') {
-            return 'missing_batch';
-        }
+        // If we have product ID only, that's complete - don't prompt for more
+        // Batch/expiry info is optional
 
         return false;
     }

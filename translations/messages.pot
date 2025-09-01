@@ -217,7 +217,7 @@ msgstr ""
 msgid "No product found for this medication. Please configure the product first."
 msgstr ""
 
-#: /app/routes/migration_scanner.py:611 /app/templates/scanner/scan.html:1143
+#: /app/routes/migration_scanner.py:611 /app/templates/scanner/scan.html:1141
 msgid "Package not found"
 msgstr ""
 
@@ -1174,7 +1174,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: /app/templates/index.html:36 /app/templates/physicians/index.html:64
-#: /app/templates/scanner/scan.html:1159 /app/templates/visits/index.html:86
+#: /app/templates/scanner/scan.html:1157 /app/templates/visits/index.html:86
 #: /app/templates/visits/index.html:166
 msgid "View Details"
 msgstr ""
@@ -1851,7 +1851,7 @@ msgstr ""
 #: /app/templates/ingredients/new_package.html:117
 #: /app/templates/ingredients/show_product.html:105
 #: /app/templates/migration/scanner.html:183
-#: /app/templates/scanner/scan.html:1136
+#: /app/templates/scanner/scan.html:1134
 msgid "Add Package"
 msgstr ""
 
@@ -2159,7 +2159,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
-#: /app/templates/scanner/scan.html:1126
+#: /app/templates/scanner/scan.html:1124
 msgid "Batch"
 msgstr ""
 
@@ -2168,7 +2168,7 @@ msgstr ""
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
-#: /app/templates/scanner/scan.html:1129
+#: /app/templates/scanner/scan.html:1127
 msgid "Expiry"
 msgstr ""
 
@@ -3138,27 +3138,27 @@ msgid "Camera access required for scanning"
 msgstr ""
 
 #: /app/templates/migration/scanner.html:588
-#: /app/templates/scanner/scan.html:906
+#: /app/templates/scanner/scan.html:904
 msgid "Ready to scan"
 msgstr ""
 
 #: /app/templates/migration/scanner.html:639
-#: /app/templates/scanner/scan.html:959
+#: /app/templates/scanner/scan.html:957
 msgid "Resetting scanner..."
 msgstr ""
 
 #: /app/templates/migration/scanner.html:668
-#: /app/templates/scanner/scan.html:706 /app/templates/scanner/scan.html:1077
+#: /app/templates/scanner/scan.html:704 /app/templates/scanner/scan.html:1075
 msgid "Processing..."
 msgstr ""
 
 #: /app/templates/migration/scanner.html:737
-#: /app/templates/scanner/scan.html:645
+#: /app/templates/scanner/scan.html:643
 msgid "Incomplete data: Product ID missing. Please scan the EAN/PZN barcode."
 msgstr ""
 
 #: /app/templates/migration/scanner.html:809
-#: /app/templates/scanner/scan.html:1060
+#: /app/templates/scanner/scan.html:1058
 msgid "Scans merged successfully"
 msgstr ""
 
@@ -4874,35 +4874,35 @@ msgstr ""
 msgid "Initializing..."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:538 /app/templates/scanner/scan.html:1203
+#: /app/templates/scanner/scan.html:538 /app/templates/scanner/scan.html:1201
 msgid "Retry"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:648
+#: /app/templates/scanner/scan.html:646
 msgid "Product identified. Scan DataMatrix for batch/expiry info (optional)."
 msgstr ""
 
-#: /app/templates/scanner/scan.html:916
+#: /app/templates/scanner/scan.html:914
 msgid "Camera error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:1001
+#: /app/templates/scanner/scan.html:999
 msgid "Scan failed"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:1093 /app/templates/scanner/scan.html:1097
+#: /app/templates/scanner/scan.html:1091 /app/templates/scanner/scan.html:1095
 msgid "Error"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:1152
+#: /app/templates/scanner/scan.html:1150
 msgid "Package Scanned"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:1166
+#: /app/templates/scanner/scan.html:1164
 msgid "Scan successful"
 msgstr ""
 
-#: /app/templates/scanner/scan.html:1200
+#: /app/templates/scanner/scan.html:1198
 msgid "Camera Access Required"
 msgstr ""
 

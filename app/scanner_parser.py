@@ -211,6 +211,22 @@ def parse_datamatrix(data: str) -> Dict[str, Optional[str]]:
             result['national_number'] = national_info[0]
             result['national_number_type'] = national_info[1]
     
+    # Handle simple linear barcodes (PZN, EAN) that aren't GS1 DataMatrix
+    if not any([result['gtin'], result['serial'], result['batch'], result['expiry']]):
+        # Remove leading dash if present (Code39 PZN format)
+        clean_data = data.lstrip('-')
+        
+        # Check if it's a PZN (7-8 digits)
+        if clean_data.isdigit() and 7 <= len(clean_data) <= 8:
+            result['national_number'] = clean_data
+            result['national_number_type'] = 'DE_PZN'
+        # Check if it's an EAN-13
+        elif clean_data.isdigit() and len(clean_data) == 13:
+            result['gtin'] = clean_data
+        # Check if it's an EAN-8
+        elif clean_data.isdigit() and len(clean_data) == 8:
+            result['gtin'] = clean_data
+    
     return result
 
 
