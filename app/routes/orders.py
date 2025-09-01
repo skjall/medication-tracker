@@ -205,13 +205,27 @@ def new():
         
         # Calculate packages needed for the additional units
         if result['additional_needed'] > 0:
-            # Try to get packages from the first product for this ingredient
-            for product in ingredient.products:
-                if product.package_size_n1:
-                    # Simple calculation - just use N1 packages for now
-                    packages_needed = (result['additional_needed'] + product.package_size_n1 - 1) // product.package_size_n1
-                    result['packages']['N1'] = packages_needed
-                    break
+            # Get the default product or first product for this ingredient
+            product = ingredient.default_product or (ingredient.products[0] if ingredient.products else None)
+            if product and product.orderable_packages:
+                # Find the most efficient package size (prefer larger packages to minimize count)
+                best_package = None
+                min_overage = float('inf')
+                
+                for package in product.orderable_packages:
+                    if package.quantity > 0:
+                        # Calculate how many of this package we'd need
+                        packages_needed = (result['additional_needed'] + package.quantity - 1) // package.quantity
+                        overage = (packages_needed * package.quantity) - result['additional_needed']
+                        
+                        # Prefer packages with less overage (waste)
+                        if overage < min_overage:
+                            min_overage = overage
+                            best_package = (package.package_size, packages_needed)
+                
+                # Set the best package option
+                if best_package:
+                    result['packages'][best_package[0]] = best_package[1]
         
         return result
     

@@ -253,49 +253,49 @@ msgstr ""
 msgid "Order created successfully"
 msgstr ""
 
-#: /app/routes/orders.py:264
+#: /app/routes/orders.py:278
 msgid "Cannot edit fulfilled orders"
 msgstr ""
 
-#: /app/routes/orders.py:337
+#: /app/routes/orders.py:351
 msgid "Order updated successfully"
 msgstr ""
 
-#: /app/routes/orders.py:369
+#: /app/routes/orders.py:383
 msgid "Cannot delete fulfilled orders"
 msgstr ""
 
-#: /app/routes/orders.py:379
+#: /app/routes/orders.py:393
 msgid "Order deleted successfully"
 msgstr ""
 
-#: /app/routes/orders.py:439
+#: /app/routes/orders.py:453
 #, python-brace-format
 msgid "Order status updated to {}"
 msgstr ""
 
-#: /app/routes/orders.py:441
+#: /app/routes/orders.py:455
 msgid "Invalid status"
 msgstr ""
 
-#: /app/routes/orders.py:458
+#: /app/routes/orders.py:472
 msgid "Order marked as unfulfilled"
 msgstr ""
 
-#: /app/routes/orders.py:483
+#: /app/routes/orders.py:497
 #, python-brace-format
 msgid "Order marked as fulfilled and {} items added to inventory"
 msgstr ""
 
-#: /app/routes/orders.py:485
+#: /app/routes/orders.py:499
 msgid "Order marked as fulfilled"
 msgstr ""
 
-#: /app/routes/orders.py:508
+#: /app/routes/orders.py:522
 msgid "Item does not belong to this order"
 msgstr ""
 
-#: /app/routes/orders.py:542 /app/routes/scanner.py:219
+#: /app/routes/orders.py:556 /app/routes/scanner.py:219
 #: /app/templates/ingredients/show_product.html:56
 #: /app/templates/inventory/show.html:452
 #: /app/templates/orders/printable.html:149 /app/templates/orders/show.html:179
@@ -304,57 +304,57 @@ msgstr ""
 msgid "Unknown"
 msgstr ""
 
-#: /app/routes/orders.py:543
+#: /app/routes/orders.py:557
 #, python-brace-format
 msgid "Item {} marked as {}"
 msgstr ""
 
-#: /app/routes/orders.py:572
+#: /app/routes/orders.py:586
 #, python-brace-format
 msgid "Successfully fulfilled {} items"
 msgstr ""
 
-#: /app/routes/orders.py:584 /app/routes/orders.py:611
+#: /app/routes/orders.py:598 /app/routes/orders.py:625
 msgid "Invalid order item"
 msgstr ""
 
-#: /app/routes/orders.py:589
+#: /app/routes/orders.py:603
 msgid "Can only cancel pending items"
 msgstr ""
 
-#: /app/routes/orders.py:599
+#: /app/routes/orders.py:613
 msgid "Item cancelled successfully"
 msgstr ""
 
-#: /app/routes/orders.py:616
+#: /app/routes/orders.py:630
 msgid "Can only undo cancellation for cancelled items"
 msgstr ""
 
-#: /app/routes/orders.py:629
+#: /app/routes/orders.py:643
 msgid "Cancellation undone successfully"
 msgstr ""
 
-#: /app/routes/orders.py:649
+#: /app/routes/orders.py:663
 msgid ""
 "The PDF template file is missing. Please re-upload the template in PDF "
 "Forms."
 msgstr ""
 
-#: /app/routes/orders.py:651
+#: /app/routes/orders.py:665
 msgid ""
 "No PDF template assigned to physician. Please assign a template in "
 "physician settings."
 msgstr ""
 
-#: /app/routes/orders.py:788
+#: /app/routes/orders.py:802
 msgid "Package linked successfully"
 msgstr ""
 
-#: /app/routes/orders.py:802
+#: /app/routes/orders.py:816
 msgid "Package is not linked to this order item"
 msgstr ""
 
-#: /app/routes/orders.py:840
+#: /app/routes/orders.py:854
 msgid "Package unlinked successfully"
 msgstr ""
 
