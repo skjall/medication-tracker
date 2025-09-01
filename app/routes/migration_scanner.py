@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from calendar import monthrange
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session, flash, current_app as app
 from flask_babel import gettext as _
+from scanner_parser import parse_expiry_date as parse_expiry_yymmdd
 
 from models import (
     db,
@@ -649,7 +650,7 @@ def save_migration_progress(medication_id):
             serial_number=pkg_data['serial'] or f'MIGRATION_{datetime.now(timezone.utc).timestamp()}',
             gtin=pkg_data.get('gtin'),
             batch_number=pkg_data.get('batch'),
-            expiry_date=parse_expiry_date(pkg_data.get('expiry')),
+            expiry_date=parse_expiry_yymmdd(pkg_data.get('expiry')).date() if pkg_data.get('expiry') and parse_expiry_yymmdd(pkg_data.get('expiry')) else None,
             national_number=pkg_data.get('national_number'),
             national_number_type=pkg_data.get('national_number_type'),
             scanned_at=datetime.now(timezone.utc),
@@ -724,7 +725,7 @@ def complete_migration(medication_id):
             serial_number=pkg_data['serial'] or f'MIGRATION_{datetime.now(timezone.utc).timestamp()}',
             gtin=pkg_data.get('gtin'),
             batch_number=pkg_data.get('batch'),
-            expiry_date=parse_expiry_date(pkg_data.get('expiry')),
+            expiry_date=parse_expiry_yymmdd(pkg_data.get('expiry')).date() if pkg_data.get('expiry') and parse_expiry_yymmdd(pkg_data.get('expiry')) else None,
             national_number=pkg_data.get('national_number'),
             national_number_type=pkg_data.get('national_number_type'),
             scanned_at=datetime.now(timezone.utc),

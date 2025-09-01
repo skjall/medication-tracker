@@ -187,6 +187,16 @@ def parse_datamatrix(data: str) -> Dict[str, Optional[str]]:
                     # Not a recognized AI, skip
                     pos += 1
     
+    # Handle incomplete DataMatrix patterns (expiry + batch only, no product ID)
+    # Pattern like "1725100010047AB" - starts with 17 (expiry) followed by 10 (batch)
+    if not result['gtin'] and not result['expiry'] and data.startswith('17'):
+        # Check if this matches the pattern: 17YYMMDD10[batch]
+        if len(data) >= 10 and data[8:10] == '10':
+            # Extract expiry date (positions 2-7)
+            result['expiry'] = data[2:8]
+            # Extract batch (position 10 onwards)
+            result['batch'] = data[10:]
+    
     # Handle PZN if extracted from AI 710/711
     if 'pzn' in result and result['pzn']:
         # PZN found via AI 710 or 711
@@ -200,6 +210,22 @@ def parse_datamatrix(data: str) -> Dict[str, Optional[str]]:
         if national_info:
             result['national_number'] = national_info[0]
             result['national_number_type'] = national_info[1]
+    
+    # Handle simple linear barcodes (PZN, EAN) that aren't GS1 DataMatrix
+    if not any([result['gtin'], result['serial'], result['batch'], result['expiry']]):
+        # Remove leading dash if present (Code39 PZN format)
+        clean_data = data.lstrip('-')
+        
+        # Check if it's a PZN (7-8 digits)
+        if clean_data.isdigit() and 7 <= len(clean_data) <= 8:
+            result['national_number'] = clean_data
+            result['national_number_type'] = 'DE_PZN'
+        # Check if it's an EAN-13
+        elif clean_data.isdigit() and len(clean_data) == 13:
+            result['gtin'] = clean_data
+        # Check if it's an EAN-8
+        elif clean_data.isdigit() and len(clean_data) == 8:
+            result['gtin'] = clean_data
     
     return result
 

@@ -717,3 +717,28 @@ def validate_code():
             )
 
     return jsonify(result)
+
+
+@bp.route("/parse", methods=["POST"])
+def parse():
+    """Parse a barcode/DataMatrix code and return structured data."""
+    data = request.get_json()
+    code = data.get("code", "")
+    scan_source = data.get("scan_source", "datamatrix")
+    
+    # Use the existing parser from scanner_parser.py
+    parsed = parse_datamatrix(code)
+    
+    # Format dates for frontend
+    if parsed.get("expiry"):
+        try:
+            expiry_date = parse_expiry_date(parsed["expiry"])
+            if expiry_date:
+                parsed["expiry_formatted"] = expiry_date.strftime("%Y-%m-%d")
+        except:
+            pass
+    
+    # Add scan source for context
+    parsed["scan_source"] = scan_source
+    
+    return jsonify(parsed)
