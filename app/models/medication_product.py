@@ -14,8 +14,6 @@ from .base import db, utcnow
 if TYPE_CHECKING:
     from .active_ingredient import ActiveIngredient
     from .physician import Physician
-    from .schedule import MedicationSchedule
-    from .visit import OrderItem
     from .product_package import ProductPackage
 
 
@@ -55,14 +53,6 @@ class MedicationProduct(db.Model):
         comment="Manufacturer or pharmaceutical company"
     )
     
-    # Primary identifier - DEPRECATED (moved to ProductPackage)
-    # Keep for backwards compatibility during migration
-    pzn: Mapped[Optional[str]] = mapped_column(
-        String(20), 
-        nullable=True, 
-        unique=True,
-        comment="DEPRECATED - moved to ProductPackage. Kept for migration compatibility"
-    )
     
     # Substitution control
     aut_idem: Mapped[bool] = mapped_column(
@@ -85,31 +75,6 @@ class MedicationProduct(db.Model):
         comment="True if over-the-counter (no order needed)"
     )
     
-    # Legacy reference for migration - removed as medications table no longer exists
-    # legacy_medication_id: Mapped[Optional[int]] = mapped_column(
-    #     Integer,
-    #     ForeignKey("medications.id"),
-    #     nullable=True,
-    #     comment="Reference to original medication record during migration"
-    # )
-    
-    # Package size definitions - DEPRECATED (moved to ProductPackage)
-    # Keep for backwards compatibility during migration
-    package_size_n1: Mapped[Optional[int]] = mapped_column(
-        Integer, 
-        nullable=True,
-        comment="DEPRECATED - moved to ProductPackage. Kept for migration compatibility"
-    )
-    package_size_n2: Mapped[Optional[int]] = mapped_column(
-        Integer, 
-        nullable=True,
-        comment="DEPRECATED - moved to ProductPackage. Kept for migration compatibility"
-    )
-    package_size_n3: Mapped[Optional[int]] = mapped_column(
-        Integer, 
-        nullable=True,
-        comment="DEPRECATED - moved to ProductPackage. Kept for migration compatibility"
-    )
     
     # Inventory management settings
     min_threshold: Mapped[int] = mapped_column(
@@ -157,12 +122,6 @@ class MedicationProduct(db.Model):
         order_by="ProductPackage.id"  # We'll sort in property
     )
     
-    # Legacy medication relationship - removed as medications table no longer exists
-    # legacy_medication: Mapped[Optional["Medication"]] = relationship(
-    #     "Medication",
-    #     foreign_keys=[legacy_medication_id],
-    #     backref="migrated_product"
-    # )
     
     def __repr__(self):
         return f"<MedicationProduct {self.brand_name} ({self.manufacturer})>"
@@ -234,9 +193,6 @@ class MedicationProduct(db.Model):
         # Build conditions to match packages
         conditions = []
         
-        # Legacy medication link removed - no longer relevant
-        # if self.legacy_medication_id:
-        #     conditions.append(PackageInventory.medication_id == self.legacy_medication_id)
         
         # Include packages that match our product packages by GTIN or national number
         if package_gtins:

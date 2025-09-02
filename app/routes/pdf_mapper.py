@@ -583,7 +583,6 @@ def preview_template(id):
 
     # Get sample medications
     sample_medications = []
-    # Medications removed - using products now
     medications = []
 
     for med in medications:
@@ -745,7 +744,6 @@ def generate_pdf(id):
     if not medication_ids:
         return jsonify({"error": _("No medications selected")}), 400
 
-    # Medications removed - using products now
     medications = []
 
     try:

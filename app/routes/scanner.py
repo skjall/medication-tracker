@@ -42,12 +42,7 @@ def index():
 def scan():
     """Handle barcode scanning."""
     if request.method == "GET":
-        # Migration check removed - old medication/inventory system deleted
-        has_migration_eligible = False
-
-        return render_template(
-            "scanner/scan.html", has_migration_eligible=has_migration_eligible
-        )
+        return render_template("scanner/scan.html")
 
     # Process scanned data
     data = request.json
@@ -209,9 +204,7 @@ def scan():
 
         if active_inventory:
             # Package is already in active inventory - reject
-            medication_name = _("Unknown")
-            if active_inventory.medication:
-                medication_name = active_inventory.medication.name
+            product_name = _("Unknown")
 
             return (
                 jsonify(
@@ -219,7 +212,7 @@ def scan():
                         "error": _("Package already in inventory"),
                         "details": {
                             "scanned_at": existing_scanned.scanned_at.isoformat(),
-                            "medication": medication_name,
+                            "product": product_name,
                             "status": active_inventory.status,
                             "units_remaining": f"{active_inventory.current_units}/{active_inventory.original_units}",
                         },
@@ -312,7 +305,7 @@ def scan():
             is_gs1 = bool(parsed.get("batch") or parsed.get("expiry"))
 
             scanned_item = ScannedItem(
-                medication_package_id=None,  # Not linked to old MedicationPackage
+                medication_package_id=None,
                 gtin=parsed.get("gtin")
                 or product_package.gtin,  # Use package GTIN if not in barcode
                 national_number=parsed.get("national_number"),
@@ -354,10 +347,6 @@ def scan():
 
         # Update order fulfillment if order found
         if pending_order_item:
-            units_still_needed = (
-                pending_order_item.quantity_needed
-                - pending_order_item.units_received
-            )
             pending_order_item.units_received += product_package.quantity
 
             # Check if this fulfills or overfills the order
@@ -414,7 +403,6 @@ def scan():
 
         # Create PackageInventory entry WITHOUT medication_id (pure package-based)
         inventory_item = PackageInventory(
-            medication_id=None,  # NO medication_id for new system
             scanned_item_id=scanned_item.id,
             current_units=product_package.quantity,
             original_units=product_package.quantity,
@@ -446,7 +434,7 @@ def scan():
                 quantity=product_package.quantity,
             )
 
-        # Return success with inventory added (for both legacy and new package-based products)
+        # Return success with inventory added
         response_data = {
             "success": True,
             "product_package": True,

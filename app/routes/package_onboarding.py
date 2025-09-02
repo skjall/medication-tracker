@@ -219,7 +219,6 @@ def onboard_package():
             db.session.add(inventory_item)
             db.session.flush()
             
-            # Legacy inventory logging removed - medications and inventory tables no longer exist
         
         db.session.commit()
         

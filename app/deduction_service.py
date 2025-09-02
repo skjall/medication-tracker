@@ -294,10 +294,6 @@ def calculate_missed_deductions(
     if schedule.active_ingredient and schedule.active_ingredient.auto_deduction_enabled_at:
         auto_deduction_enabled_at = ensure_timezone_utc(schedule.active_ingredient.auto_deduction_enabled_at)
         logger.debug(f"Auto-deduction enabled at: {auto_deduction_enabled_at.isoformat()}")
-    elif schedule.medication and schedule.medication.auto_deduction_enabled_at:
-        # Legacy support - will be removed
-        auto_deduction_enabled_at = ensure_timezone_utc(schedule.medication.auto_deduction_enabled_at)
-        logger.debug(f"Auto-deduction enabled at (legacy): {auto_deduction_enabled_at.isoformat()}")
     
     if schedule.last_deduction:
         logger.debug(
@@ -600,7 +596,7 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
 
     logger.info(f"Running deduction service at {current_time.isoformat()}")
     
-    # Only process active ingredients - medications are deprecated
+    # Only process active ingredients
     ingredients = ActiveIngredient.query.filter_by(auto_deduction_enabled=True).all()
 
     logger.info(f"Checking {len(ingredients)} active ingredients with auto-deduction enabled")
@@ -636,7 +632,7 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                         deducted = False
                         for product in ingredient.products:
                             if product.total_inventory_count >= amount:
-                                # Package-based deduction only - legacy system removed
+                                # Package-based deduction only
                                 deducted = False
                                 break
                         

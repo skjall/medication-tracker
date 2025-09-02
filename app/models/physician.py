@@ -46,10 +46,6 @@ class Physician(db.Model):
     )
 
     # Relationships
-    # medications relationship removed - using products now
-    # medications: Mapped[List["Medication"]] = relationship(
-    #     "Medication", back_populates="physician", cascade="save-update"
-    # )
     visits: Mapped[List["PhysicianVisit"]] = relationship(
         "PhysicianVisit", back_populates="physician", cascade="save-update"
     )

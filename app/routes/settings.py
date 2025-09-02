@@ -30,7 +30,6 @@ from flask_babel import gettext as _
 # secure_filename import removed - CSV import/export removed
 
 # Local application imports
-# Data utilities removed - old system has been migrated
 from version import get_version
 from models import (
     PhysicianVisit,
@@ -377,7 +376,6 @@ def clear_logs():
         flash(_("Please keep at least 30 days of logs"), "warning")
         return redirect(url_for("settings.data_management"))
 
-    # Inventory logs no longer exist - old system removed
     deleted_count = 0
 
     flash(
@@ -494,7 +492,7 @@ def data_management():
     physician_count = safe_count(Physician, "physicians")
     order_count = safe_count(Order, "orders")
     order_item_count = safe_count(OrderItem, "order_items")
-    inventory_logs_count = 0  # InventoryLog removed - old system deleted
+    inventory_logs_count = 0
 
     # Get database path for display
     data_dir = get_data_directory()
@@ -640,17 +638,7 @@ def reset_data_type(data_type: str):
         return redirect(url_for("settings.data_management"))
 
     try:
-        if data_type == "medications":
-            # Medications reset - old system removed
-            flash(_("Medication reset not available - old system removed"), "error")
-            return redirect(url_for("settings.data_management"))
-
-        elif data_type == "inventory":
-            # Inventory reset - old system removed
-            flash(_("Inventory reset not available - old system removed"), "error")
-            return redirect(url_for("settings.data_management"))
-
-        elif data_type == "orders":
+        if data_type == "orders":
             # Reset orders
             Order.query.delete()
             db.session.commit()

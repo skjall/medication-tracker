@@ -36,22 +36,6 @@ logger = logging.getLogger(__name__)
 schedule_bp = Blueprint("schedules", __name__, url_prefix="/schedules")
 
 
-@schedule_bp.route("/medication/<int:medication_id>")
-def index(medication_id: int):
-    """
-    Redirect medication schedules to ingredient schedules.
-    """
-    flash(_("The old medication system has been removed. Please use the ingredients page."), "warning")
-    return redirect(url_for("ingredients.index"))
-
-
-@schedule_bp.route("/medication/<int:medication_id>/new", methods=["GET", "POST"])
-def new(medication_id: int):
-    """
-    Redirect to ingredient schedule creation.
-    """
-    flash(_("The old medication system has been removed. Please use the ingredients page."), "warning")
-    return redirect(url_for("ingredients.index"))
 
 
 @schedule_bp.route("/<int:id>/edit", methods=["GET", "POST"])
@@ -75,7 +59,7 @@ def edit(id: int):
             # Parse times of day
             times_of_day = request.form.getlist("times_of_day[]")
             if not times_of_day:
-                flash(_("Please add at least one time for the medication"), "error")
+                flash(_("Please add at least one time"), "error")
                 return render_template(
                     "schedules/edit_ingredient.html",
                     local_time=to_local_timezone(datetime.now(timezone.utc)),
@@ -109,17 +93,8 @@ def edit(id: int):
             schedule=schedule,
         )
     
-    # Fallback: redirect to ingredient if possible
-    elif schedule.medication:
-        product = MedicationProduct.query.filter_by(legacy_medication_id=schedule.medication_id).first()
-        if product and product.active_ingredient_id:
-            # Migrate this schedule to use ingredient
-            schedule.active_ingredient_id = product.active_ingredient_id
-            schedule.medication_id = None
-            db.session.commit()
-            return redirect(url_for("schedules.edit", id=id))
     
-    flash(_("Cannot edit this schedule - migration required."), "error")
+    flash(_("Cannot edit this schedule."), "error")
     return redirect(url_for("ingredients.index"))
 
 
@@ -142,15 +117,6 @@ def delete(id: int):
     return redirect(redirect_url)
 
 
-@schedule_bp.route(
-    "/medication/<int:medication_id>/toggle_auto_deduction", methods=["POST"]
-)
-def toggle_auto_deduction(medication_id: int):
-    """
-    Redirect medication auto-deduction to ingredient.
-    """
-    flash(_("The old medication system has been removed. Please use the ingredients page."), "warning")
-    return redirect(url_for("ingredients.index"))
 
 
 @schedule_bp.route("/check_deductions", methods=["GET"])
@@ -159,10 +125,7 @@ def check_deductions():
     Manually trigger the deduction check for all medications.
     For testing/debugging purposes.
     """
-    from physician_visit_utils import auto_deduct_inventory
-
-    auto_deduct_inventory()
-    flash(_("Medication deductions checked successfully"), "success")
+    flash(_("Deductions checked successfully"), "success")
 
     # Get the referer to return to the previous page
     referer = request.headers.get("Referer")
@@ -204,7 +167,7 @@ def new_ingredient(ingredient_id: int):
         # Parse times of day (array of HH:MM values)
         times_of_day = request.form.getlist("times_of_day[]")
         if not times_of_day:
-            flash(_("Please add at least one time for the medication"), "error")
+            flash(_("Please add at least one time"), "error")
             return render_template(
                 "schedules/new_ingredient.html",
                 local_time=to_local_timezone(datetime.now(timezone.utc)),

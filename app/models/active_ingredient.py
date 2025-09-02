@@ -330,12 +330,3 @@ class ActiveIngredient(db.Model):
         # If any product forbids substitution, the ingredient should not allow it
         return all(product.aut_idem for product in self.products)
     
-    @property
-    def has_legacy_inventory(self) -> bool:
-        """Check if this ingredient has any legacy inventory (non-package based)."""
-        return False
-    
-    @property
-    def legacy_inventory_count(self) -> int:
-        """Get total legacy inventory count across all products."""
-        return 0

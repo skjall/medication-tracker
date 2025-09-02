@@ -547,7 +547,6 @@ def fulfill_item(id: int, item_id: int):
     # Get form data
     status = request.form.get("status", "fulfilled")
     notes = request.form.get("notes", "")
-    # Note: add_to_inventory removed since we now use PackageInventory system
     custom_quantity = request.form.get("custom_quantity", type=int)
     
     # Update item status
@@ -587,7 +586,6 @@ def bulk_fulfill(id: int):
     
     # Get selected items from form
     selected_items = request.form.getlist("items")
-    # Note: add_to_inventory removed since we now use PackageInventory system
     
     fulfilled_count = 0
     for item_id in selected_items:
