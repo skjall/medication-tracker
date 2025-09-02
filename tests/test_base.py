@@ -93,8 +93,8 @@ class BaseTestCase(unittest.TestCase):
         # Import models after app context is created
         from app.models import (
             MedicationSchedule,
-            Medication,
-            Inventory,
+            # Medication,  # Model removed
+            # Inventory,  # Model removed
             Settings,
             PhysicianVisit,
             Order,
@@ -110,10 +110,10 @@ class BaseTestCase(unittest.TestCase):
             self.db.session.execute(self.db.delete(OrderItem))
             self.db.session.execute(self.db.delete(Order))
             self.db.session.execute(self.db.delete(PhysicianVisit))
-            self.db.session.execute(self.db.delete(Inventory))
+            # self.db.session.execute(self.db.delete(Inventory))  # Table removed
             self.db.session.execute(self.db.delete(MedicationProduct))
             self.db.session.execute(self.db.delete(ActiveIngredient))
-            self.db.session.execute(self.db.delete(Medication))
+            # self.db.session.execute(self.db.delete(Medication))  # Table removed
             self.db.session.execute(self.db.delete(Settings))
             self.db.session.execute(self.db.delete(Physician))
             self.db.session.commit()

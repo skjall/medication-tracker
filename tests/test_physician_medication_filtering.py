@@ -4,7 +4,12 @@ Tests for physician-based medication filtering in orders.
 NOTE: This test file is for the legacy Medication model.
 The new ActiveIngredient model doesn't have physician relationships,
 so physician-based filtering is no longer applicable.
+
+DISABLED: This test file depends on Medication model which has been removed.
 """
+import pytest
+
+pytestmark = pytest.mark.skip("Entire module skipped: Medication model removed")
 
 # Standard library imports
 from datetime import datetime, timedelta, timezone
@@ -13,12 +18,12 @@ import unittest
 # Local application imports
 from .test_base import BaseTestCase
 from app.models import (
-    Medication,
+    # Medication,  # Model removed
     Physician,
     PhysicianVisit,
     Order,
     OrderItem,
-    Inventory,
+    # Inventory,  # Model removed
 )
 
 

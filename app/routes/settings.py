@@ -27,7 +27,7 @@ from flask import (
     url_for,
 )
 from flask_babel import gettext as _
-from werkzeug.utils import secure_filename
+# secure_filename import removed - CSV import/export removed
 
 # Local application imports
 # Data utilities removed - old system has been migrated
@@ -156,31 +156,7 @@ def system():
     )
 
 
-@settings_bp.route("/export/<data_type>")
-def export_data(data_type: str):
-    """
-    Export various data types to CSV.
-
-    Args:
-        data_type: Type of data to export (medications, inventory, orders, visits)
-    """
-    logger.info(f"Exporting data type: {data_type}")
-
-    if data_type == "medications":
-        return export_medications_to_csv()
-    elif data_type == "inventory":
-        return export_inventory_to_csv()
-    elif data_type == "orders":
-        return export_orders_to_csv()
-    elif data_type == "visits":
-        return export_visits_to_csv()
-    elif data_type == "schedules":
-        return export_schedules_to_csv()
-    elif data_type == "physicians":
-        return export_physicians_to_csv()
-    else:
-        flash(_("Unknown export type: {}").format(data_type), "error")
-        return redirect(url_for("settings.system"))
+# CSV Export functionality removed - use database backup/restore instead
 
 
 @settings_bp.route("/backup")
@@ -189,7 +165,11 @@ def backup_database():
     logger.info("Creating database backup")
 
     try:
-        backup_path = create_database_backup()
+        # Create a backup by copying the database file
+        db_path = os.path.join(get_data_directory(), "medication_tracker.db")
+        backup_dir = tempfile.mkdtemp()
+        backup_path = os.path.join(backup_dir, "medication_tracker_backup.db")
+        shutil.copy2(db_path, backup_path)
 
         # Send the file to the user
         return send_file(
@@ -243,7 +223,8 @@ def restore_database():
     try:
         # Save uploaded file to temporary location
         temp_dir = tempfile.mkdtemp()
-        temp_file_path = os.path.join(temp_dir, secure_filename(file.filename))
+        # Just use a fixed name for the temporary file since it's in a temp directory
+        temp_file_path = os.path.join(temp_dir, "restore_backup.db")
         file.save(temp_file_path)
 
         # Validate that it's a valid SQLite database
@@ -358,60 +339,7 @@ def restore_database():
         return redirect(url_for("settings.data_management"))
 
 
-@settings_bp.route("/import", methods=["POST"])
-def import_data():
-    """Import data from uploaded CSV files."""
-    logger.info("Handling data import")
-
-    if "file" not in request.files:
-        flash(_("No file part"), "error")
-        return redirect(url_for("settings.system"))
-
-    file = request.files["file"]
-    if file.filename == "":
-        flash(_("No file selected"), "error")
-        return redirect(url_for("settings.system"))
-
-    # Save the file to a temporary location
-    temp_dir = tempfile.mkdtemp()
-    file_path = os.path.join(temp_dir, secure_filename(file.filename))
-    file.save(file_path)
-
-    # Import based on file type selection
-    import_type = request.form.get("import_type", "medications")
-
-    if import_type == "medications":
-        success_count, errors = import_medications_from_csv(file_path)
-
-        if errors:
-            for error in errors[:5]:  # Show first 5 errors
-                flash(error, "warning")
-            if len(errors) > 5:
-                flash(
-                    _("... and {} more errors").format(len(errors) - 5),
-                    "warning",
-                )
-
-        if success_count > 0:
-            flash(
-                _("Successfully imported {} medications").format(
-                    success_count
-                ),
-                "success",
-            )
-        else:
-            flash(_("No medications were imported"), "warning")
-    else:
-        flash(
-            _("Import of {} is not yet implemented").format(import_type),
-            "warning",
-        )
-
-    # Clean up temporary file
-    os.unlink(file_path)
-    os.rmdir(temp_dir)
-
-    return redirect(url_for("settings.system"))
+# CSV Import functionality removed - use database backup/restore instead
 
 
 @settings_bp.route("/optimize", methods=["POST"])
@@ -419,7 +347,17 @@ def optimize_db():
     """Optimize the database for better performance."""
     logger.info("Optimizing database")
 
-    success, message = optimize_database()
+    # Simple database optimization using VACUUM
+    try:
+        db_path = os.path.join(get_data_directory(), "medication_tracker.db")
+        conn = sqlite3.connect(db_path)
+        conn.execute("VACUUM")
+        conn.close()
+        success = True
+        message = _("Database optimized successfully")
+    except Exception as e:
+        success = False
+        message = str(e)
 
     if success:
         flash(message, "success")
@@ -439,7 +377,8 @@ def clear_logs():
         flash(_("Please keep at least 30 days of logs"), "warning")
         return redirect(url_for("settings.data_management"))
 
-    deleted_count = clear_old_inventory_logs(days_to_keep)
+    # Inventory logs no longer exist - old system removed
+    deleted_count = 0
 
     flash(
         _("Successfully removed {} old inventory logs").format(deleted_count),
@@ -463,7 +402,11 @@ def reset_data():
 
     try:
         # Backup the database first
-        backup_path = create_database_backup()
+        # Create a backup by copying the database file
+        db_path = os.path.join(get_data_directory(), "medication_tracker.db")
+        backup_dir = tempfile.mkdtemp()
+        backup_path = os.path.join(backup_dir, "medication_tracker_backup.db")
+        shutil.copy2(db_path, backup_path)
         flash(_("Backup created at {}").format(backup_path), "info")
 
         # Drop all tables and recreate them
@@ -551,7 +494,7 @@ def data_management():
     physician_count = safe_count(Physician, "physicians")
     order_count = safe_count(Order, "orders")
     order_item_count = safe_count(OrderItem, "order_items")
-    inventory_logs_count = safe_count(InventoryLog, "inventory_logs")
+    inventory_logs_count = 0  # InventoryLog removed - old system deleted
 
     # Get database path for display
     data_dir = get_data_directory()
@@ -592,71 +535,7 @@ def data_management():
     )
 
 
-@settings_bp.route("/import/<data_type>", methods=["POST"])
-def import_data_type(data_type: str):
-    """
-    Import data from an uploaded CSV file for a specific data type.
-
-    Args:
-        data_type: Type of data to import (medications, inventory, orders, visits)
-    """
-    logger.info(f"Handling data import for type: {data_type}")
-
-    if "file" not in request.files:
-        flash(_("No file part"), "error")
-        return redirect(url_for("settings.data_management"))
-
-    file = request.files["file"]
-    if file.filename == "":
-        flash(_("No file selected"), "error")
-        return redirect(url_for("settings.data_management"))
-
-    # Save the file to a temporary location
-    temp_dir = tempfile.mkdtemp()
-    file_path = os.path.join(temp_dir, secure_filename(file.filename))
-    file.save(file_path)
-
-    # Check if override option is selected
-    override = "override" in request.form
-
-    try:
-        # Import based on data type
-        if data_type == "medications":
-            # Medications import removed - old system deleted
-            flash(_("Medication import not available - old system removed"), "error")
-            return redirect(url_for("settings.data_management"))
-        elif data_type == "inventory":
-            # Inventory import removed - old system deleted
-            flash(_("Inventory import not available - old system removed"), "error")
-            return redirect(url_for("settings.data_management"))
-        elif data_type == "orders":
-            # Orders import needs to be rewritten for new system
-            flash(_("Orders import not yet updated for new system"), "error")
-            return redirect(url_for("settings.data_management"))
-        elif data_type == "visits":
-            # Visits import needs to be rewritten
-            flash(_("Visits import not yet updated for new system"), "error")
-            return redirect(url_for("settings.data_management"))
-        elif data_type == "schedules":
-            # Schedules import needs to be rewritten
-            flash(_("Schedules import not yet updated for new system"), "error")
-            return redirect(url_for("settings.data_management"))
-        elif data_type == "physicians":
-            # Physicians import needs to be rewritten
-            flash(_("Physicians import not yet updated"), "error")
-            return redirect(url_for("settings.data_management"))
-        else:
-            flash(_("Unknown import type: {}").format(data_type), "error")
-            return redirect(url_for("settings.data_management"))
-    except Exception as e:
-        logger.error(f"Error during import: {str(e)}")
-        flash(_("Error during import: {}").format(str(e)), "error")
-    finally:
-        # Clean up temporary file
-        os.unlink(file_path)
-        os.rmdir(temp_dir)
-
-    return redirect(url_for("settings.data_management"))
+# CSV Import by type functionality removed - use database backup/restore instead
 
 
 @settings_bp.route("/check_updates", methods=["GET"])
@@ -665,7 +544,6 @@ def check_updates():
     Check for application updates by comparing with the latest GitHub release.
     """
     import requests
-    import json
 
     logger.info("Checking for application updates")
 

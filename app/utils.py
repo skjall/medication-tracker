@@ -3,15 +3,15 @@ Utility functions for the Medication Tracker application.
 """
 
 # Standard library imports
-import csv
+# CSV import removed - CSV functionality removed
 import logging
 import os
 from datetime import datetime, timezone
-from io import StringIO
-from typing import Dict, List, Optional, Tuple, TypeVar
+# StringIO import removed - CSV functionality removed
+from typing import Optional, Tuple, TypeVar
 
 # Third-party imports
-from flask import Response, current_app
+from flask import current_app
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -132,40 +132,7 @@ def get_color_for_inventory_level(
     return "text-success"
 
 
-def export_data_to_csv(
-    data_list: List[Dict], headers: List[str], filename: str
-) -> Response:
-    """
-    Generic function to export data to CSV.
-
-    Args:
-        data_list: List of dictionaries containing data to export
-        headers: List of header names
-        filename: Name of the CSV file
-
-    Returns:
-        Flask Response object with CSV data
-    """
-    si = StringIO()
-    writer = csv.writer(si)
-
-    # Write header
-    writer.writerow(headers)
-
-    # Write data
-    for row in data_list:
-        writer.writerow([row.get(header, "") for header in headers])
-
-    output = si.getvalue()
-
-    # Create response
-    response = Response(
-        output,
-        mimetype="text/csv",
-        headers={"Content-disposition": f"attachment; filename={filename}"},
-    )
-
-    return response
+# CSV export_data_to_csv function removed - use database backup/restore instead
 
 
 def create_database_backup() -> str:

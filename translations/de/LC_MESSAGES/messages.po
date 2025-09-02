@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-09-01 21:22\n"
+"PO-Revision-Date: 2025-09-02 12:21\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -141,7 +141,7 @@ msgstr "Bestellung als erfüllt markiert"
 msgid "Item does not belong to this order"
 msgstr "Artikel gehört nicht zu dieser Bestellung"
 
-#: /app/routes/orders.py:578 /app/routes/scanner.py:212
+#: /app/routes/orders.py:577 /app/routes/scanner.py:207
 #: /app/templates/ingredients/show_product.html:56
 #: /app/templates/orders/printable.html:149 /app/templates/orders/show.html:179
 #: /app/templates/scanner/index.html:72 /app/templates/scanner/index.html:155
@@ -149,89 +149,89 @@ msgstr "Artikel gehört nicht zu dieser Bestellung"
 msgid "Unknown"
 msgstr "Unbekannt"
 
-#: /app/routes/orders.py:579
+#: /app/routes/orders.py:578
 #, python-brace-format
 msgid "Item {} marked as {}"
 msgstr "Artikel {} als {} markiert"
 
-#: /app/routes/orders.py:608
+#: /app/routes/orders.py:606
 #, python-brace-format
 msgid "Successfully fulfilled {} items"
 msgstr "{} Artikel erfolgreich erfüllt"
 
-#: /app/routes/orders.py:620 /app/routes/orders.py:647
+#: /app/routes/orders.py:618 /app/routes/orders.py:645
 msgid "Invalid order item"
 msgstr "Ungültiger Bestellartikel"
 
-#: /app/routes/orders.py:625
+#: /app/routes/orders.py:623
 msgid "Can only cancel pending items"
 msgstr "Kann nur ausstehende Elemente stornieren"
 
-#: /app/routes/orders.py:635
+#: /app/routes/orders.py:633
 msgid "Item cancelled successfully"
 msgstr "Artikel erfolgreich storniert"
 
-#: /app/routes/orders.py:652
+#: /app/routes/orders.py:650
 msgid "Can only undo cancellation for cancelled items"
 msgstr "Stornierungen können nur für stornierte Artikel rückgängig gemacht werden"
 
-#: /app/routes/orders.py:665
+#: /app/routes/orders.py:663
 msgid "Cancellation undone successfully"
 msgstr "Stornierung erfolgreich rückgängig gemacht"
 
-#: /app/routes/orders.py:685
+#: /app/routes/orders.py:683
 msgid "The PDF template file is missing. Please re-upload the template in PDF Forms."
 msgstr "Die PDF-Vorlagendatei fehlt. Bitte lade die Vorlage in PDF-Formulare erneut hoch."
 
-#: /app/routes/orders.py:687
+#: /app/routes/orders.py:685
 msgid "No PDF template assigned to physician. Please assign a template in physician settings."
 msgstr "Diesem Arzt ist keine PDF-Vorlage zugewiesen. Bitte weise in den Arzt-Einstellungen eine Vorlage zu."
 
-#: /app/routes/orders.py:824
+#: /app/routes/orders.py:822
 msgid "Package linked successfully"
 msgstr "Packung erfolgreich hinzugefügt"
 
-#: /app/routes/orders.py:838
+#: /app/routes/orders.py:836
 msgid "Package is not linked to this order item"
 msgstr "Die Packung ist nicht mit diesem Bestellartikel verknüpft"
 
-#: /app/routes/orders.py:876
+#: /app/routes/orders.py:874
 msgid "Package unlinked successfully"
 msgstr "Packung erfolgreich hinzugefügt"
 
-#: /app/routes/package_onboarding.py:52
+#: /app/routes/package_onboarding.py:53
 msgid "Please select an active ingredient"
 msgstr "Bitte wähle einen Wirkstoff aus"
 
-#: /app/routes/package_onboarding.py:59
+#: /app/routes/package_onboarding.py:60
 msgid "Please enter an active ingredient name"
 msgstr "Bitte gib einen Wirkstoffnamen ein"
 
-#: /app/routes/package_onboarding.py:66
+#: /app/routes/package_onboarding.py:67
 msgid "Active ingredient already exists, using existing one"
 msgstr "Wirkstoff existiert bereits, verwende bereits existierenden"
 
-#: /app/routes/package_onboarding.py:84
+#: /app/routes/package_onboarding.py:85
 msgid "Please complete step 1 first"
 msgstr "Bitte vervollständige zuerst Schritt 1"
 
-#: /app/routes/package_onboarding.py:92
+#: /app/routes/package_onboarding.py:93
 msgid "Please select a product"
 msgstr "Bitte ein Produkt auswählen"
 
-#: /app/routes/package_onboarding.py:99
+#: /app/routes/package_onboarding.py:100
 msgid "Please enter a product name"
 msgstr "Bitte gib einen Produktnamen ein"
 
-#: /app/routes/package_onboarding.py:110
+#: /app/routes/package_onboarding.py:111
 msgid "Product already exists, using existing one"
 msgstr "Produkt existiert bereits, verwende existierendes"
 
-#: /app/routes/package_onboarding.py:137
+#: /app/routes/package_onboarding.py:138
 msgid "Please enter package size and quantity"
 msgstr "Bitte gib die Packungsgröße und die Menge ein."
 
-#: /app/routes/package_onboarding.py:154
+#: /app/routes/package_onboarding.py:155
 msgid "Package configuration updated"
 msgstr "Packungskonfiguration aktualisiert"
 
@@ -239,13 +239,12 @@ msgstr "Packungskonfiguration aktualisiert"
 msgid "Package successfully onboarded!"
 msgstr "Packung erfolgreich eingebunden!"
 
-#: /app/routes/pdf_mapper.py:159 /app/routes/pdf_mapper.py:847
+#: /app/routes/pdf_mapper.py:159 /app/routes/pdf_mapper.py:845
 msgid "No PDF file uploaded"
 msgstr "Keine PDF-Datei hochgeladen"
 
-#: /app/routes/pdf_mapper.py:164 /app/routes/pdf_mapper.py:852
-#: /app/routes/settings.py:228 /app/routes/settings.py:372
-#: /app/routes/settings.py:611
+#: /app/routes/pdf_mapper.py:164 /app/routes/pdf_mapper.py:850
+#: /app/routes/settings.py:207
 msgid "No file selected"
 msgstr "Keine Datei ausgewählt"
 
@@ -427,35 +426,35 @@ msgstr "Strukturzuordnung erfolgreich gespeichert"
 msgid "Mappings saved successfully"
 msgstr "Zuordnungen erfolgreich gespeichert"
 
-#: /app/routes/pdf_mapper.py:734 /app/routes/pdf_mapper.py:771
+#: /app/routes/pdf_mapper.py:733 /app/routes/pdf_mapper.py:769
 msgid "An internal error occurred. Please try again."
 msgstr "Ein interner Fehler ist aufgetreten. Versuch' es bitte nochmal."
 
-#: /app/routes/pdf_mapper.py:746
+#: /app/routes/pdf_mapper.py:745
 msgid "No medications selected"
 msgstr "Keine Medikamente ausgewählt"
 
-#: /app/routes/pdf_mapper.py:790
+#: /app/routes/pdf_mapper.py:788
 msgid "Preview not found. Please generate it again."
 msgstr "Vorschau nicht gefunden. Bitte versuch's nochmal."
 
-#: /app/routes/pdf_mapper.py:812
+#: /app/routes/pdf_mapper.py:810
 msgid "Generated PDF not found. Please generate it again."
 msgstr "Die PDF-Datei wurde nicht gefunden. Bitte versuch's nochmal."
 
-#: /app/routes/pdf_mapper.py:836 /app/templates/pdf_mapper/index.html:256
+#: /app/routes/pdf_mapper.py:834 /app/templates/pdf_mapper/index.html:256
 msgid "Template deleted successfully"
 msgstr "Vorlage erfolgreich gelöscht"
 
-#: /app/routes/pdf_mapper.py:872
+#: /app/routes/pdf_mapper.py:870
 msgid "PDF file re-uploaded successfully"
 msgstr "PDF-Datei erfolgreich hochgeladen"
 
-#: /app/routes/pdf_mapper.py:1386
+#: /app/routes/pdf_mapper.py:1384
 msgid "An internal error occurred. Please try again later."
 msgstr "Ein interner Fehler ist passiert. Versuch' es später nochmal."
 
-#: /app/routes/pdf_mapper.py:1405
+#: /app/routes/pdf_mapper.py:1403
 msgid "An internal error occurred"
 msgstr "Ein interner Fehler ist aufgetreten"
 
@@ -497,364 +496,291 @@ msgstr "Arzt '{}' wurde erfolgreich gelöscht."
 msgid "Error deleting physician: {}"
 msgstr "Fehler beim Löschen des Arztes: {}"
 
-#: /app/routes/scanner.py:58
+#: /app/routes/scanner.py:53
 msgid "No barcode data provided"
 msgstr "Keine Strichcode-Daten angegeben"
 
-#: /app/routes/scanner.py:176
+#: /app/routes/scanner.py:171
 msgid "Unsupported barcode format"
 msgstr "Nicht unterstütztes Barcode-Format"
 
-#: /app/routes/scanner.py:178
+#: /app/routes/scanner.py:173
 msgid "This barcode type is not supported. Only pharmaceutical codes, DataMatrix, and standard product codes (EAN-13, EAN-8, UPC-A, ASIN) are supported."
 msgstr "Dieser Barcode-Typ wird nicht unterstützt. Nur Pharmazie-Codes, DataMatrix und Standard-Produktcodes (EAN-13, EAN-8, UPC-A, ASIN) werden unterstützt."
 
-#: /app/routes/scanner.py:192
+#: /app/routes/scanner.py:187
 msgid "Invalid barcode: missing serial number"
 msgstr "Ungültiger Strichcode: Seriennummer fehlt"
 
-#: /app/routes/scanner.py:219
+#: /app/routes/scanner.py:212
 msgid "Package already in inventory"
 msgstr "Packung bereits im Inventar"
 
-#: /app/routes/scanner.py:298
+#: /app/routes/scanner.py:291
 msgid "Package configuration updated with scanned data"
 msgstr "Packungsinformationen mit gescannten Daten aktualisiert"
 
-#: /app/routes/scanner.py:379
+#: /app/routes/scanner.py:368
 #, python-format
 msgid "Order fulfilled with %(overage)d extra units"
 msgstr "Bestellung erledigt mit %(overage)d zusätzliche Einheiten"
 
-#: /app/routes/scanner.py:383
+#: /app/routes/scanner.py:372
 #, python-format
 msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s. %(overage)d extra units."
 msgstr "Bestellung erledigt. %(quantity)d Einheiten in %(package_size)s enthalten. %(overage)d zusätzliche Einheiten."
 
-#: /app/routes/scanner.py:389
+#: /app/routes/scanner.py:378
 msgid "Order fulfilled exactly"
 msgstr "Bestellung erledigt"
 
-#: /app/routes/scanner.py:391
+#: /app/routes/scanner.py:380
 #, python-format
 msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s."
 msgstr "Bestellung erledigt. %(quantity)d Einheiten in %(package_size)s erhalten."
 
-#: /app/routes/scanner.py:402
+#: /app/routes/scanner.py:391
 #, python-format
 msgid "Partial fulfillment: %(remaining)d units still needed"
 msgstr "Teilweise erfüllt: %(remaining)d Einheiten noch erforderlich"
 
-#: /app/routes/scanner.py:406
+#: /app/routes/scanner.py:395
 #, python-format
 msgid "Partially fulfilled. Received %(quantity)d units in %(package_size)s. Still need %(remaining)d units."
 msgstr "Teilweise erledigt. %(quantity)d Einheiten in %(package_size)s erhalten. Noch %(remaining)d Einheiten benötigt."
 
-#: /app/routes/scanner.py:435
+#: /app/routes/scanner.py:423
 #, python-format
 msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units). %(fulfillment)s"
 msgstr "Zum Inventar hinzugefügt: %(product_name)s %(package_size)s (%(quantity)d Einheiten). %(fulfillment)s"
 
-#: /app/routes/scanner.py:443
+#: /app/routes/scanner.py:431
 #, python-format
 msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)"
 msgstr "Zum Inventar hinzugefügt: %(product_name)s %(package_size)s (%(quantity)d Einheiten)"
 
-#: /app/routes/scanner.py:501
+#: /app/routes/scanner.py:489
 msgid "Product Code"
 msgstr "Produktcode"
 
-#: /app/routes/scanner.py:507
+#: /app/routes/scanner.py:495
 #, python-format
 msgid "%(label)s %(number)s not found"
 msgstr "%(label)s %(number)s nicht gefunden"
 
-#: /app/routes/scanner.py:511 /app/routes/scanner.py:518
-#: /app/routes/scanner.py:523 /app/routes/scanner.py:528
-#: /app/routes/scanner.py:533
+#: /app/routes/scanner.py:499 /app/routes/scanner.py:506
+#: /app/routes/scanner.py:511 /app/routes/scanner.py:516
+#: /app/routes/scanner.py:521
 msgid "Please add this package."
 msgstr "Bitte füge diese Packung hinzu."
 
-#: /app/routes/scanner.py:516
+#: /app/routes/scanner.py:504
 #, python-format
 msgid "EAN-13 barcode %(code)s not found"
 msgstr "EAN-13-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:521
+#: /app/routes/scanner.py:509
 #, python-format
 msgid "EAN-8 barcode %(code)s not found"
 msgstr "EAN-8-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:526
+#: /app/routes/scanner.py:514
 #, python-format
 msgid "UPC barcode %(code)s not found"
 msgstr "UPC-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:531
+#: /app/routes/scanner.py:519
 #, python-format
 msgid "Product barcode %(code)s not found"
 msgstr "Produkt-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:536
+#: /app/routes/scanner.py:524
 msgid "Unrecognized barcode format"
 msgstr "Unbekanntes Strichcode-Format"
 
-#: /app/routes/scanner.py:537
+#: /app/routes/scanner.py:525
 msgid "This barcode type is not supported"
 msgstr "Dieser Strichcode-Typ wird nicht unterstützt"
 
-#: /app/routes/scanner.py:612
+#: /app/routes/scanner.py:600
 msgid "Package not in inventory"
 msgstr "Packung nicht im Inventar"
 
-#: /app/routes/scanner.py:617
+#: /app/routes/scanner.py:605
 msgid "Invalid number of units"
 msgstr "Ungültige Anzahl an Einheiten"
 
-#: /app/routes/scanner.py:621
+#: /app/routes/scanner.py:609
 msgid "Not enough units in package"
 msgstr "Nicht genug Einheiten in der Packung"
 
-#: /app/routes/scanner.py:638
+#: /app/routes/scanner.py:626
 #, python-format
 msgid "%(units)d units consumed"
 msgstr "%(units)d Einheiten verbraucht"
 
-#: /app/routes/scanner.py:654
+#: /app/routes/scanner.py:642
 msgid "Package marked as expired"
 msgstr "Packung als abgelaufen markiert"
 
-#: /app/routes/schedule.py:44 /app/routes/schedule.py:53
-#: /app/routes/schedule.py:152
-msgid "The old medication system has been removed. Please use the ingredients page."
-msgstr ""
+#: /app/routes/schedule.py:62 /app/routes/schedule.py:170
+msgid "Please add at least one time"
+msgstr "Bitte gib mindestens eine Zeit an"
 
-#: /app/routes/schedule.py:78 /app/routes/schedule.py:207
-#: /app/templates/schedules/edit_ingredient.html:188
-#: /app/templates/schedules/new_ingredient.html:175
-msgid "Please add at least one time for the medication"
-msgstr "Bitte füge mindestens eine Zeit für die Medikamente hinzu"
-
-#: /app/routes/schedule.py:102
+#: /app/routes/schedule.py:86
 msgid "Schedule updated successfully"
 msgstr "Einnahmeplan erfolgreich aktualisiert"
 
-#: /app/routes/schedule.py:122
-msgid "Cannot edit this schedule - migration required."
-msgstr "Dieser Einnahmeplan kann nicht bearbeitet werden – Migration erforderlich."
+#: /app/routes/schedule.py:97
+msgid "Cannot edit this schedule."
+msgstr "Dieser Zeitplan kann nicht bearbeitet werden."
 
-#: /app/routes/schedule.py:141
+#: /app/routes/schedule.py:116
 msgid "Schedule deleted successfully"
 msgstr "Einnahmeplan erfolgreich gelöscht"
 
-#: /app/routes/schedule.py:165
-msgid "Medication deductions checked successfully"
+#: /app/routes/schedule.py:128
+msgid "Deductions checked successfully"
 msgstr "Medikamentenverbrauch erfolgreich überprüft"
 
-#: /app/routes/schedule.py:240
+#: /app/routes/schedule.py:203
 msgid "Schedule added successfully"
 msgstr "Einnahmeplan erfolgreich hinzugefügt"
 
-#: /app/routes/schedule.py:277
+#: /app/routes/schedule.py:240
 #, python-brace-format
 msgid "Automatic deduction {} for {}"
 msgstr "Automatischer Abzug {} für {}"
 
-#: /app/routes/settings.py:76
+#: /app/routes/settings.py:75
 msgid "Physician visit settings updated successfully"
 msgstr "Einstellungen für Arzttermine erfolgreich aktualisiert"
 
-#: /app/routes/settings.py:109
+#: /app/routes/settings.py:108
 msgid "Orders for this visit will now be planned to last until the next-but-one visit"
 msgstr "Bestellungen für diesen Termin werden nun bis zum nächsten Termin geplant"
 
-#: /app/routes/settings.py:113
+#: /app/routes/settings.py:112
 msgid "Orders for this visit will now be planned to last until the next visit only"
 msgstr "Bestellungen für diesen Termin werden bis zum nächsten Termin geplant"
 
 #: /app/routes/settings.py:182
 #, python-brace-format
-msgid "Unknown export type: {}"
-msgstr "Unbekannter Exporttyp: {}"
-
-#: /app/routes/settings.py:203
-#, python-brace-format
 msgid "Error creating backup: {}"
 msgstr "Fehler beim Erstellen der Sicherung: {}"
 
-#: /app/routes/settings.py:216
+#: /app/routes/settings.py:195
 msgid "You must confirm that you understand the restore will replace all current data"
 msgstr "Du musst bestätigen, dass die Wiederherstellung alle aktuellen Daten ersetzt"
 
-#: /app/routes/settings.py:223
+#: /app/routes/settings.py:202
 msgid "No file provided for restore"
 msgstr "Keine Datei für Wiederherstellung vorhanden"
 
-#: /app/routes/settings.py:236
+#: /app/routes/settings.py:215
 #, python-brace-format
 msgid "Invalid file type. Please upload a database file ({})"
 msgstr "Ungültiger Dateityp. Bitte eine Datenbankdatei hochladen ({})"
 
-#: /app/routes/settings.py:259
+#: /app/routes/settings.py:239
 msgid "Invalid database file: missing required tables"
 msgstr "Ungültige Datenbankdatei: fehlende erforderliche Tabellen"
 
-#: /app/routes/settings.py:265
+#: /app/routes/settings.py:245
 #, python-brace-format
 msgid "Invalid database file: {}"
 msgstr "Ungültige Datenbankdatei: {}"
 
-#: /app/routes/settings.py:340
+#: /app/routes/settings.py:320
 #, python-brace-format
 msgid "Database restored but migration failed: {}"
 msgstr "Datenbank wiederhergestellt, aber Migration fehlgeschlagen: {}"
 
-#: /app/routes/settings.py:348
+#: /app/routes/settings.py:328
 msgid "Database successfully restored and migrations applied!"
 msgstr "Datenbank erfolgreich wiederhergestellt und Migrationen angewendet!"
 
-#: /app/routes/settings.py:357
+#: /app/routes/settings.py:337
 #, python-brace-format
 msgid "Error restoring database: {}"
 msgstr "Fehler beim Wiederherstellen der Datenbank: {}"
 
-#: /app/routes/settings.py:367 /app/routes/settings.py:606
-msgid "No file part"
-msgstr "Kein Dateiteil"
+#: /app/routes/settings.py:356
+msgid "Database optimized successfully"
+msgstr "Datenbank erfolgreich optimiert"
 
-#: /app/routes/settings.py:391
-#, python-brace-format
-msgid "... and {} more errors"
-msgstr "... und {} weitere Fehler"
-
-#: /app/routes/settings.py:397
-#, python-brace-format
-msgid "Successfully imported {} medications"
-msgstr "{} Medikamente erfolgreich importiert"
-
-#: /app/routes/settings.py:403
-msgid "No medications were imported"
-msgstr "Keine Medikamente wurden importiert"
-
-#: /app/routes/settings.py:406
-#, python-brace-format
-msgid "Import of {} is not yet implemented"
-msgstr "Import von {} ist noch nicht implementiert"
-
-#: /app/routes/settings.py:439
+#: /app/routes/settings.py:376
 msgid "Please keep at least 30 days of logs"
 msgstr "Bitte halte mindestens 30 Tage Logs"
 
-#: /app/routes/settings.py:445
+#: /app/routes/settings.py:382
 #, python-brace-format
 msgid "Successfully removed {} old inventory logs"
 msgstr "{} alte Bestandprotokolle erfolgreich entfernt"
 
-#: /app/routes/settings.py:459
+#: /app/routes/settings.py:396
 msgid "Verification text doesn't match. Data was not reset."
 msgstr "Bestätigungstext stimmt nicht überein. Die Daten wurden nicht zurückgesetzt."
 
-#: /app/routes/settings.py:467
+#: /app/routes/settings.py:408
 #, python-brace-format
 msgid "Backup created at {}"
 msgstr "Sicherung erstellt am {}"
 
-#: /app/routes/settings.py:476
+#: /app/routes/settings.py:417
 msgid "All data has been reset. The application has been restored to initial state."
 msgstr "Alle Daten wurden zurückgesetzt. Die Anwendung wurde in den Ausgangszustand wiederhergestellt."
 
-#: /app/routes/settings.py:482
+#: /app/routes/settings.py:423
 #, python-brace-format
 msgid "Error resetting data: {}"
 msgstr "Fehler beim Zurücksetzen der Daten: {}"
 
-#: /app/routes/settings.py:504
+#: /app/routes/settings.py:445
 #, python-brace-format
 msgid "Invalid timezone: {}"
 msgstr "Ungültige Zeitzone: {}"
 
-#: /app/routes/settings.py:512
+#: /app/routes/settings.py:453
 #, python-brace-format
 msgid "Application timezone updated to {}"
 msgstr "Zeitzone der Anwendung aktualisiert auf {}"
 
-#: /app/routes/settings.py:626
-msgid "Medication import not available - old system removed"
-msgstr ""
-
-#: /app/routes/settings.py:630
-msgid "Inventory import not available - old system removed"
-msgstr ""
-
-#: /app/routes/settings.py:634
-msgid "Orders import not yet updated for new system"
-msgstr ""
-
-#: /app/routes/settings.py:638
-msgid "Visits import not yet updated for new system"
-msgstr ""
-
-#: /app/routes/settings.py:642
-msgid "Schedules import not yet updated for new system"
-msgstr ""
-
-#: /app/routes/settings.py:646
-msgid "Physicians import not yet updated"
-msgstr ""
-
-#: /app/routes/settings.py:649
-#, python-brace-format
-msgid "Unknown import type: {}"
-msgstr "Unbekannter Importtyp: {}"
-
-#: /app/routes/settings.py:653
-#, python-brace-format
-msgid "Error during import: {}"
-msgstr "Fehler beim Import: {}"
-
-#: /app/routes/settings.py:718
+#: /app/routes/settings.py:594
 msgid "Unable to check for updates"
 msgstr "Suche nach Updates nicht möglich"
 
-#: /app/routes/settings.py:728
+#: /app/routes/settings.py:604
 msgid "Connection timeout"
 msgstr "Verbindungs-Timeout"
 
-#: /app/routes/settings.py:758
+#: /app/routes/settings.py:634
 #, python-brace-format
 msgid "Verification text doesn't match. Expected '{}'. Data was not reset."
 msgstr "Bestätigungstext stimmt nicht überein. Die Daten wurden nicht zurückgesetzt."
 
-#: /app/routes/settings.py:767
-msgid "Medication reset not available - old system removed"
-msgstr ""
-
-#: /app/routes/settings.py:772
-msgid "Inventory reset not available - old system removed"
-msgstr ""
-
-#: /app/routes/settings.py:779
+#: /app/routes/settings.py:645
 msgid "All order data has been reset"
-msgstr ""
+msgstr "Alle Bestelldaten wurden zurückgesetzt"
 
-#: /app/routes/settings.py:785
+#: /app/routes/settings.py:651
 msgid "All visit data has been reset"
-msgstr ""
+msgstr "Alle Besuchsdaten wurden zurückgesetzt"
 
-#: /app/routes/settings.py:791
+#: /app/routes/settings.py:657
 msgid "All schedule data has been reset"
-msgstr ""
+msgstr "Alle Einnahmepläne wurden zurückgesetzt"
 
-#: /app/routes/settings.py:797
+#: /app/routes/settings.py:663
 msgid "All physician data has been reset"
-msgstr ""
+msgstr "Alle Arztdaten wurden zurückgesetzt"
 
-#: /app/routes/settings.py:800
+#: /app/routes/settings.py:666
 #, python-brace-format
 msgid "Unknown data type: {}"
 msgstr "Unbekannter Datentyp: {}"
 
-#: /app/routes/settings.py:805
+#: /app/routes/settings.py:671
 #, python-brace-format
 msgid "Error resetting {}: {}"
 msgstr "Fehler beim Zurücksetzen von {}: {}"
@@ -1025,7 +951,7 @@ msgstr "Aktualisierung"
 
 #: /app/templates/index.html:81 /app/templates/ingredients/show.html:297
 msgid "View All Ingredients"
-msgstr ""
+msgstr "Alle Zutaten anzeigen"
 
 #: /app/templates/index.html:87
 msgid "All ingredients are above minimum threshold levels."
@@ -3983,6 +3909,11 @@ msgstr "Nimm die Medikamente alle X Tage (z. B. alle 2 Tage, alle 3 Tage)"
 msgid "Take medication only on selected days of the week"
 msgstr "Nimm Medikamente nur an bestimmten Tagen der Woche ein"
 
+#: /app/templates/schedules/edit_ingredient.html:188
+#: /app/templates/schedules/new_ingredient.html:175
+msgid "Please add at least one time for the medication"
+msgstr "Bitte füge mindestens eine Zeit für die Medikamente hinzu"
+
 #: /app/templates/schedules/edit_ingredient.html:197
 #: /app/templates/schedules/new_ingredient.html:184
 msgid "Please select at least one weekday"
@@ -4838,7 +4769,7 @@ msgstr "Benötigte Einheiten"
 
 #: /app/templates/visits/show.html:212
 msgid "View Packages"
-msgstr ""
+msgstr "Packungen anzeigen"
 
 #: /app/templates/visits/show.html:226
 msgid "No medications found in the system or no inventory data available."
@@ -4856,8 +4787,8 @@ msgstr "Warnung"
 #, python-format
 msgid "%(count)d product will run out before this visit."
 msgid_plural "%(count)d products will run out before this visit."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%(count)d Produkt wird vor diesem Besuch aufgebraucht sein."
+msgstr[1] "%(count)d Produkte werden vor diesem Besuch aufgebraucht sein."
 
 #: /app/templates/visits/show.html:253
 msgid "Please consider creating a gap coverage order to bridge the supply gap."
