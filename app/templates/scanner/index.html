@@ -64,9 +64,9 @@
                         {% for item in inventory_packages %}
                         <tr class="{% if item.scanned_item.is_expired %}table-danger{% elif item.scanned_item.days_until_expiry and item.scanned_item.days_until_expiry < 30 %}table-warning{% endif %}">
                             <td>
-                                {% if item.medication %}
-                                    <a href="{{ url_for('medications.show', id=item.medication.id) }}">
-                                        {{ item.medication.name }}
+                                {% if item.product %}
+                                    <a href="{{ url_for('ingredients.show_product', id=item.product.id) }}">
+                                        {{ item.product.brand_name }}
                                     </a>
                                 {% else %}
                                     {{ _('Unknown') }}

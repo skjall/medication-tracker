@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-09-02 12:21\n"
+"PO-Revision-Date: 2025-09-03 08:46\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -386,7 +386,7 @@ msgstr "Anweisungen"
 #: /app/templates/ingredients/show_product.html:94
 #: /app/templates/physicians/edit.html:85 /app/templates/physicians/new.html:75
 #: /app/templates/physicians/show.html:86
-#: /app/templates/physicians/show.html:219 /app/templates/visits/edit.html:56
+#: /app/templates/physicians/show.html:215 /app/templates/visits/edit.html:56
 #: /app/templates/visits/index.html:31 /app/templates/visits/index.html:128
 #: /app/templates/visits/new.html:48 /app/templates/visits/show.html:72
 msgid "Notes"
@@ -890,11 +890,6 @@ msgstr "Die gesuchte Seite existiert nicht oder wurde verschoben."
 msgid "Go to Dashboard"
 msgstr "Zum Dashboard gehen"
 
-#: /app/templates/dashboard/next_but_one.html:13
-#: /app/templates/system/status.html:11
-msgid "Back to Dashboard"
-msgstr "Zurück zum Dashboard"
-
 #: /app/templates/index.html:20
 msgid "Next Physician Visit"
 msgstr "Nächster Arzttermin"
@@ -1080,7 +1075,7 @@ msgstr "Status"
 #: /app/templates/orders/index.html:154 /app/templates/orders/show.html:164
 #: /app/templates/physicians/index.html:36
 #: /app/templates/physicians/show.html:152
-#: /app/templates/physicians/show.html:220 /app/templates/scanner/index.html:60
+#: /app/templates/physicians/show.html:216 /app/templates/scanner/index.html:60
 #: /app/templates/scanner/package_details.html:162
 #: /app/templates/schedules/index.html:70
 #: /app/templates/schedules/index_ingredient.html:90
@@ -1165,11 +1160,7 @@ msgstr "Rezeptfreie Medikamente (OTC)"
 msgid "No ingredients found in the system."
 msgstr "Keine Wirkstoffe im System gefunden."
 
-#: /app/templates/index.html:449
-msgid "Manage Medications"
-msgstr "Medikamente verwalten"
-
-#: /app/templates/index.html:456
+#: /app/templates/index.html:449 /app/templates/index.html:456
 msgid "Manage Ingredients"
 msgstr "Wirkstoffe verwalten"
 
@@ -1183,16 +1174,16 @@ msgid "Quick Actions"
 msgstr "Schnellaktionen"
 
 #: /app/templates/index.html:482
-msgid "Add New Medication"
-msgstr "Neues Medikament hinzufügen"
+msgid "Add New Product"
+msgstr ""
 
 #: /app/templates/index.html:494 /app/templates/orders/index.html:132
 msgid "Create New Order"
 msgstr "Neue Bestellung erstellen"
 
 #: /app/templates/index.html:500
-msgid "View Depletion Forecast"
-msgstr "Verbrauchsprognose anzeigen"
+msgid "Inventory Overview"
+msgstr ""
 
 #: /app/templates/ingredients/edit.html:3
 #: /app/templates/ingredients/edit.html:11
@@ -1425,8 +1416,7 @@ msgstr "Leer"
 #: /app/templates/ingredients/index.html:60
 #: /app/templates/ingredients/index.html:128
 #: /app/templates/ingredients/show.html:136 /app/templates/orders/index.html:78
-#: /app/templates/orders/index.html:198 /app/templates/physicians/show.html:190
-#: /app/templates/physicians/show.html:248
+#: /app/templates/orders/index.html:198 /app/templates/physicians/show.html:244
 msgid "View"
 msgstr "Ansicht"
 
@@ -2001,8 +1991,7 @@ msgid "Edit Order #%(order_id)s"
 msgstr "Bestellung #%(order_id)s bearbeiten"
 
 #: /app/templates/orders/edit.html:12 /app/templates/orders/printable.html:98
-#: /app/templates/physicians/edit.html:13
-#: /app/templates/schedules/index.html:13 /app/templates/visits/edit.html:12
+#: /app/templates/physicians/edit.html:13 /app/templates/visits/edit.html:12
 msgid "Back to Details"
 msgstr "Zurück zu Details"
 
@@ -2115,7 +2104,7 @@ msgid "Order #"
 msgstr "Bestellung #"
 
 #: /app/templates/orders/index.html:22 /app/templates/orders/index.html:150
-#: /app/templates/physicians/show.html:217 /app/templates/visits/edit.html:29
+#: /app/templates/physicians/show.html:213 /app/templates/visits/edit.html:29
 #: /app/templates/visits/index.html:28 /app/templates/visits/index.html:126
 #: /app/templates/visits/new.html:24
 msgid "Visit Date"
@@ -2351,7 +2340,7 @@ msgid "Days Until Visit"
 msgstr "Tage bis zum Besuch"
 
 #: /app/templates/orders/printable.html:119
-#: /app/templates/physicians/show.html:234 /app/templates/scanner/index.html:85
+#: /app/templates/physicians/show.html:230 /app/templates/scanner/index.html:85
 #: /app/templates/schedules/index_ingredient.html:100
 #: /app/templates/settings/physician_visits.html:27
 #: /app/templates/visits/index.html:59 /app/templates/visits/index.html:229
@@ -3475,47 +3464,47 @@ msgstr "Vorgeschlagene Medikamente"
 msgid "No Inventory"
 msgstr "Kein Bestand"
 
-#: /app/templates/physicians/show.html:209
+#: /app/templates/physicians/show.html:205
 msgid "Scheduled Visits"
 msgstr "Geplante Termine"
 
-#: /app/templates/physicians/show.html:218
+#: /app/templates/physicians/show.html:214
 msgid "Days Until"
 msgstr "Tage bis"
 
-#: /app/templates/physicians/show.html:230 /app/templates/visits/show.html:41
+#: /app/templates/physicians/show.html:226 /app/templates/visits/show.html:41
 msgid "Past visit"
 msgstr "Letzter Termin"
 
-#: /app/templates/physicians/show.html:232 /app/templates/visits/index.html:199
+#: /app/templates/physicians/show.html:228 /app/templates/visits/index.html:199
 msgid "Today"
 msgstr "Heute"
 
-#: /app/templates/physicians/show.html:241
+#: /app/templates/physicians/show.html:237
 msgid "No notes"
 msgstr "Keine Notizen"
 
-#: /app/templates/physicians/show.html:266
+#: /app/templates/physicians/show.html:262
 msgid "Danger Zone"
 msgstr "Gefahrenzone"
 
-#: /app/templates/physicians/show.html:271
+#: /app/templates/physicians/show.html:267
 msgid "Delete this physician permanently. This action cannot be undone."
 msgstr "Diesen Arzt dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden."
 
-#: /app/templates/physicians/show.html:273
+#: /app/templates/physicians/show.html:269
 msgid "Note"
 msgstr "Notiz"
 
-#: /app/templates/physicians/show.html:273
+#: /app/templates/physicians/show.html:269
 msgid "This physician has associated medications or visits and cannot be deleted until they are reassigned."
 msgstr "Dieser Arzt hat zugehörige Medikamente oder Termine und kann erst gelöscht werden, wenn sie neu zugewiesen wurden."
 
-#: /app/templates/physicians/show.html:277
+#: /app/templates/physicians/show.html:273
 msgid "Are you sure you want to delete this physician? This action cannot be undone."
 msgstr "Bist du sicher, dass du diesen Arzt löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
 
-#: /app/templates/physicians/show.html:280
+#: /app/templates/physicians/show.html:276
 msgid "Delete Physician"
 msgstr "Arzt löschen"
 
@@ -3929,6 +3918,10 @@ msgstr "Einnahmepläne"
 #: /app/templates/schedules/index_ingredient.html:3
 msgid "Schedules for"
 msgstr "Einnahmepläne für"
+
+#: /app/templates/schedules/index.html:13
+msgid "Back to Ingredients"
+msgstr ""
 
 #: /app/templates/schedules/index.html:24
 #: /app/templates/settings/system.html:76
@@ -4425,6 +4418,10 @@ msgstr "Migrationen jetzt ausführen"
 #: /app/templates/system/status.html:256
 msgid "Refresh Status"
 msgstr "Aktualisiere Status"
+
+#: /app/templates/system/status.html:11
+msgid "Back to Dashboard"
+msgstr "Zurück zum Dashboard"
 
 #: /app/templates/system/status.html:18
 msgid "Task Scheduler"

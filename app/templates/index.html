@@ -445,8 +445,8 @@
                     {% endif %}
                 {% else %}
                     <p class="card-text">{{ _('No ingredients found in the system.') }}</p>
-                    <a href="{{ url_for('medications.index') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i>{{ _('Manage Medications') }}
+                    <a href="{{ url_for('ingredients.index') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>{{ _('Manage Ingredients') }}
                     </a>
                 {% endif %}
             </div>
@@ -477,9 +477,9 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3 mb-3">
-                        <a href="{{ url_for('medications.new') }}" class="btn btn-outline-primary w-100 h-100 py-3">
+                        <a href="{{ url_for('ingredients.new_product') }}" class="btn btn-outline-primary w-100 h-100 py-3">
                             <i class="fas fa-plus fa-2x mb-2"></i>
-                            <div>{{ _('Add New Medication') }}</div>
+                            <div>{{ _('Add New Product') }}</div>
                         </a>
                     </div>
                     <div class="col-md-3 mb-3">
@@ -495,9 +495,9 @@
                         </a>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <a href="{{ url_for('inventory.depletion') }}" class="btn btn-outline-primary w-100 h-100 py-3">
+                        <a href="{{ url_for('ingredients.index') }}" class="btn btn-outline-primary w-100 h-100 py-3">
                             <i class="fas fa-chart-line fa-2x mb-2"></i>
-                            <div>{{ _('View Depletion Forecast') }}</div>
+                            <div>{{ _('Inventory Overview') }}</div>
                         </a>
                     </div>
                 </div>

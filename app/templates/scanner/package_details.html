@@ -22,9 +22,9 @@
                     <dl class="row">
                         <dt class="col-sm-4">{{ _('Medication') }}:</dt>
                         <dd class="col-sm-8">
-                            {% if scanned_item.package and scanned_item.package.medication %}
-                                <a href="{{ url_for('medications.show', id=scanned_item.package.medication.id) }}">
-                                    {{ scanned_item.package.medication.name }}
+                            {% if scanned_item.package and scanned_item.package.product %}
+                                <a href="{{ url_for('ingredients.show_product', id=scanned_item.package.product.id) }}">
+                                    {{ scanned_item.package.product.brand_name }}
                                 </a>
                             {% else %}
                                 <span class="text-muted">{{ _('Unknown') }}</span>

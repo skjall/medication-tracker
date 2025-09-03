@@ -9,8 +9,8 @@
         <i class="fas fa-clock me-2"></i>{{ _('Schedules for') }} {{ medication.name }}
     </h1>
     <div>
-        <a href="{{ url_for('medications.show', id=medication.id) }}" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Details') }}
+        <a href="{{ url_for('ingredients.index') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i>{{ _('Back to Ingredients') }}
         </a>
         <a href="{{ url_for('schedules.new', medication_id=medication.id) }}" class="btn btn-primary ms-2">
             <i class="fas fa-plus me-1"></i>{{ _('Add Schedule') }}
