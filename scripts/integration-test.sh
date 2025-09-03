@@ -44,20 +44,20 @@ trap cleanup EXIT
 # Function to wait for container to be ready
 wait_for_container() {
     log_info "Waiting for container to start (max ${MAX_WAIT_TIME}s)..."
-    
+
     for i in $(seq 1 $MAX_WAIT_TIME); do
         # Test from the host, not inside the container
         if curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/" | grep -q "200"; then
             log_info "Container is ready after ${i} seconds"
             return 0
         fi
-        
+
         if [ "$i" -eq "$MAX_WAIT_TIME" ]; then
             log_error "Container failed to start within ${MAX_WAIT_TIME} seconds"
             docker logs "$CONTAINER_NAME" | tail -20
             return 1
         fi
-        
+
         sleep 1
     done
 }
@@ -66,9 +66,9 @@ wait_for_container() {
 test_route() {
     local route="$1"
     local description="$2"
-    
+
     echo -n "Testing $description ($route)... "
-    
+
     # Test from the host (accept 200, 302, 308 redirect codes)
     if curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${BASE_URL}${route}" | grep -qE "^(200|302|308)$"; then
         echo -e "${GREEN}OK${NC}"
@@ -84,16 +84,16 @@ test_post_endpoint() {
     local route="$1"
     local data="$2"
     local description="$3"
-    
+
     echo -n "Testing $description... "
-    
+
     # Note: We expect some POST requests to fail due to validation or redirects
     # The important thing is that the server doesn't crash
     curl -s -X POST \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -d "$data" \
         "${BASE_URL}${route}" > /dev/null 2>&1 || true
-    
+
     echo -e "${GREEN}COMPLETED${NC}"
     return 0
 }
@@ -101,20 +101,20 @@ test_post_endpoint() {
 # Main test function
 main() {
     log_info "Starting Medication Tracker Integration Tests"
-    
+
     # Clean up any existing test container first
     cleanup 2>/dev/null || true
-    
+
     # Check if Docker is available
     if ! command -v docker &> /dev/null; then
         log_error "Docker is not available"
         exit 1
     fi
-    
+
     # Build image if it doesn't exist (for local testing)
     if ! docker image inspect "$IMAGE_TAG" > /dev/null 2>&1; then
         log_info "Building Docker image..."
-        
+
         # Use default builder for local testing to ensure image is available locally
         if [ -n "${GITHUB_ACTIONS:-}" ]; then
             # In GitHub Actions, buildx is set up correctly
@@ -135,7 +135,7 @@ main() {
             fi
         fi
     fi
-    
+
     # Start container
     log_info "Starting test container..."
     docker run -d --name "$CONTAINER_NAME" \
@@ -143,72 +143,77 @@ main() {
         -e FLASK_ENV=production \
         -e LOG_LEVEL=INFO \
         "$IMAGE_TAG"
-    
+
     # Wait for container to be ready
     if ! wait_for_container; then
         exit 1
     fi
-    
+
     # Test basic routes
     log_info "Testing web routes..."
     failed_routes=()
-    
+
     routes=(
         "/:Dashboard/Home page"
-        "/medications:Medications list"
+        "/ingredients:Ingredients and products list"
         "/physician_visits:Physician visits list"
+        "/physicians:Physicians list"
         "/orders:Orders list"
-        "/inventory:Inventory overview"
-        "/settings/physician_visits:Settings page"
+        "/schedules:Schedules list"
+        "/scanner/scan:Scanner page"
+        "/onboarding:Package onboarding"
+        "/pdf-mapper:PDF mapper"
+        "/settings:Settings main page"
+        "/settings/physician_visits:Visit settings page"
         "/system/status:System status"
         "/system/migrations:Migration status"
     )
-    
+
     for route_info in "${routes[@]}"; do
         IFS=':' read -r route description <<< "$route_info"
         if ! test_route "$route" "$description"; then
             failed_routes+=("$route")
         fi
     done
-    
+
     # Test POST endpoints (form submissions)
     log_info "Testing form submissions..."
-    
-    # Test medication creation form
-    test_post_endpoint "/medications/new" \
-        "name=TestMed&dosage=1&frequency=2&is_otc=on&min_threshold=10&safety_margin_days=7&auto_deduction_enabled=on" \
-        "Medication creation form"
-    
-    # Test physician creation form  
+
+    # Test product creation form
+    test_post_endpoint "/ingredients/products/new" \
+        "ingredient_name=Test+Ingredient&brand_name=Test+Product&manufacturer=Test+Pharma&is_otc=on" \
+        "Product creation form"
+
+    # Test physician creation form
     test_post_endpoint "/physicians/new" \
         "name=Dr. Test&specialty=General Medicine&phone=555-1234&email=test@example.com" \
         "Physician creation form"
-    
+
     # Test visit creation form
     test_post_endpoint "/physician_visits/new" \
         "visit_date=2025-12-31&notes=Test visit&physician_id=" \
         "Visit creation form"
-    
+
     # Verify pages still work after POST requests
     log_info "Verifying pages after form submissions..."
-    test_route "/medications" "Medications page after form submission"
+    test_route "/ingredients" "Ingredients page after form submission"
     test_route "/physicians" "Physicians page after form submission"
     test_route "/physician_visits" "Visits page after form submission"
-    
+
     # Check container health
     log_info "Checking container health..."
-    
+
     if docker ps | grep -q "$CONTAINER_NAME"; then
         log_info "✅ Container is still running"
     else
         log_warn "⚠️  Container stopped after testing (this can be normal)"
         # Don't exit here - container stopping after tests can be normal
     fi
-    
+
     # Check for critical errors in logs
     log_info "Checking application logs..."
     error_logs=$(docker logs "$CONTAINER_NAME" 2>&1 | grep -E " - ERROR - | - CRITICAL - |Exception|Traceback" | grep -v "404\|favicon\|GET.*404" | head -5 || true)
-    
+
     if [ -n "$error_logs" ]; then
         log_warn "Found critical errors in logs:"
         echo "$error_logs"
@@ -216,12 +221,12 @@ main() {
     else
         log_info "✅ No critical errors found in logs"
     fi
-    
+
     # Show recent logs
     echo ""
     log_info "Recent container logs:"
     docker logs --tail 15 "$CONTAINER_NAME"
-    
+
     # Report results
     echo ""
     if [ "${#failed_routes[@]}" -eq 0 ]; then
