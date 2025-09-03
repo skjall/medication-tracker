@@ -34,16 +34,20 @@ class TestPhysicianVisitUtils(BaseTestCase):
         from app.models import (
             MedicationSchedule,
             ScheduleType,
-            Medication,
-            Inventory,
+            ActiveIngredient,
+            ProductPackage,
+            ScannedItem,
+            PackageInventory,
             Settings,
             PhysicianVisit,
         )
 
         self.MedicationSchedule = MedicationSchedule
         self.ScheduleType = ScheduleType
-        self.Medication = Medication
-        self.Inventory = Inventory
+        self.ActiveIngredient = ActiveIngredient
+        self.ProductPackage = ProductPackage
+        self.ScannedItem = ScannedItem
+        self.PackageInventory = PackageInventory
         self.Settings = Settings
         self.PhysicianVisit = PhysicianVisit
 
@@ -136,18 +140,37 @@ class TestPhysicianVisitUtils(BaseTestCase):
 
     def test_disabled_auto_deduction(self):
         """Test that auto-deduction respects the enabled flag."""
-        # Create medication with auto-deduction disabled for this test only
-        medication = self.Medication(
-            name="Test Med", dosage=2.0, frequency=2.0, auto_deduction_enabled=False
+        # Create active ingredient with auto-deduction disabled for this test only
+        ingredient = self.ActiveIngredient(
+            name="Test Ingredient", auto_deduction_enabled=False
         )
-        self.db.session.add(medication)
+        self.db.session.add(ingredient)
         self.db.session.flush()  # Get ID without committing
 
-        inventory = self.Inventory(medication=medication, current_count=100)
+        # Create a scanned item - use unique identifiers
+        import time
+        unique_suffix = str(int(time.time() * 1000))[-6:]  # Last 6 digits of timestamp
+        test_gtin = f"123456789{unique_suffix.zfill(4)}"
+        
+        scanned_item = self.ScannedItem(
+            gtin=test_gtin,
+            serial_number=f"TEST{unique_suffix}",
+            batch_number="BATCH001",
+            status="active"
+        )
+        self.db.session.add(scanned_item)
+        self.db.session.flush()
+
+        inventory = self.PackageInventory(
+            scanned_item=scanned_item,
+            current_units=100,
+            original_units=100,
+            status="sealed"
+        )
         self.db.session.add(inventory)
 
         schedule = self.MedicationSchedule(
-            medication=medication,
+            active_ingredient=ingredient,
             schedule_type=self.ScheduleType.DAILY,
             times_of_day='["08:00", "18:00"]',
             units_per_dose=2.0,
@@ -161,9 +184,9 @@ class TestPhysicianVisitUtils(BaseTestCase):
             # Run the deduction
             deduction_count = self.auto_deduct_inventory()
 
-            # No medications should have been processed
+            # No ingredients should have been processed
             self.assertEqual(deduction_count, 0)
 
             # Inventory should remain unchanged
             self.db.session.refresh(inventory)
-            self.assertEqual(inventory.current_count, 100)
+            self.assertEqual(inventory.current_units, 100)

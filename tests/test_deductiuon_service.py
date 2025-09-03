@@ -29,8 +29,11 @@ class TestDeductionService(BaseTestCase):
         from app.models import (
             MedicationSchedule,
             ScheduleType,
-            Medication,
-            Inventory,
+            ActiveIngredient,
+            MedicationProduct,
+            ProductPackage,
+            ScannedItem,
+            PackageInventory,
             Settings,
         )
 
@@ -59,27 +62,58 @@ class TestDeductionService(BaseTestCase):
         # Set up current time and yesterday
         self.yesterday = self.now - timedelta(days=1)
 
-        # Create a medication with inventory
-        self.medication = Medication(
-            name="Test Med",
-            dosage=2.0,
-            frequency=2.0,
+        # Create an active ingredient with auto-deduction enabled
+        self.active_ingredient = ActiveIngredient(
+            name="Test Ingredient",
             auto_deduction_enabled=True,
         )
-
-        # Add to database
-        self.db.session.add(self.medication)
+        self.db.session.add(self.active_ingredient)
         self.db.session.flush()
 
-        # Create inventory
-        self.inventory = Inventory(
-            medication=self.medication, current_count=100
+        # Create a product for this ingredient
+        self.product = MedicationProduct(
+            active_ingredient=self.active_ingredient,
+            brand_name="Test Product"
+        )
+        self.db.session.add(self.product)
+        self.db.session.flush()
+
+        # Create a product package - use unique GTINs for each test
+        import time
+        unique_suffix = str(int(time.time() * 1000))[-6:]  # Last 6 digits of timestamp
+        test_gtin = f"123456789{unique_suffix.zfill(4)}"
+        
+        self.product_package = ProductPackage(
+            product=self.product,
+            package_size="N1",
+            quantity=30,
+            gtin=test_gtin
+        )
+        self.db.session.add(self.product_package)
+        self.db.session.flush()
+
+        # Create a scanned item
+        self.scanned_item = ScannedItem(
+            gtin=test_gtin,
+            serial_number=f"TEST{unique_suffix}",
+            batch_number="BATCH001",
+            status="active"
+        )
+        self.db.session.add(self.scanned_item)
+        self.db.session.flush()
+
+        # Create inventory (using PackageInventory)
+        self.inventory = PackageInventory(
+            scanned_item=self.scanned_item,
+            current_units=100,
+            original_units=100,
+            status="sealed"
         )
         self.db.session.add(self.inventory)
 
         # Create a schedule
         self.schedule = MedicationSchedule(
-            medication=self.medication,
+            active_ingredient=self.active_ingredient,
             schedule_type=ScheduleType.DAILY,
             interval_days=1,
             times_of_day='["08:00", "18:00"]',
@@ -286,16 +320,16 @@ class TestDeductionService(BaseTestCase):
             mock_calc.return_value = [self.now - timedelta(hours=2)]
 
             # Run the deduction process
-            med_count, action_count = self.perform_deductions(self.now)
+            ingredient_count, action_count = self.perform_deductions(self.now)
 
             # Since there's no inventory, no deductions should happen
-            self.assertEqual(med_count, 0)
+            self.assertEqual(ingredient_count, 0)
             self.assertEqual(action_count, 0)
 
     def test_insufficient_inventory(self):
         """Test behavior when inventory is less than required dose."""
         # Set inventory below dose amount
-        self.inventory.current_count = 1.5  # Less than 2.0 dose
+        self.inventory.current_units = 1.5  # Less than 2.0 dose
         self.db.session.commit()
 
         # Mock missed deductions using the correct patch path
@@ -307,12 +341,12 @@ class TestDeductionService(BaseTestCase):
             ]
 
             # Call the function
-            med_count, action_count = self.perform_deductions(self.now)
+            ingredient_count, action_count = self.perform_deductions(self.now)
 
-            # Should have tried to process one medication but unable to deduct
-            self.assertEqual(med_count, 0)
+            # Should have tried to process one ingredient but unable to deduct
+            self.assertEqual(ingredient_count, 0)
             self.assertEqual(action_count, 0)
 
             # Inventory should remain unchanged
             self.db.session.refresh(self.inventory)
-            self.assertEqual(self.inventory.current_count, 1.5)
+            self.assertEqual(self.inventory.current_units, 1.5)

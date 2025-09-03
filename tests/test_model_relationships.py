@@ -23,88 +23,70 @@ class TestModelRelationships(BaseTestCase):
         """Set up test fixtures before each test."""
         super().setUp()
 
-    def test_medication_inventory_relationship(self):
-        """Test the relationship between Medication and Inventory."""
-        from app.models import Medication, Inventory
+    def test_ingredient_inventory_relationship_simple(self):
+        """Test the relationship between ActiveIngredient and package inventories."""
+        from app.models import ActiveIngredient
 
-        # Create a medication
-        med = Medication(name="Test Med", dosage=1.0, frequency=1.0)
-        self.db.session.add(med)
-        self.db.session.flush()
-
-        # Create inventory
-        inv = Inventory(medication=med, current_count=100)
-        self.db.session.add(inv)
+        # Create an active ingredient
+        ingredient = ActiveIngredient(name="Test Ingredient")
+        self.db.session.add(ingredient)
         self.db.session.commit()
 
-        # Test the relationship from both sides
-        self.assertEqual(med.inventory, inv)
-        self.assertEqual(inv.medication, med)
+        # Test that the property works (even if empty)
+        package_inventories = ingredient.package_inventories
+        self.assertEqual(len(package_inventories), 0)
+        
+        # Test basic ingredient properties
+        self.assertEqual(ingredient.total_inventory_count, 0)
+        self.assertIsNone(ingredient.days_remaining)
 
-        # Test cascade delete: deleting medication should delete inventory
-        self.db.session.delete(med)
-        self.db.session.commit()
+    def test_ingredient_product_relationship(self):
+        """Test the relationship between ActiveIngredient and MedicationProduct."""
+        from app.models import ActiveIngredient, MedicationProduct
 
-        # Inventory should be gone
-        self.assertEqual(self.db.session.query(Inventory).count(), 0)
-
-    def test_inventory_log_relationship(self):
-        """Test the relationship between Inventory and InventoryLog."""
-        from app.models import Inventory, InventoryLog, Medication
-
-        # Create a medication and inventory
-        med = Medication(name="Test Med", dosage=1.0, frequency=1.0)
-        self.db.session.add(med)
+        # Create an active ingredient
+        ingredient = ActiveIngredient(name="Test Ingredient")
+        self.db.session.add(ingredient)
         self.db.session.flush()
 
-        inv = Inventory(medication=med, current_count=100)
-        self.db.session.add(inv)
-        self.db.session.flush()
-
-        # Create inventory logs
-        log1 = InventoryLog(
-            inventory=inv,
-            previous_count=0,
-            adjustment=100,
-            new_count=100,
-            notes="Initial stock",
+        # Create products
+        product1 = MedicationProduct(
+            active_ingredient=ingredient,
+            brand_name="Brand A"
         )
-        self.db.session.add(log1)
-
-        log2 = InventoryLog(
-            inventory=inv,
-            previous_count=100,
-            adjustment=-10,
-            new_count=90,
-            notes="Used some",
+        product2 = MedicationProduct(
+            active_ingredient=ingredient,
+            brand_name="Brand B"
         )
-        self.db.session.add(log2)
+        self.db.session.add_all([product1, product2])
         self.db.session.commit()
 
         # Test the relationship
-        self.assertEqual(len(inv.inventory_logs), 2)
-        self.assertIn(log1, inv.inventory_logs)
-        self.assertIn(log2, inv.inventory_logs)
+        self.assertEqual(len(ingredient.products), 2)
+        self.assertIn(product1, ingredient.products)
+        self.assertIn(product2, ingredient.products)
+        self.assertEqual(product1.active_ingredient, ingredient)
+        self.assertEqual(product2.active_ingredient, ingredient)
 
-        # Test cascade delete: deleting inventory should delete logs
-        self.db.session.delete(inv)
+        # Test cascade delete: deleting ingredient should delete products
+        self.db.session.delete(ingredient)
         self.db.session.commit()
 
-        # Logs should be gone
-        self.assertEqual(self.db.session.query(InventoryLog).count(), 0)
+        # Products should be gone
+        self.assertEqual(self.db.session.query(MedicationProduct).count(), 0)
 
-    def test_medication_schedule_relationship(self):
-        """Test the relationship between Medication and MedicationSchedule."""
-        from app.models import Medication, MedicationSchedule, ScheduleType
+    def test_ingredient_schedule_relationship(self):
+        """Test the relationship between ActiveIngredient and MedicationSchedule."""
+        from app.models import ActiveIngredient, MedicationSchedule, ScheduleType
 
-        # Create a medication
-        med = Medication(name="Test Med", dosage=1.0, frequency=1.0)
-        self.db.session.add(med)
+        # Create an active ingredient
+        ingredient = ActiveIngredient(name="Test Ingredient")
+        self.db.session.add(ingredient)
         self.db.session.flush()
 
         # Create schedules
         schedule1 = MedicationSchedule(
-            medication=med,
+            active_ingredient=ingredient,
             schedule_type=ScheduleType.DAILY,
             times_of_day='["08:00"]',
             units_per_dose=1.0,
@@ -112,7 +94,7 @@ class TestModelRelationships(BaseTestCase):
         self.db.session.add(schedule1)
 
         schedule2 = MedicationSchedule(
-            medication=med,
+            active_ingredient=ingredient,
             schedule_type=ScheduleType.DAILY,
             times_of_day='["20:00"]',
             units_per_dose=1.0,
@@ -121,12 +103,12 @@ class TestModelRelationships(BaseTestCase):
         self.db.session.commit()
 
         # Test the relationship
-        self.assertEqual(len(med.schedules), 2)
-        self.assertIn(schedule1, med.schedules)
-        self.assertIn(schedule2, med.schedules)
+        self.assertEqual(len(ingredient.schedules), 2)
+        self.assertIn(schedule1, ingredient.schedules)
+        self.assertIn(schedule2, ingredient.schedules)
 
-        # Test cascade delete: deleting medication should delete schedules
-        self.db.session.delete(med)
+        # Test cascade delete: deleting ingredient should delete schedules
+        self.db.session.delete(ingredient)
         self.db.session.commit()
 
         # Schedules should be gone
@@ -242,40 +224,71 @@ class TestModelRelationships(BaseTestCase):
         # Active ingredients should still exist
         self.assertEqual(self.db.session.query(ActiveIngredient).count(), 2)
 
-    def test_medication_deletion_with_relations(self):
-        """Test deleting a medication with various related objects."""
+    def test_ingredient_deletion_with_relations(self):
+        """Test deleting an active ingredient with various related objects."""
         from app.models import (
-            Medication,
-            Inventory,
-            InventoryLog,
+            ActiveIngredient,
+            MedicationProduct,
+            ProductPackage,
+            ScannedItem,
+            PackageInventory,
             MedicationSchedule,
             Order,
             OrderItem,
             ScheduleType,
             PhysicianVisit,
-            ActiveIngredient,
-            MedicationProduct,
         )
 
-        # Create a medication with inventory, logs, schedules, and order items
-        med = Medication(name="Complex Med", dosage=1.0, frequency=1.0)
-        self.db.session.add(med)
+        # Create an active ingredient with products, inventory, schedules, and order items
+        ingredient = ActiveIngredient(name="Complex Ingredient")
+        self.db.session.add(ingredient)
+        self.db.session.flush()
+
+        # Add product
+        product = MedicationProduct(
+            active_ingredient=ingredient,
+            brand_name="Test Product"
+        )
+        self.db.session.add(product)
+        self.db.session.flush()
+
+        # Create a product package - use unique GTINs  
+        import time
+        unique_suffix = str(int(time.time() * 1000))[-6:]  # Last 6 digits of timestamp
+        test_gtin = f"123456789{unique_suffix.zfill(4)}"
+        
+        package = ProductPackage(
+            product=product,
+            package_size="N1",
+            quantity=30,
+            gtin=test_gtin
+        )
+        self.db.session.add(package)
+        self.db.session.flush()
+
+        # Create a scanned item
+        scanned_item = ScannedItem(
+            gtin=test_gtin,
+            serial_number=f"TEST{unique_suffix}",
+            batch_number="BATCH001",
+            status="active"
+        )
+        self.db.session.add(scanned_item)
         self.db.session.flush()
 
         # Add inventory
-        inv = Inventory(medication=med, current_count=100)
+        inv = PackageInventory(
+            scanned_item=scanned_item,
+            current_units=30,
+            original_units=30,
+            status="sealed"
+        )
         self.db.session.add(inv)
         self.db.session.flush()
 
-        # Add inventory log
-        log = InventoryLog(
-            inventory=inv, previous_count=0, adjustment=100, new_count=100
-        )
-        self.db.session.add(log)
-
         # Add schedule
         schedule = MedicationSchedule(
-            medication=med,
+            active_ingredient=ingredient,
             schedule_type=ScheduleType.DAILY,
             times_of_day='["08:00"]',
             units_per_dose=1.0,
@@ -293,55 +306,46 @@ class TestModelRelationships(BaseTestCase):
         self.db.session.add(order)
         self.db.session.flush()
 
-        # Create active ingredient and product for order item
-        ingredient = ActiveIngredient(name="Test Ingredient")
-        self.db.session.add(ingredient)
-        self.db.session.flush()
-        
-        product = MedicationProduct(
-            active_ingredient=ingredient,
-            brand_name="Test Product"
-        )
-        self.db.session.add(product)
-        self.db.session.flush()
-        
         # Add order item
         item = OrderItem(order=order, active_ingredient=ingredient, product=product, quantity_needed=30, packages_n1=1)
         self.db.session.add(item)
         self.db.session.commit()
 
         # Verify relationships
-        self.assertEqual(med.inventory, inv)
-        self.assertEqual(len(inv.inventory_logs), 1)
-        self.assertEqual(len(med.schedules), 1)
-        # Order items are now on active_ingredient, not medication
-        # med doesn't have order_items anymore
+        self.assertEqual(len(ingredient.products), 1)
+        self.assertEqual(len(ingredient.package_inventories), 1)
+        self.assertEqual(len(ingredient.schedules), 1)
+        self.assertEqual(len(ingredient.order_items), 1)
 
-        # Deleting medication should:
+        # Deleting ingredient should:
+        # - Delete products (cascade)
         # - Delete inventory (cascade)
-        # - Delete inventory logs (cascade through inventory)
         # - Delete schedules (cascade)
         # But should NOT delete order items (they should reference None)
 
-        med_id = med.id
-        self.db.session.delete(med)
+        ingredient_id = ingredient.id
+        self.db.session.delete(ingredient)
         self.db.session.commit()
 
         # Verify cascades
         self.assertEqual(
-            self.db.session.query(Medication).filter_by(id=med_id).count(), 0
+            self.db.session.query(ActiveIngredient).filter_by(id=ingredient_id).count(), 0
         )
         self.assertEqual(
-            self.db.session.query(Inventory).filter_by(medication_id=med_id).count(), 0
+            self.db.session.query(MedicationProduct).filter_by(active_ingredient_id=ingredient_id).count(), 0
+        )
+        # Package inventory remains (it's linked to scanned items, not directly to ingredient)
+        self.assertEqual(
+            self.db.session.query(PackageInventory).count(), 1
         )
         self.assertEqual(
             self.db.session.query(MedicationSchedule)
-            .filter_by(medication_id=med_id)
+            .filter_by(active_ingredient_id=ingredient_id)
             .count(),
             0,
         )
 
-        # Order item should still exist (linked to active_ingredient, not medication)
+        # Order item should still exist but linked to None
         order_item = self.db.session.get(OrderItem, item.id)
         self.assertIsNotNone(order_item)
-        self.assertEqual(order_item.active_ingredient_id, ingredient.id)
+        self.assertIsNone(order_item.active_ingredient_id)
