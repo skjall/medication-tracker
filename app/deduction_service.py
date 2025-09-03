@@ -647,17 +647,29 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                 # Sort by timestamp to apply them in chronological order
                 missed_deductions.sort()
                 
+                # Track successful deductions for this schedule
+                schedule_deduction_count = 0
+                
                 for deduction_time in missed_deductions:
                     # Deduct the scheduled amount from products
                     amount = schedule.units_per_dose
-                    if amount > 0 and ingredient.total_inventory_count >= amount:
-                        # Use the ingredient's method to get the next package for deduction
+                    logger.info(f"    Processing deduction of {amount} units at {utc_to_local(deduction_time).isoformat()} local")
+                    
+                    if amount > 0:
+                        # Get package inventory through proper ingredient -> products -> packages relationship
                         package_inventory = ingredient.get_next_package_for_deduction()
+                        
+                        logger.info(f"      Found package: {package_inventory.id if package_inventory else 'None'}")
+                        if package_inventory:
+                            logger.info(f"      Package units: {package_inventory.current_units}, status: {package_inventory.status}")
+                            logger.info(f"      OLD: Package {package_inventory.id} had {package_inventory.current_units} units ({package_inventory.status})")
                         
                         if package_inventory and package_inventory.current_units >= amount:
                             # Deduct from the package inventory
                             old_status = package_inventory.status
+                            logger.info(f"      Deducting {amount} units from package {package_inventory.id}")
                             package_inventory.current_units -= amount
+                            logger.info(f"      NEW: Package {package_inventory.id} has {package_inventory.current_units} units ({package_inventory.status})")
                             
                             # Mark package as opened if it was sealed
                             if package_inventory.status == 'sealed':
@@ -680,27 +692,35 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                                 package_inventory.status = 'consumed'
                                 package_inventory.consumed_at = deduction_time
                             
-                            deducted = True
+                            schedule_deduction_count += 1
                             action_count += 1
-                            ingredient_deducted = True
                             
                             logger.info(
-                                f"Deducted {amount} units from {ingredient.name} at {deduction_time.isoformat()}"
+                                f"      SUCCESS: Deducted {amount} units from {ingredient.name} at {deduction_time.isoformat()} UTC"
                             )
                         else:
-                            deducted = False
-                            logger.warning(
-                                f"Could not find suitable package inventory for deduction of {amount} units from {ingredient.name}"
-                            )
+                            if package_inventory:
+                                logger.warning(
+                                    f"      FAILED: Insufficient stock - Package {package_inventory.id} has only {package_inventory.current_units} units, but need {amount} units for {ingredient.name}"
+                                )
+                            else:
+                                logger.warning(
+                                    f"      FAILED: No package inventory found with available units for {ingredient.name}"
+                                )
                     else:
                         logger.warning(
-                            f"Not enough inventory to deduct {amount} units from {ingredient.name}. Current count: {ingredient.total_inventory_count}"
+                            f"      FAILED: Invalid amount ({amount}) or no inventory available for {ingredient.name}"
                         )
                 
-                # Update last deduction time to the most recent missed deduction
-                if ingredient_deducted and missed_deductions:
+                # Update ingredient_deducted flag and last deduction time based on actual success
+                if schedule_deduction_count > 0:
+                    ingredient_deducted = True
+                    # Update last deduction time to the most recent successful deduction
+                    # For now, we'll use the last attempted time if any succeeded
                     schedule.last_deduction = missed_deductions[-1]
-                    logger.debug(f"Updated last_deduction to {schedule.last_deduction.isoformat()} UTC")
+                    logger.info(f"    Updated last_deduction to {schedule.last_deduction.isoformat()} UTC after {schedule_deduction_count} successful deductions")
+                else:
+                    logger.info(f"    No successful deductions for schedule {schedule.id}, last_deduction unchanged")
             else:
                 logger.info(
                     f"  No missed deductions found for {ingredient.name} on schedule {schedule.id}"

@@ -144,7 +144,7 @@ def show_product(id: int):
 
     # Get package inventory for this product
     from models import PackageInventory, ScannedItem, ProductPackage, InventoryLog
-    from sqlalchemy import or_, desc
+    from sqlalchemy import or_, and_, desc
     
     # Get all packages for this product
     packages = ProductPackage.query.filter_by(product_id=product.id).all()
@@ -194,16 +194,34 @@ def show_product(id: int):
                 current_app.logger.info(f"Inventory: id={inv.id}, current={inv.current_units}, original={inv.original_units}, status={inv.status}")
                 current_app.logger.info(f"  ScannedItem: id={item.id}, gtin={item.gtin}, nat_num={item.national_number}, nat_type={item.national_number_type}")
 
-    # Get inventory change logs for this product's packages
+    # Get inventory change logs for ALL packages (including consumed ones)
+    from models import ProductPackage
+    
+    # Get ALL package inventory IDs for this product (regardless of status)
+    all_package_inv_query = (
+        db.session.query(PackageInventory, ScannedItem, ProductPackage)
+        .join(ScannedItem, PackageInventory.scanned_item_id == ScannedItem.id)
+        .join(ProductPackage, or_(
+            ScannedItem.gtin == ProductPackage.gtin,
+            and_(
+                ScannedItem.national_number == ProductPackage.national_number,
+                ScannedItem.national_number_type == ProductPackage.national_number_type
+            )
+        ))
+        .filter(ProductPackage.product_id == product.id)
+    )
+    
+    all_package_inventory = all_package_inv_query.all()
     inventory_logs = []
-    if package_inventory:
-        # Get package inventory IDs for this product
-        package_inv_ids = [inv[0].id for inv in package_inventory]
+    
+    if all_package_inventory:
+        # Get ALL package inventory IDs (including consumed packages)
+        all_package_inv_ids = [inv[0].id for inv in all_package_inventory]
         
-        # Query inventory logs for these packages
+        # Query inventory logs for ALL these packages
         inventory_logs = (
             InventoryLog.query
-            .filter(InventoryLog.package_inventory_id.in_(package_inv_ids))
+            .filter(InventoryLog.package_inventory_id.in_(all_package_inv_ids))
             .order_by(desc(InventoryLog.changed_at))
             .limit(50)  # Show last 50 changes
             .all()
