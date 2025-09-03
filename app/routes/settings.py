@@ -228,45 +228,101 @@ def restore_database():
 
         # Validate that it's a valid SQLite database
         try:
+            logger.info(f"Opening database file for validation: {temp_file_path}")
             conn = sqlite3.connect(temp_file_path)
             cursor = conn.cursor()
-            # Check if it has the expected tables
+            
+            # First, get ALL tables in the backup file
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            all_tables = [row[0] for row in cursor.fetchall()]
+            logger.info(f"Tables found in backup file: {all_tables}")
+            
+            # Check if it has the expected core tables for current system
+            required_tables = ['active_ingredients', 'medication_products', 'physicians', 'physician_visits']
+            logger.info(f"Required tables for current system: {required_tables}")
+            
             cursor.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name='medications'"
+                "SELECT name FROM sqlite_master WHERE type='table' AND name IN ({})".format(
+                    ','.join(['?'] * len(required_tables))
+                ), required_tables
             )
-            if not cursor.fetchone():
-                flash(
-                    _("Invalid database file: missing required tables"),
-                    "error",
-                )
+            found_tables = set(row[0] for row in cursor.fetchall())
+            logger.info(f"Found required tables in backup: {found_tables}")
+            
+            if not all(table in found_tables for table in required_tables):
+                missing_tables = set(required_tables) - found_tables
+                logger.error(f"Missing required tables: {missing_tables}")
+                logger.error(f"This appears to be a backup from the old system (pre-migration)")
+                
+                # Check if this is an old backup with medications table
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='medications'")
+                if cursor.fetchone():
+                    logger.error("Backup contains old 'medications' table - this is from before the migration to ingredients/products system")
+                    flash(
+                        _("This backup is from the old medication system and cannot be restored. Please use a backup from the current ingredients/products system."),
+                        "error",
+                    )
+                else:
+                    flash(
+                        _("Invalid database file: missing required tables: {}").format(', '.join(missing_tables)),
+                        "error",
+                    )
                 return redirect(url_for("settings.data_management"))
+            
+            logger.info("Database validation successful - all required tables found")
             conn.close()
         except sqlite3.Error as e:
+            logger.error(f"SQLite error during validation: {e}")
             flash(_("Invalid database file: {}").format(str(e)), "error")
             return redirect(url_for("settings.data_management"))
 
         # Create backup of current database before restore
         data_dir = get_data_directory()
+        logger.info(f"Data directory: {data_dir}")
         backup_dir = os.path.join(data_dir, "backups")
         os.makedirs(backup_dir, exist_ok=True)
-        current_db_path = os.path.join(
-            data_dir, "medication_tracker.db"
-        )
+        logger.info(f"Backup directory: {backup_dir}")
+        
+        current_db_path = os.path.join(data_dir, "medication_tracker.db")
+        logger.info(f"Current database path: {current_db_path}")
+        logger.info(f"Current database exists: {os.path.exists(current_db_path)}")
+        
+        if os.path.exists(current_db_path):
+            current_size = os.path.getsize(current_db_path)
+            logger.info(f"Current database size: {current_size} bytes")
+        
+        temp_size = os.path.getsize(temp_file_path)
+        logger.info(f"Restore file size: {temp_size} bytes")
+        
         pre_restore_backup = os.path.join(
             backup_dir,
             f"pre_restore_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db",
         )
 
         # Close all database connections
+        logger.info("Closing all database connections...")
         db.session.close_all()
         db.engine.dispose()
 
         # Create backup of current database
+        logger.info(f"Creating backup of current database...")
         shutil.copy2(current_db_path, pre_restore_backup)
         logger.info(f"Created pre-restore backup at: {pre_restore_backup}")
 
         # Replace current database with uploaded file
+        logger.info(f"Replacing current database with restore file...")
         shutil.copy2(temp_file_path, current_db_path)
+        logger.info(f"Database file copied successfully")
+        
+        # Verify the restore
+        if os.path.exists(current_db_path):
+            restored_size = os.path.getsize(current_db_path)
+            logger.info(f"Restored database size: {restored_size} bytes")
+            if restored_size != temp_size:
+                logger.warning(f"Size mismatch! Expected: {temp_size}, Got: {restored_size}")
+        else:
+            logger.error(f"Database file missing after restore!")
+            
         logger.info(f"Database restored from uploaded file")
 
         # Clean up temporary file
@@ -275,6 +331,7 @@ def restore_database():
 
         # Force migration check after restore
         try:
+            logger.info("Starting post-restore migration process...")
             from migration_utils import (
                 check_and_fix_version_tracking,
                 run_migrations_with_lock,
@@ -285,6 +342,7 @@ def restore_database():
             )
 
             # Re-establish database connection with the new database
+            logger.info("Re-establishing database connection...")
             db.engine.dispose()
             db.session.remove()
             
@@ -292,14 +350,21 @@ def restore_database():
             from migration_utils import verify_schema_integrity
             
             # Check if the restored database needs migration tracking
+            logger.info("Checking migration tracking...")
             check_and_fix_version_tracking(current_app)
             
             # Force schema integrity check - this will reset version if needed
-            if not verify_schema_integrity(current_app):
+            logger.info("Verifying schema integrity...")
+            schema_valid = verify_schema_integrity(current_app)
+            logger.info(f"Schema integrity check result: {schema_valid}")
+            if not schema_valid:
                 logger.info("Restored database has schema issues - forcing migration")
 
             # Run any pending migrations (will now check schema integrity)
-            if run_migrations_with_lock(current_app):
+            logger.info("Running migrations...")
+            migration_result = run_migrations_with_lock(current_app)
+            logger.info(f"Migration result: {migration_result}")
+            if migration_result:
                 logger.info(
                     "Migrations applied successfully after database restore"
                 )
@@ -316,6 +381,7 @@ def restore_database():
             logger.error(
                 f"Error running migrations after restore: {migration_error}"
             )
+            logger.error(f"Migration error traceback:", exc_info=True)
             flash(
                 _("Database restored but migration failed: {}").format(
                     migration_error
@@ -334,6 +400,19 @@ def restore_database():
 
     except Exception as e:
         logger.error(f"Error restoring database: {str(e)}")
+        logger.error("Full traceback of restore error:", exc_info=True)
+        
+        # Try to provide more specific error information
+        if "temp_dir" in locals():
+            logger.error(f"Cleaning up temporary directory: {temp_dir}")
+            try:
+                if "temp_file_path" in locals() and os.path.exists(temp_file_path):
+                    os.unlink(temp_file_path)
+                if os.path.exists(temp_dir):
+                    os.rmdir(temp_dir)
+            except Exception as cleanup_error:
+                logger.error(f"Error during cleanup: {cleanup_error}")
+        
         flash(_("Error restoring database: {}").format(str(e)), "error")
         return redirect(url_for("settings.data_management"))
 

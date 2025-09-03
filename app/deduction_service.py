@@ -328,12 +328,15 @@ def calculate_missed_deductions(
     local_last_deduction = utc_to_local(last_deduction_utc)
     
     logger.info(
-        f"Time range - Last: {local_last_deduction.isoformat()} to Current: {local_current_time.isoformat()} (local)"
+        f"  Time range analysis:"
     )
+    logger.info(f"    Last deduction: {local_last_deduction.isoformat()} (local) / {last_deduction_utc.isoformat()} (UTC)")
+    logger.info(f"    Current time:   {local_current_time.isoformat()} (local) / {current_time.isoformat()} (UTC)")
+    logger.info(f"    Time difference: {(current_time - last_deduction_utc).total_seconds() / 3600:.1f} hours")
 
     # Get scheduled times in HH:MM format, with automatic pipe-separator fix
     scheduled_times = get_and_fix_scheduled_times(schedule)
-    logger.debug(f"Scheduled times: {scheduled_times}")
+    logger.info(f"    Scheduled times: {scheduled_times}")
 
     # Calculate missed deductions based on schedule type
     # These functions will return times in UTC
@@ -362,14 +365,17 @@ def calculate_missed_deductions(
         )
         return []
 
-    logger.info(f"Found {len(missed_deductions_utc)} missed deductions")
+    logger.info(f"    Result: Found {len(missed_deductions_utc)} missed deductions")
 
     if missed_deductions_utc:
+        logger.info(f"    Missed deduction details:")
         for dt in missed_deductions_utc[:5]:  # Log first 5 only
             local_dt = utc_to_local(dt)
-            logger.debug(f"Missed deduction at: {local_dt.isoformat()} (local) / {dt.isoformat()} (UTC)")
+            logger.info(f"      - {local_dt.isoformat()} (local) / {dt.isoformat()} (UTC)")
         if len(missed_deductions_utc) > 5:
-            logger.debug(f"... and {len(missed_deductions_utc) - 5} more")
+            logger.info(f"      ... and {len(missed_deductions_utc) - 5} more")
+    else:
+        logger.info(f"    No missed deductions - medication is up to date")
 
     return missed_deductions_utc
 
@@ -420,12 +426,12 @@ def _calculate_daily_missed_deductions(
     
     end_date = local_current.date()
     
-    logger.debug(f"Checking dates from {start_date} to {end_date}")
+    logger.info(f"      Checking dates from {start_date} to {end_date}")
     
     # Iterate through each day
     current_date = start_date
     while current_date <= end_date:
-        logger.debug(f"Checking date: {current_date}")
+        logger.info(f"      Checking date: {current_date}")
         
         for time_str in scheduled_times:
             # Parse the scheduled time for this date (returns local time)
@@ -434,18 +440,18 @@ def _calculate_daily_missed_deductions(
             # Convert to UTC for comparison
             scheduled_utc = local_to_utc(scheduled_local)
             
-            logger.debug(f"  Time {time_str}: {scheduled_local} (local) -> {scheduled_utc} (UTC)")
+            logger.info(f"        Time {time_str}: {scheduled_local} (local) -> {scheduled_utc} (UTC)")
             
             # Check if this scheduled time is:
             # 1. After the last deduction
             # 2. Before or at the current time
             if last_deduction_utc < scheduled_utc <= current_time_utc:
                 missed_deductions_utc.append(scheduled_utc)
-                logger.debug(f"    -> MISSED")
+                logger.info(f"          -> MISSED DEDUCTION!")
             elif scheduled_utc <= last_deduction_utc:
-                logger.debug(f"    -> Already deducted")
+                logger.info(f"          -> Already deducted")
             else:
-                logger.debug(f"    -> Future")
+                logger.info(f"          -> Future (not due yet)")
         
         # Move to next day
         current_date += timedelta(days=1)
@@ -594,12 +600,18 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
     else:
         current_time = ensure_timezone_utc(current_time)
 
-    logger.info(f"Running deduction service at {current_time.isoformat()}")
+    # Convert to local time for logging
+    local_current_time = utc_to_local(current_time)
+    
+    logger.info(f"=== DEDUCTION SERVICE STARTED ===")
+    logger.info(f"Current time: {current_time.isoformat()} UTC / {local_current_time.isoformat()} Local")
     
     # Only process active ingredients
     ingredients = ActiveIngredient.query.filter_by(auto_deduction_enabled=True).all()
 
-    logger.info(f"Checking {len(ingredients)} active ingredients with auto-deduction enabled")
+    logger.info(f"Found {len(ingredients)} active ingredients with auto-deduction enabled:")
+    for ingredient in ingredients:
+        logger.info(f"  - {ingredient.name} (enabled at: {ingredient.auto_deduction_enabled_at})")
 
     ingredient_count = 0  # Number of ingredients that had deductions
     action_count = 0  # Total number of deduction actions performed
@@ -608,10 +620,21 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
     
     # Process active ingredients only
     for ingredient in ingredients:
+        logger.info(f"\n--- Processing ingredient: {ingredient.name} ---")
         ingredient_deducted = False
         
         # Check each schedule for this ingredient
         for schedule in ingredient.schedules:
+            logger.info(f"  Checking schedule {schedule.id} (type: {schedule.schedule_type})")
+            logger.info(f"  Schedule times: {schedule.formatted_times}")
+            
+            # Log last deduction info
+            if schedule.last_deduction:
+                local_last_deduction = utc_to_local(ensure_timezone_utc(schedule.last_deduction))
+                logger.info(f"  Last deduction: {schedule.last_deduction.isoformat()} UTC / {local_last_deduction.isoformat()} Local")
+            else:
+                logger.info(f"  Last deduction: None")
+            
             # First, calculate any missed deductions
             missed_deductions = calculate_missed_deductions(schedule, current_time)
 
@@ -628,17 +651,46 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                     # Deduct the scheduled amount from products
                     amount = schedule.units_per_dose
                     if amount > 0 and ingredient.total_inventory_count >= amount:
-                        # Find the best product to deduct from
-                        deducted = False
-                        for product in ingredient.products:
-                            if product.total_inventory_count >= amount:
-                                # Package-based deduction only
-                                deducted = False
-                                break
+                        # Use the ingredient's method to get the next package for deduction
+                        package_inventory = ingredient.get_next_package_for_deduction()
                         
-                        if not deducted:
+                        if package_inventory and package_inventory.current_units >= amount:
+                            # Deduct from the package inventory
+                            old_status = package_inventory.status
+                            package_inventory.current_units -= amount
+                            
+                            # Mark package as opened if it was sealed
+                            if package_inventory.status == 'sealed':
+                                package_inventory.open_package()
+                                # Log the status change
+                                package_inventory.log_status_change(
+                                    old_status=old_status,
+                                    new_status='opened',
+                                    reason='Automatic deduction opened package'
+                                )
+                            
+                            # Log the deduction
+                            package_inventory.log_deduction(
+                                units_deducted=amount,
+                                reason=f"Automatic deduction for {ingredient.name}"
+                            )
+                            
+                            # Mark package as consumed if fully used
+                            if package_inventory.current_units <= 0:
+                                package_inventory.status = 'consumed'
+                                package_inventory.consumed_at = deduction_time
+                            
+                            deducted = True
+                            action_count += 1
+                            ingredient_deducted = True
+                            
+                            logger.info(
+                                f"Deducted {amount} units from {ingredient.name} at {deduction_time.isoformat()}"
+                            )
+                        else:
+                            deducted = False
                             logger.warning(
-                                f"Failed to deduct {amount} units from {ingredient.name}: no suitable product found"
+                                f"Could not find suitable package inventory for deduction of {amount} units from {ingredient.name}"
                             )
                     else:
                         logger.warning(
@@ -650,8 +702,8 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
                     schedule.last_deduction = missed_deductions[-1]
                     logger.debug(f"Updated last_deduction to {schedule.last_deduction.isoformat()} UTC")
             else:
-                logger.debug(
-                    f"No missed deductions for {ingredient.name} on schedule {schedule.id}"
+                logger.info(
+                    f"  No missed deductions found for {ingredient.name} on schedule {schedule.id}"
                 )
         
         # Count the ingredient if any of its schedules had deductions
@@ -661,11 +713,11 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
     # Commit all changes
     if action_count > 0:
         db.session.commit()
-        logger.info(
-            f"Deduction service complete: {action_count} deductions across {ingredient_count} ingredients"
-        )
+        logger.info(f"=== DEDUCTION SERVICE COMPLETE ===")
+        logger.info(f"Result: {action_count} deductions across {ingredient_count} ingredients")
     else:
-        logger.info("No deductions needed at this time")
+        logger.info(f"=== DEDUCTION SERVICE COMPLETE ===")
+        logger.info("Result: No deductions needed at this time")
 
     # Update the last deduction check time in settings
     from models import Settings
@@ -673,5 +725,7 @@ def perform_deductions(current_time: datetime = None) -> Tuple[int, int]:
     settings = Settings.get_settings()
     settings.last_deduction_check = current_time
     db.session.commit()
+    
+    logger.info(f"Updated last_deduction_check to: {current_time.isoformat()}")
 
     return ingredient_count, action_count

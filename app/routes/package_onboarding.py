@@ -219,6 +219,11 @@ def onboard_package():
             db.session.add(inventory_item)
             db.session.flush()
             
+            # Log the onboarding
+            inventory_item.log_onboarding(
+                reason=f"Package onboarded: {package.product.display_name} {package.package_size}"
+            )
+            
         
         db.session.commit()
         

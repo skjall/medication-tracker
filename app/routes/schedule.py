@@ -125,7 +125,24 @@ def check_deductions():
     Manually trigger the deduction check for all medications.
     For testing/debugging purposes.
     """
-    flash(_("Deductions checked successfully"), "success")
+    from deduction_service import perform_deductions
+    
+    try:
+        ingredient_count, action_count = perform_deductions()
+        
+        if action_count > 0:
+            flash(
+                _("Deduction check complete: {} deductions across {} ingredients").format(
+                    action_count, ingredient_count
+                ),
+                "success"
+            )
+        else:
+            flash(_("Deduction check complete: No deductions needed"), "info")
+            
+    except Exception as e:
+        logger.error(f"Error during manual deduction check: {e}")
+        flash(_("Error during deduction check: {}").format(str(e)), "error")
 
     # Get the referer to return to the previous page
     referer = request.headers.get("Referer")

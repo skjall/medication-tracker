@@ -17,6 +17,7 @@ from .schedule import ScheduleType, MedicationSchedule
 from .settings import Settings
 from .scanner import MedicationPackage, ScannedItem, PackageInventory
 from .pdf_template import PDFTemplate
+from .inventory_log import InventoryLog
 
 # Re-export utils functions that were originally in models.py
 # These need to be migrated to appropriate modules but for now
@@ -44,5 +45,6 @@ __all__ = [
     "ScannedItem",
     "PackageInventory",
     "PDFTemplate",
+    "InventoryLog",
     "ensure_timezone_utc",
 ]

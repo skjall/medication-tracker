@@ -143,8 +143,8 @@ def show_product(id: int):
     substitutes = product.find_substitutes() if product.can_substitute else []
 
     # Get package inventory for this product
-    from models import PackageInventory, ScannedItem, ProductPackage
-    from sqlalchemy import or_
+    from models import PackageInventory, ScannedItem, ProductPackage, InventoryLog
+    from sqlalchemy import or_, desc
     
     # Get all packages for this product
     packages = ProductPackage.query.filter_by(product_id=product.id).all()
@@ -194,11 +194,27 @@ def show_product(id: int):
                 current_app.logger.info(f"Inventory: id={inv.id}, current={inv.current_units}, original={inv.original_units}, status={inv.status}")
                 current_app.logger.info(f"  ScannedItem: id={item.id}, gtin={item.gtin}, nat_num={item.national_number}, nat_type={item.national_number_type}")
 
+    # Get inventory change logs for this product's packages
+    inventory_logs = []
+    if package_inventory:
+        # Get package inventory IDs for this product
+        package_inv_ids = [inv[0].id for inv in package_inventory]
+        
+        # Query inventory logs for these packages
+        inventory_logs = (
+            InventoryLog.query
+            .filter(InventoryLog.package_inventory_id.in_(package_inv_ids))
+            .order_by(desc(InventoryLog.changed_at))
+            .limit(50)  # Show last 50 changes
+            .all()
+        )
+
     return render_template(
         "ingredients/show_product.html",
         product=product,
         substitutes=substitutes,
         package_inventory=package_inventory,
+        inventory_logs=inventory_logs,
         local_time=to_local_timezone(datetime.now(timezone.utc)),
     )
 

@@ -239,41 +239,19 @@
     </div>
     <div class="card-body">
         <div class="row">
-            <div class="col-md-4 mb-3">
+            <div class="col-md-6 mb-3">
                 <a href="{{ url_for('schedules.check_deductions') }}" class="btn btn-outline-primary w-100">
                     <i class="fas fa-rotate me-1"></i>{{ _('Run Deduction Check Now') }}
                 </a>
             </div>
 
-            <div class="col-md-4 mb-3">
-                <a href="{{ url_for('system.restart_scheduler')}}" class="btn btn-outline-primary w-100">
-                    <i class="fas fa-power-off me-1"></i>{{ _('Restart Scheduler') }}
-                </a>
-            </div>
-
-            <div class="col-md-4 mb-3">
+            <div class="col-md-6 mb-3">
                 <button class="btn btn-outline-primary w-100" onclick="refreshPage()" type="button">
                     <i class="fas fa-rotate-right me-1"></i>{{ _('Refresh Status') }}
                 </button>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <a href="{{ url_for('system.detect_pipe_times') }}" class="btn btn-outline-primary w-100">
-                    <i class="fas fa-search me-1"></i>{{ _('Detect Pipe-Separated Times') }}
-                </a>
-                <small class="text-muted">{{ _('Scan for corrupted medication schedule times') }}</small>
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <a href="{{ url_for('system.fix_pipe_times') }}" class="btn btn-outline-danger w-100"
-                   onclick="return confirm('{{ _('This will permanently fix corrupted time data in the database. Continue?') }}')")>
-                    <i class="fas fa-wrench me-1"></i>{{ _('Fix Pipe-Separated Times') }}
-                </a>
-                <small class="text-muted">{{ _('Automatically repair corrupted medication schedule times') }}</small>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}

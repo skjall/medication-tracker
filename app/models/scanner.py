@@ -204,9 +204,89 @@ class PackageInventory(db.Model):
     
     def consume_package(self):
         """Mark package as fully consumed."""
+        old_status = self.status
+        old_units = self.current_units
+        
         self.status = 'consumed'
         self.consumed_at = utcnow()
         self.current_units = 0
+        
+        # Log the consumption
+        self._log_change(
+            change_type='consumed',
+            units_before=old_units,
+            units_after=0,
+            status_before=old_status,
+            status_after='consumed',
+            reason='Package fully consumed'
+        )
+    
+    def log_onboarding(self, reason: str = "Package onboarded"):
+        """Log when a package is first added to inventory."""
+        self._log_change(
+            change_type='onboarded',
+            units_before=0,
+            units_after=self.original_units,
+            status_before=None,
+            status_after=self.status,
+            reason=reason
+        )
+    
+    def log_deduction(self, units_deducted: float, reason: str = "Automatic deduction"):
+        """Log when units are deducted from inventory."""
+        units_before = self.current_units + units_deducted
+        
+        self._log_change(
+            change_type='deducted',
+            units_before=units_before,
+            units_after=self.current_units,
+            status_before=self.status,
+            status_after=self.status,
+            reason=reason
+        )
+    
+    def log_status_change(self, old_status: str, new_status: str, reason: str = "Status updated"):
+        """Log when package status changes."""
+        self._log_change(
+            change_type='opened' if new_status == 'opened' else 'status_change',
+            units_before=self.current_units,
+            units_after=self.current_units,
+            status_before=old_status,
+            status_after=new_status,
+            reason=reason
+        )
+    
+    def log_manual_adjustment(self, old_units: float, new_units: float, reason: str = "Manual adjustment"):
+        """Log manual adjustments to inventory."""
+        self._log_change(
+            change_type='manual_adjustment',
+            units_before=old_units,
+            units_after=new_units,
+            status_before=self.status,
+            status_after=self.status,
+            reason=reason
+        )
+    
+    def _log_change(self, change_type: str, units_before: float, units_after: float, 
+                   status_before: str, status_after: str, reason: str, notes: str = None):
+        """Internal method to create inventory log entries."""
+        # Import here to avoid circular imports
+        from .inventory_log import InventoryLog
+        from .base import db
+        
+        log_entry = InventoryLog(
+            package_inventory_id=self.id,
+            change_type=change_type,
+            units_before=units_before,
+            units_after=units_after,
+            units_changed=units_after - units_before,
+            status_before=status_before,
+            status_after=status_after,
+            reason=reason,
+            notes=notes
+        )
+        db.session.add(log_entry)
+        # Note: We don't commit here to allow batching with other operations
     
     def __repr__(self):
         return f"<PackageInventory {self.status} {self.current_units}/{self.original_units}>"

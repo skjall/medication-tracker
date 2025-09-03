@@ -102,11 +102,21 @@ class BaseTestCase(unittest.TestCase):
             Physician,
             ActiveIngredient,
             MedicationProduct,
+            PackageInventory,
+            ScannedItem,
+            ProductPackage,
+            MedicationPackage,
+            InventoryLog,
         )
 
         # Clean up any existing data to prevent test interference - using db session directly
         try:
             self.db.session.execute(self.db.delete(MedicationSchedule))
+            self.db.session.execute(self.db.delete(InventoryLog))
+            self.db.session.execute(self.db.delete(PackageInventory))
+            self.db.session.execute(self.db.delete(ScannedItem))
+            self.db.session.execute(self.db.delete(MedicationPackage))
+            self.db.session.execute(self.db.delete(ProductPackage))
             self.db.session.execute(self.db.delete(OrderItem))
             self.db.session.execute(self.db.delete(Order))
             self.db.session.execute(self.db.delete(PhysicianVisit))
