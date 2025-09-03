@@ -134,59 +134,6 @@ class TestPhysicianVisitUtils(BaseTestCase):
         result = self.calculate_days_between_visits()
         self.assertEqual(result, 90)
 
-    @unittest.skip("Skipping - requires refactoring for new system")
-    def test_auto_deduct_inventory(self):
-        """Test automatic inventory deduction."""
-        # Create medication, inventory and schedule for this test only
-        medication = self.Medication(
-            name="Test Med", dosage=2.0, frequency=2.0, auto_deduction_enabled=True
-        )
-        self.db.session.add(medication)
-        self.db.session.flush()  # Get ID without committing
-
-        inventory = self.Inventory(medication=medication, current_count=100)
-        self.db.session.add(inventory)
-
-        # Make self.now timezone-aware first with local timezone
-        local_timezone = tzlocal.get_localzone()
-        self.now = self.now.replace(tzinfo=local_timezone)
-
-        # Convert self.now to UTC
-        self.now = self.now.astimezone(pytz.UTC)
-
-        # Then calculate last_deduction using the UTC timezone-aware self.now
-        last_deduction = self.now - timedelta(days=1) - timedelta(milliseconds=50)
-
-        logger.debug(f"Last deduction: {last_deduction}")
-        logger.debug(f"Current time: {self.now}")
-        logger.debug(f"Time delta: {self.now - last_deduction}")  # Now this will work
-
-        schedule = self.MedicationSchedule(
-            medication=medication,
-            schedule_type=self.ScheduleType.DAILY,
-            times_of_day='["08:00", "18:00"]',
-            units_per_dose=2.0,
-            last_deduction=last_deduction,
-        )
-        self.db.session.add(schedule)
-        self.db.session.commit()
-
-        # Mock is_due_now to return True
-        with patch("app.models.MedicationSchedule.is_due_now", return_value=True):
-            # Run the deduction
-            deduction_count = self.auto_deduct_inventory()
-
-            # Should have processed one medication
-            self.assertEqual(deduction_count, 1)
-
-            # Verify inventory was deducted
-            self.db.session.refresh(inventory)
-            self.assertEqual(inventory.current_count, 96.0)  # 100 - (2 * 2.0)
-
-            # Verify last deduction was updated
-            self.db.session.refresh(schedule)
-            self.assertIsNotNone(schedule.last_deduction)
-
     def test_disabled_auto_deduction(self):
         """Test that auto-deduction respects the enabled flag."""
         # Create medication with auto-deduction disabled for this test only

@@ -211,40 +211,6 @@ class TestTimezoneHandling(BaseTestCase):
                 assert formatted_datetime == expected_datetime, \
                     f"format_datetime mismatch for {tz_name}: got {formatted_datetime}, expected {expected_datetime}"
 
-    @unittest.skip("Skipped: Medication model removed")
-    def test_medication_timestamps(self):
-        """Test that medication timestamps are handled correctly."""
-        test_timezones = ['UTC', 'Europe/Berlin', 'America/New_York']
-
-        for tz_name in test_timezones:
-            with patch('models.Settings.get_settings') as mock_settings:
-                mock_settings.return_value.timezone_name = tz_name
-
-                # Create medication
-                medication = Medication(
-                    name=f"Test Med {tz_name}",
-                    physician_id=self.sample_physician.id,
-                    dosage=1.0,
-                    frequency=1.0,
-                    is_otc=False
-                )
-                self.db.session.add(medication)
-                self.db.session.commit()
-
-                # Test created_at and updated_at formatting
-                created_formatted = format_datetime(medication.created_at)
-                updated_formatted = format_datetime(medication.updated_at)
-
-                # Both should be valid date strings
-                assert len(created_formatted.split('.')) == 3, \
-                    f"Invalid created_at format for {tz_name}: {created_formatted}"
-                assert len(updated_formatted.split('.')) == 3, \
-                    f"Invalid updated_at format for {tz_name}: {updated_formatted}"
-
-                # Clean up
-                self.db.session.delete(medication)
-                self.db.session.commit()
-
     def test_edge_cases(self):
         """Test edge cases like midnight, noon, and timezone boundaries."""
         edge_cases = [
