@@ -90,7 +90,7 @@
         </div>
         
         <div class="col-md-6">
-            {% if inventory %}
+            {% if package_inventory %}
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">{{ _('Inventory Status') }}</h5>
@@ -99,48 +99,48 @@
                     <dl class="row">
                         <dt class="col-sm-4">{{ _('Package Status') }}:</dt>
                         <dd class="col-sm-8">
-                            {% if inventory.status == 'sealed' %}
+                            {% if package_inventory.status == 'sealed' %}
                                 <span class="badge bg-success">{{ _('Sealed') }}</span>
-                            {% elif inventory.status == 'opened' %}
+                            {% elif package_inventory.status == 'opened' %}
                                 <span class="badge bg-info">{{ _('Open') }}</span>
-                            {% elif inventory.status == 'consumed' %}
+                            {% elif package_inventory.status == 'consumed' %}
                                 <span class="badge bg-secondary">{{ _('Consumed') }}</span>
-                            {% elif inventory.status == 'expired' %}
+                            {% elif package_inventory.status == 'expired' %}
                                 <span class="badge bg-danger">{{ _('Expired') }}</span>
                             {% endif %}
                         </dd>
                         
                         <dt class="col-sm-4">{{ _('Units') }}:</dt>
                         <dd class="col-sm-8">
-                            {{ inventory.current_units }} / {{ inventory.original_units }}
+                            {{ package_inventory.current_units }} / {{ package_inventory.original_units }}
                             <div class="progress mt-2">
                                 <div class="progress-bar" role="progressbar" 
-                                     style="width: {{ inventory.percentage_remaining }}%"
-                                     aria-valuenow="{{ inventory.percentage_remaining }}" 
+                                     style="width: {{ package_inventory.percentage_remaining }}%"
+                                     aria-valuenow="{{ package_inventory.percentage_remaining }}" 
                                      aria-valuemin="0" aria-valuemax="100">
-                                    {{ inventory.percentage_remaining|round|int }}%
+                                    {{ package_inventory.percentage_remaining|round|int }}%
                                 </div>
                             </div>
                         </dd>
                         
-                        {% if inventory.opened_at %}
+                        {% if package_inventory.opened_at %}
                         <dt class="col-sm-4">{{ _('Opened') }}:</dt>
-                        <dd class="col-sm-8">{{ inventory.opened_at.strftime('%d.%m.%Y %H:%M') }}</dd>
+                        <dd class="col-sm-8">{{ package_inventory.opened_at.strftime('%d.%m.%Y %H:%M') }}</dd>
                         {% endif %}
                         
-                        {% if inventory.consumed_at %}
+                        {% if package_inventory.consumed_at %}
                         <dt class="col-sm-4">{{ _('Consumed') }}:</dt>
-                        <dd class="col-sm-8">{{ inventory.consumed_at.strftime('%d.%m.%Y %H:%M') }}</dd>
+                        <dd class="col-sm-8">{{ package_inventory.consumed_at.strftime('%d.%m.%Y %H:%M') }}</dd>
                         {% endif %}
                     </dl>
                     
-                    {% if inventory.status in ['sealed', 'open'] and scanned_item.status == 'active' %}
+                    {% if package_inventory.status in ['sealed', 'open'] and scanned_item.status == 'active' %}
                     <hr>
                     <h6>{{ _('Consume Units') }}</h6>
                     <form method="POST" action="{{ url_for('scanner.consume_units', id=scanned_item.id) }}">
                         <div class="input-group">
                             <input type="number" name="units" class="form-control" 
-                                   min="1" max="{{ inventory.current_units }}" 
+                                   min="1" max="{{ package_inventory.current_units }}" 
                                    value="1" required>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-minus-circle"></i> {{ _('Consume') }}

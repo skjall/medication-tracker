@@ -47,7 +47,9 @@ def scan():
     # Process scanned data
     data = request.json
     barcode_data = data.get("barcode")
-    parsed_data = data.get("parsed_data")  # Pre-parsed data from frontend (for merged scans)
+    parsed_data = data.get(
+        "parsed_data"
+    )  # Pre-parsed data from frontend (for merged scans)
 
     if not barcode_data and not parsed_data:
         return jsonify({"error": _("No barcode data provided")}), 400
@@ -63,7 +65,9 @@ def scan():
             barcode_data = str(barcode_data).lstrip("-")
 
         # Try to identify standalone barcode format (PZN, CIP, CNK, etc.)
-        barcode_info = identify_barcode_format(barcode_data) if barcode_data else None
+        barcode_info = (
+            identify_barcode_format(barcode_data) if barcode_data else None
+        )
 
         if barcode_info:
             # This is a recognized standalone pharmaceutical barcode
@@ -413,7 +417,6 @@ def scan():
         )
         db.session.add(inventory_item)
 
-
         # Commit the database changes
         db.session.commit()
 
@@ -582,21 +585,25 @@ def package_details(id):
     scanned_item = ScannedItem.query.get_or_404(id)
 
     # Get inventory info if exists
-    inventory = PackageInventory.query.filter_by(scanned_item_id=id).first()
+    package_inventory = PackageInventory.query.filter_by(
+        scanned_item_id=id
+    ).first()
 
     return render_template(
         "scanner/package_details.html",
         scanned_item=scanned_item,
-        inventory=inventory,
+        package_inventory=package_inventory,
     )
 
 
 @bp.route("/package/<int:id>/consume", methods=["POST"])
 def consume_units(id):
     """Consume units from a package."""
-    inventory = PackageInventory.query.filter_by(scanned_item_id=id).first()
+    package_inventory = PackageInventory.query.filter_by(
+        scanned_item_id=id
+    ).first()
 
-    if not inventory:
+    if not package_inventory:
         flash(_("Package not in inventory"), "error")
         return redirect(url_for("scanner.package_details", id=id))
 
@@ -605,21 +612,21 @@ def consume_units(id):
         flash(_("Invalid number of units"), "error")
         return redirect(url_for("scanner.package_details", id=id))
 
-    if units > inventory.current_units:
+    if units > package_inventory.current_units:
         flash(_("Not enough units in package"), "error")
         return redirect(url_for("scanner.package_details", id=id))
 
     # Update inventory
-    inventory.current_units -= units
+    package_inventory.current_units -= units
 
     # Open package if sealed
-    if inventory.status == "sealed":
-        inventory.open_package()
+    if package_inventory.status == "sealed":
+        package_inventory.open_package()
 
     # Mark as consumed if empty
-    if inventory.current_units == 0:
-        inventory.consume_package()
-        inventory.scanned_item.status = "consumed"
+    if package_inventory.current_units == 0:
+        package_inventory.consume_package()
+        package_inventory.scanned_item.status = "consumed"
 
     db.session.commit()
 
@@ -631,11 +638,13 @@ def consume_units(id):
 def mark_expired(id):
     """Mark a package as expired."""
     scanned_item = ScannedItem.query.get_or_404(id)
-    inventory = PackageInventory.query.filter_by(scanned_item_id=id).first()
+    package_inventory = PackageInventory.query.filter_by(
+        scanned_item_id=id
+    ).first()
 
     scanned_item.status = "expired"
-    if inventory:
-        inventory.status = "expired"
+    if package_inventory:
+        package_inventory.status = "expired"
 
     db.session.commit()
 
@@ -675,10 +684,10 @@ def parse():
     data = request.get_json()
     code = data.get("code", "")
     scan_source = data.get("scan_source", "datamatrix")
-    
+
     # Use the existing parser from scanner_parser.py
     parsed = parse_datamatrix(code)
-    
+
     # Format dates for frontend
     if parsed.get("expiry"):
         try:
@@ -687,8 +696,8 @@ def parse():
                 parsed["expiry_formatted"] = expiry_date.strftime("%Y-%m-%d")
         except:
             pass
-    
+
     # Add scan source for context
     parsed["scan_source"] = scan_source
-    
+
     return jsonify(parsed)

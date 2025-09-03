@@ -46,7 +46,7 @@
             <h5 class="mb-0">{{ _('Current Inventory') }}</h5>
         </div>
         <div class="card-body">
-            {% if inventory_packages %}
+            {% if package_inventories %}
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
@@ -61,7 +61,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for item in inventory_packages %}
+                        {% for item in package_inventories %}
                         <tr class="{% if item.scanned_item.is_expired %}table-danger{% elif item.scanned_item.days_until_expiry and item.scanned_item.days_until_expiry < 30 %}table-warning{% endif %}">
                             <td>
                                 {% if item.product %}
