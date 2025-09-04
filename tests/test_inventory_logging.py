@@ -77,7 +77,7 @@ class TestInventoryLogging(BaseTestCase):
         self.db.session.commit()
         
         # Check log was created
-        log = InventoryLog.query.filter_by(package_inventory_id=self.inventory.id).first()
+        log = self.db.session.query(InventoryLog).filter_by(package_inventory_id=self.inventory.id).first()
         self.assertIsNotNone(log)
         self.assertEqual(log.change_type, 'onboarded')
         self.assertEqual(log.units_before, 0)
@@ -96,7 +96,7 @@ class TestInventoryLogging(BaseTestCase):
         self.db.session.commit()
         
         # Check log was created
-        log = InventoryLog.query.filter_by(package_inventory_id=self.inventory.id).first()
+        log = self.db.session.query(InventoryLog).filter_by(package_inventory_id=self.inventory.id).first()
         self.assertIsNotNone(log)
         self.assertEqual(log.change_type, 'deducted')
         self.assertEqual(log.units_before, 100)
@@ -112,7 +112,7 @@ class TestInventoryLogging(BaseTestCase):
         self.inventory.log_deduction(5, "Test")
         self.db.session.commit()
         
-        log = InventoryLog.query.filter_by(package_inventory_id=self.inventory.id).first()
+        log = self.db.session.query(InventoryLog).filter_by(package_inventory_id=self.inventory.id).first()
         
         # Test display properties
         self.assertEqual(log.display_change_type, "Deducted")
@@ -136,7 +136,7 @@ class TestInventoryLogging(BaseTestCase):
         
         # Check logs are in correct order (newest first)
         logs = (
-            InventoryLog.query
+            self.db.session.query(InventoryLog)
             .filter_by(package_inventory_id=self.inventory.id)
             .order_by(InventoryLog.changed_at.desc())
             .all()

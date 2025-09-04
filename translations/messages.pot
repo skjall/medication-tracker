@@ -27,68 +27,68 @@ msgstr ""
 msgid "No upcoming physician visits scheduled."
 msgstr ""
 
-#: /app/routes/ingredients.py:223 /app/routes/ingredients.py:386
-#: /app/routes/ingredients.py:428
+#: /app/routes/ingredients.py:257 /app/routes/ingredients.py:420
+#: /app/routes/ingredients.py:462
 msgid "Invalid strength value. Please enter a valid number (e.g., 500 or 1.25)"
 msgstr ""
 
-#: /app/routes/ingredients.py:243
+#: /app/routes/ingredients.py:277
 msgid "Active ingredient updated successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:275
+#: /app/routes/ingredients.py:309
 msgid ""
 "Cannot delete active ingredient with existing products. Please delete all"
 " products first."
 msgstr ""
 
-#: /app/routes/ingredients.py:284
+#: /app/routes/ingredients.py:318
 msgid "Active ingredient deleted successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:311
+#: /app/routes/ingredients.py:345
 msgid "Product updated successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:350
+#: /app/routes/ingredients.py:384
 #, python-format
 msgid "Default product updated to %(name)s"
 msgstr ""
 
-#: /app/routes/ingredients.py:360
+#: /app/routes/ingredients.py:394
 msgid "Product deleted successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:444
+#: /app/routes/ingredients.py:478
 #: /app/templates/package_onboarding/onboard.html:846
 msgid "Please select or enter an active ingredient"
 msgstr ""
 
-#: /app/routes/ingredients.py:473
+#: /app/routes/ingredients.py:507
 msgid "Product created successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:578
+#: /app/routes/ingredients.py:612
 msgid "Package added successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:610
+#: /app/routes/ingredients.py:644
 msgid "Package updated successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:631
+#: /app/routes/ingredients.py:665
 msgid "Package deleted successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:646
+#: /app/routes/ingredients.py:680
 msgid "Product does not belong to this ingredient"
 msgstr ""
 
-#: /app/routes/ingredients.py:653
+#: /app/routes/ingredients.py:687
 msgid "Default product set successfully"
 msgstr ""
 
-#: /app/routes/ingredients.py:667
+#: /app/routes/ingredients.py:701
 msgid "Default product cleared"
 msgstr ""
 
@@ -240,7 +240,7 @@ msgstr ""
 msgid "Package configuration updated"
 msgstr ""
 
-#: /app/routes/package_onboarding.py:230
+#: /app/routes/package_onboarding.py:235
 msgid "Package successfully onboarded!"
 msgstr ""
 
@@ -641,7 +641,7 @@ msgstr ""
 msgid "Package marked as expired"
 msgstr ""
 
-#: /app/routes/schedule.py:62 /app/routes/schedule.py:170
+#: /app/routes/schedule.py:62 /app/routes/schedule.py:187
 msgid "Please add at least one time"
 msgstr ""
 
@@ -657,15 +657,25 @@ msgstr ""
 msgid "Schedule deleted successfully"
 msgstr ""
 
-#: /app/routes/schedule.py:128
-msgid "Deductions checked successfully"
+#: /app/routes/schedule.py:135
+#, python-brace-format
+msgid "Deduction check complete: {} deductions across {} ingredients"
 msgstr ""
 
-#: /app/routes/schedule.py:203
+#: /app/routes/schedule.py:141
+msgid "Deduction check complete: No deductions needed"
+msgstr ""
+
+#: /app/routes/schedule.py:145
+#, python-brace-format
+msgid "Error during deduction check: {}"
+msgstr ""
+
+#: /app/routes/schedule.py:220
 msgid "Schedule added successfully"
 msgstr ""
 
-#: /app/routes/schedule.py:240
+#: /app/routes/schedule.py:257
 #, python-brace-format
 msgid "Automatic deduction {} for {}"
 msgstr ""
@@ -706,107 +716,114 @@ msgstr ""
 msgid "Invalid file type. Please upload a database file ({})"
 msgstr ""
 
-#: /app/routes/settings.py:239
-msgid "Invalid database file: missing required tables"
+#: /app/routes/settings.py:262
+msgid ""
+"This backup is from the old medication system and cannot be restored. "
+"Please use a backup from the current ingredients/products system."
 msgstr ""
 
-#: /app/routes/settings.py:245
+#: /app/routes/settings.py:267
+#, python-brace-format
+msgid "Invalid database file: missing required tables: {}"
+msgstr ""
+
+#: /app/routes/settings.py:276
 #, python-brace-format
 msgid "Invalid database file: {}"
 msgstr ""
 
-#: /app/routes/settings.py:320
+#: /app/routes/settings.py:386
 #, python-brace-format
 msgid "Database restored but migration failed: {}"
 msgstr ""
 
-#: /app/routes/settings.py:328
+#: /app/routes/settings.py:394
 msgid "Database successfully restored and migrations applied!"
 msgstr ""
 
-#: /app/routes/settings.py:337
+#: /app/routes/settings.py:416
 #, python-brace-format
 msgid "Error restoring database: {}"
 msgstr ""
 
-#: /app/routes/settings.py:356
+#: /app/routes/settings.py:435
 msgid "Database optimized successfully"
 msgstr ""
 
-#: /app/routes/settings.py:376
+#: /app/routes/settings.py:455
 msgid "Please keep at least 30 days of logs"
 msgstr ""
 
-#: /app/routes/settings.py:382
+#: /app/routes/settings.py:461
 #, python-brace-format
 msgid "Successfully removed {} old inventory logs"
 msgstr ""
 
-#: /app/routes/settings.py:396
+#: /app/routes/settings.py:475
 msgid "Verification text doesn't match. Data was not reset."
 msgstr ""
 
-#: /app/routes/settings.py:408
+#: /app/routes/settings.py:487
 #, python-brace-format
 msgid "Backup created at {}"
 msgstr ""
 
-#: /app/routes/settings.py:417
+#: /app/routes/settings.py:496
 msgid ""
 "All data has been reset. The application has been restored to initial "
 "state."
 msgstr ""
 
-#: /app/routes/settings.py:423
+#: /app/routes/settings.py:502
 #, python-brace-format
 msgid "Error resetting data: {}"
 msgstr ""
 
-#: /app/routes/settings.py:445
+#: /app/routes/settings.py:524
 #, python-brace-format
 msgid "Invalid timezone: {}"
 msgstr ""
 
-#: /app/routes/settings.py:453
+#: /app/routes/settings.py:532
 #, python-brace-format
 msgid "Application timezone updated to {}"
 msgstr ""
 
-#: /app/routes/settings.py:594
+#: /app/routes/settings.py:673
 msgid "Unable to check for updates"
 msgstr ""
 
-#: /app/routes/settings.py:604
+#: /app/routes/settings.py:683
 msgid "Connection timeout"
 msgstr ""
 
-#: /app/routes/settings.py:634
+#: /app/routes/settings.py:713
 #, python-brace-format
 msgid "Verification text doesn't match. Expected '{}'. Data was not reset."
 msgstr ""
 
-#: /app/routes/settings.py:645
+#: /app/routes/settings.py:724
 msgid "All order data has been reset"
 msgstr ""
 
-#: /app/routes/settings.py:651
+#: /app/routes/settings.py:730
 msgid "All visit data has been reset"
 msgstr ""
 
-#: /app/routes/settings.py:657
+#: /app/routes/settings.py:736
 msgid "All schedule data has been reset"
 msgstr ""
 
-#: /app/routes/settings.py:663
+#: /app/routes/settings.py:742
 msgid "All physician data has been reset"
 msgstr ""
 
-#: /app/routes/settings.py:666
+#: /app/routes/settings.py:745
 #, python-brace-format
 msgid "Unknown data type: {}"
 msgstr ""
 
-#: /app/routes/settings.py:671
+#: /app/routes/settings.py:750
 #, python-brace-format
 msgid "Error resetting {}: {}"
 msgstr ""
@@ -1082,6 +1099,7 @@ msgstr ""
 #: /app/templates/ingredients/show.html:94
 #: /app/templates/ingredients/show.html:194
 #: /app/templates/ingredients/show_product.html:217
+#: /app/templates/ingredients/show_product.html:287
 #: /app/templates/orders/index.html:23 /app/templates/orders/printable.html:112
 #: /app/templates/orders/show.html:64 /app/templates/orders/show.html:163
 #: /app/templates/pdf_mapper/index.html:44
@@ -1117,7 +1135,7 @@ msgstr ""
 #: /app/templates/ingredients/show.html:115
 #: /app/templates/ingredients/show_product.html:125
 #: /app/templates/ingredients/show_product.html:263
-#: /app/templates/ingredients/show_product.html:297
+#: /app/templates/ingredients/show_product.html:377
 #: /app/templates/orders/show.html:193 /app/templates/orders/show.html:209
 #: /app/templates/orders/show.html:215 /app/templates/orders/show.html:378
 #: /app/templates/physicians/show.html:165
@@ -1727,7 +1745,7 @@ msgid "Days Remaining"
 msgstr ""
 
 #: /app/templates/ingredients/show.html:255
-#: /app/templates/ingredients/show_product.html:278
+#: /app/templates/ingredients/show_product.html:358
 msgid "Substitutable Products"
 msgstr ""
 
@@ -1808,6 +1826,7 @@ msgid "Packages in Stock"
 msgstr ""
 
 #: /app/templates/ingredients/show_product.html:213
+#: /app/templates/ingredients/show_product.html:289
 #: /app/templates/scanner/index.html:55 /app/templates/scanner/index.html:142
 #: /app/templates/scanner/package_details.html:48
 msgid "Serial"
@@ -1830,6 +1849,7 @@ msgid "Expiry"
 msgstr ""
 
 #: /app/templates/ingredients/show_product.html:216
+#: /app/templates/ingredients/show_product.html:286
 #: /app/templates/scanner/index.html:58
 #: /app/templates/scanner/package_details.html:113
 msgid "Units"
@@ -1863,6 +1883,51 @@ msgstr ""
 
 #: /app/templates/ingredients/show_product.html:258
 msgid "This inventory needs migration to package-based tracking"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:275
+msgid "Recent Inventory Changes"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:284
+msgid "Date"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:285
+msgid "Change Type"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:288
+msgid "Reason"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:300
+msgid "Onboarded"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:302
+msgid "Deducted"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:304
+#: /app/templates/scanner/package_details.html:127
+msgid "Opened"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:306
+#: /app/templates/scanner/index.html:106 /app/templates/scanner/index.html:179
+#: /app/templates/scanner/package_details.html:80
+#: /app/templates/scanner/package_details.html:107
+#: /app/templates/scanner/package_details.html:132
+msgid "Consumed"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:308
+msgid "Manual"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:346
+msgid "No inventory changes recorded yet."
 msgstr ""
 
 #: /app/templates/ingredients/index.html:3
@@ -3585,13 +3650,6 @@ msgstr ""
 msgid "Expired"
 msgstr ""
 
-#: /app/templates/scanner/index.html:106 /app/templates/scanner/index.html:179
-#: /app/templates/scanner/package_details.html:80
-#: /app/templates/scanner/package_details.html:107
-#: /app/templates/scanner/package_details.html:132
-msgid "Consumed"
-msgstr ""
-
 #: /app/templates/scanner/index.html:123
 msgid "No packages in inventory"
 msgstr ""
@@ -3641,10 +3699,6 @@ msgstr ""
 
 #: /app/templates/scanner/package_details.html:100
 msgid "Package Status"
-msgstr ""
-
-#: /app/templates/scanner/package_details.html:127
-msgid "Opened"
 msgstr ""
 
 #: /app/templates/scanner/package_details.html:139
@@ -4496,7 +4550,7 @@ msgid "Run Migrations Now"
 msgstr ""
 
 #: /app/templates/system/migrations.html:109
-#: /app/templates/system/status.html:256
+#: /app/templates/system/status.html:250
 msgid "Refresh Status"
 msgstr ""
 
@@ -4648,30 +4702,6 @@ msgstr ""
 
 #: /app/templates/system/status.html:230
 msgid "If the scheduler is not running, automatic deduction will not occur."
-msgstr ""
-
-#: /app/templates/system/status.html:250
-msgid "Restart Scheduler"
-msgstr ""
-
-#: /app/templates/system/status.html:264
-msgid "Detect Pipe-Separated Times"
-msgstr ""
-
-#: /app/templates/system/status.html:266
-msgid "Scan for corrupted medication schedule times"
-msgstr ""
-
-#: /app/templates/system/status.html:271
-msgid "This will permanently fix corrupted time data in the database. Continue?"
-msgstr ""
-
-#: /app/templates/system/status.html:272
-msgid "Fix Pipe-Separated Times"
-msgstr ""
-
-#: /app/templates/system/status.html:274
-msgid "Automatically repair corrupted medication schedule times"
 msgstr ""
 
 #: /app/templates/visits/edit.html:3 /app/templates/visits/edit.html:8

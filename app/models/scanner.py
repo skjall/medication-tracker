@@ -272,7 +272,7 @@ class PackageInventory(db.Model):
         """Internal method to create inventory log entries."""
         # Import here to avoid circular imports
         from .inventory_log import InventoryLog
-        from .base import db
+        from sqlalchemy.orm import object_session
         
         log_entry = InventoryLog(
             package_inventory_id=self.id,
@@ -285,7 +285,14 @@ class PackageInventory(db.Model):
             reason=reason,
             notes=notes
         )
-        db.session.add(log_entry)
+        
+        # Use the same session as this object
+        session = object_session(self)
+        if session is not None:
+            session.add(log_entry)
+        else:
+            # Fallback to the global db session
+            db.session.add(log_entry)
         # Note: We don't commit here to allow batching with other operations
     
     def __repr__(self):

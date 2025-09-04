@@ -3,12 +3,15 @@ Inventory logging model for tracking all inventory changes.
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import DateTime, Integer, String, Text, ForeignKey, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import db, utcnow
+
+if TYPE_CHECKING:
+    from .scanner import PackageInventory
 
 
 class InventoryLog(db.Model):
