@@ -230,6 +230,11 @@ def scan():
                             "status": active_inventory.status,
                             "units_remaining": f"{active_inventory.current_units}/{active_inventory.original_units}",
                         },
+                        "actions": {
+                            "view_url": url_for('inventory.show_package', id=active_inventory.id),
+                            "edit_url": url_for('inventory.edit_package', id=active_inventory.id),
+                            "package_id": active_inventory.id
+                        }
                     }
                 ),
                 409,
