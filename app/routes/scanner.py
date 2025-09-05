@@ -86,6 +86,16 @@ def scan():
         else:
             # Parse as DataMatrix or other GS1 format
             parsed = parse_datamatrix(barcode_data)
+            
+        # If we have GTIN and batch but no serial, generate a fake serial (treat as national code)
+        if parsed and parsed.get("gtin") and parsed.get("batch") and not parsed.get("serial"):
+            import time
+            fake_serial = f"BATCH_{parsed['batch']}_{int(time.time())}"
+            parsed["serial"] = fake_serial
+            app.logger.info(
+                f"Generated fake serial for DataMatrix with batch: {fake_serial}"
+            )
+            
         if parsed and parsed.get("serial"):
             app.logger.info(
                 f"Identified as DataMatrix/GS1 code with GTIN: {parsed.get('gtin', 'N/A')}, Serial: {parsed.get('serial', 'N/A')[:20]}..."

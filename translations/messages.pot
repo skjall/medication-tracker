@@ -142,7 +142,7 @@ msgstr ""
 msgid "Item does not belong to this order"
 msgstr ""
 
-#: /app/routes/orders.py:577 /app/routes/scanner.py:211
+#: /app/routes/orders.py:577 /app/routes/scanner.py:221
 #: /app/templates/ingredients/show_product.html:56
 #: /app/templates/orders/printable.html:149 /app/templates/orders/show.html:179
 #: /app/templates/scanner/index.html:72 /app/templates/scanner/index.html:155
@@ -509,135 +509,135 @@ msgstr ""
 msgid "No barcode data provided"
 msgstr ""
 
-#: /app/routes/scanner.py:175
+#: /app/routes/scanner.py:185
 msgid "Unsupported barcode format"
 msgstr ""
 
-#: /app/routes/scanner.py:177
+#: /app/routes/scanner.py:187
 msgid ""
 "This barcode type is not supported. Only pharmaceutical codes, "
 "DataMatrix, and standard product codes (EAN-13, EAN-8, UPC-A, ASIN) are "
 "supported."
 msgstr ""
 
-#: /app/routes/scanner.py:191
+#: /app/routes/scanner.py:201
 msgid "Invalid barcode: missing serial number"
 msgstr ""
 
-#: /app/routes/scanner.py:216
+#: /app/routes/scanner.py:226
 msgid "Package already in inventory"
 msgstr ""
 
-#: /app/routes/scanner.py:295
+#: /app/routes/scanner.py:305
 msgid "Package configuration updated with scanned data"
 msgstr ""
 
-#: /app/routes/scanner.py:372
+#: /app/routes/scanner.py:382
 #, python-format
 msgid "Order fulfilled with %(overage)d extra units"
 msgstr ""
 
-#: /app/routes/scanner.py:376
+#: /app/routes/scanner.py:386
 #, python-format
 msgid ""
 "Order fulfilled. Received %(quantity)d units in %(package_size)s. "
 "%(overage)d extra units."
 msgstr ""
 
-#: /app/routes/scanner.py:382
+#: /app/routes/scanner.py:392
 msgid "Order fulfilled exactly"
 msgstr ""
 
-#: /app/routes/scanner.py:384
+#: /app/routes/scanner.py:394
 #, python-format
 msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s."
 msgstr ""
 
-#: /app/routes/scanner.py:395
+#: /app/routes/scanner.py:405
 #, python-format
 msgid "Partial fulfillment: %(remaining)d units still needed"
 msgstr ""
 
-#: /app/routes/scanner.py:399
+#: /app/routes/scanner.py:409
 #, python-format
 msgid ""
 "Partially fulfilled. Received %(quantity)d units in %(package_size)s. "
 "Still need %(remaining)d units."
 msgstr ""
 
-#: /app/routes/scanner.py:426
+#: /app/routes/scanner.py:436
 #, python-format
 msgid ""
 "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d "
 "units). %(fulfillment)s"
 msgstr ""
 
-#: /app/routes/scanner.py:434
+#: /app/routes/scanner.py:444
 #, python-format
 msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)"
 msgstr ""
 
-#: /app/routes/scanner.py:492
+#: /app/routes/scanner.py:502
 msgid "Product Code"
 msgstr ""
 
-#: /app/routes/scanner.py:498
+#: /app/routes/scanner.py:508
 #, python-format
 msgid "%(label)s %(number)s not found"
 msgstr ""
 
-#: /app/routes/scanner.py:502 /app/routes/scanner.py:509
-#: /app/routes/scanner.py:514 /app/routes/scanner.py:519
-#: /app/routes/scanner.py:524
+#: /app/routes/scanner.py:512 /app/routes/scanner.py:519
+#: /app/routes/scanner.py:524 /app/routes/scanner.py:529
+#: /app/routes/scanner.py:534
 msgid "Please add this package."
-msgstr ""
-
-#: /app/routes/scanner.py:507
-#, python-format
-msgid "EAN-13 barcode %(code)s not found"
-msgstr ""
-
-#: /app/routes/scanner.py:512
-#, python-format
-msgid "EAN-8 barcode %(code)s not found"
 msgstr ""
 
 #: /app/routes/scanner.py:517
 #, python-format
-msgid "UPC barcode %(code)s not found"
+msgid "EAN-13 barcode %(code)s not found"
 msgstr ""
 
 #: /app/routes/scanner.py:522
 #, python-format
-msgid "Product barcode %(code)s not found"
+msgid "EAN-8 barcode %(code)s not found"
 msgstr ""
 
 #: /app/routes/scanner.py:527
+#, python-format
+msgid "UPC barcode %(code)s not found"
+msgstr ""
+
+#: /app/routes/scanner.py:532
+#, python-format
+msgid "Product barcode %(code)s not found"
+msgstr ""
+
+#: /app/routes/scanner.py:537
 msgid "Unrecognized barcode format"
 msgstr ""
 
-#: /app/routes/scanner.py:528
+#: /app/routes/scanner.py:538
 msgid "This barcode type is not supported"
 msgstr ""
 
-#: /app/routes/scanner.py:607
+#: /app/routes/scanner.py:617
 msgid "Package not in inventory"
 msgstr ""
 
-#: /app/routes/scanner.py:612
+#: /app/routes/scanner.py:622
 msgid "Invalid number of units"
 msgstr ""
 
-#: /app/routes/scanner.py:616
+#: /app/routes/scanner.py:626
 msgid "Not enough units in package"
 msgstr ""
 
-#: /app/routes/scanner.py:633
+#: /app/routes/scanner.py:643
 #, python-format
 msgid "%(units)d units consumed"
 msgstr ""
 
-#: /app/routes/scanner.py:651
+#: /app/routes/scanner.py:661
 msgid "Package marked as expired"
 msgstr ""
 
