@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-09-05 06:36\n"
+"PO-Revision-Date: 2025-09-05 07:04\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -59,7 +59,7 @@ msgid "Product deleted successfully"
 msgstr "Produkt erfolgreich gelöscht"
 
 #: /app/routes/ingredients.py:478
-#: /app/templates/package_onboarding/onboard.html:846
+#: /app/templates/package_onboarding/onboard.html:940
 msgid "Please select or enter an active ingredient"
 msgstr "Bitte wähle einen Wirkstoff aus oder gib ihn ein"
 
@@ -523,7 +523,7 @@ msgstr "Packungsinformationen mit gescannten Daten aktualisiert"
 #: /app/routes/scanner.py:382
 #, python-format
 msgid "Order fulfilled with %(overage)d extra units"
-msgstr "Bestellung erledigt mit %(overage)d zusätzliche Einheiten"
+msgstr "Bestellung erledigt mit %(overage)d zusätzlichen Einheiten"
 
 #: /app/routes/scanner.py:386
 #, python-format
@@ -642,16 +642,16 @@ msgstr "Einnahmeplan erfolgreich gelöscht"
 #: /app/routes/schedule.py:135
 #, python-brace-format
 msgid "Deduction check complete: {} deductions across {} ingredients"
-msgstr ""
+msgstr "Abzugsprüfung abgeschlossen: {} Abzüge für {} Wirkstoffe"
 
 #: /app/routes/schedule.py:141
 msgid "Deduction check complete: No deductions needed"
-msgstr ""
+msgstr "Abzugsprüfung abgeschlossen: Keine Abzüge nötig"
 
 #: /app/routes/schedule.py:145
 #, python-brace-format
 msgid "Error during deduction check: {}"
-msgstr ""
+msgstr "Fehler bei der Abzugsprüfung: {}"
 
 #: /app/routes/schedule.py:220
 msgid "Schedule added successfully"
@@ -694,12 +694,12 @@ msgstr "Ungültiger Dateityp. Bitte eine Datenbankdatei hochladen ({})"
 
 #: /app/routes/settings.py:262
 msgid "This backup is from the old medication system and cannot be restored. Please use a backup from the current ingredients/products system."
-msgstr ""
+msgstr "Diese Sicherung stammt aus dem alten Medikamentensystem und kann nicht wiederhergestellt werden. Bitte benutze eine Sicherung aus dem aktuellen Wirkstoff-/Produktsystem."
 
 #: /app/routes/settings.py:267
 #, python-brace-format
 msgid "Invalid database file: missing required tables: {}"
-msgstr ""
+msgstr "Ungültige Datenbankdatei: erforderliche Tabellen fehlen: {}"
 
 #: /app/routes/settings.py:276
 #, python-brace-format
@@ -1601,8 +1601,8 @@ msgstr "Suche nach dem Wirkstoff oder gib einen Neuen ein..."
 
 #: /app/templates/ingredients/new_product.html:174
 #: /app/templates/ingredients/new_product.html:202
-#: /app/templates/package_onboarding/onboard.html:650
-#: /app/templates/package_onboarding/onboard.html:754
+#: /app/templates/package_onboarding/onboard.html:661
+#: /app/templates/package_onboarding/onboard.html:772
 msgid "Create new"
 msgstr "Neu erstellen"
 
@@ -1857,27 +1857,27 @@ msgstr "Dieses Inventar muss auf eine packungsbasierte Nachverfolgung umgestellt
 
 #: /app/templates/ingredients/show_product.html:275
 msgid "Recent Inventory Changes"
-msgstr ""
+msgstr "Neueste Änderungen des Inventars"
 
 #: /app/templates/ingredients/show_product.html:284
 msgid "Date"
-msgstr ""
+msgstr "Datum"
 
 #: /app/templates/ingredients/show_product.html:285
 msgid "Change Type"
-msgstr ""
+msgstr "Änderungstyp"
 
 #: /app/templates/ingredients/show_product.html:288
 msgid "Reason"
-msgstr ""
+msgstr "Grund"
 
 #: /app/templates/ingredients/show_product.html:300
 msgid "Onboarded"
-msgstr ""
+msgstr "Eingebunden"
 
 #: /app/templates/ingredients/show_product.html:302
 msgid "Deducted"
-msgstr ""
+msgstr "Abgezogen"
 
 #: /app/templates/ingredients/show_product.html:304
 #: /app/templates/scanner/package_details.html:127
@@ -1894,11 +1894,11 @@ msgstr "Verbraucht"
 
 #: /app/templates/ingredients/show_product.html:308
 msgid "Manual"
-msgstr ""
+msgstr "Manuell"
 
 #: /app/templates/ingredients/show_product.html:346
 msgid "No inventory changes recorded yet."
-msgstr ""
+msgstr "Noch keine Bestandsänderungen aufgezeichnet."
 
 #: /app/templates/ingredients/index.html:3
 #: /app/templates/ingredients/index.html:8 /app/templates/layout.html:35
@@ -2786,18 +2786,22 @@ msgid "Step 3: Package Configuration"
 msgstr "Schritt 3: Packungskonfiguration"
 
 #: /app/templates/package_onboarding/onboard.html:333
+#: /app/templates/package_onboarding/onboard.html:875
 msgid "Small Package"
 msgstr "Kleine Packung"
 
 #: /app/templates/package_onboarding/onboard.html:334
+#: /app/templates/package_onboarding/onboard.html:876
 msgid "Medium Package"
 msgstr "Mittlere Packung"
 
 #: /app/templates/package_onboarding/onboard.html:335
+#: /app/templates/package_onboarding/onboard.html:877
 msgid "Large Package"
 msgstr "Große Packung"
 
 #: /app/templates/package_onboarding/onboard.html:336
+#: /app/templates/package_onboarding/onboard.html:923
 msgid "Custom Size"
 msgstr "Benutzerdefinierte Größe"
 
@@ -2889,23 +2893,23 @@ msgstr "Nächstes"
 msgid "Save Package"
 msgstr "Packung speichern"
 
-#: /app/templates/package_onboarding/onboard.html:873
+#: /app/templates/package_onboarding/onboard.html:967
 msgid "Please select or enter a product"
 msgstr "Bitte ein Produkt auswählen"
 
-#: /app/templates/package_onboarding/onboard.html:904
+#: /app/templates/package_onboarding/onboard.html:998
 msgid "Please enter a custom package size"
 msgstr "Gib bitte eine benutzerdefinierte Packungsgröße ein"
 
-#: /app/templates/package_onboarding/onboard.html:910
+#: /app/templates/package_onboarding/onboard.html:1004
 msgid "Please enter the number of units per package"
 msgstr "Gib bitte die Anzahl der Einheiten pro Packung ein"
 
-#: /app/templates/package_onboarding/onboard.html:936
+#: /app/templates/package_onboarding/onboard.html:1030
 msgid "No (OTC)"
 msgstr "Nein (OTC)"
 
-#: /app/templates/package_onboarding/onboard.html:936
+#: /app/templates/package_onboarding/onboard.html:1030
 msgid "Yes"
 msgstr "Ja"
 

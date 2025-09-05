@@ -578,12 +578,19 @@
         // Package size selector
         document.getElementById('package_size').addEventListener('change', function() {
             const customInput = document.getElementById('custom_package_size');
+            const quantityInput = document.getElementById('quantity');
+            
             if (this.value === 'custom') {
                 customInput.style.display = 'block';
                 customInput.required = true;
             } else {
                 customInput.style.display = 'none';
                 customInput.required = false;
+                
+                // Auto-fill quantity if package size has existing units and quantity field is empty
+                if (window.packageQuantities && window.packageQuantities[this.value] && !quantityInput.value) {
+                    quantityInput.value = window.packageQuantities[this.value];
+                }
             }
         });
 
@@ -595,9 +602,12 @@
         // Quick select buttons
         document.querySelectorAll('.ingredient-quick-select').forEach(btn => {
             btn.addEventListener('click', function() {
-                selectIngredient(this.dataset.id, this.dataset.name);
+                selectIngredient(this.dataset.id, this.dataset.name, false, this.dataset.name);
             });
         });
+        
+        // Initialize package options to default state
+        updatePackageOptions([]);
     });
 
 
@@ -635,9 +645,10 @@
                                 item.textContent = ing.display;
                                 item.dataset.id = ing.id;
                                 item.dataset.name = ing.name;
+                                item.dataset.display = ing.display;
                                 item.dataset.isNew = 'false';
                                 item.addEventListener('click', function() {
-                                    selectIngredient(this.dataset.id, this.dataset.name, false);
+                                    selectIngredient(this.dataset.id, this.dataset.name, false, this.dataset.display);
                                 });
                                 suggestions.appendChild(item);
                             });
@@ -652,7 +663,7 @@
                             createNewItem.dataset.name = query;
                             createNewItem.dataset.isNew = 'true';
                             createNewItem.addEventListener('click', function() {
-                                selectIngredient(this.dataset.id, this.dataset.name, true);
+                                selectIngredient(this.dataset.id, this.dataset.name, true, this.dataset.name);
                             });
                             suggestions.appendChild(createNewItem);
                         }
@@ -670,14 +681,15 @@
         });
     }
 
-    function selectIngredient(id, name, isNew = false) {
+    function selectIngredient(id, name, isNew = false, displayText = null) {
         const inlineNewFields = document.getElementById('inline_new_ingredient_fields');
         const newIngredientDisplay = document.getElementById('new_ingredient_display');
+        const displayToUse = displayText || name;
         
         if (isNew) {
             // Creating a new ingredient
             document.getElementById('ingredient_id').value = '';
-            document.getElementById('ingredient_search').value = name;
+            document.getElementById('ingredient_search').value = displayToUse;
             inlineNewFields.style.display = 'block';
             newIngredientDisplay.textContent = name;
             formData.ingredient = { name: name, isNew: true };
@@ -687,15 +699,21 @@
             document.getElementById('product_id').value = '';
             document.getElementById('inline_new_product_fields').style.display = 'none';
             document.getElementById('popular_products_section').style.display = 'none';
+            
+            // Reset package options to default for new ingredients
+            updatePackageOptions([]);
         } else {
-            // Existing ingredient
+            // Existing ingredient - show the full display text with strength
             document.getElementById('ingredient_id').value = id;
-            document.getElementById('ingredient_search').value = name;
+            document.getElementById('ingredient_search').value = displayToUse;
             inlineNewFields.style.display = 'none';
-            formData.ingredient = { id: id, name: name, isNew: false };
+            formData.ingredient = { id: id, name: name, display: displayToUse, isNew: false };
             
             // Load products for this ingredient
             loadProductsForIngredient(id);
+            
+            // Reset package options to default until a product is selected
+            updatePackageOptions([]);
         }
         
         document.getElementById('ingredient_suggestions').classList.remove('show');
@@ -783,12 +801,17 @@
             inlineNewFields.style.display = 'block';
             newProductDisplay.textContent = name;
             formData.product = { name: name, isNew: true };
+            // Reset package options to default for new products
+            updatePackageOptions([]);
         } else {
             // Existing product
             document.getElementById('product_id').value = id;
             document.getElementById('product_search').value = name;
             inlineNewFields.style.display = 'none';
             formData.product = { id: id, name: name, isNew: false };
+            
+            // Load existing packages for this product
+            loadPackagesForProduct(id);
         }
         
         document.getElementById('product_suggestions').classList.remove('show');
@@ -833,6 +856,77 @@
                     popularSection.style.display = 'none';
                 }
             });
+    }
+
+    function loadPackagesForProduct(productId) {
+        fetch(`{{ url_for('package_onboarding.get_product_packages', product_id=0) }}`.replace('0', productId))
+            .then(response => response.json())
+            .then(data => {
+                updatePackageOptions(data.packages || []);
+            });
+    }
+
+    function updatePackageOptions(existingPackages) {
+        const packageSelect = document.getElementById('package_size');
+        const currentValue = packageSelect.value;
+        
+        // Standard package sizes with their labels
+        const standardSizes = [
+            { value: 'N1', label: '{{ _("Small Package") }}' },
+            { value: 'N2', label: '{{ _("Medium Package") }}' },
+            { value: 'N3', label: '{{ _("Large Package") }}' }
+        ];
+        
+        // Create a map of existing packages by size
+        const existingPackageMap = {};
+        if (existingPackages) {
+            existingPackages.forEach(pkg => {
+                existingPackageMap[pkg.size] = pkg.quantity;
+            });
+        }
+        
+        // Store the package quantities globally for auto-fill functionality
+        window.packageQuantities = existingPackageMap;
+        
+        // Clear existing options
+        packageSelect.innerHTML = '';
+        
+        // Add standard sizes with unit counts if they exist
+        standardSizes.forEach(size => {
+            const option = document.createElement('option');
+            option.value = size.value;
+            
+            if (existingPackageMap[size.value]) {
+                option.textContent = `${size.value} - ${size.label} (${existingPackageMap[size.value]})`;
+            } else {
+                option.textContent = `${size.value} - ${size.label}`;
+            }
+            
+            packageSelect.appendChild(option);
+        });
+        
+        // Add any existing custom sizes that aren't standard
+        if (existingPackages) {
+            existingPackages.forEach(pkg => {
+                if (!['N1', 'N2', 'N3'].includes(pkg.size)) {
+                    const option = document.createElement('option');
+                    option.value = pkg.size;
+                    option.textContent = `${pkg.size} (${pkg.quantity})`;
+                    packageSelect.appendChild(option);
+                }
+            });
+        }
+        
+        // Always add custom option at the end
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.textContent = '{{ _("Custom Size") }}';
+        packageSelect.appendChild(customOption);
+        
+        // Restore previous selection if it still exists
+        if (currentValue && Array.from(packageSelect.options).some(opt => opt.value === currentValue)) {
+            packageSelect.value = currentValue;
+        }
     }
 
     function validateStep(step) {
@@ -926,7 +1020,7 @@
 
     function updateReviewSection() {
         // Update review display
-        document.getElementById('review_ingredient').textContent = formData.ingredient?.name || '-';
+        document.getElementById('review_ingredient').textContent = formData.ingredient?.display || formData.ingredient?.name || '-';
         document.getElementById('review_product').textContent = formData.product?.name || '-';
         document.getElementById('review_package').textContent =
             `${formData.package?.size || '-'} (${formData.package?.quantity || '-'} units)`;

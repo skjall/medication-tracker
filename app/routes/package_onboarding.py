@@ -279,6 +279,21 @@ def get_ingredient_products(ingredient_id):
     return jsonify({'products': products})
 
 
+@bp.route('/api/product/<int:product_id>/packages')
+def get_product_packages(product_id):
+    """API endpoint to get existing packages for a selected product."""
+    product = MedicationProduct.query.get_or_404(product_id)
+    packages = []
+    
+    for package in product.packages:
+        packages.append({
+            'size': package.package_size,
+            'quantity': package.quantity
+        })
+    
+    return jsonify({'packages': packages})
+
+
 @bp.route('/api/search/ingredients')
 def search_ingredients():
     """API endpoint to search for ingredients."""
