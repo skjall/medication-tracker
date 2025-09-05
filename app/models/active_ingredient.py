@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from .medication_product import MedicationProduct
     from .schedule import MedicationSchedule
     from .visit import OrderItem
+    from .ingredient_component import IngredientComponent
 
 
 class ActiveIngredient(db.Model):
@@ -32,10 +33,8 @@ class ActiveIngredient(db.Model):
     __table_args__ = (
         UniqueConstraint(
             "name",
-            "strength",
-            "strength_unit",
             "form",
-            name="uq_ingredient_name_strength_form",
+            name="uq_ingredient_name_form",
         ),
     )
     
@@ -57,18 +56,6 @@ class ActiveIngredient(db.Model):
         comment="Generic name of the active ingredient (e.g., Salbutamol)",
     )
 
-    # Dosage strength (e.g., "100" for 100µg)
-    strength: Mapped[Optional[str]] = mapped_column(
-        String(50),
-        nullable=True,
-        comment="Numeric strength value (e.g., 100, 500, 0.5)",
-    )
-
-    strength_unit: Mapped[Optional[str]] = mapped_column(
-        String(20),
-        nullable=True,
-        comment="Unit of strength (e.g., mg, µg, ml, IE)",
-    )
 
     # Dosage form
     form: Mapped[Optional[str]] = mapped_column(
@@ -157,23 +144,47 @@ class ActiveIngredient(db.Model):
         back_populates="active_ingredient", 
         cascade="all, delete-orphan"
     )
+    
+    # Ingredient components (for multi-component ingredients)
+    components: Mapped[list["IngredientComponent"]] = relationship(
+        "IngredientComponent",
+        back_populates="active_ingredient",
+        cascade="all, delete-orphan",
+        order_by="IngredientComponent.sort_order"
+    )
 
     def __repr__(self):
-        strength_str = (
-            f" {self.strength}{self.strength_unit}" if self.strength else ""
-        )
         form_str = f" ({self.form})" if self.form else ""
-        return f"<ActiveIngredient {self.name}{strength_str}{form_str}>"
+        return f"<ActiveIngredient {self.component_display}{form_str}>"
 
     @property
     def full_name(self) -> str:
         """Get the full name including strength and form."""
-        parts = [self.name]
-        if self.strength and self.strength_unit:
-            parts.append(f"{self.strength}{self.strength_unit}")
+        parts = [self.component_display]
         if self.form:
             parts.append(f"({self.form})")
         return " ".join(parts)
+    
+    @property
+    def clinical_name(self) -> str:
+        """Get the clinical/generic name for orders and prescriptions."""
+        return self.name
+    
+    @property
+    def component_display(self) -> str:
+        """Get formatted display showing all components with strengths."""
+        if not self.components:
+            return self.name
+        
+        return " + ".join([
+            comp.display_text
+            for comp in self.components
+        ])
+    
+    @property
+    def display_name(self) -> str:
+        """Get the display name for UI (uses component display)."""
+        return self.component_display
 
     def get_all_products(self):
         """Get all products containing this active ingredient."""

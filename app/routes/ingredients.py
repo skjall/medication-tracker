@@ -36,7 +36,7 @@ def validate_strength(value):
         value: The strength value to validate (can be string, number, etc.)
 
     Returns:
-        str: Cleaned numeric string with dot as decimal separator, or None if invalid/empty
+        float: Cleaned numeric value, or None if invalid/empty
     """
     if not value:
         return None
@@ -55,12 +55,12 @@ def validate_strength(value):
 
     # Match optional minus, digits, optional decimal point and more digits
     if re.match(r"^-?\d+(\.\d+)?$", str_value):
-        return str_value
+        return float(str_value)
 
     # Try to extract just the numeric part (e.g., "400mg" -> "400")
     match = re.match(r"^(-?\d+(?:\.\d+)?)", str_value)
     if match:
-        return match.group(1)
+        return float(match.group(1))
 
     return None
 
@@ -248,30 +248,59 @@ def edit(id: int):
     if request.method == "POST":
         ingredient.name = request.form.get("name", "").strip()
 
-        # Validate and clean strength value
-        raw_strength = request.form.get("strength", "").strip()
-        validated_strength = validate_strength(raw_strength)
-        if raw_strength and not validated_strength:
-            flash(
-                _(
-                    "Invalid strength value. Please enter a valid number (e.g., 500 or 1.25)"
-                ),
-                "error",
-            )
-            return render_template(
-                "ingredients/edit.html",
-                ingredient=ingredient,
-                return_url=return_url,
-                local_time=to_local_timezone(datetime.now(timezone.utc)),
-            )
-        ingredient.strength = validated_strength
-
-        ingredient.strength_unit = (
-            request.form.get("strength_unit", "").strip() or None
-        )
         ingredient.form = request.form.get("form", "").strip() or None
         ingredient.atc_code = request.form.get("atc_code", "").strip() or None
         ingredient.notes = request.form.get("notes", "").strip() or None
+        
+        # Handle components
+        from models import IngredientComponent
+        
+        # Clear existing components
+        IngredientComponent.query.filter_by(active_ingredient_id=ingredient.id).delete()
+        
+        # Process components from the complex form names
+        components_data = {}
+        for key in request.form:
+            if key.startswith('components[') and '][' in key:
+                # Parse component[index][field] format
+                import re
+                match = re.match(r'components\[(\d+)\]\[(\w+)\]', key)
+                if match:
+                    index, field = match.groups()
+                    index = int(index)
+                    if index not in components_data:
+                        components_data[index] = {}
+                    components_data[index][field] = request.form[key].strip()
+        
+        # Create new components
+        for index in sorted(components_data.keys()):
+            comp_data = components_data[index]
+            if comp_data.get('component_name') and comp_data.get('strength') and comp_data.get('strength_unit'):
+                # Validate strength
+                raw_strength = comp_data['strength']
+                validated_strength = validate_strength(raw_strength)
+                if not validated_strength:
+                    flash(
+                        _("Invalid strength value in component %(name)s: %(value)s", 
+                          name=comp_data['component_name'], 
+                          value=raw_strength),
+                        "error"
+                    )
+                    return render_template(
+                        "ingredients/edit.html",
+                        ingredient=ingredient,
+                        return_url=return_url,
+                        local_time=to_local_timezone(datetime.now(timezone.utc)),
+                    )
+                
+                component = IngredientComponent(
+                    active_ingredient_id=ingredient.id,
+                    component_name=comp_data['component_name'],
+                    strength=validated_strength,
+                    strength_unit=comp_data['strength_unit'],
+                    sort_order=int(comp_data.get('sort_order', index + 1))
+                )
+                db.session.add(component)
 
         db.session.commit()
         flash(_("Active ingredient updated successfully"), "success")

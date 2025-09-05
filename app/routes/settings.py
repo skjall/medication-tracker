@@ -346,21 +346,11 @@ def restore_database():
             db.engine.dispose()
             db.session.remove()
             
-            # Import the verify function
-            from migration_utils import verify_schema_integrity
-            
             # Check if the restored database needs migration tracking
             logger.info("Checking migration tracking...")
             check_and_fix_version_tracking(current_app)
-            
-            # Force schema integrity check - this will reset version if needed
-            logger.info("Verifying schema integrity...")
-            schema_valid = verify_schema_integrity(current_app)
-            logger.info(f"Schema integrity check result: {schema_valid}")
-            if not schema_valid:
-                logger.info("Restored database has schema issues - forcing migration")
 
-            # Run any pending migrations (will now check schema integrity)
+            # Run any pending migrations using standard Alembic
             logger.info("Running migrations...")
             migration_result = run_migrations_with_lock(current_app)
             logger.info(f"Migration result: {migration_result}")

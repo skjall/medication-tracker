@@ -34,10 +34,8 @@
                             <dt>{{ _('Name') }}</dt>
                             <dd>{{ ingredient.name }}</dd>
                             
-                            {% if ingredient.strength %}
-                            <dt>{{ _('Strength') }}</dt>
-                            <dd>{{ ingredient.strength }}{{ ingredient.strength_unit }}</dd>
-                            {% endif %}
+                            <dt>{{ _('Components') }}</dt>
+                            <dd>{{ ingredient.component_display }}</dd>
                             
                             {% if ingredient.form %}
                             <dt>{{ _('Form') }}</dt>

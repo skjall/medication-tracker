@@ -274,7 +274,7 @@
                                                                                     <span class="text-muted">({{ product.manufacturer }})</span>
                                                                                 {% endif %}
                                                                             </td>
-                                                                            <td style="width: 15%">{{ product.strength }} {{ product.unit }}</td>
+                                                                            <td style="width: 15%">{{ product.active_ingredient.component_display }}</td>
                                                                             <td style="width: 20%">
                                                                                 {% if product.has_package_inventory %}
                                                                                     {% set pkg_count = product.package_inventory_count %}
@@ -409,7 +409,7 @@
                                                                                     <span class="text-muted">({{ product.manufacturer }})</span>
                                                                                 {% endif %}
                                                                             </td>
-                                                                            <td style="width: 15%">{{ product.strength }} {{ product.unit }}</td>
+                                                                            <td style="width: 15%">{{ product.active_ingredient.component_display }}</td>
                                                                             <td style="width: 20%">
                                                                                 {% if product.has_package_inventory %}
                                                                                     {% set pkg_count = product.package_inventory_count %}

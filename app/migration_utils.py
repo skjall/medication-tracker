@@ -108,6 +108,7 @@ class MigrationLock:
 def run_migrations_with_lock(app: Flask) -> bool:
     """
     Run migrations with file-based locking to prevent concurrent execution.
+    Simplified to use standard Alembic without custom schema checks.
 
     Args:
         app: Flask application instance
@@ -123,20 +124,11 @@ def run_migrations_with_lock(app: Flask) -> bool:
         while time.time() - start_time < max_wait_time:
             try:
                 with MigrationLock(app):
-                    # First verify schema integrity - this catches mismatches between version and actual schema
                     with app.app_context():
-                        if not verify_schema_integrity(app):
-                            logger.info("Schema integrity check failed - will force migration")
-                            # Schema check already reset the version if needed
-                        
-                        # Double-check if migrations are still needed (another process might have run them)
+                        # Check if migrations are needed using standard Alembic
                         if not check_migrations_needed(app):
-                            # Even if alembic says no migrations needed, verify schema is actually correct
-                            if verify_schema_integrity(app):
-                                logger.info("Migrations no longer needed and schema is valid")
-                                return True
-                            else:
-                                logger.info("No migrations pending but schema is invalid - forcing migration")
+                            logger.info("No migrations needed - database is up to date")
+                            return True
 
                         # Run the actual migrations
                         logger.info(f"Process {os.getpid()} running database migrations")
@@ -150,7 +142,7 @@ def run_migrations_with_lock(app: Flask) -> bool:
             except (IOError, OSError) as e:
                 # Lock not available, wait and retry
                 logger.info(f"Process {os.getpid()} waiting for migration lock: {e}")
-                time.sleep(2)  # Increased wait time
+                time.sleep(2)
                 continue
             except Exception as e:
                 logger.error(f"Unexpected error in migration lock for process {os.getpid()}: {e}")
@@ -209,162 +201,59 @@ def get_alembic_config(app: Flask) -> Config:
 
 def verify_schema_integrity(app: Flask) -> bool:
     """
-    Verify that the actual database schema matches what the models expect.
-    This catches cases where the alembic version says it's up-to-date but columns are missing.
+    Simplified schema verification - removed custom checks.
+    Now just returns True to let Alembic handle everything.
     
     Returns:
-        True if schema is valid, False if issues were found
+        Always True - let Alembic manage schema state
     """
-    try:
-        from sqlalchemy import create_engine, inspect
-        
-        db_url = app.config["SQLALCHEMY_DATABASE_URI"]
-        engine = create_engine(db_url)
-        inspector = inspect(engine)
-        
-        # Define expected columns for critical tables
-        expected_columns = {
-            "order_items": ["fulfillment_status", "fulfillment_notes", "fulfilled_quantity", "fulfilled_at"],
-            "package_inventory": ["id", "medication_id", "scanned_item_id", "order_item_id"],
-            # Add more tables/columns as needed
-        }
-        
-        schema_valid = True
-        
-        for table_name, required_columns in expected_columns.items():
-            if table_name not in inspector.get_table_names():
-                logger.warning(f"Table {table_name} is missing from database")
-                schema_valid = False
-                continue
-                
-            existing_columns = [col['name'] for col in inspector.get_columns(table_name)]
-            
-            for col in required_columns:
-                if col not in existing_columns:
-                    logger.warning(f"Column {col} is missing from table {table_name}")
-                    schema_valid = False
-        
-        if not schema_valid:
-            logger.info("Schema integrity check failed - forcing migration")
-            # Force alembic to re-run migrations by clearing version
-            with engine.connect() as conn:
-                from sqlalchemy import text
-                # Get the current version first
-                result = conn.execute(text("SELECT version_num FROM alembic_version"))
-                current_version = result.scalar()
-                logger.info(f"Current alembic version: {current_version}")
-                
-                # Clear the version to force re-migration
-                conn.execute(text("DELETE FROM alembic_version"))
-                # Set to a version before the problematic migration
-                conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('8b5d249f8899')"))
-                conn.commit()
-                logger.info("Reset alembic version to force re-migration")
-        
-        return schema_valid
-        
-    except Exception as e:
-        logger.error(f"Error verifying schema integrity: {e}")
-        return True  # Assume it's OK if we can't check
+    logger.debug("Schema integrity check disabled - using standard Alembic")
+    return True
 
 def check_and_fix_version_tracking(app: Flask) -> bool:
     """
-    Check if database has no alembic_version table, but an existing database file exists,
-    and if so, stamp it with the initial revision.
+    Simplified version tracking - let Alembic handle version management.
+    Only creates alembic_version table if missing but database has tables.
 
     Args:
         app: Flask application instance
 
     Returns:
-        True if stamping was performed, False otherwise
+        True if alembic_version table was created, False otherwise
     """
     try:
         from sqlalchemy import create_engine, inspect, text
-        import os.path
 
-        # Get database URL
+        # Get database URL and connect
         db_url = app.config["SQLALCHEMY_DATABASE_URI"]
-
-        # First check if the database file exists (for SQLite)
-        # For other database types, we'll assume the database exists if we can connect
-        database_exists = True
-        if db_url.startswith("sqlite:///"):
-            # Extract file path for SQLite
-            if db_url.startswith("sqlite:////"):  # Absolute path
-                db_path = db_url[len("sqlite:///"):]
-            else:  # Relative path
-                db_path = db_url[len("sqlite:///"):]
-                db_path = os.path.join(app.root_path, db_path)
-
-            # Check if the file exists
-            database_exists = os.path.isfile(db_path)
-            logger.info(f"Checking for SQLite database at {db_path}: {'exists' if database_exists else 'not found'}")
-
-            # If the database doesn't exist, don't try to stamp it
-            if not database_exists:
-                logger.info("No existing database file found - skipping version stamping")
-                return False
-
-        # Connect to the database (this might create a new SQLite file if it doesn't exist)
         engine = create_engine(db_url)
-
-        # Get inspector
         inspector = inspect(engine)
 
         # Check if alembic_version exists
         existing_tables = inspector.get_table_names()
         has_alembic_version = "alembic_version" in existing_tables
-
-        # Check if there are existing tables (indicating a real, pre-existing database)
         has_tables = len(existing_tables) > 0
 
-        # If no alembic_version table but other tables exist, create it and stamp with initial revision
+        # If no alembic_version table but other tables exist, create it
+        # Let Alembic determine the correct version during migration
         if not has_alembic_version and has_tables:
-            logger.info(f"Existing database detected without alembic_version table - stamping with initial revision {initial_revision}")
-
-            # Create alembic_version table and stamp it directly
+            logger.info("Existing database without alembic_version table - creating table")
+            
             with engine.connect() as conn:
-                # First create the alembic_version table
                 conn.execute(text("""
                     CREATE TABLE IF NOT EXISTS alembic_version (
                         version_num VARCHAR(32) NOT NULL PRIMARY KEY
                     )
                 """))
-
-                # Then insert the initial revision
-                conn.execute(text(
-                    f"INSERT INTO alembic_version (version_num) VALUES ('{initial_revision}')"
-                ))
-
-                # Commit the transaction
                 conn.commit()
-
-            logger.info(f"Successfully stamped database with revision {initial_revision}")
+            
+            logger.info("Created alembic_version table - Alembic will determine correct version")
             return True
-        elif has_alembic_version:
-            logger.info("Database already has alembic_version table - checking for entries")
-
-            # Check if the table is empty
-            with engine.connect() as conn:
-                result = conn.execute(text("SELECT COUNT(*) FROM alembic_version"))
-                count = result.scalar()
-                if count == 0 and has_tables:
-                    logger.info(f"alembic_version table is empty in existing database - stamping with initial revision {initial_revision}")
-                    conn.execute(text(
-                        f"INSERT INTO alembic_version (version_num) VALUES ('{initial_revision}')"
-                    ))
-                    conn.commit()
-                    logger.info(f"Successfully stamped database with revision {initial_revision}")
-                    return True
-                else:
-                    logger.info("alembic_version table already has entries or database is new - no action needed")
-        else:
-            logger.info("New database detected (no tables) - no stamping needed")
 
         return False
 
     except Exception as e:
-        logger.error(f"Error checking or fixing version tracking: {e}")
+        logger.error(f"Error checking version tracking: {e}")
         return False
 
 

@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 def initialize_database(app):
-    """Initialize database with migrations."""
+    """Initialize database with migrations using standard Alembic."""
     # Import here to avoid circular imports
-    from migration_utils import stamp_database_to_latest, run_migrations_with_lock
+    from migration_utils import stamp_database_to_latest, run_migrations_with_lock, check_and_fix_version_tracking
     from sqlalchemy import inspect
     
     # Check if this is a fresh database (no tables exist)
@@ -29,7 +29,7 @@ def initialize_database(app):
     existing_tables = inspector.get_table_names()
     
     if not existing_tables or len(existing_tables) == 0:
-        # Fresh database - create all tables directly
+        # Fresh database - create all tables and stamp to latest
         logger.info("Fresh database detected - creating all tables")
         try:
             db.create_all()
@@ -49,16 +49,16 @@ def initialize_database(app):
         except Exception as e:
             logger.error(f"Error creating database tables: {e}")
             # Continue anyway - some tables might have been created
-    elif 'alembic_version' not in existing_tables:
-        # Database exists but no migration tracking - stamp to latest
-        logger.info("Existing database without migration tracking - stamping to latest")
-        stamp_database_to_latest(app)
     else:
-        # Database exists with migration tracking
-        # Run migrations unless explicitly disabled
+        # Database exists - ensure migration tracking and run migrations
+        logger.info("Existing database detected - checking migration status")
         
+        # Ensure alembic_version table exists
+        check_and_fix_version_tracking(app)
+        
+        # Run migrations unless explicitly disabled
         if os.environ.get('RUN_MIGRATIONS') != 'false':
-            logger.info("Database already initialized with migration tracking - checking for pending migrations")
+            logger.info("Checking for pending migrations")
             if run_migrations_with_lock(app):
                 logger.info("Migrations completed successfully")
             else:

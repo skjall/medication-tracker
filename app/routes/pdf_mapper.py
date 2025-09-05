@@ -276,34 +276,33 @@ def content_view(id):
         ],
         "ingredient": [
             {
-                "id": "active_ingredient",
-                "label": _("Active Ingredient"),
+                "id": "ingredient_name",
+                "label": _("Ingredient Name (General)"),
                 "icon": "💊",
             },
-            {"id": "strength", "label": _("Strength"), "icon": "💪"},
-            {"id": "unit", "label": _("Unit"), "icon": "📏"},
+            {
+                "id": "component_display",
+                "label": _("Component Display (with strengths)"),
+                "icon": "🧪",
+            },
+            {
+                "id": "component_strengths",
+                "label": _("Component Strengths (10/10/25)"),
+                "icon": "💪",
+            },
+            {
+                "id": "component_units",
+                "label": _("Component Units (mg/%/mg)"),
+                "icon": "📏",
+            },
         ],
         "dosage": [
-            {"id": "daily_units", "label": _("Daily Units"), "icon": "🔢"},
+            {"id": "daily_units", "label": _("Daily Units (number only)"), "icon": "🔢"},
+            {"id": "daily_units_formatted", "label": _("Daily Units (x units format)"), "icon": "📝"},
             {
                 "id": "dosage_form",
                 "label": _("Dosage Form (tablets, etc.)"),
                 "icon": "💊",
-            },
-            {
-                "id": "strength_value",
-                "label": _("Strength Value"),
-                "icon": "💪",
-            },
-            {
-                "id": "strength_unit",
-                "label": _("Strength Unit (mg, ml, etc.)"),
-                "icon": "📏",
-            },
-            {
-                "id": "daily_dosage",
-                "label": _("Daily Dosage (Strength × Units)"),
-                "icon": "➕",
             },
         ],
         "package": [
@@ -338,10 +337,63 @@ def content_view(id):
         ],
     }
 
+    # Sample data for preview table
+    sample_data = [
+        {
+            "brand_name": "Kaftrio",
+            "manufacturer": "Vertex Pharmaceuticals",
+            "display_name": "Kaftrio (Vertex Pharmaceuticals)", 
+            "ingredient_name": "Kaftrio",
+            "component_display": "Ivacaftor 75mg + Tezacaftor 50mg + Elexacaftor 100mg",
+            "component_strengths": "75/50/100",
+            "component_units": "mg",
+            "dosage_form": "tablets",
+            "daily_units": "2",
+            "daily_units_formatted": "2 units",
+            "package_size_ordered": "N2",
+            "packages_ordered": "1",
+            "total_units": "60",
+            "days_supply": "30",
+            "months_supply": "1.0",
+            "package_size": "N2",
+            "quantity": "60",
+            "pzn": "12345678",
+            "gtin": "1234567890123",
+            "physician": "Dr. Smith",
+            "instructions": "Take twice daily",
+            "notes": "With meals"
+        },
+        {
+            "brand_name": "NaCl 0,9% Ampullen", 
+            "manufacturer": "B. Braun",
+            "display_name": "NaCl 0,9% Ampullen (B. Braun)",
+            "ingredient_name": "Natriumchlorid",
+            "component_display": "Natriumchlorid 6%",
+            "component_strengths": "6",
+            "component_units": "%",
+            "dosage_form": "ampullen", 
+            "daily_units": "4",
+            "daily_units_formatted": "4 units",
+            "package_size_ordered": "N1",
+            "packages_ordered": "2",
+            "total_units": "60",
+            "days_supply": "15",
+            "months_supply": "0.5",
+            "package_size": "N1",
+            "quantity": "30", 
+            "pzn": "87654321",
+            "gtin": "3210987654321",
+            "physician": "Dr. Johnson",
+            "instructions": "As needed",
+            "notes": "Inhalation"
+        }
+    ]
+
     return render_template(
         "pdf_mapper/content.html",
         template=template,
         available_fields=available_fields,
+        sample_data=sample_data,
     )
 
 
@@ -581,10 +633,66 @@ def preview_template(id):
     """Preview PDF with sample data."""
     template = PDFTemplate.query.get_or_404(id)
 
-    # Get sample medications
-    sample_medications = []
-    medications = []
+    # Create sample medications with new component system
+    sample_medications = [
+        {
+            "brand_name": "Kaftrio",
+            "manufacturer": "Vertex Pharmaceuticals",
+            "display_name": "Kaftrio (Vertex Pharmaceuticals)", 
+            "ingredient_name": "Kaftrio",
+            "component_display": "Ivacaftor 75mg + Tezacaftor 50mg + Elexacaftor 100mg",
+            "active_ingredient": "Ivacaftor 75mg + Tezacaftor 50mg + Elexacaftor 100mg",  # For template compatibility
+            "component_strengths": "75/50/100",
+            "component_units": "mg", 
+            "unit": "mg",  # For template compatibility
+            "dosage_form": "tablets",
+            "daily_units": "2",
+            "daily_units_formatted": "2 units",
+            "daily_dosage": "150/100/200",  # Sample daily dosage calculation
+            "package_size_ordered": "N2",
+            "packages_ordered": "1",
+            "total_units": "60",
+            "days_supply": "30",
+            "months_supply": "1.0",
+            "package_size": "N2",
+            "quantity": "60",
+            "pzn": "12345678",
+            "gtin": "1234567890123",
+            "physician": "Dr. Smith",
+            "instructions": "Take twice daily",
+            "notes": "With meals"
+        },
+        {
+            "brand_name": "NaCl 0,9% Ampullen", 
+            "manufacturer": "B. Braun",
+            "display_name": "NaCl 0,9% Ampullen (B. Braun)",
+            "ingredient_name": "Natriumchlorid",
+            "component_display": "Natriumchlorid 6%",
+            "active_ingredient": "Natriumchlorid 6%",  # For template compatibility
+            "component_strengths": "6",
+            "component_units": "%",
+            "unit": "%",  # For template compatibility
+            "dosage_form": "ampullen", 
+            "daily_units": "4",
+            "daily_units_formatted": "4 units",
+            "daily_dosage": "24%",  # Sample daily dosage calculation 
+            "package_size_ordered": "N1",
+            "packages_ordered": "2",
+            "total_units": "60",
+            "days_supply": "15",
+            "months_supply": "0.5",
+            "package_size": "N1",
+            "quantity": "30", 
+            "pzn": "87654321",
+            "gtin": "3210987654321",
+            "physician": "Dr. Johnson",
+            "instructions": "As needed",
+            "notes": "Inhalation"
+        }
+    ]
 
+    # Legacy medication processing (now empty, using direct sample data above)
+    medications = []
     for med in medications:
         # Get product and ingredient information
         product = med.default_product or (
