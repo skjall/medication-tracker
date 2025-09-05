@@ -578,7 +578,6 @@
         // Package size selector
         document.getElementById('package_size').addEventListener('change', function() {
             const customInput = document.getElementById('custom_package_size');
-            const quantityInput = document.getElementById('quantity');
             
             if (this.value === 'custom') {
                 customInput.style.display = 'block';
@@ -588,9 +587,7 @@
                 customInput.required = false;
                 
                 // Auto-fill quantity if package size has existing units and quantity field is empty
-                if (window.packageQuantities && window.packageQuantities[this.value] && !quantityInput.value) {
-                    quantityInput.value = window.packageQuantities[this.value];
-                }
+                autoFillQuantityForCurrentSelection();
             }
         });
 
@@ -926,6 +923,41 @@
         // Restore previous selection if it still exists
         if (currentValue && Array.from(packageSelect.options).some(opt => opt.value === currentValue)) {
             packageSelect.value = currentValue;
+        }
+        
+        // Auto-fill quantity if current selection has existing units and quantity field is empty
+        autoFillQuantityForCurrentSelection();
+    }
+    
+    function autoFillQuantityForCurrentSelection() {
+        const packageSelect = document.getElementById('package_size');
+        const quantityInput = document.getElementById('quantity');
+        const selectedSize = packageSelect.value;
+        
+        // Skip auto-fill for custom size selection
+        if (selectedSize === 'custom') {
+            return;
+        }
+        
+        // If we have stored quantities available
+        if (window.packageQuantities) {
+            const storedQuantity = window.packageQuantities[selectedSize];
+            
+            if (storedQuantity) {
+                // Auto-fill if quantity field is empty
+                if (!quantityInput.value) {
+                    quantityInput.value = storedQuantity;
+                }
+            } else {
+                // Clear field if switching to size without stored quantity and field wasn't manually entered
+                // Only clear if the current value matches a stored quantity (indicating it was auto-filled)
+                const currentValue = quantityInput.value;
+                const isAutoFilledValue = Object.values(window.packageQuantities).includes(parseInt(currentValue));
+                
+                if (isAutoFilledValue) {
+                    quantityInput.value = '';
+                }
+            }
         }
     }
 
