@@ -695,6 +695,65 @@ def delete_package(id: int):
     return redirect(url_for("ingredients.show_product", id=product_id))
 
 
+@ingredients_bp.route("/inventory/<int:id>/edit", methods=["GET", "POST"])
+def edit_package_inventory(id: int):
+    """Edit package inventory details."""
+    from models import PackageInventory, ScannedItem
+    
+    package_inventory = PackageInventory.query.get_or_404(id)
+    scanned_item = package_inventory.scanned_item
+    
+    if request.method == "POST":
+        # Update inventory details
+        if "current_units" in request.form:
+            new_units = int(request.form["current_units"])
+            if 0 <= new_units <= package_inventory.original_units:
+                package_inventory.current_units = new_units
+        
+        if "status" in request.form:
+            package_inventory.status = request.form["status"]
+        
+        # Update scanned item details
+        if "serial_number" in request.form:
+            scanned_item.serial_number = request.form["serial_number"].strip()
+        
+        if "batch_number" in request.form:
+            batch = request.form["batch_number"].strip()
+            scanned_item.batch_number = batch if batch else None
+        
+        if "expiry_date" in request.form:
+            expiry = request.form["expiry_date"].strip()
+            if expiry:
+                from datetime import datetime
+                try:
+                    scanned_item.expiry_date = datetime.strptime(expiry, '%Y-%m-%d').date()
+                except ValueError:
+                    scanned_item.expiry_date = None
+            else:
+                scanned_item.expiry_date = None
+        
+        db.session.commit()
+        flash(_("Package inventory updated successfully"), "success")
+        
+        # Find product to redirect back to
+        product = None
+        if scanned_item.gtin:
+            package_config = ProductPackage.query.filter_by(gtin=scanned_item.gtin).first()
+            if package_config:
+                product = package_config.product
+        
+        if product:
+            return redirect(url_for("ingredients.show_product", id=product.id))
+        else:
+            return redirect(url_for("ingredients.index"))
+    
+    return render_template(
+        "ingredients/edit_package_inventory.html",
+        package_inventory=package_inventory,
+        scanned_item=scanned_item
+    )
+
+
 @ingredients_bp.route(
     "/<int:ingredient_id>/set-default-product/<int:product_id>",
     methods=["POST"],

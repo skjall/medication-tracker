@@ -1,0 +1,155 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Edit Package Inventory') }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>{{ _('Edit Package Inventory') }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <!-- Package Information -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">{{ _('Package Information') }}</h6>
+                            
+                            <div class="mb-3">
+                                <label for="serial_number" class="form-label">{{ _('Serial Number') }} <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="serial_number" name="serial_number"
+                                       value="{{ scanned_item.serial_number }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="batch_number" class="form-label">{{ _('Batch Number') }}</label>
+                                <input type="text" class="form-control" id="batch_number" name="batch_number"
+                                       value="{{ scanned_item.batch_number or '' }}" placeholder="{{ _('Optional') }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="expiry_date" class="form-label">{{ _('Expiry Date') }}</label>
+                                <input type="date" class="form-control" id="expiry_date" name="expiry_date"
+                                       value="{% if scanned_item.expiry_date %}{{ scanned_item.expiry_date.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+
+                        <!-- Inventory Status -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">{{ _('Inventory Status') }}</h6>
+                            
+                            <div class="mb-3">
+                                <label for="current_units" class="form-label">{{ _('Current Units') }} <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="current_units" name="current_units"
+                                           value="{{ package_inventory.current_units }}" 
+                                           min="0" max="{{ package_inventory.original_units }}" required>
+                                    <span class="input-group-text">/ {{ package_inventory.original_units }}</span>
+                                </div>
+                                <div class="form-text">{{ _('Maximum units: %(max)s', max=package_inventory.original_units) }}</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="status_display" class="form-label">{{ _('Status') }}</label>
+                                <div class="form-control-plaintext" id="status_display">
+                                    <span class="badge bg-primary" id="status_badge">{{ _('Calculating...') }}</span>
+                                </div>
+                                <input type="hidden" id="status" name="status" value="{{ package_inventory.status }}">
+                                <div class="form-text">{{ _('Status is automatically calculated based on units and expiry date') }}</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ _('Scanned At') }}</label>
+                                <div class="form-control-plaintext">{{ scanned_item.scanned_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                            <i class="fas fa-arrow-left me-1"></i>{{ _('Cancel') }}
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>{{ _('Save Changes') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const currentUnitsInput = document.getElementById('current_units');
+    const originalUnits = {{ package_inventory.original_units }};
+    const expiryDateInput = document.getElementById('expiry_date');
+    const statusInput = document.getElementById('status');
+    const statusBadge = document.getElementById('status_badge');
+
+    const statusLabels = {
+        'sealed': '{{ _("Sealed") }}',
+        'opened': '{{ _("Opened") }}',
+        'consumed': '{{ _("Consumed") }}',
+        'expired': '{{ _("Expired") }}'
+    };
+
+    const statusColors = {
+        'sealed': 'bg-primary',
+        'opened': 'bg-primary', 
+        'consumed': 'bg-secondary',
+        'expired': 'bg-danger'
+    };
+
+    function updateStatus(newStatus) {
+        statusInput.value = newStatus;
+        statusBadge.textContent = statusLabels[newStatus];
+        statusBadge.className = `badge ${statusColors[newStatus]}`;
+    }
+
+    function calculateStatus() {
+        const currentUnits = parseInt(currentUnitsInput.value) || 0;
+        
+        // PRIORITY 1: Consumed overrides everything - if empty, it's consumed
+        if (currentUnits === 0) {
+            updateStatus('consumed');
+            return;
+        }
+        
+        // PRIORITY 2: Check expiry date for non-empty packages
+        if (expiryDateInput.value) {
+            const expiryDate = new Date(expiryDateInput.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to start of day
+            
+            if (expiryDate < today) {
+                updateStatus('expired');
+                return;
+            }
+        }
+        
+        // PRIORITY 3: Check if sealed or opened based on units
+        if (currentUnits === originalUnits) {
+            updateStatus('sealed');
+        } else {
+            updateStatus('opened');
+        }
+    }
+
+    // Update status when current units change
+    currentUnitsInput.addEventListener('input', calculateStatus);
+    
+    // Update status when expiry date changes
+    expiryDateInput.addEventListener('change', calculateStatus);
+    
+    // Initial update on page load
+    calculateStatus();
+});
+</script>
+
+{% endblock %}

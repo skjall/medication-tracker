@@ -219,6 +219,31 @@ def scan():
         if active_inventory:
             # Package is already in active inventory - reject
             product_name = _("Unknown")
+            product_id = None
+            package_id = None
+            
+            # Find the product associated with this package
+            if existing_scanned.gtin:
+                product_package = ProductPackage.query.filter_by(gtin=existing_scanned.gtin).first()
+            elif existing_scanned.national_number:
+                product_package = ProductPackage.query.filter(
+                    ProductPackage.national_number == existing_scanned.national_number,
+                    ProductPackage.national_number_type == existing_scanned.national_number_type
+                ).first()
+            else:
+                product_package = None
+            
+            if product_package:
+                product_id = product_package.product_id
+                package_id = product_package.id
+                if product_package.product:
+                    product_name = product_package.product.display_name
+
+            actions = {}
+            if product_id:
+                actions["view_url"] = url_for('ingredients.show_product', id=product_id)
+                if active_inventory:
+                    actions["edit_url"] = url_for('ingredients.edit_package_inventory', id=active_inventory.id)
 
             return (
                 jsonify(
@@ -230,11 +255,7 @@ def scan():
                             "status": active_inventory.status,
                             "units_remaining": f"{active_inventory.current_units}/{active_inventory.original_units}",
                         },
-                        "actions": {
-                            "view_url": url_for('inventory.show_package', id=active_inventory.id),
-                            "edit_url": url_for('inventory.edit_package', id=active_inventory.id),
-                            "package_id": active_inventory.id
-                        }
+                        "actions": actions
                     }
                 ),
                 409,

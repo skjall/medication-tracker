@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-09-05 10:55\n"
+"PO-Revision-Date: 2025-09-05 19:55\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -83,15 +83,19 @@ msgstr "Packung erfolgreich aktualisiert"
 msgid "Package deleted successfully"
 msgstr "Packung erfolgreich gelöscht"
 
-#: /app/routes/ingredients.py:709
+#: /app/routes/ingredients.py:736
+msgid "Package inventory updated successfully"
+msgstr "Inventar erfolgreich aktualisiert"
+
+#: /app/routes/ingredients.py:768
 msgid "Product does not belong to this ingredient"
 msgstr "Produkt gehört nicht zu diesem Wirkstoff"
 
-#: /app/routes/ingredients.py:716
+#: /app/routes/ingredients.py:775
 msgid "Default product set successfully"
 msgstr "Standardprodukt erfolgreich festgelegt"
 
-#: /app/routes/ingredients.py:730
+#: /app/routes/ingredients.py:789
 msgid "Default product cleared"
 msgstr "Standardprodukt gelöscht"
 
@@ -344,7 +348,7 @@ msgid "Package Size (N1/N2/N3)"
 msgstr "Packungsgröße (N1/N2/N3)"
 
 #: /app/routes/pdf_mapper.py:329
-#: /app/templates/ingredients/show_product.html:188
+#: /app/templates/ingredients/show_product.html:191
 #: /app/templates/orders/printable.html:134
 msgid "Total Units"
 msgstr "Gesamte Einheiten"
@@ -504,114 +508,114 @@ msgstr "Dieser Barcode-Typ wird nicht unterstützt. Nur Pharmazie-Codes, DataMat
 msgid "Invalid barcode: missing serial number"
 msgstr "Ungültiger Strichcode: Seriennummer fehlt"
 
-#: /app/routes/scanner.py:226
+#: /app/routes/scanner.py:251
 msgid "Package already in inventory"
 msgstr "Packung bereits im Inventar"
 
-#: /app/routes/scanner.py:305
+#: /app/routes/scanner.py:331
 msgid "Package configuration updated with scanned data"
 msgstr "Packungsinformationen mit gescannten Daten aktualisiert"
 
-#: /app/routes/scanner.py:382
+#: /app/routes/scanner.py:408
 #, python-format
 msgid "Order fulfilled with %(overage)d extra units"
 msgstr "Bestellung erledigt mit %(overage)d zusätzlichen Einheiten"
 
-#: /app/routes/scanner.py:386
+#: /app/routes/scanner.py:412
 #, python-format
 msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s. %(overage)d extra units."
 msgstr "Bestellung erledigt. %(quantity)d Einheiten in %(package_size)s enthalten. %(overage)d zusätzliche Einheiten."
 
-#: /app/routes/scanner.py:392
+#: /app/routes/scanner.py:418
 msgid "Order fulfilled exactly"
 msgstr "Bestellung erledigt"
 
-#: /app/routes/scanner.py:394
+#: /app/routes/scanner.py:420
 #, python-format
 msgid "Order fulfilled. Received %(quantity)d units in %(package_size)s."
 msgstr "Bestellung erledigt. %(quantity)d Einheiten in %(package_size)s erhalten."
 
-#: /app/routes/scanner.py:405
+#: /app/routes/scanner.py:431
 #, python-format
 msgid "Partial fulfillment: %(remaining)d units still needed"
 msgstr "Teilweise erfüllt: %(remaining)d Einheiten noch erforderlich"
 
-#: /app/routes/scanner.py:409
+#: /app/routes/scanner.py:435
 #, python-format
 msgid "Partially fulfilled. Received %(quantity)d units in %(package_size)s. Still need %(remaining)d units."
 msgstr "Teilweise erledigt. %(quantity)d Einheiten in %(package_size)s erhalten. Noch %(remaining)d Einheiten benötigt."
 
-#: /app/routes/scanner.py:436
+#: /app/routes/scanner.py:462
 #, python-format
 msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units). %(fulfillment)s"
 msgstr "Zum Inventar hinzugefügt: %(product_name)s %(package_size)s (%(quantity)d Einheiten). %(fulfillment)s"
 
-#: /app/routes/scanner.py:444
+#: /app/routes/scanner.py:470
 #, python-format
 msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)"
 msgstr "Zum Inventar hinzugefügt: %(product_name)s %(package_size)s (%(quantity)d Einheiten)"
 
-#: /app/routes/scanner.py:502
+#: /app/routes/scanner.py:528
 msgid "Product Code"
 msgstr "Produktcode"
 
-#: /app/routes/scanner.py:508
+#: /app/routes/scanner.py:534
 #, python-format
 msgid "%(label)s %(number)s not found"
 msgstr "%(label)s %(number)s nicht gefunden"
 
-#: /app/routes/scanner.py:512 /app/routes/scanner.py:519
-#: /app/routes/scanner.py:524 /app/routes/scanner.py:529
-#: /app/routes/scanner.py:534
+#: /app/routes/scanner.py:538 /app/routes/scanner.py:545
+#: /app/routes/scanner.py:550 /app/routes/scanner.py:555
+#: /app/routes/scanner.py:560
 msgid "Please add this package."
 msgstr "Bitte füge diese Packung hinzu."
 
-#: /app/routes/scanner.py:517
+#: /app/routes/scanner.py:543
 #, python-format
 msgid "EAN-13 barcode %(code)s not found"
 msgstr "EAN-13-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:522
+#: /app/routes/scanner.py:548
 #, python-format
 msgid "EAN-8 barcode %(code)s not found"
 msgstr "EAN-8-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:527
+#: /app/routes/scanner.py:553
 #, python-format
 msgid "UPC barcode %(code)s not found"
 msgstr "UPC-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:532
+#: /app/routes/scanner.py:558
 #, python-format
 msgid "Product barcode %(code)s not found"
 msgstr "Produkt-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:537
+#: /app/routes/scanner.py:563
 msgid "Unrecognized barcode format"
 msgstr "Unbekanntes Strichcode-Format"
 
-#: /app/routes/scanner.py:538
+#: /app/routes/scanner.py:564
 msgid "This barcode type is not supported"
 msgstr "Dieser Strichcode-Typ wird nicht unterstützt"
 
-#: /app/routes/scanner.py:617
+#: /app/routes/scanner.py:643
 msgid "Package not in inventory"
 msgstr "Packung nicht im Inventar"
 
-#: /app/routes/scanner.py:622
+#: /app/routes/scanner.py:648
 msgid "Invalid number of units"
 msgstr "Ungültige Anzahl an Einheiten"
 
-#: /app/routes/scanner.py:626
+#: /app/routes/scanner.py:652
 msgid "Not enough units in package"
 msgstr "Nicht genug Einheiten in der Packung"
 
-#: /app/routes/scanner.py:643
+#: /app/routes/scanner.py:669
 #, python-format
 msgid "%(units)d units consumed"
 msgstr "%(units)d Einheiten verbraucht"
 
-#: /app/routes/scanner.py:661
+#: /app/routes/scanner.py:687
 msgid "Package marked as expired"
 msgstr "Packung als abgelaufen markiert"
 
@@ -909,7 +913,7 @@ msgstr[0] "%(count)d Tag entfernt"
 msgstr[1] "%(count)d Tage entfernt"
 
 #: /app/templates/index.html:36 /app/templates/physicians/index.html:64
-#: /app/templates/scanner/scan.html:1053 /app/templates/visits/index.html:86
+#: /app/templates/scanner/scan.html:1071 /app/templates/visits/index.html:86
 #: /app/templates/visits/index.html:166
 msgid "View Details"
 msgstr "Details anzeigen"
@@ -1037,7 +1041,7 @@ msgstr "Name"
 
 #: /app/templates/index.html:195 /app/templates/index.html:330
 #: /app/templates/ingredients/show.html:239
-#: /app/templates/ingredients/show_product.html:192
+#: /app/templates/ingredients/show_product.html:195
 #: /app/templates/orders/printable.html:132
 #: /app/templates/physicians/show.html:149
 #: /app/templates/schedules/index_ingredient.html:88
@@ -1046,7 +1050,7 @@ msgid "Daily Usage"
 msgstr "Tagesverbrauch"
 
 #: /app/templates/index.html:196 /app/templates/index.html:331
-#: /app/templates/ingredients/show_product.html:183
+#: /app/templates/ingredients/show_product.html:186
 #: /app/templates/scanner/index.html:46
 msgid "Current Inventory"
 msgstr "Aktueller Bestand"
@@ -1060,10 +1064,11 @@ msgid "Depletion Date"
 msgstr "Verbrauchsdatum"
 
 #: /app/templates/index.html:199 /app/templates/index.html:334
+#: /app/templates/ingredients/edit_package_inventory.html:56
 #: /app/templates/ingredients/show.html:92
 #: /app/templates/ingredients/show.html:192
-#: /app/templates/ingredients/show_product.html:217
-#: /app/templates/ingredients/show_product.html:287
+#: /app/templates/ingredients/show_product.html:220
+#: /app/templates/ingredients/show_product.html:303
 #: /app/templates/orders/index.html:23 /app/templates/orders/printable.html:112
 #: /app/templates/orders/show.html:64 /app/templates/orders/show.html:163
 #: /app/templates/pdf_mapper/index.html:44
@@ -1079,6 +1084,7 @@ msgstr "Status"
 #: /app/templates/ingredients/index.html:27
 #: /app/templates/ingredients/show.html:93
 #: /app/templates/ingredients/show_product.html:118
+#: /app/templates/ingredients/show_product.html:221
 #: /app/templates/orders/edit.html:70 /app/templates/orders/index.html:27
 #: /app/templates/orders/index.html:154 /app/templates/orders/show.html:164
 #: /app/templates/physicians/index.html:36
@@ -1098,8 +1104,8 @@ msgstr "Aktionen"
 #: /app/templates/ingredients/show.html:57
 #: /app/templates/ingredients/show.html:113
 #: /app/templates/ingredients/show_product.html:125
-#: /app/templates/ingredients/show_product.html:263
-#: /app/templates/ingredients/show_product.html:377
+#: /app/templates/ingredients/show_product.html:279
+#: /app/templates/ingredients/show_product.html:393
 #: /app/templates/orders/show.html:193 /app/templates/orders/show.html:209
 #: /app/templates/orders/show.html:215 /app/templates/orders/show.html:378
 #: /app/templates/physicians/show.html:165
@@ -1255,6 +1261,7 @@ msgstr "z. B. N02BE01"
 #: /app/templates/ingredients/edit.html:107
 #: /app/templates/ingredients/edit_package.html:11
 #: /app/templates/ingredients/edit_package.html:111
+#: /app/templates/ingredients/edit_package_inventory.html:75
 #: /app/templates/ingredients/edit_product.html:11
 #: /app/templates/ingredients/edit_product.html:102
 #: /app/templates/ingredients/new_package.html:11
@@ -1282,12 +1289,14 @@ msgstr "Abbrechen"
 
 #: /app/templates/ingredients/edit.html:111
 #: /app/templates/ingredients/edit_package.html:114
+#: /app/templates/ingredients/edit_package_inventory.html:78
 #: /app/templates/ingredients/edit_product.html:99
 msgid "Save Changes"
 msgstr "Änderungen speichern"
 
 #: /app/templates/ingredients/edit_package.html:3
 #: /app/templates/ingredients/edit_package.html:20
+#: /app/templates/scanner/scan.html:1045
 msgid "Edit Package"
 msgstr "Packung bearbeiten"
 
@@ -1363,6 +1372,92 @@ msgstr "Von der Bestellung ausschließen"
 #: /app/templates/ingredients/new_package.html:105
 msgid "Check this to ignore this package when ordering"
 msgstr "Kreuze hier an, um diese Packungsgröße bei der Bestellung zu ignorieren"
+
+#: /app/templates/ingredients/edit_package_inventory.html:3
+#: /app/templates/ingredients/edit_package_inventory.html:11
+msgid "Edit Package Inventory"
+msgstr "Packung bearbeiten"
+
+#: /app/templates/ingredients/edit_package_inventory.html:19
+#: /app/templates/scanner/package_details.html:19
+msgid "Package Information"
+msgstr "Packungsinformationen"
+
+#: /app/templates/ingredients/edit_package_inventory.html:22
+msgid "Serial Number"
+msgstr "Seriennummer"
+
+#: /app/templates/ingredients/edit_package_inventory.html:28
+msgid "Batch Number"
+msgstr "Chargennummer"
+
+#: /app/templates/ingredients/edit_package_inventory.html:30
+msgid "Optional"
+msgstr "Optional"
+
+#: /app/templates/ingredients/edit_package_inventory.html:34
+msgid "Expiry Date"
+msgstr "Ablaufdatum"
+
+#: /app/templates/ingredients/edit_package_inventory.html:42
+#: /app/templates/scanner/package_details.html:96
+msgid "Inventory Status"
+msgstr "Bestandsstatus"
+
+#: /app/templates/ingredients/edit_package_inventory.html:45
+msgid "Current Units"
+msgstr "Tatsächliche Stückzahl"
+
+#: /app/templates/ingredients/edit_package_inventory.html:52
+#, python-format
+msgid "Maximum units: %(max)s"
+msgstr "Maximale Stückzahl: %(max)s"
+
+#: /app/templates/ingredients/edit_package_inventory.html:58
+msgid "Calculating..."
+msgstr "Berechnen..."
+
+#: /app/templates/ingredients/edit_package_inventory.html:61
+msgid "Status is automatically calculated based on units and expiry date"
+msgstr "Der Status wird automatisch anhand der Einheiten und des Verfallsdatums berechnet"
+
+#: /app/templates/ingredients/edit_package_inventory.html:65
+#: /app/templates/scanner/index.html:139
+msgid "Scanned At"
+msgstr "Gescannt am"
+
+#: /app/templates/ingredients/edit_package_inventory.html:96
+#: /app/templates/ingredients/show_product.html:239
+#: /app/templates/scanner/index.html:102
+#: /app/templates/scanner/package_details.html:103
+msgid "Sealed"
+msgstr "Verschlossen"
+
+#: /app/templates/ingredients/edit_package_inventory.html:97
+#: /app/templates/ingredients/show_product.html:320
+#: /app/templates/scanner/package_details.html:127
+msgid "Opened"
+msgstr "Geöffnet"
+
+#: /app/templates/ingredients/edit_package_inventory.html:98
+#: /app/templates/ingredients/show_product.html:243
+#: /app/templates/ingredients/show_product.html:322
+#: /app/templates/scanner/index.html:106 /app/templates/scanner/index.html:179
+#: /app/templates/scanner/package_details.html:80
+#: /app/templates/scanner/package_details.html:107
+#: /app/templates/scanner/package_details.html:132
+msgid "Consumed"
+msgstr "Verbraucht"
+
+#: /app/templates/ingredients/edit_package_inventory.html:99
+#: /app/templates/ingredients/show_product.html:245
+#: /app/templates/scanner/index.html:36 /app/templates/scanner/index.html:83
+#: /app/templates/scanner/index.html:108 /app/templates/scanner/index.html:181
+#: /app/templates/scanner/package_details.html:63
+#: /app/templates/scanner/package_details.html:82
+#: /app/templates/scanner/package_details.html:109
+msgid "Expired"
+msgstr "Abgelaufen"
 
 #: /app/templates/ingredients/edit_product.html:3
 #: /app/templates/ingredients/edit_product.html:8
@@ -1473,7 +1568,7 @@ msgstr "Willst du diesen Wirkstoff wirklich löschen?"
 #: /app/templates/ingredients/index.html:148
 #: /app/templates/ingredients/show.html:162
 #: /app/templates/ingredients/show_product.html:19
-#: /app/templates/ingredients/show_product.html:159
+#: /app/templates/ingredients/show_product.html:156
 #: /app/templates/orders/show.html:129 /app/templates/pdf_mapper/index.html:89
 #: /app/templates/schedules/index.html:117
 #: /app/templates/schedules/index.html:169
@@ -1732,13 +1827,13 @@ msgid "units/day"
 msgstr "Einheiten/Tag"
 
 #: /app/templates/ingredients/show.html:241
-#: /app/templates/ingredients/show_product.html:196
+#: /app/templates/ingredients/show_product.html:199
 #: /app/templates/schedules/index_ingredient.html:68
 msgid "Days Remaining"
 msgstr "Verbleibende Tage"
 
 #: /app/templates/ingredients/show.html:253
-#: /app/templates/ingredients/show_product.html:358
+#: /app/templates/ingredients/show_product.html:374
 msgid "Substitutable Products"
 msgstr "Ersetzbare Produkte"
 
@@ -1804,26 +1899,26 @@ msgstr "Menge"
 msgid "Are you sure you want to delete this package configuration?"
 msgstr "Willst du die Konfiguration dieser Packung wirklich löschen?"
 
-#: /app/templates/ingredients/show_product.html:173
+#: /app/templates/ingredients/show_product.html:176
 msgid "No package configurations yet."
 msgstr "Noch keine Packungen konfiguriert."
 
-#: /app/templates/ingredients/show_product.html:174
+#: /app/templates/ingredients/show_product.html:177
 msgid "Add the first package"
 msgstr "Erste Packung hinzufügen"
 
-#: /app/templates/ingredients/show_product.html:208
+#: /app/templates/ingredients/show_product.html:211
 msgid "Packages in Stock"
 msgstr "Packungen im Bestand"
 
-#: /app/templates/ingredients/show_product.html:213
-#: /app/templates/ingredients/show_product.html:289
+#: /app/templates/ingredients/show_product.html:216
+#: /app/templates/ingredients/show_product.html:305
 #: /app/templates/scanner/index.html:55 /app/templates/scanner/index.html:142
 #: /app/templates/scanner/package_details.html:48
 msgid "Serial"
 msgstr "Seriennummer"
 
-#: /app/templates/ingredients/show_product.html:214
+#: /app/templates/ingredients/show_product.html:217
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
@@ -1831,7 +1926,7 @@ msgstr "Seriennummer"
 msgid "Batch"
 msgstr "Charge"
 
-#: /app/templates/ingredients/show_product.html:215
+#: /app/templates/ingredients/show_product.html:218
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
@@ -1839,20 +1934,14 @@ msgstr "Charge"
 msgid "Expiry"
 msgstr "Verwendbar bis"
 
-#: /app/templates/ingredients/show_product.html:216
-#: /app/templates/ingredients/show_product.html:286
+#: /app/templates/ingredients/show_product.html:219
+#: /app/templates/ingredients/show_product.html:302
 #: /app/templates/scanner/index.html:58
 #: /app/templates/scanner/package_details.html:113
 msgid "Units"
 msgstr "Einheiten"
 
-#: /app/templates/ingredients/show_product.html:235
-#: /app/templates/scanner/index.html:102
-#: /app/templates/scanner/package_details.html:103
-msgid "Sealed"
-msgstr "Verschlossen"
-
-#: /app/templates/ingredients/show_product.html:237
+#: /app/templates/ingredients/show_product.html:241
 #: /app/templates/orders/edit.html:54 /app/templates/orders/index.html:49
 #: /app/templates/orders/show.html:71 /app/templates/scanner/index.html:104
 #: /app/templates/scanner/package_details.html:105
@@ -1860,64 +1949,55 @@ msgstr "Verschlossen"
 msgid "Open"
 msgstr "Offen"
 
-#: /app/templates/ingredients/show_product.html:246
+#: /app/templates/ingredients/show_product.html:252
+msgid "Edit Inventory"
+msgstr "Inventar bearbeiten"
+
+#: /app/templates/ingredients/show_product.html:262
 msgid "No packages in stock"
 msgstr "Keine Packungen im Bestand"
 
-#: /app/templates/ingredients/show_product.html:251
+#: /app/templates/ingredients/show_product.html:267
 msgid "Legacy Inventory"
 msgstr "Bestand im Altsystem"
 
-#: /app/templates/ingredients/show_product.html:256
+#: /app/templates/ingredients/show_product.html:272
 msgid "Sum-based system"
 msgstr "Summenbasiertes System"
 
-#: /app/templates/ingredients/show_product.html:258
+#: /app/templates/ingredients/show_product.html:274
 msgid "This inventory needs migration to package-based tracking"
 msgstr "Dieses Inventar muss auf eine packungsbasierte Nachverfolgung umgestellt werden"
 
-#: /app/templates/ingredients/show_product.html:275
+#: /app/templates/ingredients/show_product.html:291
 msgid "Recent Inventory Changes"
 msgstr "Neueste Änderungen des Inventars"
 
-#: /app/templates/ingredients/show_product.html:284
+#: /app/templates/ingredients/show_product.html:300
 msgid "Date"
 msgstr "Datum"
 
-#: /app/templates/ingredients/show_product.html:285
+#: /app/templates/ingredients/show_product.html:301
 msgid "Change Type"
 msgstr "Änderungstyp"
 
-#: /app/templates/ingredients/show_product.html:288
+#: /app/templates/ingredients/show_product.html:304
 msgid "Reason"
 msgstr "Grund"
 
-#: /app/templates/ingredients/show_product.html:300
+#: /app/templates/ingredients/show_product.html:316
 msgid "Onboarded"
 msgstr "Eingebunden"
 
-#: /app/templates/ingredients/show_product.html:302
+#: /app/templates/ingredients/show_product.html:318
 msgid "Deducted"
 msgstr "Abgezogen"
 
-#: /app/templates/ingredients/show_product.html:304
-#: /app/templates/scanner/package_details.html:127
-msgid "Opened"
-msgstr "Geöffnet"
-
-#: /app/templates/ingredients/show_product.html:306
-#: /app/templates/scanner/index.html:106 /app/templates/scanner/index.html:179
-#: /app/templates/scanner/package_details.html:80
-#: /app/templates/scanner/package_details.html:107
-#: /app/templates/scanner/package_details.html:132
-msgid "Consumed"
-msgstr "Verbraucht"
-
-#: /app/templates/ingredients/show_product.html:308
+#: /app/templates/ingredients/show_product.html:324
 msgid "Manual"
 msgstr "Manuell"
 
-#: /app/templates/ingredients/show_product.html:346
+#: /app/templates/ingredients/show_product.html:362
 msgid "No inventory changes recorded yet."
 msgstr "Noch keine Bestandsänderungen aufgezeichnet."
 
@@ -3604,14 +3684,6 @@ msgstr "Insgesamt gescannt"
 msgid "Active Packages"
 msgstr "Aktive Packungen"
 
-#: /app/templates/scanner/index.html:36 /app/templates/scanner/index.html:83
-#: /app/templates/scanner/index.html:108 /app/templates/scanner/index.html:181
-#: /app/templates/scanner/package_details.html:63
-#: /app/templates/scanner/package_details.html:82
-#: /app/templates/scanner/package_details.html:109
-msgid "Expired"
-msgstr "Abgelaufen"
-
 #: /app/templates/scanner/index.html:123
 msgid "No packages in inventory"
 msgstr "Keine Packungen im Bestand"
@@ -3619,10 +3691,6 @@ msgstr "Keine Packungen im Bestand"
 #: /app/templates/scanner/index.html:131
 msgid "Recent Scans"
 msgstr "Letzte Scans"
-
-#: /app/templates/scanner/index.html:139
-msgid "Scanned At"
-msgstr "Gescannt am"
 
 #: /app/templates/scanner/index.html:177
 #: /app/templates/scanner/package_details.html:78
@@ -3638,10 +3706,6 @@ msgstr "Keine aktuellen Scans"
 msgid "Package Details"
 msgstr "Packungsdetails"
 
-#: /app/templates/scanner/package_details.html:19
-msgid "Package Information"
-msgstr "Packungsinformationen"
-
 #: /app/templates/scanner/package_details.html:35
 msgid "Number"
 msgstr "Nummer"
@@ -3654,10 +3718,6 @@ msgstr "verbleibende Tage"
 #: /app/templates/scanner/package_details.html:84
 msgid "Returned"
 msgstr "zurückgegeben"
-
-#: /app/templates/scanner/package_details.html:96
-msgid "Inventory Status"
-msgstr "Bestandsstatus"
 
 #: /app/templates/scanner/package_details.html:100
 msgid "Package Status"
@@ -3695,7 +3755,7 @@ msgstr "Lineare Barcodes (EAN, PZN)"
 msgid "Initializing..."
 msgstr "Initialisierung..."
 
-#: /app/templates/scanner/scan.html:438 /app/templates/scanner/scan.html:1097
+#: /app/templates/scanner/scan.html:438 /app/templates/scanner/scan.html:1115
 msgid "Retry"
 msgstr "Erneut versuchen"
 
@@ -3735,19 +3795,23 @@ msgstr "Scans erfolgreich zusammengeführt"
 msgid "Error"
 msgstr "Fehler"
 
-#: /app/templates/scanner/scan.html:1037
+#: /app/templates/scanner/scan.html:1040
+msgid "View Product"
+msgstr "Produkt anzeigen"
+
+#: /app/templates/scanner/scan.html:1055
 msgid "Package not found"
 msgstr "Packung nicht gefunden"
 
-#: /app/templates/scanner/scan.html:1046
+#: /app/templates/scanner/scan.html:1064
 msgid "Package Scanned"
 msgstr "Packung gescannt"
 
-#: /app/templates/scanner/scan.html:1060
+#: /app/templates/scanner/scan.html:1078
 msgid "Scan successful"
 msgstr "Scan erfolgreich"
 
-#: /app/templates/scanner/scan.html:1094
+#: /app/templates/scanner/scan.html:1112
 msgid "Camera Access Required"
 msgstr "Kamerazugriff erforderlich"
 

@@ -108,6 +108,83 @@ Colors should have specific meaning and be used consistently throughout the appl
 <a href="#" class="btn btn-outline-secondary">Cancel</a>
 ```
 
+#### Button Groups
+Buttons that are placed next to each other should be grouped using `btn-group` for proper spacing and visual cohesion:
+
+```html
+<!-- Multiple buttons together - use btn-group -->
+<div class="btn-group" role="group">
+    <a href="/edit" class="btn btn-outline-primary">Edit</a>
+    <button class="btn btn-outline-danger">Delete</button>
+</div>
+
+<!-- Page header actions -->
+<div class="btn-group" role="group">
+    <a href="/edit" class="btn btn-outline-primary">Edit</a>
+    <button class="btn btn-outline-danger">Delete</button>
+    <a href="/back" class="btn btn-outline-secondary">Back</a>
+</div>
+```
+
+#### Table Action Columns
+Action columns in tables must be right-aligned for consistent layout:
+
+```html
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Item Name</td>
+            <td>Active</td>
+            <td class="text-end">
+                <div class="btn-group" role="group">
+                    <a href="/edit" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            onclick="if(confirm('Are you sure?')) {
+                                var form = document.createElement('form');
+                                form.method = 'POST';
+                                form.action = '/delete/123';
+                                document.body.appendChild(form);
+                                form.submit();
+                            }">Delete</button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+```
+
+**Important**: For delete buttons that require form submissions, avoid wrapping them in `<form>` elements within button groups as this breaks the visual grouping. Instead, use JavaScript to dynamically create and submit forms:
+
+```html
+<!-- ❌ WRONG - Form breaks button grouping -->
+<div class="btn-group" role="group">
+    <a href="/edit" class="btn btn-outline-primary">Edit</a>
+    <form method="POST" action="/delete" class="d-inline">
+        <button class="btn btn-outline-danger">Delete</button>
+    </form>
+</div>
+
+<!-- ✅ CORRECT - JavaScript maintains grouping -->
+<div class="btn-group" role="group">
+    <a href="/edit" class="btn btn-outline-primary">Edit</a>
+    <button type="button" class="btn btn-outline-danger"
+            onclick="if(confirm('Are you sure?')) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/delete/123';
+                document.body.appendChild(form);
+                form.submit();
+            }">Delete</button>
+</div>
+```
+
 ### Cards and Sections
 
 #### Standard Card Header
