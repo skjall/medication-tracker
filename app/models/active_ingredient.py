@@ -174,7 +174,7 @@ class ActiveIngredient(db.Model):
                     strength_str = str(int(strength_float))
                 else:
                     strength_str = f"{strength_float:g}"
-                component_parts.append(f"{comp.component_name} {strength_str}{comp.strength_unit}")
+                component_parts.append(f"{comp.component_name} {strength_str} {comp.strength_unit}")
             parts.append(" + ".join(component_parts))
         
         # Add form if available

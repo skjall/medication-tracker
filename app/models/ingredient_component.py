@@ -38,7 +38,7 @@ class IngredientComponent(db.Model):
     active_ingredient = relationship("ActiveIngredient", back_populates="components")
 
     def __repr__(self):
-        return f"<IngredientComponent {self.component_name} {self.strength}{self.strength_unit}>"
+        return f"<IngredientComponent {self.component_name} {self.strength} {self.strength_unit}>"
 
     @property
     def display_text(self):
@@ -51,4 +51,4 @@ class IngredientComponent(db.Model):
             strength_str = str(int(strength_float))
         else:
             strength_str = f"{strength_float:g}"  # Remove trailing zeros
-        return f"{self.component_name} {strength_str}{self.strength_unit}"
+        return f"{self.component_name} {strength_str} {self.strength_unit}"

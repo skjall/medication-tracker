@@ -182,8 +182,22 @@ def onboard_package():
                 scanned_item = None  # Will create new one below
             
             if not scanned_item:
-                # Generate serial number based on available identifiers
-                if scanned_data.get('serial'):
+                # Get form data for Step 3 fields (user may have edited these)
+                form_serial = request.form.get('serial', '').strip()
+                form_gtin = request.form.get('gtin', '').strip() or None
+                form_batch = request.form.get('batch', '').strip() or None  
+                form_expiry = request.form.get('expiry', '').strip()
+                form_national_number = request.form.get('national_number', '').strip() or None
+                form_national_number_type = request.form.get('national_number_type', '').strip() or None
+                
+                # Generate serial number based on available identifiers (prioritize form data)
+                if form_serial:
+                    serial_num = form_serial
+                elif form_gtin:
+                    serial_num = f"{form_gtin}_{form_batch or 'NO_BATCH'}_{datetime.now(timezone.utc).timestamp()}"
+                elif form_national_number:
+                    serial_num = f"{form_national_number}_{form_batch or 'NO_BATCH'}_{datetime.now(timezone.utc).timestamp()}"
+                elif scanned_data.get('serial'):
                     serial_num = scanned_data.get('serial')
                 elif scanned_data.get('gtin'):
                     serial_num = f"{scanned_data.get('gtin')}_{scanned_data.get('batch', 'NO_BATCH')}_{datetime.now(timezone.utc).timestamp()}"
@@ -191,14 +205,23 @@ def onboard_package():
                     serial_num = f"{scanned_data.get('national_number')}_{scanned_data.get('batch', 'NO_BATCH')}_{datetime.now(timezone.utc).timestamp()}"
                 else:
                     serial_num = f"PKG_{package.id}_{datetime.now(timezone.utc).timestamp()}"
-                    
+                
+                # Parse expiry date if provided
+                expiry_date = None
+                if form_expiry:
+                    try:
+                        expiry_date = datetime.fromisoformat(form_expiry)
+                    except ValueError:
+                        # Handle invalid date format gracefully
+                        pass
+                
                 scanned_item = ScannedItem(
                     serial_number=serial_num,
-                    gtin=scanned_data.get('gtin') if scanned_data.get('gtin') else None,
-                    batch_number=scanned_data.get('batch') if scanned_data.get('batch') else None,
-                    expiry_date=datetime.fromisoformat(scanned_data['expiry']) if scanned_data.get('expiry') else None,
-                    national_number=scanned_data.get('national_number') if scanned_data.get('national_number') else None,
-                    national_number_type=scanned_data.get('national_number_type') if scanned_data.get('national_number_type') else None,
+                    gtin=form_gtin,  # Use form data instead of scanned_data
+                    batch_number=form_batch,  # Use form data instead of scanned_data
+                    expiry_date=expiry_date,  # Use form data instead of scanned_data
+                    national_number=form_national_number,  # Use form data instead of scanned_data
+                    national_number_type=form_national_number_type,  # Use form data instead of scanned_data
                     # Note: medication_package_id is for old system, leaving null for new ProductPackage
                     scanned_at=datetime.now(timezone.utc),
                     status='active'
@@ -326,7 +349,7 @@ def search_ingredients():
                     strength_str = str(int(strength_float))
                 else:
                     strength_str = f"{strength_float:g}"
-                component_parts.append(f"{comp.component_name} {strength_str}{comp.strength_unit}")
+                component_parts.append(f"{comp.component_name} {strength_str} {comp.strength_unit}")
             
             if component_parts:
                 display_name = f"{ing.name} ({' + '.join(component_parts)})"
