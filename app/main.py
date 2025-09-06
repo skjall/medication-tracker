@@ -137,21 +137,38 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Flask:
         # Group ingredients by physician or OTC status for display
         ingredients_by_physician = {}
         otc_ingredients = []
+        processed_ingredients = set()
         
         for ingredient in ingredients:
+            if ingredient.id in processed_ingredients:
+                continue
+            
             # Check if ingredient has any OTC products
             has_otc = any(product.is_otc for product in ingredient.products)
             if has_otc:
                 otc_ingredients.append(ingredient)
+                processed_ingredients.add(ingredient.id)
+                continue
             
-            # Group by physician for prescription products
+            # For prescription products, find the best physician to group under
+            # Priority: assigned physician > unassigned (None)
+            best_physician = None
+            has_assigned_physician = False
+            
             for product in ingredient.products:
                 if not product.is_otc:
-                    physician_key = product.physician if product.physician else None
-                    if physician_key not in ingredients_by_physician:
-                        ingredients_by_physician[physician_key] = []
-                    if ingredient not in ingredients_by_physician[physician_key]:
-                        ingredients_by_physician[physician_key].append(ingredient)
+                    if product.physician is not None:
+                        best_physician = product.physician
+                        has_assigned_physician = True
+                        break  # Prefer assigned physician over unassigned
+                    elif not has_assigned_physician:
+                        best_physician = None
+            
+            # Add ingredient to the best physician group
+            if best_physician not in ingredients_by_physician:
+                ingredients_by_physician[best_physician] = []
+            ingredients_by_physician[best_physician].append(ingredient)
+            processed_ingredients.add(ingredient.id)
         
         # Sort physicians by name, with unassigned at the end
         sorted_physicians = sorted(

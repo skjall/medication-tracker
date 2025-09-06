@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-09-05 19:55\n"
+"PO-Revision-Date: 2025-09-06 09:48\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -63,7 +63,7 @@ msgid "Invalid strength value. Please enter a valid number (e.g., 500 or 1.25)"
 msgstr "Ungültiger Wert für die Stärke. Bitte gib eine gültige Zahl ein (z. B. 500 oder 1,25)"
 
 #: /app/routes/ingredients.py:507
-#: /app/templates/package_onboarding/onboard.html:972
+#: /app/templates/package_onboarding/onboard.html:976
 msgid "Please select or enter an active ingredient"
 msgstr "Bitte wähle einen Wirkstoff aus oder gib ihn ein"
 
@@ -85,7 +85,7 @@ msgstr "Packung erfolgreich gelöscht"
 
 #: /app/routes/ingredients.py:736
 msgid "Package inventory updated successfully"
-msgstr "Inventar erfolgreich aktualisiert"
+msgstr "Packung erfolgreich aktualisiert"
 
 #: /app/routes/ingredients.py:768
 msgid "Product does not belong to this ingredient"
@@ -1296,7 +1296,6 @@ msgstr "Änderungen speichern"
 
 #: /app/templates/ingredients/edit_package.html:3
 #: /app/templates/ingredients/edit_package.html:20
-#: /app/templates/scanner/scan.html:1045
 msgid "Edit Package"
 msgstr "Packung bearbeiten"
 
@@ -1950,6 +1949,7 @@ msgid "Open"
 msgstr "Offen"
 
 #: /app/templates/ingredients/show_product.html:252
+#: /app/templates/scanner/scan.html:1045
 msgid "Edit Inventory"
 msgstr "Inventar bearbeiten"
 
@@ -2994,23 +2994,23 @@ msgstr "Nächstes"
 msgid "Save Package"
 msgstr "Packung speichern"
 
-#: /app/templates/package_onboarding/onboard.html:999
+#: /app/templates/package_onboarding/onboard.html:1003
 msgid "Please select or enter a product"
 msgstr "Bitte ein Produkt auswählen"
 
-#: /app/templates/package_onboarding/onboard.html:1030
+#: /app/templates/package_onboarding/onboard.html:1034
 msgid "Please enter a custom package size"
 msgstr "Gib bitte eine benutzerdefinierte Packungsgröße ein"
 
-#: /app/templates/package_onboarding/onboard.html:1036
+#: /app/templates/package_onboarding/onboard.html:1040
 msgid "Please enter the number of units per package"
 msgstr "Gib bitte die Anzahl der Einheiten pro Packung ein"
 
-#: /app/templates/package_onboarding/onboard.html:1062
+#: /app/templates/package_onboarding/onboard.html:1066
 msgid "No (OTC)"
 msgstr "Nein (OTC)"
 
-#: /app/templates/package_onboarding/onboard.html:1062
+#: /app/templates/package_onboarding/onboard.html:1066
 msgid "Yes"
 msgstr "Ja"
 
@@ -4754,7 +4754,7 @@ msgstr "Nächste Termine"
 
 #: /app/templates/visits/index.html:30
 msgid "Days Away"
-msgstr "Abwesende Tage"
+msgstr "Tage bis dahin"
 
 #: /app/templates/visits/index.html:33
 msgid "Order Plan"

@@ -64,7 +64,7 @@ msgid "Invalid strength value. Please enter a valid number (e.g., 500 or 1.25)"
 msgstr ""
 
 #: /app/routes/ingredients.py:507
-#: /app/templates/package_onboarding/onboard.html:972
+#: /app/templates/package_onboarding/onboard.html:976
 msgid "Please select or enter an active ingredient"
 msgstr ""
 
@@ -3045,23 +3045,23 @@ msgstr ""
 msgid "Save Package"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:999
+#: /app/templates/package_onboarding/onboard.html:1003
 msgid "Please select or enter a product"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:1030
+#: /app/templates/package_onboarding/onboard.html:1034
 msgid "Please enter a custom package size"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:1036
+#: /app/templates/package_onboarding/onboard.html:1040
 msgid "Please enter the number of units per package"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:1062
+#: /app/templates/package_onboarding/onboard.html:1066
 msgid "No (OTC)"
 msgstr ""
 
-#: /app/templates/package_onboarding/onboard.html:1062
+#: /app/templates/package_onboarding/onboard.html:1066
 msgid "Yes"
 msgstr ""
 

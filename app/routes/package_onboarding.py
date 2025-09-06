@@ -301,18 +301,47 @@ def search_ingredients():
     if not query or len(query) < 2:
         return jsonify({'ingredients': []})
     
-    ingredients = ActiveIngredient.query.filter(
-        ActiveIngredient.name.ilike(f'%{query}%')
-    ).limit(10).all()
+    # Search both by ingredient name and by component names
+    from models import IngredientComponent
+    from sqlalchemy import or_
+    
+    ingredients = ActiveIngredient.query.outerjoin(
+        IngredientComponent, ActiveIngredient.id == IngredientComponent.active_ingredient_id
+    ).filter(
+        or_(
+            ActiveIngredient.name.ilike(f'%{query}%'),
+            IngredientComponent.component_name.ilike(f'%{query}%')
+        )
+    ).distinct().limit(10).all()
     
     results = []
     for ing in ingredients:
+        # Use component_display to show component names with strengths in brackets
+        if ing.components:
+            # Extract component name and strength info for bracket display
+            component_parts = []
+            for comp in ing.components:
+                strength_float = float(comp.strength)
+                if strength_float == int(strength_float):
+                    strength_str = str(int(strength_float))
+                else:
+                    strength_str = f"{strength_float:g}"
+                component_parts.append(f"{comp.component_name} {strength_str}{comp.strength_unit}")
+            
+            if component_parts:
+                display_name = f"{ing.name} ({' + '.join(component_parts)})"
+            else:
+                display_name = ing.name
+        else:
+            # Simple ingredient without components
+            display_name = ing.name
+            
         results.append({
             'id': ing.id,
             'name': ing.name,
-            'strength': ing.strength,
-            'unit': ing.strength_unit,
-            'display': f"{ing.name} {ing.strength}{ing.strength_unit}" if ing.strength else ing.name
+            'strength': None,  # Not used in new model
+            'unit': None,  # Not used in new model
+            'display': display_name
         })
     
     return jsonify({'ingredients': results})

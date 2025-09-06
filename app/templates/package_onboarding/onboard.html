@@ -942,16 +942,20 @@
         // If we have stored quantities available
         if (window.packageQuantities) {
             const storedQuantity = window.packageQuantities[selectedSize];
+            const currentValue = quantityInput.value;
             
             if (storedQuantity) {
-                // Auto-fill if quantity field is empty
-                if (!quantityInput.value) {
+                // Check if current value is either empty or matches a stored quantity (auto-filled)
+                const isEmptyOrAutoFilled = !currentValue || 
+                    Object.values(window.packageQuantities).includes(parseInt(currentValue));
+                
+                // Update quantity if field is empty or contains an auto-filled value
+                if (isEmptyOrAutoFilled) {
                     quantityInput.value = storedQuantity;
                 }
             } else {
                 // Clear field if switching to size without stored quantity and field wasn't manually entered
                 // Only clear if the current value matches a stored quantity (indicating it was auto-filled)
-                const currentValue = quantityInput.value;
                 const isAutoFilledValue = Object.values(window.packageQuantities).includes(parseInt(currentValue));
                 
                 if (isAutoFilledValue) {
