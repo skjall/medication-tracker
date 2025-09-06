@@ -285,8 +285,10 @@
             <div id="inline_new_product_fields" style="display: none;" class="mt-3 p-3 bg-light rounded">
                 <h6 class="text-muted mb-2">{{ _('Creating new product:') }} <span id="new_product_display"></span></h6>
                 <div class="mb-3">
-                    <input type="text" class="form-control" name="inline_manufacturer"
-                           placeholder="{{ _('Manufacturer (e.g., 1A Pharma)') }}">
+                    <input type="text" class="form-control" name="inline_manufacturer" id="inline_manufacturer"
+                           placeholder="{{ _('Manufacturer (e.g., 1A Pharma)') }}"
+                           autocomplete="off">
+                    <div class="form-text small">{{ _('Type to see suggestions from existing products') }}</div>
                 </div>
                 
                 <!-- Product Settings -->
@@ -358,7 +360,9 @@
                 <div class="col-md-4">
                     <label for="package_manufacturer" class="form-label">{{ _('Package Manufacturer') }}</label>
                     <input type="text" class="form-control" id="package_manufacturer"
-                           name="package_manufacturer" placeholder="{{ _('If different from product') }}">
+                           name="package_manufacturer" placeholder="{{ _('If different from product') }}"
+                           autocomplete="off">
+                    <div class="form-text small">{{ _('Type to see suggestions from existing products') }}</div>
                 </div>
                 <div class="col-md-4">
                     <label for="package_pzn" class="form-label">{{ _('PZN/National Code') }}</label>
@@ -605,6 +609,22 @@
         
         // Initialize package options to default state
         updatePackageOptions([]);
+        
+        // Setup manufacturer autocomplete fields
+        const inlineManufacturerInput = document.getElementById('inline_manufacturer');
+        const packageManufacturerInput = document.getElementById('package_manufacturer');
+        
+        if (typeof setupManufacturerAutocomplete === 'function') {
+            const apiUrl = '{{ url_for("ingredients.search_manufacturers") }}';
+            
+            if (inlineManufacturerInput) {
+                setupManufacturerAutocomplete(inlineManufacturerInput, apiUrl);
+            }
+            
+            if (packageManufacturerInput) {
+                setupManufacturerAutocomplete(packageManufacturerInput, apiUrl);
+            }
+        }
     });
 
 

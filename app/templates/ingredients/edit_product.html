@@ -40,7 +40,10 @@
                     <div class="mb-3">
                         <label for="manufacturer" class="form-label">{{ _('Manufacturer') }}</label>
                         <input type="text" class="form-control" id="manufacturer" name="manufacturer"
-                               value="{{ product.manufacturer or '' }}">
+                               value="{{ product.manufacturer or '' }}"
+                               autocomplete="off"
+                               placeholder="{{ _('Start typing manufacturer name...') }}">
+                        <div class="form-text">{{ _('Enter at least 2 characters to see suggestions from existing products') }}</div>
                     </div>
 
 
@@ -128,6 +131,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle changes
     otcCheckbox.addEventListener('change', updatePhysicianState);
+    
+    // Setup manufacturer autocomplete
+    const manufacturerInput = document.getElementById('manufacturer');
+    if (manufacturerInput && typeof setupManufacturerAutocomplete === 'function') {
+        setupManufacturerAutocomplete(manufacturerInput, '{{ url_for("ingredients.search_manufacturers") }}');
+    }
 });
 </script>
 {% endblock %}

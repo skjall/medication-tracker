@@ -317,3 +317,135 @@ function updatePackageInputs(medicationId, packages) {
     }
   });
 }
+
+/**
+ * Setup autocomplete for manufacturer/vendor fields.
+ */
+function setupManufacturerAutocomplete(inputElement, apiUrl) {
+  if (!inputElement || !apiUrl) return;
+
+  let currentRequest = null;
+  let dropdown = null;
+  
+  // Create dropdown element
+  function createDropdown() {
+    const dropdown = document.createElement('div');
+    dropdown.className = 'autocomplete-dropdown';
+    dropdown.style.cssText = `
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #ced4da;
+      border-top: none;
+      border-radius: 0 0 0.375rem 0.375rem;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    `;
+    
+    // Position relative to input
+    inputElement.parentNode.style.position = 'relative';
+    inputElement.parentNode.appendChild(dropdown);
+    return dropdown;
+  }
+  
+  // Show suggestions
+  function showSuggestions(suggestions) {
+    if (!dropdown) {
+      dropdown = createDropdown();
+    }
+    
+    dropdown.innerHTML = '';
+    
+    if (suggestions.length === 0) {
+      dropdown.style.display = 'none';
+      return;
+    }
+    
+    suggestions.forEach(suggestion => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      item.textContent = suggestion;
+      item.style.cssText = `
+        padding: 0.5rem;
+        cursor: pointer;
+        border-bottom: 1px solid #e9ecef;
+      `;
+      
+      // Hover effects
+      item.addEventListener('mouseenter', () => {
+        item.style.backgroundColor = '#f8f9fa';
+      });
+      item.addEventListener('mouseleave', () => {
+        item.style.backgroundColor = 'white';
+      });
+      
+      // Click to select
+      item.addEventListener('click', () => {
+        inputElement.value = suggestion;
+        dropdown.style.display = 'none';
+        inputElement.focus();
+      });
+      
+      dropdown.appendChild(item);
+    });
+    
+    dropdown.style.display = 'block';
+  }
+  
+  // Hide dropdown
+  function hideDropdown() {
+    if (dropdown) {
+      dropdown.style.display = 'none';
+    }
+  }
+  
+  // Input event handler
+  inputElement.addEventListener('input', function() {
+    const query = this.value.trim();
+    
+    // Cancel previous request
+    if (currentRequest) {
+      currentRequest.abort();
+    }
+    
+    // Hide dropdown if query is too short
+    if (query.length < 2) {
+      hideDropdown();
+      return;
+    }
+    
+    // Make API request
+    currentRequest = new AbortController();
+    fetch(`${apiUrl}?q=${encodeURIComponent(query)}`, {
+      signal: currentRequest.signal
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.manufacturers) {
+        showSuggestions(data.manufacturers);
+      }
+    })
+    .catch(error => {
+      if (error.name !== 'AbortError') {
+        console.error('Autocomplete error:', error);
+      }
+    });
+  });
+  
+  // Hide dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!inputElement.contains(e.target) && (!dropdown || !dropdown.contains(e.target))) {
+      hideDropdown();
+    }
+  });
+  
+  // Hide dropdown when input loses focus (with delay for clicks)
+  inputElement.addEventListener('blur', function() {
+    setTimeout(hideDropdown, 150);
+  });
+}

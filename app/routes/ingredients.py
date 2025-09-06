@@ -619,27 +619,72 @@ def new_package(id: int):
     product = MedicationProduct.query.get_or_404(id)
 
     if request.method == "POST":
+        # Get form data
+        new_gtin = request.form.get("gtin", "").strip() or None
+        new_national_number = request.form.get("national_number", "").strip() or None
+        new_national_number_type = request.form.get("national_number_type", "").strip() or None
+        
+        # Check for GTIN conflicts
+        if new_gtin:
+            existing_gtin = ProductPackage.query.filter(
+                ProductPackage.gtin == new_gtin
+            ).first()
+            if existing_gtin:
+                flash(_("GTIN '%(gtin)s' is already used by another package: %(product)s - %(size)s", 
+                       gtin=new_gtin, 
+                       product=existing_gtin.product.brand_name, 
+                       size=existing_gtin.package_size), "error")
+                return render_template(
+                    "ingredients/new_package.html",
+                    product=product,
+                    local_time=to_local_timezone(datetime.now(timezone.utc)),
+                )
+        
+        # Check for national number conflicts
+        if new_national_number and new_national_number_type:
+            existing_national = ProductPackage.query.filter(
+                ProductPackage.national_number == new_national_number,
+                ProductPackage.national_number_type == new_national_number_type
+            ).first()
+            if existing_national:
+                flash(_("%(type)s '%(number)s' is already used by another package: %(product)s - %(size)s", 
+                       type=new_national_number_type, 
+                       number=new_national_number,
+                       product=existing_national.product.brand_name, 
+                       size=existing_national.package_size), "error")
+                return render_template(
+                    "ingredients/new_package.html",
+                    product=product,
+                    local_time=to_local_timezone(datetime.now(timezone.utc)),
+                )
+        
+        # Create package if no conflicts
         package = ProductPackage(
             product_id=id,
             package_size=request.form.get("package_size", "").strip(),
             quantity=int(request.form.get("quantity", 0)),
-            gtin=request.form.get("gtin", "").strip() or None,
-            national_number=request.form.get("national_number", "").strip()
-            or None,
-            national_number_type=request.form.get(
-                "national_number_type", ""
-            ).strip()
-            or None,
+            gtin=new_gtin,
+            national_number=new_national_number,
+            national_number_type=new_national_number_type,
             manufacturer=request.form.get("manufacturer", "").strip() or None,
             list_price=float(request.form.get("list_price") or 0) or None,
             exclude_from_ordering="exclude_from_ordering" in request.form,
         )
 
-        db.session.add(package)
-        db.session.commit()
-
-        flash(_("Package added successfully"), "success")
-        return redirect(url_for("ingredients.show_product", id=product.id))
+        try:
+            db.session.add(package)
+            db.session.commit()
+            flash(_("Package added successfully"), "success")
+            return redirect(url_for("ingredients.show_product", id=product.id))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error creating package for product {id}: {str(e)}")
+            flash(_("Error creating package. Please check for duplicate identifiers."), "error")
+            return render_template(
+                "ingredients/new_package.html",
+                product=product,
+                local_time=to_local_timezone(datetime.now(timezone.utc)),
+            )
 
     return render_template(
         "ingredients/new_package.html",
@@ -654,26 +699,74 @@ def edit_package(id: int):
     package = ProductPackage.query.get_or_404(id)
 
     if request.method == "POST":
+        # Get form data
+        new_gtin = request.form.get("gtin", "").strip() or None
+        new_national_number = request.form.get("national_number", "").strip() or None
+        new_national_number_type = request.form.get("national_number_type", "").strip() or None
+        
+        # Check for GTIN conflicts (exclude current package)
+        if new_gtin:
+            existing_gtin = ProductPackage.query.filter(
+                ProductPackage.gtin == new_gtin,
+                ProductPackage.id != package.id
+            ).first()
+            if existing_gtin:
+                flash(_("GTIN '%(gtin)s' is already used by another package: %(product)s - %(size)s", 
+                       gtin=new_gtin, 
+                       product=existing_gtin.product.brand_name, 
+                       size=existing_gtin.package_size), "error")
+                return render_template(
+                    "ingredients/edit_package.html",
+                    package=package,
+                    local_time=to_local_timezone(datetime.now(timezone.utc)),
+                )
+        
+        # Check for national number conflicts (exclude current package)
+        if new_national_number and new_national_number_type:
+            existing_national = ProductPackage.query.filter(
+                ProductPackage.national_number == new_national_number,
+                ProductPackage.national_number_type == new_national_number_type,
+                ProductPackage.id != package.id
+            ).first()
+            if existing_national:
+                flash(_("%(type)s '%(number)s' is already used by another package: %(product)s - %(size)s", 
+                       type=new_national_number_type, 
+                       number=new_national_number,
+                       product=existing_national.product.brand_name, 
+                       size=existing_national.package_size), "error")
+                return render_template(
+                    "ingredients/edit_package.html",
+                    package=package,
+                    local_time=to_local_timezone(datetime.now(timezone.utc)),
+                )
+        
+        # Update package if no conflicts
         package.package_size = request.form.get("package_size", "").strip()
         package.quantity = int(request.form.get("quantity", 0))
-        package.gtin = request.form.get("gtin", "").strip() or None
-        package.national_number = (
-            request.form.get("national_number", "").strip() or None
-        )
-        package.national_number_type = (
-            request.form.get("national_number_type", "").strip() or None
-        )
+        package.gtin = new_gtin
+        package.national_number = new_national_number
+        package.national_number_type = new_national_number_type
         package.manufacturer = (
             request.form.get("manufacturer", "").strip() or None
         )
         package.list_price = float(request.form.get("list_price") or 0) or None
         package.exclude_from_ordering = "exclude_from_ordering" in request.form
 
-        db.session.commit()
-        flash(_("Package updated successfully"), "success")
-        return redirect(
-            url_for("ingredients.show_product", id=package.product_id)
-        )
+        try:
+            db.session.commit()
+            flash(_("Package updated successfully"), "success")
+            return redirect(
+                url_for("ingredients.show_product", id=package.product_id)
+            )
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error updating package {id}: {str(e)}")
+            flash(_("Error updating package. Please check for duplicate identifiers."), "error")
+            return render_template(
+                "ingredients/edit_package.html",
+                package=package,
+                local_time=to_local_timezone(datetime.now(timezone.utc)),
+            )
 
     return render_template(
         "ingredients/edit_package.html",
@@ -881,3 +974,29 @@ def calculate(id: int):
         }
     
     return {"packages": packages}
+
+
+@ingredients_bp.route("/api/manufacturers/search")
+def search_manufacturers():
+    """API endpoint to search for existing manufacturer names for autocomplete."""
+    query = request.args.get('q', '').strip()
+    if not query or len(query) < 2:
+        return jsonify({'manufacturers': []})
+    
+    # Search for manufacturers that contain the query string
+    from sqlalchemy import or_
+    
+    products = MedicationProduct.query.filter(
+        MedicationProduct.manufacturer.ilike(f'%{query}%')
+    ).all()
+    
+    # Get unique manufacturer names
+    manufacturers = set()
+    for product in products:
+        if product.manufacturer and product.manufacturer.strip():
+            manufacturers.add(product.manufacturer.strip())
+    
+    # Sort and limit results
+    results = sorted(list(manufacturers))[:10]
+    
+    return jsonify({'manufacturers': results})

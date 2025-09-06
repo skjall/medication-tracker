@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-09-06 12:26\n"
+"PO-Revision-Date: 2025-09-06 14:28\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -63,7 +63,7 @@ msgid "Invalid strength value. Please enter a valid number (e.g., 500 or 1.25)"
 msgstr "Ungültiger Wert für die Stärke. Bitte gib eine gültige Zahl ein (z. B. 500 oder 1,25)"
 
 #: /app/routes/ingredients.py:507
-#: /app/templates/package_onboarding/onboard.html:976
+#: /app/templates/package_onboarding/onboard.html:996
 msgid "Please select or enter an active ingredient"
 msgstr "Bitte wähle einen Wirkstoff aus oder gib ihn ein"
 
@@ -71,35 +71,53 @@ msgstr "Bitte wähle einen Wirkstoff aus oder gib ihn ein"
 msgid "Product created successfully"
 msgstr "Produkt erfolgreich erstellt"
 
-#: /app/routes/ingredients.py:641
+#: /app/routes/ingredients.py:633 /app/routes/ingredients.py:714
+#, python-format
+msgid "GTIN '%(gtin)s' is already used by another package: %(product)s - %(size)s"
+msgstr ""
+
+#: /app/routes/ingredients.py:650 /app/routes/ingredients.py:732
+#, python-format
+msgid "%(type)s '%(number)s' is already used by another package: %(product)s - %(size)s"
+msgstr ""
+
+#: /app/routes/ingredients.py:677
 msgid "Package added successfully"
 msgstr "Packung erfolgreich hinzugefügt"
 
-#: /app/routes/ingredients.py:673
+#: /app/routes/ingredients.py:682
+msgid "Error creating package. Please check for duplicate identifiers."
+msgstr ""
+
+#: /app/routes/ingredients.py:757
 msgid "Package updated successfully"
 msgstr "Packung erfolgreich aktualisiert"
 
-#: /app/routes/ingredients.py:694
+#: /app/routes/ingredients.py:764
+msgid "Error updating package. Please check for duplicate identifiers."
+msgstr ""
+
+#: /app/routes/ingredients.py:787
 msgid "Package deleted successfully"
 msgstr "Packung erfolgreich gelöscht"
 
-#: /app/routes/ingredients.py:736
+#: /app/routes/ingredients.py:829
 msgid "Package inventory updated successfully"
 msgstr "Packung erfolgreich aktualisiert"
 
-#: /app/routes/ingredients.py:768
+#: /app/routes/ingredients.py:861
 msgid "Product does not belong to this ingredient"
 msgstr "Produkt gehört nicht zu diesem Wirkstoff"
 
-#: /app/routes/ingredients.py:775
+#: /app/routes/ingredients.py:868
 msgid "Default product set successfully"
 msgstr "Standardprodukt erfolgreich festgelegt"
 
-#: /app/routes/ingredients.py:789
+#: /app/routes/ingredients.py:882
 msgid "Default product cleared"
 msgstr "Standardprodukt gelöscht"
 
-#: /app/routes/ingredients.py:822
+#: /app/routes/ingredients.py:915
 msgid "Package removed from inventory successfully"
 msgstr "Packung erfolgreich aus dem Inventar entfernt"
 
@@ -154,7 +172,8 @@ msgid "Item does not belong to this order"
 msgstr "Artikel gehört nicht zu dieser Bestellung"
 
 #: /app/routes/orders.py:577 /app/routes/scanner.py:221
-#: /app/templates/ingredients/show_product.html:56
+#: /app/templates/ingredients/show_product.html:55
+#: /app/templates/ingredients/show_product.html:540
 #: /app/templates/orders/printable.html:149 /app/templates/orders/show.html:179
 #: /app/templates/scanner/index.html:72 /app/templates/scanner/index.html:155
 #: /app/templates/scanner/package_details.html:30
@@ -247,7 +266,7 @@ msgstr "Bitte gib die Packungsgröße und die Menge ein."
 msgid "Package configuration updated"
 msgstr "Packungskonfiguration aktualisiert"
 
-#: /app/routes/package_onboarding.py:235
+#: /app/routes/package_onboarding.py:258
 msgid "Package successfully onboarded!"
 msgstr "Packung erfolgreich eingebunden!"
 
@@ -276,7 +295,8 @@ msgstr "Spalte"
 #: /app/templates/ingredients/edit_product.html:33
 #: /app/templates/ingredients/new_product.html:77
 #: /app/templates/ingredients/show.html:89
-#: /app/templates/ingredients/show_product.html:52
+#: /app/templates/ingredients/show_product.html:51
+#: /app/templates/ingredients/show_product.html:535
 msgid "Brand Name"
 msgstr "Handelsname"
 
@@ -284,7 +304,8 @@ msgstr "Handelsname"
 #: /app/templates/ingredients/edit_product.html:41
 #: /app/templates/ingredients/new_product.html:86
 #: /app/templates/ingredients/show.html:90
-#: /app/templates/ingredients/show_product.html:55
+#: /app/templates/ingredients/show_product.html:54
+#: /app/templates/ingredients/show_product.html:539
 msgid "Manufacturer"
 msgstr "Hersteller"
 
@@ -323,10 +344,10 @@ msgstr "Darreichungsform (Tabletten usw.)"
 #: /app/routes/pdf_mapper.py:309
 #: /app/templates/ingredients/edit_package.html:28
 #: /app/templates/ingredients/new_package.html:28
-#: /app/templates/ingredients/show_product.html:113
-#: /app/templates/ingredients/show_product.html:439
-#: /app/templates/package_onboarding/onboard.html:331
-#: /app/templates/package_onboarding/onboard.html:419
+#: /app/templates/ingredients/show_product.html:112
+#: /app/templates/ingredients/show_product.html:433
+#: /app/templates/package_onboarding/onboard.html:333
+#: /app/templates/package_onboarding/onboard.html:423
 msgid "Package Size"
 msgstr "Packungsgröße"
 
@@ -339,7 +360,7 @@ msgid "PZN"
 msgstr "PZN"
 
 #: /app/routes/pdf_mapper.py:316
-#: /app/templates/ingredients/show_product.html:116
+#: /app/templates/ingredients/show_product.html:115
 #: /app/templates/package_onboarding/onboard.html:187
 msgid "GTIN"
 msgstr "GTIN"
@@ -352,9 +373,7 @@ msgstr "Anzahl der Packungen"
 msgid "Package Size (N1/N2/N3)"
 msgstr "Packungsgröße (N1/N2/N3)"
 
-#: /app/routes/pdf_mapper.py:329
-#: /app/templates/ingredients/show_product.html:189
-#: /app/templates/orders/printable.html:134
+#: /app/routes/pdf_mapper.py:329 /app/templates/orders/printable.html:134
 msgid "Total Units"
 msgstr "Gesamte Einheiten"
 
@@ -367,7 +386,7 @@ msgid "Months Supply"
 msgstr "Monate Vorrat"
 
 #: /app/routes/pdf_mapper.py:334
-#: /app/templates/ingredients/show_product.html:85
+#: /app/templates/ingredients/show_product.html:84
 #: /app/templates/orders/show.html:57 /app/templates/physicians/edit.html:3
 #: /app/templates/visits/edit.html:38 /app/templates/visits/index.html:29
 #: /app/templates/visits/index.html:127 /app/templates/visits/new.html:33
@@ -381,10 +400,10 @@ msgstr "Anweisungen"
 
 #: /app/routes/pdf_mapper.py:336 /app/templates/index.html:31
 #: /app/templates/ingredients/edit.html:96
-#: /app/templates/ingredients/edit_product.html:49
-#: /app/templates/ingredients/new_product.html:93
+#: /app/templates/ingredients/edit_product.html:52
+#: /app/templates/ingredients/new_product.html:95
 #: /app/templates/ingredients/show.html:73
-#: /app/templates/ingredients/show_product.html:94
+#: /app/templates/ingredients/show_product.html:93
 #: /app/templates/physicians/edit.html:85 /app/templates/physicians/new.html:75
 #: /app/templates/physicians/show.html:86
 #: /app/templates/physicians/show.html:215 /app/templates/visits/edit.html:56
@@ -917,7 +936,9 @@ msgid_plural "%(count)d days away"
 msgstr[0] "%(count)d Tag entfernt"
 msgstr[1] "%(count)d Tage entfernt"
 
-#: /app/templates/index.html:36 /app/templates/physicians/index.html:64
+#: /app/templates/index.html:36
+#: /app/templates/ingredients/show_product.html:195
+#: /app/templates/physicians/index.html:64
 #: /app/templates/scanner/scan.html:1071 /app/templates/visits/index.html:86
 #: /app/templates/visits/index.html:166
 msgid "View Details"
@@ -1046,7 +1067,6 @@ msgstr "Name"
 
 #: /app/templates/index.html:195 /app/templates/index.html:330
 #: /app/templates/ingredients/show.html:239
-#: /app/templates/ingredients/show_product.html:193
 #: /app/templates/orders/printable.html:132
 #: /app/templates/physicians/show.html:149
 #: /app/templates/schedules/index_ingredient.html:88
@@ -1055,7 +1075,7 @@ msgid "Daily Usage"
 msgstr "Tagesverbrauch"
 
 #: /app/templates/index.html:196 /app/templates/index.html:331
-#: /app/templates/ingredients/show_product.html:184
+#: /app/templates/ingredients/show_product.html:183
 #: /app/templates/scanner/index.html:46
 msgid "Current Inventory"
 msgstr "Aktueller Bestand"
@@ -1072,8 +1092,8 @@ msgstr "Verbrauchsdatum"
 #: /app/templates/ingredients/edit_package_inventory.html:56
 #: /app/templates/ingredients/show.html:92
 #: /app/templates/ingredients/show.html:192
-#: /app/templates/ingredients/show_product.html:218
-#: /app/templates/ingredients/show_product.html:311
+#: /app/templates/ingredients/show_product.html:212
+#: /app/templates/ingredients/show_product.html:305
 #: /app/templates/orders/index.html:23 /app/templates/orders/printable.html:112
 #: /app/templates/orders/show.html:64 /app/templates/orders/show.html:163
 #: /app/templates/pdf_mapper/index.html:44
@@ -1088,8 +1108,8 @@ msgstr "Status"
 #: /app/templates/index.html:200 /app/templates/index.html:335
 #: /app/templates/ingredients/index.html:27
 #: /app/templates/ingredients/show.html:93
-#: /app/templates/ingredients/show_product.html:118
-#: /app/templates/ingredients/show_product.html:219
+#: /app/templates/ingredients/show_product.html:117
+#: /app/templates/ingredients/show_product.html:213
 #: /app/templates/orders/edit.html:70 /app/templates/orders/index.html:27
 #: /app/templates/orders/index.html:154 /app/templates/orders/show.html:164
 #: /app/templates/physicians/index.html:36
@@ -1108,11 +1128,11 @@ msgstr "Aktionen"
 #: /app/templates/ingredients/index.html:102
 #: /app/templates/ingredients/show.html:57
 #: /app/templates/ingredients/show.html:113
-#: /app/templates/ingredients/show_product.html:125
-#: /app/templates/ingredients/show_product.html:287
-#: /app/templates/ingredients/show_product.html:401
-#: /app/templates/ingredients/show_product.html:530
-#: /app/templates/ingredients/show_product.html:551
+#: /app/templates/ingredients/show_product.html:124
+#: /app/templates/ingredients/show_product.html:281
+#: /app/templates/ingredients/show_product.html:395
+#: /app/templates/ingredients/show_product.html:591
+#: /app/templates/ingredients/show_product.html:612
 #: /app/templates/orders/show.html:193 /app/templates/orders/show.html:209
 #: /app/templates/orders/show.html:215 /app/templates/orders/show.html:378
 #: /app/templates/physicians/show.html:165
@@ -1270,17 +1290,18 @@ msgstr "z. B. N02BE01"
 #: /app/templates/ingredients/edit_package.html:111
 #: /app/templates/ingredients/edit_package_inventory.html:75
 #: /app/templates/ingredients/edit_product.html:11
-#: /app/templates/ingredients/edit_product.html:102
+#: /app/templates/ingredients/edit_product.html:105
 #: /app/templates/ingredients/new_package.html:11
 #: /app/templates/ingredients/new_package.html:114
 #: /app/templates/ingredients/new_product.html:17
-#: /app/templates/ingredients/new_product.html:144
-#: /app/templates/ingredients/show_product.html:451
-#: /app/templates/ingredients/show_product.html:502
+#: /app/templates/ingredients/new_product.html:146
+#: /app/templates/ingredients/show_product.html:445
+#: /app/templates/ingredients/show_product.html:496
+#: /app/templates/ingredients/show_product.html:547
 #: /app/templates/orders/_fulfill_modal.html:41
 #: /app/templates/orders/edit.html:223 /app/templates/orders/new.html:255
 #: /app/templates/orders/show.html:397
-#: /app/templates/package_onboarding/onboard.html:443
+#: /app/templates/package_onboarding/onboard.html:447
 #: /app/templates/pdf_mapper/index.html:129
 #: /app/templates/pdf_mapper/index.html:152
 #: /app/templates/pdf_mapper/new.html:129
@@ -1299,7 +1320,7 @@ msgstr "Abbrechen"
 #: /app/templates/ingredients/edit.html:111
 #: /app/templates/ingredients/edit_package.html:114
 #: /app/templates/ingredients/edit_package_inventory.html:78
-#: /app/templates/ingredients/edit_product.html:99
+#: /app/templates/ingredients/edit_product.html:102
 msgid "Save Changes"
 msgstr "Änderungen speichern"
 
@@ -1324,7 +1345,7 @@ msgstr "Identifikatoren"
 
 #: /app/templates/ingredients/edit_package.html:47
 #: /app/templates/ingredients/new_package.html:52
-#: /app/templates/ingredients/show_product.html:115
+#: /app/templates/ingredients/show_product.html:114
 msgid "National Drug Code"
 msgstr "Nationaler Arzneimittelcode"
 
@@ -1355,7 +1376,7 @@ msgstr "Weitere Informationen"
 
 #: /app/templates/ingredients/edit_package.html:78
 #: /app/templates/ingredients/new_package.html:83
-#: /app/templates/package_onboarding/onboard.html:359
+#: /app/templates/package_onboarding/onboard.html:361
 msgid "Package Manufacturer"
 msgstr "Packungshersteller"
 
@@ -1366,8 +1387,8 @@ msgstr "Wenn anders als der Hersteller des Produkts"
 
 #: /app/templates/ingredients/edit_package.html:84
 #: /app/templates/ingredients/new_package.html:88
-#: /app/templates/ingredients/show_product.html:117
-#: /app/templates/package_onboarding/onboard.html:348
+#: /app/templates/ingredients/show_product.html:116
+#: /app/templates/package_onboarding/onboard.html:350
 msgid "List Price"
 msgstr "Listenpreis"
 
@@ -1392,12 +1413,12 @@ msgid "Package Information"
 msgstr "Packungsinformationen"
 
 #: /app/templates/ingredients/edit_package_inventory.html:22
-#: /app/templates/ingredients/show_product.html:490
+#: /app/templates/ingredients/show_product.html:484
 msgid "Serial Number"
 msgstr "Seriennummer"
 
 #: /app/templates/ingredients/edit_package_inventory.html:28
-#: /app/templates/ingredients/show_product.html:492
+#: /app/templates/ingredients/show_product.html:486
 msgid "Batch Number"
 msgstr "Chargennummer"
 
@@ -1415,7 +1436,7 @@ msgid "Inventory Status"
 msgstr "Bestandsstatus"
 
 #: /app/templates/ingredients/edit_package_inventory.html:45
-#: /app/templates/ingredients/show_product.html:494
+#: /app/templates/ingredients/show_product.html:488
 msgid "Current Units"
 msgstr "Tatsächliche Stückzahl"
 
@@ -1438,21 +1459,21 @@ msgid "Scanned At"
 msgstr "Gescannt am"
 
 #: /app/templates/ingredients/edit_package_inventory.html:96
-#: /app/templates/ingredients/show_product.html:237
+#: /app/templates/ingredients/show_product.html:231
 #: /app/templates/scanner/index.html:102
 #: /app/templates/scanner/package_details.html:103
 msgid "Sealed"
 msgstr "Verschlossen"
 
 #: /app/templates/ingredients/edit_package_inventory.html:97
-#: /app/templates/ingredients/show_product.html:328
+#: /app/templates/ingredients/show_product.html:322
 #: /app/templates/scanner/package_details.html:127
 msgid "Opened"
 msgstr "Geöffnet"
 
 #: /app/templates/ingredients/edit_package_inventory.html:98
-#: /app/templates/ingredients/show_product.html:241
-#: /app/templates/ingredients/show_product.html:330
+#: /app/templates/ingredients/show_product.html:235
+#: /app/templates/ingredients/show_product.html:324
 #: /app/templates/scanner/index.html:106 /app/templates/scanner/index.html:179
 #: /app/templates/scanner/package_details.html:80
 #: /app/templates/scanner/package_details.html:107
@@ -1461,7 +1482,7 @@ msgid "Consumed"
 msgstr "Verbraucht"
 
 #: /app/templates/ingredients/edit_package_inventory.html:99
-#: /app/templates/ingredients/show_product.html:243
+#: /app/templates/ingredients/show_product.html:237
 #: /app/templates/scanner/index.html:36 /app/templates/scanner/index.html:83
 #: /app/templates/scanner/index.html:108 /app/templates/scanner/index.html:181
 #: /app/templates/scanner/package_details.html:63
@@ -1477,16 +1498,17 @@ msgstr "Produkt bearbeiten"
 
 #: /app/templates/ingredients/edit_product.html:20
 #: /app/templates/ingredients/new_product.html:29
-#: /app/templates/ingredients/show_product.html:34
+#: /app/templates/ingredients/show_product.html:33
 msgid "Product Information"
 msgstr "Produktinformation"
 
 #: /app/templates/ingredients/edit_product.html:25
 #: /app/templates/ingredients/index.html:23
 #: /app/templates/ingredients/new_product.html:35
-#: /app/templates/ingredients/show_product.html:41
+#: /app/templates/ingredients/show_product.html:40
+#: /app/templates/ingredients/show_product.html:537
 #: /app/templates/package_onboarding/onboard.html:161
-#: /app/templates/package_onboarding/onboard.html:413
+#: /app/templates/package_onboarding/onboard.html:417
 msgid "Active Ingredient"
 msgstr "Wirkstoff"
 
@@ -1494,38 +1516,47 @@ msgstr "Wirkstoff"
 msgid "Cannot be changed after creation"
 msgstr "Kann nach dem Erstellen nicht mehr geändert werden"
 
-#: /app/templates/ingredients/edit_product.html:60
-#: /app/templates/ingredients/new_product.html:104
+#: /app/templates/ingredients/edit_product.html:45
+msgid "Start typing manufacturer name..."
+msgstr "Fang einfach an, den Namen des Herstellers zu tippen..."
+
+#: /app/templates/ingredients/edit_product.html:46
+#: /app/templates/ingredients/new_product.html:90
+msgid "Enter at least 2 characters to see suggestions from existing products"
+msgstr "Gib mindestens 2 Zeichen ein, um Vorschläge von vorhandenen Produkten zu sehen"
+
+#: /app/templates/ingredients/edit_product.html:63
+#: /app/templates/ingredients/new_product.html:106
 msgid "Order Settings"
 msgstr "Bestell-Einstellungen"
 
-#: /app/templates/ingredients/edit_product.html:68
-#: /app/templates/ingredients/new_product.html:111
+#: /app/templates/ingredients/edit_product.html:71
+#: /app/templates/ingredients/new_product.html:113
 msgid "Allow substitution (Aut idem)"
 msgstr "Ersatz zulassen (Aut idem)"
 
-#: /app/templates/ingredients/edit_product.html:69
-#: /app/templates/ingredients/new_product.html:112
+#: /app/templates/ingredients/edit_product.html:72
+#: /app/templates/ingredients/new_product.html:114
 msgid "Pharmacist may substitute with generic equivalent"
 msgstr "Der Apotheker kann das Produkt durch ein gleichwertiges Generikum ersetzen"
 
-#: /app/templates/ingredients/edit_product.html:78
-#: /app/templates/ingredients/new_product.html:120
+#: /app/templates/ingredients/edit_product.html:81
+#: /app/templates/ingredients/new_product.html:122
 msgid "Over-the-counter (OTC)"
 msgstr "Rezeptfreie Medikamente (OTC)"
 
-#: /app/templates/ingredients/edit_product.html:79
-#: /app/templates/ingredients/new_product.html:121
+#: /app/templates/ingredients/edit_product.html:82
+#: /app/templates/ingredients/new_product.html:123
 msgid "No order required (OTC)"
 msgstr "Keine Bestellung erforderlich (OTC)"
 
-#: /app/templates/ingredients/edit_product.html:85
-#: /app/templates/ingredients/new_product.html:127
+#: /app/templates/ingredients/edit_product.html:88
+#: /app/templates/ingredients/new_product.html:129
 msgid "Prescribing Physician"
 msgstr "Verschreibender Arzt"
 
-#: /app/templates/ingredients/edit_product.html:87
-#: /app/templates/ingredients/new_product.html:129
+#: /app/templates/ingredients/edit_product.html:90
+#: /app/templates/ingredients/new_product.html:131
 msgid "None (OTC or general)"
 msgstr "Keine (OTC oder allgemein)"
 
@@ -1560,7 +1591,7 @@ msgstr "Ansicht"
 #: /app/templates/ingredients/show.html:12
 #: /app/templates/ingredients/show.html:138
 #: /app/templates/ingredients/show_product.html:12
-#: /app/templates/ingredients/show_product.html:153
+#: /app/templates/ingredients/show_product.html:152
 #: /app/templates/orders/index.html:85 /app/templates/orders/show.html:102
 #: /app/templates/physicians/edit.html:3
 #: /app/templates/physicians/index.html:69
@@ -1579,7 +1610,7 @@ msgstr "Willst du diesen Wirkstoff wirklich löschen?"
 #: /app/templates/ingredients/index.html:148
 #: /app/templates/ingredients/show.html:162
 #: /app/templates/ingredients/show_product.html:19
-#: /app/templates/ingredients/show_product.html:156
+#: /app/templates/ingredients/show_product.html:155
 #: /app/templates/orders/show.html:129 /app/templates/pdf_mapper/index.html:89
 #: /app/templates/schedules/index.html:117
 #: /app/templates/schedules/index.html:169
@@ -1614,7 +1645,6 @@ msgstr "Kann nicht gelöscht werden: Produkt ist auf Lager"
 
 #: /app/templates/ingredients/index.html:141
 #: /app/templates/ingredients/show.html:160
-#: /app/templates/ingredients/show_product.html:16
 msgid "Are you sure you want to delete this product?"
 msgstr "Willst du dieses Produkt wirklich löschen?"
 
@@ -1628,7 +1658,7 @@ msgstr "Noch keine Medikamente gespeichert. Leg einfach ein neues Produkt an."
 
 #: /app/templates/ingredients/new_package.html:3
 #: /app/templates/ingredients/new_package.html:117
-#: /app/templates/ingredients/show_product.html:105
+#: /app/templates/ingredients/show_product.html:104
 #: /app/templates/scanner/scan.html:1030
 msgid "Add Package"
 msgstr "Packung hinzufügen"
@@ -1718,40 +1748,40 @@ msgstr "Vollständiger Handelsname des Produkts"
 msgid "e.g., 1A Pharma, ratiopharm, Hexal"
 msgstr "z. B. 1A Pharma, ratiopharm, Hexal"
 
-#: /app/templates/ingredients/new_product.html:141
+#: /app/templates/ingredients/new_product.html:143
 msgid "Create Product"
 msgstr "Produkt erstellen"
 
-#: /app/templates/ingredients/new_product.html:164
+#: /app/templates/ingredients/new_product.html:166
 msgid "Search for ingredient or type new name..."
 msgstr "Suche nach dem Wirkstoff oder gib einen Neuen ein..."
 
-#: /app/templates/ingredients/new_product.html:174
-#: /app/templates/ingredients/new_product.html:202
-#: /app/templates/package_onboarding/onboard.html:658
-#: /app/templates/package_onboarding/onboard.html:769
+#: /app/templates/ingredients/new_product.html:176
+#: /app/templates/ingredients/new_product.html:204
+#: /app/templates/package_onboarding/onboard.html:678
+#: /app/templates/package_onboarding/onboard.html:789
 msgid "Create new"
 msgstr "Neu erstellen"
 
-#: /app/templates/ingredients/new_product.html:182
+#: /app/templates/ingredients/new_product.html:184
 msgid "New"
 msgstr "Neu"
 
-#: /app/templates/ingredients/new_product.html:188
+#: /app/templates/ingredients/new_product.html:190
 msgid "No ingredients found. Type to create new."
 msgstr "Keine Wirkstoffe gefunden. Tippe, um einen neuen zu erstellen."
 
-#: /app/templates/ingredients/new_product.html:191
+#: /app/templates/ingredients/new_product.html:193
 #: /app/templates/orders/show.html:643
 msgid "Searching..."
 msgstr "Suche..."
 
-#: /app/templates/ingredients/new_product.html:222
+#: /app/templates/ingredients/new_product.html:224
 msgid "Select physician..."
 msgstr "Wähle einen Arzt aus..."
 
 #: /app/templates/ingredients/show.html:18
-#: /app/templates/ingredients/show_product.html:24
+#: /app/templates/ingredients/show_product.html:23
 #: /app/templates/scanner/package_details.html:11
 msgid "Back"
 msgstr "Zurück"
@@ -1838,13 +1868,12 @@ msgid "units/day"
 msgstr "Einheiten/Tag"
 
 #: /app/templates/ingredients/show.html:241
-#: /app/templates/ingredients/show_product.html:197
 #: /app/templates/schedules/index_ingredient.html:68
 msgid "Days Remaining"
 msgstr "Verbleibende Tage"
 
 #: /app/templates/ingredients/show.html:253
-#: /app/templates/ingredients/show_product.html:382
+#: /app/templates/ingredients/show_product.html:376
 msgid "Substitutable Products"
 msgstr "Ersetzbare Produkte"
 
@@ -1860,73 +1889,85 @@ msgstr "Neue Produktvariante hinzufügen"
 msgid "Delete Active Ingredient"
 msgstr "Wirkstoff löschen"
 
-#: /app/templates/ingredients/show_product.html:39
+#: /app/templates/ingredients/show_product.html:38
 msgid "Basic Information"
 msgstr "Grundlegende Informationen"
 
-#: /app/templates/ingredients/show_product.html:47
+#: /app/templates/ingredients/show_product.html:46
 msgid "Edit ingredient"
 msgstr "Wirkstoff bearbeiten"
 
-#: /app/templates/ingredients/show_product.html:60
+#: /app/templates/ingredients/show_product.html:59
 #: /app/templates/orders/printable.html:108 /app/templates/orders/show.html:27
 msgid "Order Information"
 msgstr "Bestelldaten"
 
-#: /app/templates/ingredients/show_product.html:62
+#: /app/templates/ingredients/show_product.html:61
 msgid "Substitution"
 msgstr "Ersatz"
 
-#: /app/templates/ingredients/show_product.html:66
+#: /app/templates/ingredients/show_product.html:65
 msgid "Allowed (Aut idem)"
 msgstr "Erlaubt (Aut idem)"
 
-#: /app/templates/ingredients/show_product.html:70
+#: /app/templates/ingredients/show_product.html:69
 msgid "Not allowed"
 msgstr "Nicht erlaubt"
 
-#: /app/templates/ingredients/show_product.html:75
+#: /app/templates/ingredients/show_product.html:74
 #: /app/templates/orders/show.html:60
 msgid "Type"
 msgstr "Typ"
 
-#: /app/templates/ingredients/show_product.html:78
+#: /app/templates/ingredients/show_product.html:77
 msgid "Over-the-counter"
 msgstr "Rezeptfrei"
 
-#: /app/templates/ingredients/show_product.html:80
+#: /app/templates/ingredients/show_product.html:79
 msgid "Order required"
 msgstr "Bestellung erforderlich"
 
-#: /app/templates/ingredients/show_product.html:103
+#: /app/templates/ingredients/show_product.html:102
 msgid "Package Configurations"
 msgstr "Packungskonfigurationen"
 
-#: /app/templates/ingredients/show_product.html:114
-#: /app/templates/ingredients/show_product.html:441
+#: /app/templates/ingredients/show_product.html:113
+#: /app/templates/ingredients/show_product.html:435
 msgid "Quantity"
 msgstr "Menge"
 
-#: /app/templates/ingredients/show_product.html:174
+#: /app/templates/ingredients/show_product.html:173
 msgid "No package configurations yet."
 msgstr "Noch keine Packungen konfiguriert."
 
-#: /app/templates/ingredients/show_product.html:175
+#: /app/templates/ingredients/show_product.html:174
 msgid "Add the first package"
 msgstr "Erste Packung hinzufügen"
 
-#: /app/templates/ingredients/show_product.html:209
+#: /app/templates/ingredients/show_product.html:188
+msgid "Total Units in Stock"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:192
+msgid "Active Ingredient Usage"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:198
+msgid "Usage metrics are tracked at ingredient level"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:203
 msgid "Packages in Stock"
 msgstr "Packungen im Bestand"
 
-#: /app/templates/ingredients/show_product.html:214
-#: /app/templates/ingredients/show_product.html:313
+#: /app/templates/ingredients/show_product.html:208
+#: /app/templates/ingredients/show_product.html:307
 #: /app/templates/scanner/index.html:55 /app/templates/scanner/index.html:142
 #: /app/templates/scanner/package_details.html:48
 msgid "Serial"
 msgstr "Seriennummer"
 
-#: /app/templates/ingredients/show_product.html:215
+#: /app/templates/ingredients/show_product.html:209
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
@@ -1934,7 +1975,7 @@ msgstr "Seriennummer"
 msgid "Batch"
 msgstr "Charge"
 
-#: /app/templates/ingredients/show_product.html:216
+#: /app/templates/ingredients/show_product.html:210
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
@@ -1942,14 +1983,14 @@ msgstr "Charge"
 msgid "Expiry"
 msgstr "Verwendbar bis"
 
-#: /app/templates/ingredients/show_product.html:217
-#: /app/templates/ingredients/show_product.html:310
+#: /app/templates/ingredients/show_product.html:211
+#: /app/templates/ingredients/show_product.html:304
 #: /app/templates/scanner/index.html:58
 #: /app/templates/scanner/package_details.html:113
 msgid "Units"
 msgstr "Einheiten"
 
-#: /app/templates/ingredients/show_product.html:239
+#: /app/templates/ingredients/show_product.html:233
 #: /app/templates/orders/edit.html:54 /app/templates/orders/index.html:49
 #: /app/templates/orders/show.html:71 /app/templates/scanner/index.html:104
 #: /app/templates/scanner/package_details.html:105
@@ -1957,105 +1998,122 @@ msgstr "Einheiten"
 msgid "Open"
 msgstr "Offen"
 
-#: /app/templates/ingredients/show_product.html:251
+#: /app/templates/ingredients/show_product.html:245
 #: /app/templates/scanner/scan.html:1045
 msgid "Edit Inventory"
 msgstr "Inventar bearbeiten"
 
-#: /app/templates/ingredients/show_product.html:254
-#: /app/templates/ingredients/show_product.html:507
+#: /app/templates/ingredients/show_product.html:248
+#: /app/templates/ingredients/show_product.html:501
 msgid "Delete Package"
 msgstr "Packung löschen"
 
-#: /app/templates/ingredients/show_product.html:270
+#: /app/templates/ingredients/show_product.html:264
 msgid "No packages in stock"
 msgstr "Keine Packungen im Bestand"
 
-#: /app/templates/ingredients/show_product.html:275
+#: /app/templates/ingredients/show_product.html:269
 msgid "Legacy Inventory"
 msgstr "Bestand im Altsystem"
 
-#: /app/templates/ingredients/show_product.html:280
+#: /app/templates/ingredients/show_product.html:274
 msgid "Sum-based system"
 msgstr "Summenbasiertes System"
 
-#: /app/templates/ingredients/show_product.html:282
+#: /app/templates/ingredients/show_product.html:276
 msgid "This inventory needs migration to package-based tracking"
 msgstr "Dieses Inventar muss auf eine packungsbasierte Nachverfolgung umgestellt werden"
 
-#: /app/templates/ingredients/show_product.html:299
+#: /app/templates/ingredients/show_product.html:293
 msgid "Recent Inventory Changes"
 msgstr "Neueste Änderungen des Inventars"
 
-#: /app/templates/ingredients/show_product.html:308
+#: /app/templates/ingredients/show_product.html:302
 msgid "Date"
 msgstr "Datum"
 
-#: /app/templates/ingredients/show_product.html:309
+#: /app/templates/ingredients/show_product.html:303
 msgid "Change Type"
 msgstr "Änderungstyp"
 
-#: /app/templates/ingredients/show_product.html:312
+#: /app/templates/ingredients/show_product.html:306
 msgid "Reason"
 msgstr "Grund"
 
-#: /app/templates/ingredients/show_product.html:324
+#: /app/templates/ingredients/show_product.html:318
 msgid "Onboarded"
 msgstr "Eingebunden"
 
-#: /app/templates/ingredients/show_product.html:326
+#: /app/templates/ingredients/show_product.html:320
 msgid "Deducted"
 msgstr "Abgezogen"
 
-#: /app/templates/ingredients/show_product.html:332
+#: /app/templates/ingredients/show_product.html:326
 msgid "Manual"
 msgstr "Manuell"
 
-#: /app/templates/ingredients/show_product.html:370
+#: /app/templates/ingredients/show_product.html:364
 msgid "No inventory changes recorded yet."
 msgstr "Noch keine Bestandsänderungen aufgezeichnet."
 
-#: /app/templates/ingredients/show_product.html:420
+#: /app/templates/ingredients/show_product.html:414
 msgid "Delete Package Configuration"
 msgstr "Packungskonfiguration löschen"
 
-#: /app/templates/ingredients/show_product.html:425
+#: /app/templates/ingredients/show_product.html:419
 msgid "Are you sure you want to delete this package configuration? This action cannot be undone."
 msgstr "Willst du diese Packungskonfiguration wirklich löschen? Das kannst du nicht rückgängig machen."
 
-#: /app/templates/ingredients/show_product.html:430
+#: /app/templates/ingredients/show_product.html:424
 msgid "This will remove the package size definition. Any existing inventory using this configuration will remain, but new packages of this size cannot be added."
 msgstr "Dadurch wird die Definition der Packungsgröße entfernt. Alle vorhandenen Bestände, die diese Konfiguration verwenden, bleiben erhalten, aber neue Packungen dieser Größe können nicht hinzugefügt werden."
 
-#: /app/templates/ingredients/show_product.html:437
+#: /app/templates/ingredients/show_product.html:431
 msgid "Configuration Details"
 msgstr "Konfigurationsdetails"
 
-#: /app/templates/ingredients/show_product.html:443
+#: /app/templates/ingredients/show_product.html:437
 msgid "Code"
 msgstr "Code"
 
-#: /app/templates/ingredients/show_product.html:456
+#: /app/templates/ingredients/show_product.html:450
 msgid "Delete Configuration"
 msgstr "Lösche Konfiguration"
 
-#: /app/templates/ingredients/show_product.html:471
+#: /app/templates/ingredients/show_product.html:465
 msgid "Delete Package from Inventory"
 msgstr "Packung aus dem Inventar löschen"
 
-#: /app/templates/ingredients/show_product.html:476
+#: /app/templates/ingredients/show_product.html:470
 msgid "Are you sure you want to delete this package from inventory? This action cannot be undone."
 msgstr "Willst du dieses Paket wirklich aus deinem Inventar löschen? Diese Aktion kann nicht rückgängig gemacht werden."
 
-#: /app/templates/ingredients/show_product.html:481
+#: /app/templates/ingredients/show_product.html:475
 msgid "This will permanently remove the package and all its tracking information from the system."
 msgstr "Dadurch werden die Packung und alle dazugehörigen Tracking-Infos dauerhaft aus dem System gelöscht."
 
-#: /app/templates/ingredients/show_product.html:488
+#: /app/templates/ingredients/show_product.html:482
 #: /app/templates/scanner/package_details.html:3
 #: /app/templates/scanner/package_details.html:9
 msgid "Package Details"
 msgstr "Packungsdetails"
+
+#: /app/templates/ingredients/show_product.html:516
+#: /app/templates/ingredients/show_product.html:552
+msgid "Delete Product"
+msgstr "Produkt löschen"
+
+#: /app/templates/ingredients/show_product.html:521
+msgid "Are you sure you want to delete this product? This action cannot be undone."
+msgstr "Sind Sie sicher, dass Sie Ihr Produkt löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+
+#: /app/templates/ingredients/show_product.html:526
+msgid "This will permanently remove the product and all its configurations. Any existing inventory must be cleared first."
+msgstr "Dadurch werden das Produkt und alle seine Konfigurationen endgültig gelöscht. Vorhandene Lagerbestände müssen zuerst geräumt werden."
+
+#: /app/templates/ingredients/show_product.html:533
+msgid "Product Details"
+msgstr "Produktdetails"
 
 #: /app/templates/ingredients/index.html:3
 #: /app/templates/ingredients/index.html:8 /app/templates/layout.html:35
@@ -2290,7 +2348,7 @@ msgstr "Benötigte Menge"
 
 #: /app/templates/orders/edit.html:121 /app/templates/orders/new.html:170
 #: /app/templates/package_onboarding/onboard.html:165
-#: /app/templates/package_onboarding/onboard.html:416
+#: /app/templates/package_onboarding/onboard.html:420
 msgid "Product"
 msgstr "Produkt"
 
@@ -2922,151 +2980,156 @@ msgstr "Neues Produkt erstellen:"
 msgid "Manufacturer (e.g., 1A Pharma)"
 msgstr "Hersteller (z. B. 1A Pharma)"
 
-#: /app/templates/package_onboarding/onboard.html:295
+#: /app/templates/package_onboarding/onboard.html:291
+#: /app/templates/package_onboarding/onboard.html:365
+msgid "Type to see suggestions from existing products"
+msgstr "Gib was ein, um Vorschläge von bestehenden Produkten zu sehen"
+
+#: /app/templates/package_onboarding/onboard.html:297
 msgid "Product Settings"
 msgstr "Produkteinstellungen"
 
-#: /app/templates/package_onboarding/onboard.html:301
+#: /app/templates/package_onboarding/onboard.html:303
 msgid "Over-the-counter (OTC) - No order required"
 msgstr "Rezeptfrei (OTC) – Keine Bestellung nötig"
 
-#: /app/templates/package_onboarding/onboard.html:309
+#: /app/templates/package_onboarding/onboard.html:311
 msgid "Allow generic substitution (Aut idem)"
 msgstr "Generika-Ersatz zulassen (Aut idem)"
 
-#: /app/templates/package_onboarding/onboard.html:318
+#: /app/templates/package_onboarding/onboard.html:320
 msgid "Available products:"
 msgstr "Verfügbare Produkte:"
 
-#: /app/templates/package_onboarding/onboard.html:327
+#: /app/templates/package_onboarding/onboard.html:329
 msgid "Step 3: Package Configuration"
 msgstr "Schritt 3: Packungskonfiguration"
 
-#: /app/templates/package_onboarding/onboard.html:333
-#: /app/templates/package_onboarding/onboard.html:872
+#: /app/templates/package_onboarding/onboard.html:335
+#: /app/templates/package_onboarding/onboard.html:892
 msgid "Small Package"
 msgstr "Kleine Packung"
 
-#: /app/templates/package_onboarding/onboard.html:334
-#: /app/templates/package_onboarding/onboard.html:873
+#: /app/templates/package_onboarding/onboard.html:336
+#: /app/templates/package_onboarding/onboard.html:893
 msgid "Medium Package"
 msgstr "Mittlere Packung"
 
-#: /app/templates/package_onboarding/onboard.html:335
-#: /app/templates/package_onboarding/onboard.html:874
+#: /app/templates/package_onboarding/onboard.html:337
+#: /app/templates/package_onboarding/onboard.html:894
 msgid "Large Package"
 msgstr "Große Packung"
 
-#: /app/templates/package_onboarding/onboard.html:336
-#: /app/templates/package_onboarding/onboard.html:920
+#: /app/templates/package_onboarding/onboard.html:338
+#: /app/templates/package_onboarding/onboard.html:940
 msgid "Custom Size"
 msgstr "Benutzerdefinierte Größe"
 
-#: /app/templates/package_onboarding/onboard.html:339
+#: /app/templates/package_onboarding/onboard.html:341
 msgid "Enter custom size..."
 msgstr "Benutzerdefinierte Größe eingeben..."
 
-#: /app/templates/package_onboarding/onboard.html:343
+#: /app/templates/package_onboarding/onboard.html:345
 msgid "Units per Package"
 msgstr "Einheiten pro Packung"
 
-#: /app/templates/package_onboarding/onboard.html:345
+#: /app/templates/package_onboarding/onboard.html:347
 msgid "e.g., 100"
 msgstr "z. B. 100"
 
-#: /app/templates/package_onboarding/onboard.html:352
+#: /app/templates/package_onboarding/onboard.html:354
 msgid "0.00"
 msgstr "0,00"
 
-#: /app/templates/package_onboarding/onboard.html:361
+#: /app/templates/package_onboarding/onboard.html:363
 msgid "If different from product"
 msgstr "Wenn anders als im Produkt"
 
-#: /app/templates/package_onboarding/onboard.html:364
+#: /app/templates/package_onboarding/onboard.html:368
 msgid "PZN/National Code"
 msgstr "PZN/Nationaler Code"
 
-#: /app/templates/package_onboarding/onboard.html:366
+#: /app/templates/package_onboarding/onboard.html:370
 msgid "e.g., PZN-12345678"
 msgstr "z. B. PZN-12345678"
 
-#: /app/templates/package_onboarding/onboard.html:368
+#: /app/templates/package_onboarding/onboard.html:372
 msgid "Package-specific pharmaceutical code"
 msgstr "Paketspezifischer pharmazeutischer Code"
 
-#: /app/templates/package_onboarding/onboard.html:371
+#: /app/templates/package_onboarding/onboard.html:375
 msgid "GTIN/EAN"
 msgstr "GTIN/EAN"
 
-#: /app/templates/package_onboarding/onboard.html:373
+#: /app/templates/package_onboarding/onboard.html:377
 msgid "e.g., 4012345678901"
 msgstr "z. B. 4012345678901"
 
-#: /app/templates/package_onboarding/onboard.html:375
+#: /app/templates/package_onboarding/onboard.html:379
 msgid "Global Trade Item Number"
 msgstr "Globale Handelsnummer"
 
-#: /app/templates/package_onboarding/onboard.html:383
+#: /app/templates/package_onboarding/onboard.html:387
 msgid "Step 4: Review and Save"
 msgstr "Schritt 4: Überprüfen und speichern"
 
-#: /app/templates/package_onboarding/onboard.html:388
+#: /app/templates/package_onboarding/onboard.html:392
 msgid "Package Action"
 msgstr "Packungsaktionen"
 
-#: /app/templates/package_onboarding/onboard.html:395
+#: /app/templates/package_onboarding/onboard.html:399
 msgid "Add this package to inventory"
 msgstr "Dieses Paket zum Inventar hinzufügen"
 
-#: /app/templates/package_onboarding/onboard.html:396
+#: /app/templates/package_onboarding/onboard.html:400
 msgid "Track this package in your inventory for stock levels and depletion monitoring"
 msgstr "Verfolge dieses Paket in deinem Inventar, um den Lagerbestand und den Verbrauch im Auge zu behalten"
 
-#: /app/templates/package_onboarding/onboard.html:401
+#: /app/templates/package_onboarding/onboard.html:405
 msgid "Uncheck if you only want to register the product information without adding this specific package to your stock"
 msgstr "Deaktiviere das, wenn du nur die Produktinformationen registrieren willst, ohne dieses spezielle Paket zu deinem Lagerbestand hinzuzufügen"
 
-#: /app/templates/package_onboarding/onboard.html:409
+#: /app/templates/package_onboarding/onboard.html:413
 msgid "Review Information"
 msgstr "Informationen überprüfen"
 
-#: /app/templates/package_onboarding/onboard.html:422
+#: /app/templates/package_onboarding/onboard.html:426
 msgid "Order Required"
 msgstr "Bestellung erforderlich"
 
-#: /app/templates/package_onboarding/onboard.html:425
+#: /app/templates/package_onboarding/onboard.html:429
 msgid "Barcode Data"
 msgstr "Strichcode-Daten"
 
-#: /app/templates/package_onboarding/onboard.html:446
+#: /app/templates/package_onboarding/onboard.html:450
 msgid "Previous"
 msgstr "Vorheriges"
 
-#: /app/templates/package_onboarding/onboard.html:451
+#: /app/templates/package_onboarding/onboard.html:455
 msgid "Next"
 msgstr "Nächstes"
 
-#: /app/templates/package_onboarding/onboard.html:454
+#: /app/templates/package_onboarding/onboard.html:458
 msgid "Save Package"
 msgstr "Packung speichern"
 
-#: /app/templates/package_onboarding/onboard.html:1003
+#: /app/templates/package_onboarding/onboard.html:1023
 msgid "Please select or enter a product"
 msgstr "Bitte ein Produkt auswählen"
 
-#: /app/templates/package_onboarding/onboard.html:1034
+#: /app/templates/package_onboarding/onboard.html:1054
 msgid "Please enter a custom package size"
 msgstr "Gib bitte eine benutzerdefinierte Packungsgröße ein"
 
-#: /app/templates/package_onboarding/onboard.html:1040
+#: /app/templates/package_onboarding/onboard.html:1060
 msgid "Please enter the number of units per package"
 msgstr "Gib bitte die Anzahl der Einheiten pro Packung ein"
 
-#: /app/templates/package_onboarding/onboard.html:1066
+#: /app/templates/package_onboarding/onboard.html:1086
 msgid "No (OTC)"
 msgstr "Nein (OTC)"
 
-#: /app/templates/package_onboarding/onboard.html:1066
+#: /app/templates/package_onboarding/onboard.html:1086
 msgid "Yes"
 msgstr "Ja"
 

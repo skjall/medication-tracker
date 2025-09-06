@@ -12,13 +12,12 @@
             <i class="fas fa-edit me-1"></i>{{ _('Edit') }}
         </a>
         {% if not product.total_inventory_count or product.total_inventory_count == 0 %}
-        <form method="POST" action="{{ url_for('ingredients.delete_product', id=product.id) }}"
-              onsubmit="return confirm('{{ _('Are you sure you want to delete this product?') }}');"
-              class="d-inline">
-            <button type="submit" class="btn btn-outline-danger">
-                <i class="fas fa-trash me-1"></i>{{ _('Delete') }}
-            </button>
-        </form>
+        <button type="button" class="btn btn-outline-danger"
+                data-bs-toggle="modal" data-bs-target="#deleteProductModal"
+                data-delete-url="{{ url_for('ingredients.delete_product', id=product.id) }}"
+                data-product-name="{{ product.brand_name }}">
+            <i class="fas fa-trash me-1"></i>{{ _('Delete') }}
+        </button>
         {% endif %}
         <a href="{{ url_for('ingredients.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i>{{ _('Back') }}
@@ -101,7 +100,7 @@
         <div class="card mb-4">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">{{ _('Package Configurations') }}</h5>
-                <a href="{{ url_for('ingredients.new_package', id=product.id) }}" class="btn btn-sm btn-primary">
+                <a href="{{ url_for('ingredients.new_package', id=product.id) }}" class="btn btn-sm btn-outline-light">
                     <i class="fas fa-plus me-1"></i>{{ _('Add Package') }}
                 </a>
             </div>
@@ -185,23 +184,18 @@
             </div>
             <div class="card-body">
                 <div class="row mb-3">
-                    <div class="col-md-4">
-                        <small class="text-muted">{{ _('Total Units') }}</small>
+                    <div class="col-md-6">
+                        <small class="text-muted">{{ _('Total Units in Stock') }}</small>
                         <div class="h3">{{ product.total_inventory_count }}</div>
                     </div>
-                    <div class="col-md-4">
-                        <small class="text-muted">{{ _('Daily Usage') }}</small>
-                        <div class="h3">{{ "%.1f"|format(product.daily_usage) }}</div>
-                    </div>
-                    <div class="col-md-4">
-                        <small class="text-muted">{{ _('Days Remaining') }}</small>
+                    <div class="col-md-6">
+                        <small class="text-muted">{{ _('Active Ingredient Usage') }}</small>
                         <div class="h3">
-                            {% if product.daily_usage > 0 and product.total_inventory_count > 0 %}
-                                {{ (product.total_inventory_count / product.daily_usage)|int }}
-                            {% else %}
-                                -
-                            {% endif %}
+                            <a href="{{ url_for('ingredients.show', id=product.active_ingredient.id) }}" class="text-decoration-none">
+                                <i class="fas fa-chart-line me-2"></i>{{ _('View Details') }}
+                            </a>
                         </div>
+                        <small class="text-muted">{{ _('Usage metrics are tracked at ingredient level') }}</small>
                     </div>
                 </div>
 
@@ -512,9 +506,76 @@
     </div>
 </div>
 
+<!-- Delete Product Modal -->
+<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteProductModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    {{ _('Delete Product') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _('Are you sure you want to delete this product? This action cannot be undone.') }}</p>
+                
+                <div class="alert alert-warning">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ _('This will permanently remove the product and all its configurations. Any existing inventory must be cleared first.') }}
+                    </small>
+                </div>
+                
+                <!-- Product details will be populated by JavaScript -->
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ _('Product Details') }}</h6>
+                        <dl class="mb-0">
+                            <dt>{{ _('Brand Name') }}:</dt>
+                            <dd class="ms-3"><strong id="modal-product-name"></strong></dd>
+                            <dt>{{ _('Active Ingredient') }}:</dt>
+                            <dd class="ms-3">{{ product.active_ingredient.full_name }}</dd>
+                            <dt>{{ _('Manufacturer') }}:</dt>
+                            <dd class="ms-3">{{ product.manufacturer or _('Unknown') }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    {{ _('Cancel') }}
+                </button>
+                <form method="POST" action="" id="deleteProductForm" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>
+                        {{ _('Delete Product') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // Handle delete modals
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle product delete modal
+    const deleteProductModal = document.getElementById('deleteProductModal');
+    if (deleteProductModal) {
+        deleteProductModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const deleteUrl = button.getAttribute('data-delete-url');
+            const productName = button.getAttribute('data-product-name');
+            
+            // Update modal content
+            document.getElementById('modal-product-name').textContent = productName;
+            
+            // Update form action
+            document.getElementById('deleteProductForm').action = deleteUrl;
+        });
+    }
+
     // Handle package configuration delete modal
     const deleteConfigModal = document.getElementById('deletePackageConfigModal');
     if (deleteConfigModal) {
