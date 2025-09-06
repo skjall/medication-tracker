@@ -60,7 +60,7 @@ class InventoryLog(db.Model):
     # Relationships
     package_inventory: Mapped["PackageInventory"] = relationship(
         "PackageInventory", 
-        backref="inventory_logs"
+        back_populates="inventory_logs"
     )
     
     def __repr__(self):

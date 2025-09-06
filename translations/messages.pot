@@ -100,6 +100,10 @@ msgstr ""
 msgid "Default product cleared"
 msgstr ""
 
+#: /app/routes/ingredients.py:822
+msgid "Package removed from inventory successfully"
+msgstr ""
+
 #: /app/routes/orders.py:92
 msgid "No upcoming physician visit found. Please schedule a visit first."
 msgstr ""
@@ -327,6 +331,7 @@ msgstr ""
 #: /app/templates/ingredients/edit_package.html:28
 #: /app/templates/ingredients/new_package.html:28
 #: /app/templates/ingredients/show_product.html:113
+#: /app/templates/ingredients/show_product.html:439
 #: /app/templates/package_onboarding/onboard.html:331
 #: /app/templates/package_onboarding/onboard.html:419
 msgid "Package Size"
@@ -355,7 +360,7 @@ msgid "Package Size (N1/N2/N3)"
 msgstr ""
 
 #: /app/routes/pdf_mapper.py:329
-#: /app/templates/ingredients/show_product.html:191
+#: /app/templates/ingredients/show_product.html:189
 #: /app/templates/orders/printable.html:134
 msgid "Total Units"
 msgstr ""
@@ -1069,7 +1074,7 @@ msgstr ""
 
 #: /app/templates/index.html:195 /app/templates/index.html:330
 #: /app/templates/ingredients/show.html:239
-#: /app/templates/ingredients/show_product.html:195
+#: /app/templates/ingredients/show_product.html:193
 #: /app/templates/orders/printable.html:132
 #: /app/templates/physicians/show.html:149
 #: /app/templates/schedules/index_ingredient.html:88
@@ -1078,7 +1083,7 @@ msgid "Daily Usage"
 msgstr ""
 
 #: /app/templates/index.html:196 /app/templates/index.html:331
-#: /app/templates/ingredients/show_product.html:186
+#: /app/templates/ingredients/show_product.html:184
 #: /app/templates/scanner/index.html:46
 msgid "Current Inventory"
 msgstr ""
@@ -1095,8 +1100,8 @@ msgstr ""
 #: /app/templates/ingredients/edit_package_inventory.html:56
 #: /app/templates/ingredients/show.html:92
 #: /app/templates/ingredients/show.html:192
-#: /app/templates/ingredients/show_product.html:220
-#: /app/templates/ingredients/show_product.html:303
+#: /app/templates/ingredients/show_product.html:218
+#: /app/templates/ingredients/show_product.html:311
 #: /app/templates/orders/index.html:23 /app/templates/orders/printable.html:112
 #: /app/templates/orders/show.html:64 /app/templates/orders/show.html:163
 #: /app/templates/pdf_mapper/index.html:44
@@ -1112,7 +1117,7 @@ msgstr ""
 #: /app/templates/ingredients/index.html:27
 #: /app/templates/ingredients/show.html:93
 #: /app/templates/ingredients/show_product.html:118
-#: /app/templates/ingredients/show_product.html:221
+#: /app/templates/ingredients/show_product.html:219
 #: /app/templates/orders/edit.html:70 /app/templates/orders/index.html:27
 #: /app/templates/orders/index.html:154 /app/templates/orders/show.html:164
 #: /app/templates/physicians/index.html:36
@@ -1132,8 +1137,10 @@ msgstr ""
 #: /app/templates/ingredients/show.html:57
 #: /app/templates/ingredients/show.html:113
 #: /app/templates/ingredients/show_product.html:125
-#: /app/templates/ingredients/show_product.html:279
-#: /app/templates/ingredients/show_product.html:393
+#: /app/templates/ingredients/show_product.html:287
+#: /app/templates/ingredients/show_product.html:401
+#: /app/templates/ingredients/show_product.html:530
+#: /app/templates/ingredients/show_product.html:551
 #: /app/templates/orders/show.html:193 /app/templates/orders/show.html:209
 #: /app/templates/orders/show.html:215 /app/templates/orders/show.html:378
 #: /app/templates/physicians/show.html:165
@@ -1298,6 +1305,8 @@ msgstr ""
 #: /app/templates/ingredients/new_package.html:114
 #: /app/templates/ingredients/new_product.html:17
 #: /app/templates/ingredients/new_product.html:144
+#: /app/templates/ingredients/show_product.html:451
+#: /app/templates/ingredients/show_product.html:502
 #: /app/templates/orders/_fulfill_modal.html:41
 #: /app/templates/orders/edit.html:223 /app/templates/orders/new.html:255
 #: /app/templates/orders/show.html:397
@@ -1413,10 +1422,12 @@ msgid "Package Information"
 msgstr ""
 
 #: /app/templates/ingredients/edit_package_inventory.html:22
+#: /app/templates/ingredients/show_product.html:490
 msgid "Serial Number"
 msgstr ""
 
 #: /app/templates/ingredients/edit_package_inventory.html:28
+#: /app/templates/ingredients/show_product.html:492
 msgid "Batch Number"
 msgstr ""
 
@@ -1434,6 +1445,7 @@ msgid "Inventory Status"
 msgstr ""
 
 #: /app/templates/ingredients/edit_package_inventory.html:45
+#: /app/templates/ingredients/show_product.html:494
 msgid "Current Units"
 msgstr ""
 
@@ -1456,21 +1468,21 @@ msgid "Scanned At"
 msgstr ""
 
 #: /app/templates/ingredients/edit_package_inventory.html:96
-#: /app/templates/ingredients/show_product.html:239
+#: /app/templates/ingredients/show_product.html:237
 #: /app/templates/scanner/index.html:102
 #: /app/templates/scanner/package_details.html:103
 msgid "Sealed"
 msgstr ""
 
 #: /app/templates/ingredients/edit_package_inventory.html:97
-#: /app/templates/ingredients/show_product.html:320
+#: /app/templates/ingredients/show_product.html:328
 #: /app/templates/scanner/package_details.html:127
 msgid "Opened"
 msgstr ""
 
 #: /app/templates/ingredients/edit_package_inventory.html:98
-#: /app/templates/ingredients/show_product.html:243
-#: /app/templates/ingredients/show_product.html:322
+#: /app/templates/ingredients/show_product.html:241
+#: /app/templates/ingredients/show_product.html:330
 #: /app/templates/scanner/index.html:106 /app/templates/scanner/index.html:179
 #: /app/templates/scanner/package_details.html:80
 #: /app/templates/scanner/package_details.html:107
@@ -1479,7 +1491,7 @@ msgid "Consumed"
 msgstr ""
 
 #: /app/templates/ingredients/edit_package_inventory.html:99
-#: /app/templates/ingredients/show_product.html:245
+#: /app/templates/ingredients/show_product.html:243
 #: /app/templates/scanner/index.html:36 /app/templates/scanner/index.html:83
 #: /app/templates/scanner/index.html:108 /app/templates/scanner/index.html:181
 #: /app/templates/scanner/package_details.html:63
@@ -1856,13 +1868,13 @@ msgid "units/day"
 msgstr ""
 
 #: /app/templates/ingredients/show.html:241
-#: /app/templates/ingredients/show_product.html:199
+#: /app/templates/ingredients/show_product.html:197
 #: /app/templates/schedules/index_ingredient.html:68
 msgid "Days Remaining"
 msgstr ""
 
 #: /app/templates/ingredients/show.html:253
-#: /app/templates/ingredients/show_product.html:374
+#: /app/templates/ingredients/show_product.html:382
 msgid "Substitutable Products"
 msgstr ""
 
@@ -1923,33 +1935,30 @@ msgid "Package Configurations"
 msgstr ""
 
 #: /app/templates/ingredients/show_product.html:114
+#: /app/templates/ingredients/show_product.html:441
 msgid "Quantity"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:157
-msgid "Are you sure you want to delete this package configuration?"
-msgstr ""
-
-#: /app/templates/ingredients/show_product.html:176
+#: /app/templates/ingredients/show_product.html:174
 msgid "No package configurations yet."
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:177
+#: /app/templates/ingredients/show_product.html:175
 msgid "Add the first package"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:211
+#: /app/templates/ingredients/show_product.html:209
 msgid "Packages in Stock"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:216
-#: /app/templates/ingredients/show_product.html:305
+#: /app/templates/ingredients/show_product.html:214
+#: /app/templates/ingredients/show_product.html:313
 #: /app/templates/scanner/index.html:55 /app/templates/scanner/index.html:142
 #: /app/templates/scanner/package_details.html:48
 msgid "Serial"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:217
+#: /app/templates/ingredients/show_product.html:215
 #: /app/templates/package_onboarding/onboard.html:199
 #: /app/templates/scanner/index.html:56
 #: /app/templates/scanner/package_details.html:54
@@ -1957,7 +1966,7 @@ msgstr ""
 msgid "Batch"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:218
+#: /app/templates/ingredients/show_product.html:216
 #: /app/templates/package_onboarding/onboard.html:205
 #: /app/templates/scanner/index.html:57 /app/templates/scanner/index.html:143
 #: /app/templates/scanner/package_details.html:59
@@ -1965,14 +1974,14 @@ msgstr ""
 msgid "Expiry"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:219
-#: /app/templates/ingredients/show_product.html:302
+#: /app/templates/ingredients/show_product.html:217
+#: /app/templates/ingredients/show_product.html:310
 #: /app/templates/scanner/index.html:58
 #: /app/templates/scanner/package_details.html:113
 msgid "Units"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:241
+#: /app/templates/ingredients/show_product.html:239
 #: /app/templates/orders/edit.html:54 /app/templates/orders/index.html:49
 #: /app/templates/orders/show.html:71 /app/templates/scanner/index.html:104
 #: /app/templates/scanner/package_details.html:105
@@ -1980,57 +1989,113 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:252
+#: /app/templates/ingredients/show_product.html:251
 #: /app/templates/scanner/scan.html:1045
 msgid "Edit Inventory"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:262
+#: /app/templates/ingredients/show_product.html:254
+#: /app/templates/ingredients/show_product.html:507
+msgid "Delete Package"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:270
 msgid "No packages in stock"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:267
+#: /app/templates/ingredients/show_product.html:275
 msgid "Legacy Inventory"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:272
+#: /app/templates/ingredients/show_product.html:280
 msgid "Sum-based system"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:274
+#: /app/templates/ingredients/show_product.html:282
 msgid "This inventory needs migration to package-based tracking"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:291
+#: /app/templates/ingredients/show_product.html:299
 msgid "Recent Inventory Changes"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:300
+#: /app/templates/ingredients/show_product.html:308
 msgid "Date"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:301
+#: /app/templates/ingredients/show_product.html:309
 msgid "Change Type"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:304
+#: /app/templates/ingredients/show_product.html:312
 msgid "Reason"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:316
+#: /app/templates/ingredients/show_product.html:324
 msgid "Onboarded"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:318
+#: /app/templates/ingredients/show_product.html:326
 msgid "Deducted"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:324
+#: /app/templates/ingredients/show_product.html:332
 msgid "Manual"
 msgstr ""
 
-#: /app/templates/ingredients/show_product.html:362
+#: /app/templates/ingredients/show_product.html:370
 msgid "No inventory changes recorded yet."
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:420
+msgid "Delete Package Configuration"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:425
+msgid ""
+"Are you sure you want to delete this package configuration? This action "
+"cannot be undone."
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:430
+msgid ""
+"This will remove the package size definition. Any existing inventory "
+"using this configuration will remain, but new packages of this size "
+"cannot be added."
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:437
+msgid "Configuration Details"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:443
+msgid "Code"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:456
+msgid "Delete Configuration"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:471
+msgid "Delete Package from Inventory"
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:476
+msgid ""
+"Are you sure you want to delete this package from inventory? This action "
+"cannot be undone."
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:481
+msgid ""
+"This will permanently remove the package and all its tracking information"
+" from the system."
+msgstr ""
+
+#: /app/templates/ingredients/show_product.html:488
+#: /app/templates/scanner/package_details.html:3
+#: /app/templates/scanner/package_details.html:9
+msgid "Package Details"
 msgstr ""
 
 #: /app/templates/ingredients/index.html:3
@@ -3764,11 +3829,6 @@ msgstr ""
 
 #: /app/templates/scanner/index.html:190
 msgid "No recent scans"
-msgstr ""
-
-#: /app/templates/scanner/package_details.html:3
-#: /app/templates/scanner/package_details.html:9
-msgid "Package Details"
 msgstr ""
 
 #: /app/templates/scanner/package_details.html:35

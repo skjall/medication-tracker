@@ -347,6 +347,87 @@ Action columns in tables must be right-aligned for consistent layout:
 - `fas fa-exclamation-triangle` for warnings
 - `fas fa-exclamation-circle` for errors
 
+## User Interface Guidelines
+
+### Modals vs JavaScript Alerts
+
+**❌ NEVER use JavaScript alerts (`alert()`, `confirm()`, `prompt()`)**
+
+JavaScript alerts are:
+- Inconsistent with the application design
+- Not customizable or brandable
+- Poor user experience on mobile devices
+- Cannot be styled or themed
+- Block the entire browser tab
+
+**✅ ALWAYS use Bootstrap modals for confirmations and dialogs**
+
+#### Confirmation Modals
+For destructive actions like delete operations, use confirmation modals:
+
+```html
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    {{ _('Confirm Deletion') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _('Are you sure you want to delete this item? This action cannot be undone.') }}</p>
+                <div class="alert alert-warning">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ _('This will permanently remove all associated data.') }}
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    {{ _('Cancel') }}
+                </button>
+                <form method="POST" action="{{ delete_url }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>
+                        {{ _('Delete') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+#### Implementation Pattern
+Replace JavaScript confirms with Bootstrap modals:
+
+```html
+<!-- ❌ WRONG - JavaScript alert -->
+<button onclick="if(confirm('Are you sure?')) { submitForm(); }">
+    Delete
+</button>
+
+<!-- ✅ CORRECT - Bootstrap modal -->
+<button type="button" class="btn btn-outline-danger" 
+        data-bs-toggle="modal" data-bs-target="#deleteModal" 
+        data-delete-url="{{ url_for('delete_route', id=item.id) }}"
+        data-item-name="{{ item.name }}">
+    <i class="fas fa-trash"></i> Delete
+</button>
+```
+
+#### Modal Benefits
+- Consistent with application design
+- Fully customizable styling
+- Better accessibility support
+- Mobile-friendly interface
+- Can include additional context/warnings
+- Supports complex forms and interactions
+
 ## Implementation Notes
 
 ### CSS Classes Priority

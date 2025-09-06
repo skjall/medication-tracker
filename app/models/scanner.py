@@ -13,6 +13,7 @@ from .base import db, utcnow
 if TYPE_CHECKING:
     from .medication_product import MedicationProduct
     from .visit import OrderItem
+    from .inventory_log import InventoryLog
 
 
 class MedicationPackage(db.Model):
@@ -183,6 +184,11 @@ class PackageInventory(db.Model):
     # Relationships
     scanned_item: Mapped["ScannedItem"] = relationship("ScannedItem", back_populates="package_inventory")
     order_item: Mapped[Optional["OrderItem"]] = relationship("OrderItem", backref="linked_packages")
+    inventory_logs: Mapped[list["InventoryLog"]] = relationship(
+        "InventoryLog", 
+        back_populates="package_inventory",
+        cascade="all, delete-orphan"
+    )
     
     @property
     def units_used(self) -> int:

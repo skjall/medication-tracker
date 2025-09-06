@@ -790,6 +790,43 @@ def clear_default_product(ingredient_id: int):
     return redirect(url_for("ingredients.show", id=ingredient_id))
 
 
+@ingredients_bp.route("/inventory/<int:id>/delete", methods=["POST"])
+def delete_package_inventory(id: int):
+    """Delete a package from inventory."""
+    from models import PackageInventory, ScannedItem, ProductPackage, InventoryLog
+    
+    package_inventory = PackageInventory.query.get_or_404(id)
+    scanned_item = package_inventory.scanned_item
+    
+    # Find the product for redirect
+    product = None
+    if scanned_item.gtin:
+        package_config = ProductPackage.query.filter_by(gtin=scanned_item.gtin).first()
+        if package_config:
+            product = package_config.product
+    
+    if not product and scanned_item.national_number:
+        package_config = ProductPackage.query.filter_by(
+            national_number=scanned_item.national_number,
+            national_number_type=scanned_item.national_number_type
+        ).first()
+        if package_config:
+            product = package_config.product
+    
+    # Delete the package inventory and scanned item
+    # Note: The cascade relationship will automatically delete related inventory_logs
+    db.session.delete(package_inventory)
+    db.session.delete(scanned_item)
+    db.session.commit()
+    
+    flash(_("Package removed from inventory successfully"), "success")
+    
+    if product:
+        return redirect(url_for("ingredients.show_product", id=product.id))
+    else:
+        return redirect(url_for("ingredients.index"))
+
+
 @ingredients_bp.route("/<int:id>/calculate", methods=["POST"])
 def calculate(id: int):
     """Calculate package quantities needed for an ingredient."""
