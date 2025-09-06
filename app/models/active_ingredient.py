@@ -159,11 +159,32 @@ class ActiveIngredient(db.Model):
 
     @property
     def full_name(self) -> str:
-        """Get the full name including strength and form."""
-        parts = [self.component_display]
+        """Get the full name including components and form: Name (Component1 strength + Component2 strength, Form)."""
+        if not self.components and not self.form:
+            return self.name
+        
+        parts = []
+        
+        # Add component strengths if available
+        if self.components:
+            component_parts = []
+            for comp in self.components:
+                strength_float = float(comp.strength)
+                if strength_float == int(strength_float):
+                    strength_str = str(int(strength_float))
+                else:
+                    strength_str = f"{strength_float:g}"
+                component_parts.append(f"{comp.component_name} {strength_str}{comp.strength_unit}")
+            parts.append(" + ".join(component_parts))
+        
+        # Add form if available
         if self.form:
-            parts.append(f"({self.form})")
-        return " ".join(parts)
+            parts.append(self.form)
+        
+        if parts:
+            return f"{self.name} ({', '.join(parts)})"
+        else:
+            return self.name
     
     @property
     def clinical_name(self) -> str:
@@ -172,7 +193,7 @@ class ActiveIngredient(db.Model):
     
     @property
     def component_display(self) -> str:
-        """Get formatted display showing all components with strengths."""
+        """Get formatted display showing all components with strengths (legacy method)."""
         if not self.components:
             return self.name
         
@@ -183,8 +204,8 @@ class ActiveIngredient(db.Model):
     
     @property
     def display_name(self) -> str:
-        """Get the display name for UI (uses component display)."""
-        return self.component_display
+        """Get the display name for UI: Name (components, form)."""
+        return self.full_name
 
     def get_all_products(self):
         """Get all products containing this active ingredient."""
