@@ -452,6 +452,12 @@ def scan():
             ),
         )
         db.session.add(inventory_item)
+        db.session.flush()  # Ensure inventory_item gets an ID
+        
+        # Log the onboarding
+        inventory_item.log_onboarding(
+            reason=f"Package scanned and added to inventory: {product_package.product.display_name} {product_package.package_size}"
+        )
 
         # Commit the database changes
         db.session.commit()

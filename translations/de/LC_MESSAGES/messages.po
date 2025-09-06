@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-09-06 10:22\n"
+"PO-Revision-Date: 2025-09-06 12:26\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -550,77 +550,77 @@ msgstr "Teilweise erfüllt: %(remaining)d Einheiten noch erforderlich"
 msgid "Partially fulfilled. Received %(quantity)d units in %(package_size)s. Still need %(remaining)d units."
 msgstr "Teilweise erledigt. %(quantity)d Einheiten in %(package_size)s erhalten. Noch %(remaining)d Einheiten benötigt."
 
-#: /app/routes/scanner.py:462
+#: /app/routes/scanner.py:468
 #, python-format
 msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units). %(fulfillment)s"
 msgstr "Zum Inventar hinzugefügt: %(product_name)s %(package_size)s (%(quantity)d Einheiten). %(fulfillment)s"
 
-#: /app/routes/scanner.py:470
+#: /app/routes/scanner.py:476
 #, python-format
 msgid "Added to inventory: %(product_name)s %(package_size)s (%(quantity)d units)"
 msgstr "Zum Inventar hinzugefügt: %(product_name)s %(package_size)s (%(quantity)d Einheiten)"
 
-#: /app/routes/scanner.py:528
+#: /app/routes/scanner.py:534
 msgid "Product Code"
 msgstr "Produktcode"
 
-#: /app/routes/scanner.py:534
+#: /app/routes/scanner.py:540
 #, python-format
 msgid "%(label)s %(number)s not found"
 msgstr "%(label)s %(number)s nicht gefunden"
 
-#: /app/routes/scanner.py:538 /app/routes/scanner.py:545
-#: /app/routes/scanner.py:550 /app/routes/scanner.py:555
-#: /app/routes/scanner.py:560
+#: /app/routes/scanner.py:544 /app/routes/scanner.py:551
+#: /app/routes/scanner.py:556 /app/routes/scanner.py:561
+#: /app/routes/scanner.py:566
 msgid "Please add this package."
 msgstr "Bitte füge diese Packung hinzu."
 
-#: /app/routes/scanner.py:543
+#: /app/routes/scanner.py:549
 #, python-format
 msgid "EAN-13 barcode %(code)s not found"
 msgstr "EAN-13-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:548
+#: /app/routes/scanner.py:554
 #, python-format
 msgid "EAN-8 barcode %(code)s not found"
 msgstr "EAN-8-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:553
+#: /app/routes/scanner.py:559
 #, python-format
 msgid "UPC barcode %(code)s not found"
 msgstr "UPC-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:558
+#: /app/routes/scanner.py:564
 #, python-format
 msgid "Product barcode %(code)s not found"
 msgstr "Produkt-Barcode %(code)s nicht gefunden"
 
-#: /app/routes/scanner.py:563
+#: /app/routes/scanner.py:569
 msgid "Unrecognized barcode format"
 msgstr "Unbekanntes Strichcode-Format"
 
-#: /app/routes/scanner.py:564
+#: /app/routes/scanner.py:570
 msgid "This barcode type is not supported"
 msgstr "Dieser Strichcode-Typ wird nicht unterstützt"
 
-#: /app/routes/scanner.py:643
+#: /app/routes/scanner.py:649
 msgid "Package not in inventory"
 msgstr "Packung nicht im Inventar"
 
-#: /app/routes/scanner.py:648
+#: /app/routes/scanner.py:654
 msgid "Invalid number of units"
 msgstr "Ungültige Anzahl an Einheiten"
 
-#: /app/routes/scanner.py:652
+#: /app/routes/scanner.py:658
 msgid "Not enough units in package"
 msgstr "Nicht genug Einheiten in der Packung"
 
-#: /app/routes/scanner.py:669
+#: /app/routes/scanner.py:675
 #, python-format
 msgid "%(units)d units consumed"
 msgstr "%(units)d Einheiten verbraucht"
 
-#: /app/routes/scanner.py:687
+#: /app/routes/scanner.py:693
 msgid "Package marked as expired"
 msgstr "Packung als abgelaufen markiert"
 
