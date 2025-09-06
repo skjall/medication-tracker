@@ -241,7 +241,7 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ url_for('ingredients.edit_package_inventory', id=pkg.id) }}" 
+                                        <a href="{{ url_for('ingredients.edit_package_inventory', id=pkg.id) }}"
                                            class="btn btn-sm btn-outline-primary" title="{{ _('Edit Inventory') }}">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -417,14 +417,14 @@
             </div>
             <div class="modal-body">
                 <p>{{ _('Are you sure you want to delete this package configuration? This action cannot be undone.') }}</p>
-                
+
                 <div class="alert alert-warning">
                     <small>
                         <i class="fas fa-info-circle me-1"></i>
                         {{ _('This will remove the package size definition. Any existing inventory using this configuration will remain, but new packages of this size cannot be added.') }}
                     </small>
                 </div>
-                
+
                 <!-- Package config details will be populated by JavaScript -->
                 <div class="card bg-light">
                     <div class="card-body">
@@ -468,14 +468,14 @@
             </div>
             <div class="modal-body">
                 <p>{{ _('Are you sure you want to delete this package from inventory? This action cannot be undone.') }}</p>
-                
+
                 <div class="alert alert-warning">
                     <small>
                         <i class="fas fa-info-circle me-1"></i>
                         {{ _('This will permanently remove the package and all its tracking information from the system.') }}
                     </small>
                 </div>
-                
+
                 <!-- Package details will be populated by JavaScript -->
                 <div class="card bg-light">
                     <div class="card-body">
@@ -519,14 +519,14 @@
             </div>
             <div class="modal-body">
                 <p>{{ _('Are you sure you want to delete this product? This action cannot be undone.') }}</p>
-                
+
                 <div class="alert alert-warning">
                     <small>
                         <i class="fas fa-info-circle me-1"></i>
                         {{ _('This will permanently remove the product and all its configurations. Any existing inventory must be cleared first.') }}
                     </small>
                 </div>
-                
+
                 <!-- Product details will be populated by JavaScript -->
                 <div class="card bg-light">
                     <div class="card-body">
@@ -567,10 +567,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const button = event.relatedTarget;
             const deleteUrl = button.getAttribute('data-delete-url');
             const productName = button.getAttribute('data-product-name');
-            
+
             // Update modal content
             document.getElementById('modal-product-name').textContent = productName;
-            
+
             // Update form action
             document.getElementById('deleteProductForm').action = deleteUrl;
         });
@@ -585,12 +585,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const size = button.getAttribute('data-package-size');
             const quantity = button.getAttribute('data-package-quantity');
             const code = button.getAttribute('data-package-code');
-            
+
             // Update modal content
             document.getElementById('modal-config-size').textContent = size;
             document.getElementById('modal-config-quantity').textContent = quantity + ' {{ _("units") }}';
             document.getElementById('modal-config-code').textContent = code;
-            
+
             // Update form action
             document.getElementById('deletePackageConfigForm').action = deleteUrl;
         });
@@ -605,12 +605,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const serial = button.getAttribute('data-package-serial');
             const batch = button.getAttribute('data-package-batch');
             const units = button.getAttribute('data-package-units');
-            
+
             // Update modal content
             document.getElementById('modal-package-serial').textContent = serial;
             document.getElementById('modal-package-batch').textContent = batch;
             document.getElementById('modal-package-units').textContent = units + ' {{ _("units") }}';
-            
+
             // Update form action
             document.getElementById('deleteInventoryForm').action = deleteUrl;
         });

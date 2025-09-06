@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-09-06 14:28\n"
+"PO-Revision-Date: 2025-09-06 14:57\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -74,12 +74,12 @@ msgstr "Produkt erfolgreich erstellt"
 #: /app/routes/ingredients.py:633 /app/routes/ingredients.py:714
 #, python-format
 msgid "GTIN '%(gtin)s' is already used by another package: %(product)s - %(size)s"
-msgstr ""
+msgstr "Die GTIN „%(gtin)s” wird schon von einer anderen Packung benutzt: %(product)s - %(size)s"
 
 #: /app/routes/ingredients.py:650 /app/routes/ingredients.py:732
 #, python-format
 msgid "%(type)s '%(number)s' is already used by another package: %(product)s - %(size)s"
-msgstr ""
+msgstr "%(type)s „%(number)s” wird schon von einer anderen Packung benutzt: %(product)s - %(size)s"
 
 #: /app/routes/ingredients.py:677
 msgid "Package added successfully"
@@ -87,7 +87,7 @@ msgstr "Packung erfolgreich hinzugefügt"
 
 #: /app/routes/ingredients.py:682
 msgid "Error creating package. Please check for duplicate identifiers."
-msgstr ""
+msgstr "Beim Erstellen der Packung ist ein Fehler aufgetreten. Bitte schau mal nach, ob es doppelte Bezeichner gibt."
 
 #: /app/routes/ingredients.py:757
 msgid "Package updated successfully"
@@ -95,7 +95,7 @@ msgstr "Packung erfolgreich aktualisiert"
 
 #: /app/routes/ingredients.py:764
 msgid "Error updating package. Please check for duplicate identifiers."
-msgstr ""
+msgstr "Problem beim Aktualisieren der Packung. Bitte schau mal nach, ob es doppelte Identifikatoren gibt."
 
 #: /app/routes/ingredients.py:787
 msgid "Package deleted successfully"
@@ -1946,15 +1946,15 @@ msgstr "Erste Packung hinzufügen"
 
 #: /app/templates/ingredients/show_product.html:188
 msgid "Total Units in Stock"
-msgstr ""
+msgstr "Gesamtbestand"
 
 #: /app/templates/ingredients/show_product.html:192
 msgid "Active Ingredient Usage"
-msgstr ""
+msgstr "Verwendung des Wirkstoffs"
 
 #: /app/templates/ingredients/show_product.html:198
 msgid "Usage metrics are tracked at ingredient level"
-msgstr ""
+msgstr "Die Nutzungsmetriken werden auf der Ebene der Inhaltsstoffe verfolgt"
 
 #: /app/templates/ingredients/show_product.html:203
 msgid "Packages in Stock"
