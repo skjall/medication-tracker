@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: medication-tracker\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2025-09-06 14:57\n"
+"PO-Revision-Date: 2025-09-06 15:55\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -63,7 +63,7 @@ msgid "Invalid strength value. Please enter a valid number (e.g., 500 or 1.25)"
 msgstr "Ungültiger Wert für die Stärke. Bitte gib eine gültige Zahl ein (z. B. 500 oder 1,25)"
 
 #: /app/routes/ingredients.py:507
-#: /app/templates/package_onboarding/onboard.html:996
+#: /app/templates/package_onboarding/onboard.html:993
 msgid "Please select or enter an active ingredient"
 msgstr "Bitte wähle einen Wirkstoff aus oder gib ihn ein"
 
@@ -74,7 +74,7 @@ msgstr "Produkt erfolgreich erstellt"
 #: /app/routes/ingredients.py:633 /app/routes/ingredients.py:714
 #, python-format
 msgid "GTIN '%(gtin)s' is already used by another package: %(product)s - %(size)s"
-msgstr "Die GTIN „%(gtin)s” wird schon von einer anderen Packung benutzt: %(product)s - %(size)s"
+msgstr "Die GTIN '%(gtin)s' wird schon von einer anderen Packung benutzt: %(product)s - %(size)s"
 
 #: /app/routes/ingredients.py:650 /app/routes/ingredients.py:732
 #, python-format
@@ -346,8 +346,8 @@ msgstr "Darreichungsform (Tabletten usw.)"
 #: /app/templates/ingredients/new_package.html:28
 #: /app/templates/ingredients/show_product.html:112
 #: /app/templates/ingredients/show_product.html:433
-#: /app/templates/package_onboarding/onboard.html:333
-#: /app/templates/package_onboarding/onboard.html:423
+#: /app/templates/package_onboarding/onboard.html:331
+#: /app/templates/package_onboarding/onboard.html:420
 msgid "Package Size"
 msgstr "Packungsgröße"
 
@@ -400,8 +400,8 @@ msgstr "Anweisungen"
 
 #: /app/routes/pdf_mapper.py:336 /app/templates/index.html:31
 #: /app/templates/ingredients/edit.html:96
-#: /app/templates/ingredients/edit_product.html:52
-#: /app/templates/ingredients/new_product.html:95
+#: /app/templates/ingredients/edit_product.html:50
+#: /app/templates/ingredients/new_product.html:93
 #: /app/templates/ingredients/show.html:73
 #: /app/templates/ingredients/show_product.html:93
 #: /app/templates/physicians/edit.html:85 /app/templates/physicians/new.html:75
@@ -1290,18 +1290,18 @@ msgstr "z. B. N02BE01"
 #: /app/templates/ingredients/edit_package.html:111
 #: /app/templates/ingredients/edit_package_inventory.html:75
 #: /app/templates/ingredients/edit_product.html:11
-#: /app/templates/ingredients/edit_product.html:105
+#: /app/templates/ingredients/edit_product.html:103
 #: /app/templates/ingredients/new_package.html:11
 #: /app/templates/ingredients/new_package.html:114
 #: /app/templates/ingredients/new_product.html:17
-#: /app/templates/ingredients/new_product.html:146
+#: /app/templates/ingredients/new_product.html:144
 #: /app/templates/ingredients/show_product.html:445
 #: /app/templates/ingredients/show_product.html:496
 #: /app/templates/ingredients/show_product.html:547
 #: /app/templates/orders/_fulfill_modal.html:41
 #: /app/templates/orders/edit.html:223 /app/templates/orders/new.html:255
 #: /app/templates/orders/show.html:397
-#: /app/templates/package_onboarding/onboard.html:447
+#: /app/templates/package_onboarding/onboard.html:444
 #: /app/templates/pdf_mapper/index.html:129
 #: /app/templates/pdf_mapper/index.html:152
 #: /app/templates/pdf_mapper/new.html:129
@@ -1320,7 +1320,7 @@ msgstr "Abbrechen"
 #: /app/templates/ingredients/edit.html:111
 #: /app/templates/ingredients/edit_package.html:114
 #: /app/templates/ingredients/edit_package_inventory.html:78
-#: /app/templates/ingredients/edit_product.html:102
+#: /app/templates/ingredients/edit_product.html:100
 msgid "Save Changes"
 msgstr "Änderungen speichern"
 
@@ -1376,7 +1376,7 @@ msgstr "Weitere Informationen"
 
 #: /app/templates/ingredients/edit_package.html:78
 #: /app/templates/ingredients/new_package.html:83
-#: /app/templates/package_onboarding/onboard.html:361
+#: /app/templates/package_onboarding/onboard.html:359
 msgid "Package Manufacturer"
 msgstr "Packungshersteller"
 
@@ -1388,7 +1388,7 @@ msgstr "Wenn anders als der Hersteller des Produkts"
 #: /app/templates/ingredients/edit_package.html:84
 #: /app/templates/ingredients/new_package.html:88
 #: /app/templates/ingredients/show_product.html:116
-#: /app/templates/package_onboarding/onboard.html:350
+#: /app/templates/package_onboarding/onboard.html:348
 msgid "List Price"
 msgstr "Listenpreis"
 
@@ -1508,7 +1508,7 @@ msgstr "Produktinformation"
 #: /app/templates/ingredients/show_product.html:40
 #: /app/templates/ingredients/show_product.html:537
 #: /app/templates/package_onboarding/onboard.html:161
-#: /app/templates/package_onboarding/onboard.html:417
+#: /app/templates/package_onboarding/onboard.html:414
 msgid "Active Ingredient"
 msgstr "Wirkstoff"
 
@@ -1516,47 +1516,38 @@ msgstr "Wirkstoff"
 msgid "Cannot be changed after creation"
 msgstr "Kann nach dem Erstellen nicht mehr geändert werden"
 
-#: /app/templates/ingredients/edit_product.html:45
-msgid "Start typing manufacturer name..."
-msgstr "Fang einfach an, den Namen des Herstellers zu tippen..."
-
-#: /app/templates/ingredients/edit_product.html:46
-#: /app/templates/ingredients/new_product.html:90
-msgid "Enter at least 2 characters to see suggestions from existing products"
-msgstr "Gib mindestens 2 Zeichen ein, um Vorschläge von vorhandenen Produkten zu sehen"
-
-#: /app/templates/ingredients/edit_product.html:63
-#: /app/templates/ingredients/new_product.html:106
+#: /app/templates/ingredients/edit_product.html:61
+#: /app/templates/ingredients/new_product.html:104
 msgid "Order Settings"
 msgstr "Bestell-Einstellungen"
 
-#: /app/templates/ingredients/edit_product.html:71
-#: /app/templates/ingredients/new_product.html:113
+#: /app/templates/ingredients/edit_product.html:69
+#: /app/templates/ingredients/new_product.html:111
 msgid "Allow substitution (Aut idem)"
 msgstr "Ersatz zulassen (Aut idem)"
 
-#: /app/templates/ingredients/edit_product.html:72
-#: /app/templates/ingredients/new_product.html:114
+#: /app/templates/ingredients/edit_product.html:70
+#: /app/templates/ingredients/new_product.html:112
 msgid "Pharmacist may substitute with generic equivalent"
 msgstr "Der Apotheker kann das Produkt durch ein gleichwertiges Generikum ersetzen"
 
-#: /app/templates/ingredients/edit_product.html:81
-#: /app/templates/ingredients/new_product.html:122
+#: /app/templates/ingredients/edit_product.html:79
+#: /app/templates/ingredients/new_product.html:120
 msgid "Over-the-counter (OTC)"
 msgstr "Rezeptfreie Medikamente (OTC)"
 
-#: /app/templates/ingredients/edit_product.html:82
-#: /app/templates/ingredients/new_product.html:123
+#: /app/templates/ingredients/edit_product.html:80
+#: /app/templates/ingredients/new_product.html:121
 msgid "No order required (OTC)"
 msgstr "Keine Bestellung erforderlich (OTC)"
 
-#: /app/templates/ingredients/edit_product.html:88
-#: /app/templates/ingredients/new_product.html:129
+#: /app/templates/ingredients/edit_product.html:86
+#: /app/templates/ingredients/new_product.html:127
 msgid "Prescribing Physician"
 msgstr "Verschreibender Arzt"
 
-#: /app/templates/ingredients/edit_product.html:90
-#: /app/templates/ingredients/new_product.html:131
+#: /app/templates/ingredients/edit_product.html:88
+#: /app/templates/ingredients/new_product.html:129
 msgid "None (OTC or general)"
 msgstr "Keine (OTC oder allgemein)"
 
@@ -1744,39 +1735,35 @@ msgstr "z. B. Salbutamol 1A Pharma 100µg"
 msgid "Full commercial name of the product"
 msgstr "Vollständiger Handelsname des Produkts"
 
-#: /app/templates/ingredients/new_product.html:88
-msgid "e.g., 1A Pharma, ratiopharm, Hexal"
-msgstr "z. B. 1A Pharma, ratiopharm, Hexal"
-
-#: /app/templates/ingredients/new_product.html:143
+#: /app/templates/ingredients/new_product.html:141
 msgid "Create Product"
 msgstr "Produkt erstellen"
 
-#: /app/templates/ingredients/new_product.html:166
+#: /app/templates/ingredients/new_product.html:164
 msgid "Search for ingredient or type new name..."
 msgstr "Suche nach dem Wirkstoff oder gib einen Neuen ein..."
 
-#: /app/templates/ingredients/new_product.html:176
-#: /app/templates/ingredients/new_product.html:204
-#: /app/templates/package_onboarding/onboard.html:678
-#: /app/templates/package_onboarding/onboard.html:789
+#: /app/templates/ingredients/new_product.html:174
+#: /app/templates/ingredients/new_product.html:202
+#: /app/templates/package_onboarding/onboard.html:675
+#: /app/templates/package_onboarding/onboard.html:786
 msgid "Create new"
 msgstr "Neu erstellen"
 
-#: /app/templates/ingredients/new_product.html:184
+#: /app/templates/ingredients/new_product.html:182
 msgid "New"
 msgstr "Neu"
 
-#: /app/templates/ingredients/new_product.html:190
+#: /app/templates/ingredients/new_product.html:188
 msgid "No ingredients found. Type to create new."
 msgstr "Keine Wirkstoffe gefunden. Tippe, um einen neuen zu erstellen."
 
-#: /app/templates/ingredients/new_product.html:193
+#: /app/templates/ingredients/new_product.html:191
 #: /app/templates/orders/show.html:643
 msgid "Searching..."
 msgstr "Suche..."
 
-#: /app/templates/ingredients/new_product.html:224
+#: /app/templates/ingredients/new_product.html:222
 msgid "Select physician..."
 msgstr "Wähle einen Arzt aus..."
 
@@ -2348,7 +2335,7 @@ msgstr "Benötigte Menge"
 
 #: /app/templates/orders/edit.html:121 /app/templates/orders/new.html:170
 #: /app/templates/package_onboarding/onboard.html:165
-#: /app/templates/package_onboarding/onboard.html:420
+#: /app/templates/package_onboarding/onboard.html:417
 msgid "Product"
 msgstr "Produkt"
 
@@ -2976,160 +2963,151 @@ msgstr "Gib den Namen ein, nach dem du suchen willst, oder gib einen neuen Produ
 msgid "Creating new product:"
 msgstr "Neues Produkt erstellen:"
 
-#: /app/templates/package_onboarding/onboard.html:289
-msgid "Manufacturer (e.g., 1A Pharma)"
-msgstr "Hersteller (z. B. 1A Pharma)"
-
-#: /app/templates/package_onboarding/onboard.html:291
-#: /app/templates/package_onboarding/onboard.html:365
-msgid "Type to see suggestions from existing products"
-msgstr "Gib was ein, um Vorschläge von bestehenden Produkten zu sehen"
-
-#: /app/templates/package_onboarding/onboard.html:297
+#: /app/templates/package_onboarding/onboard.html:295
 msgid "Product Settings"
 msgstr "Produkteinstellungen"
 
-#: /app/templates/package_onboarding/onboard.html:303
+#: /app/templates/package_onboarding/onboard.html:301
 msgid "Over-the-counter (OTC) - No order required"
 msgstr "Rezeptfrei (OTC) – Keine Bestellung nötig"
 
-#: /app/templates/package_onboarding/onboard.html:311
+#: /app/templates/package_onboarding/onboard.html:309
 msgid "Allow generic substitution (Aut idem)"
 msgstr "Generika-Ersatz zulassen (Aut idem)"
 
-#: /app/templates/package_onboarding/onboard.html:320
+#: /app/templates/package_onboarding/onboard.html:318
 msgid "Available products:"
 msgstr "Verfügbare Produkte:"
 
-#: /app/templates/package_onboarding/onboard.html:329
+#: /app/templates/package_onboarding/onboard.html:327
 msgid "Step 3: Package Configuration"
 msgstr "Schritt 3: Packungskonfiguration"
 
-#: /app/templates/package_onboarding/onboard.html:335
-#: /app/templates/package_onboarding/onboard.html:892
+#: /app/templates/package_onboarding/onboard.html:333
+#: /app/templates/package_onboarding/onboard.html:889
 msgid "Small Package"
 msgstr "Kleine Packung"
 
-#: /app/templates/package_onboarding/onboard.html:336
-#: /app/templates/package_onboarding/onboard.html:893
+#: /app/templates/package_onboarding/onboard.html:334
+#: /app/templates/package_onboarding/onboard.html:890
 msgid "Medium Package"
 msgstr "Mittlere Packung"
 
-#: /app/templates/package_onboarding/onboard.html:337
-#: /app/templates/package_onboarding/onboard.html:894
+#: /app/templates/package_onboarding/onboard.html:335
+#: /app/templates/package_onboarding/onboard.html:891
 msgid "Large Package"
 msgstr "Große Packung"
 
-#: /app/templates/package_onboarding/onboard.html:338
-#: /app/templates/package_onboarding/onboard.html:940
+#: /app/templates/package_onboarding/onboard.html:336
+#: /app/templates/package_onboarding/onboard.html:937
 msgid "Custom Size"
 msgstr "Benutzerdefinierte Größe"
 
-#: /app/templates/package_onboarding/onboard.html:341
+#: /app/templates/package_onboarding/onboard.html:339
 msgid "Enter custom size..."
 msgstr "Benutzerdefinierte Größe eingeben..."
 
-#: /app/templates/package_onboarding/onboard.html:345
+#: /app/templates/package_onboarding/onboard.html:343
 msgid "Units per Package"
 msgstr "Einheiten pro Packung"
 
-#: /app/templates/package_onboarding/onboard.html:347
+#: /app/templates/package_onboarding/onboard.html:345
 msgid "e.g., 100"
 msgstr "z. B. 100"
 
-#: /app/templates/package_onboarding/onboard.html:354
+#: /app/templates/package_onboarding/onboard.html:352
 msgid "0.00"
 msgstr "0,00"
 
-#: /app/templates/package_onboarding/onboard.html:363
+#: /app/templates/package_onboarding/onboard.html:361
 msgid "If different from product"
 msgstr "Wenn anders als im Produkt"
 
-#: /app/templates/package_onboarding/onboard.html:368
+#: /app/templates/package_onboarding/onboard.html:365
 msgid "PZN/National Code"
 msgstr "PZN/Nationaler Code"
 
-#: /app/templates/package_onboarding/onboard.html:370
+#: /app/templates/package_onboarding/onboard.html:367
 msgid "e.g., PZN-12345678"
 msgstr "z. B. PZN-12345678"
 
-#: /app/templates/package_onboarding/onboard.html:372
+#: /app/templates/package_onboarding/onboard.html:369
 msgid "Package-specific pharmaceutical code"
 msgstr "Paketspezifischer pharmazeutischer Code"
 
-#: /app/templates/package_onboarding/onboard.html:375
+#: /app/templates/package_onboarding/onboard.html:372
 msgid "GTIN/EAN"
 msgstr "GTIN/EAN"
 
-#: /app/templates/package_onboarding/onboard.html:377
+#: /app/templates/package_onboarding/onboard.html:374
 msgid "e.g., 4012345678901"
 msgstr "z. B. 4012345678901"
 
-#: /app/templates/package_onboarding/onboard.html:379
+#: /app/templates/package_onboarding/onboard.html:376
 msgid "Global Trade Item Number"
 msgstr "Globale Handelsnummer"
 
-#: /app/templates/package_onboarding/onboard.html:387
+#: /app/templates/package_onboarding/onboard.html:384
 msgid "Step 4: Review and Save"
 msgstr "Schritt 4: Überprüfen und speichern"
 
-#: /app/templates/package_onboarding/onboard.html:392
+#: /app/templates/package_onboarding/onboard.html:389
 msgid "Package Action"
 msgstr "Packungsaktionen"
 
-#: /app/templates/package_onboarding/onboard.html:399
+#: /app/templates/package_onboarding/onboard.html:396
 msgid "Add this package to inventory"
 msgstr "Dieses Paket zum Inventar hinzufügen"
 
-#: /app/templates/package_onboarding/onboard.html:400
+#: /app/templates/package_onboarding/onboard.html:397
 msgid "Track this package in your inventory for stock levels and depletion monitoring"
 msgstr "Verfolge dieses Paket in deinem Inventar, um den Lagerbestand und den Verbrauch im Auge zu behalten"
 
-#: /app/templates/package_onboarding/onboard.html:405
+#: /app/templates/package_onboarding/onboard.html:402
 msgid "Uncheck if you only want to register the product information without adding this specific package to your stock"
 msgstr "Deaktiviere das, wenn du nur die Produktinformationen registrieren willst, ohne dieses spezielle Paket zu deinem Lagerbestand hinzuzufügen"
 
-#: /app/templates/package_onboarding/onboard.html:413
+#: /app/templates/package_onboarding/onboard.html:410
 msgid "Review Information"
 msgstr "Informationen überprüfen"
 
-#: /app/templates/package_onboarding/onboard.html:426
+#: /app/templates/package_onboarding/onboard.html:423
 msgid "Order Required"
 msgstr "Bestellung erforderlich"
 
-#: /app/templates/package_onboarding/onboard.html:429
+#: /app/templates/package_onboarding/onboard.html:426
 msgid "Barcode Data"
 msgstr "Strichcode-Daten"
 
-#: /app/templates/package_onboarding/onboard.html:450
+#: /app/templates/package_onboarding/onboard.html:447
 msgid "Previous"
 msgstr "Vorheriges"
 
-#: /app/templates/package_onboarding/onboard.html:455
+#: /app/templates/package_onboarding/onboard.html:452
 msgid "Next"
 msgstr "Nächstes"
 
-#: /app/templates/package_onboarding/onboard.html:458
+#: /app/templates/package_onboarding/onboard.html:455
 msgid "Save Package"
 msgstr "Packung speichern"
 
-#: /app/templates/package_onboarding/onboard.html:1023
+#: /app/templates/package_onboarding/onboard.html:1020
 msgid "Please select or enter a product"
 msgstr "Bitte ein Produkt auswählen"
 
-#: /app/templates/package_onboarding/onboard.html:1054
+#: /app/templates/package_onboarding/onboard.html:1051
 msgid "Please enter a custom package size"
 msgstr "Gib bitte eine benutzerdefinierte Packungsgröße ein"
 
-#: /app/templates/package_onboarding/onboard.html:1060
+#: /app/templates/package_onboarding/onboard.html:1057
 msgid "Please enter the number of units per package"
 msgstr "Gib bitte die Anzahl der Einheiten pro Packung ein"
 
-#: /app/templates/package_onboarding/onboard.html:1086
+#: /app/templates/package_onboarding/onboard.html:1083
 msgid "No (OTC)"
 msgstr "Nein (OTC)"
 
-#: /app/templates/package_onboarding/onboard.html:1086
+#: /app/templates/package_onboarding/onboard.html:1083
 msgid "Yes"
 msgstr "Ja"
 

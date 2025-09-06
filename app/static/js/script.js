@@ -449,3 +449,8 @@ function setupManufacturerAutocomplete(inputElement, apiUrl) {
     setTimeout(hideDropdown, 150);
   });
 }
+
+// Make function globally available for webpack
+if (typeof window !== 'undefined') {
+  window.setupManufacturerAutocomplete = setupManufacturerAutocomplete;
+}
