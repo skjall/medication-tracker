@@ -3,7 +3,7 @@
 ###############################
 # 1) Builder: Python dependencies
 ###############################
-FROM python:3.13-slim@sha256:8ebd0ea12eea7d353861db137baa7be7bac116537f85e50bd84a52633e302265 AS builder
+FROM python:3.13-slim@sha256:1bca0202e953784ac2a1daf36ebbc9cbebed48afcfba12d1225aaab3793eca33 AS builder
 
 WORKDIR /app
 
@@ -51,7 +51,7 @@ RUN npm run build
 ###############################
 # 3) Translator: Babel + Crowdin
 ###############################
-FROM python:3.13-slim@sha256:8ebd0ea12eea7d353861db137baa7be7bac116537f85e50bd84a52633e302265 AS translator
+FROM python:3.13-slim@sha256:1bca0202e953784ac2a1daf36ebbc9cbebed48afcfba12d1225aaab3793eca33 AS translator
 
 # Install tools for Crowdin CLI and Babel
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -120,7 +120,7 @@ RUN ls -R /app/translations && \
 ###############################
 # 4) Runtime: minimal image
 ###############################
-FROM python:3.13-slim@sha256:8ebd0ea12eea7d353861db137baa7be7bac116537f85e50bd84a52633e302265 AS runtime
+FROM python:3.13-slim@sha256:1bca0202e953784ac2a1daf36ebbc9cbebed48afcfba12d1225aaab3793eca33 AS runtime
 
 # 4.1: Metadata
 ARG VERSION=0.0.0
